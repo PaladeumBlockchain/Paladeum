@@ -1,0 +1,33 @@
+# /etc/conf.d/yonad: config file for /etc/init.d/yonad
+
+# Config file location
+#YONAD_CONFIGFILE="/etc/yona/yona.conf"
+
+# What directory to write pidfile to?  (created and owned by $YONAD_USER)
+#YONAD_PIDDIR="/var/run/yonad"
+
+# What filename to give the pidfile
+#YONAD_PIDFILE="${YONAD_PIDDIR}/yonad.pid"
+
+# Where to write yonad data (be mindful that the blockchain is large)
+#YONAD_DATADIR="/var/lib/yonad"
+
+# User and group to own yonad process
+#YONAD_USER="yona"
+#YONAD_GROUP="yona"
+
+# Path to yonad executable
+#YONAD_BIN="/usr/bin/yonad"
+
+# Nice value to run yonad under
+#YONAD_NICE=0
+
+# Additional options (avoid -conf and -datadir, use flags above)
+#YONAD_OPTS=""
+
+# The timeout in seconds OpenRC will wait for yonad to terminate
+# after a SIGTERM has been raised.
+# Note that this will be mapped as argument to start-stop-daemon's
+# '--retry' option, which means you can specify a retry schedule
+# here. For more information see man 8 start-stop-daemon.
+YONAD_SIGTERM_TIMEOUT=60

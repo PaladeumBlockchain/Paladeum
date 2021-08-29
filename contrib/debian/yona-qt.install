@@ -1,0 +1,6 @@
+usr/local/bin/yona-qt usr/bin
+share/pixmaps/yona32.xpm usr/share/pixmaps
+share/pixmaps/yona16.xpm usr/share/pixmaps
+share/pixmaps/yona128.png usr/share/pixmaps
+debian/yona-qt.desktop usr/share/applications
+debian/yona-qt.protocol usr/share/kde4/services/

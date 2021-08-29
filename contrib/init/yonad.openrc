@@ -1,0 +1,92 @@
+#!/sbin/runscript
+
+# backward compatibility for existing gentoo layout 
+#
+if [ -d "/var/lib/yona/.yona" ]; then
+	YONAD_DEFAULT_DATADIR="/var/lib/yona/.yona"
+else
+	YONAD_DEFAULT_DATADIR="/var/lib/yonad"
+fi
+
+YONAD_CONFIGFILE=${YONAD_CONFIGFILE:-/etc/yona/yona.conf}
+YONAD_PIDDIR=${YONAD_PIDDIR:-/var/run/yonad}
+YONAD_PIDFILE=${YONAD_PIDFILE:-${YONAD_PIDDIR}/yonad.pid}
+YONAD_DATADIR=${YONAD_DATADIR:-${YONAD_DEFAULT_DATADIR}}
+YONAD_USER=${YONAD_USER:-${YONA_USER:-yona}}
+YONAD_GROUP=${YONAD_GROUP:-yona}
+YONAD_BIN=${YONAD_BIN:-/usr/bin/yonad}
+YONAD_NICE=${YONAD_NICE:-${NICELEVEL:-0}}
+YONAD_OPTS="${YONAD_OPTS:-${YONA_OPTS}}"
+
+name="Yona Core Daemon"
+description="Yona cryptocurrency P2P network daemon"
+
+command="/usr/bin/yonad"
+command_args="-pid=\"${YONAD_PIDFILE}\" \
+		-conf=\"${YONAD_CONFIGFILE}\" \
+		-datadir=\"${YONAD_DATADIR}\" \
+		-daemon \
+		${YONAD_OPTS}"
+
+required_files="${YONAD_CONFIGFILE}"
+start_stop_daemon_args="-u ${YONAD_USER} \
+			-N ${YONAD_NICE} -w 2000"
+pidfile="${YONAD_PIDFILE}"
+
+# The retry schedule to use when stopping the daemon. Could be either
+# a timeout in seconds or multiple signal/timeout pairs (like
+# "SIGKILL/180 SIGTERM/300")
+retry="${YONAD_SIGTERM_TIMEOUT}"
+
+depend() {
+	need localmount net
+}
+
+# verify
+# 1) that the datadir exists and is writable (or create it)
+# 2) that a directory for the pid exists and is writable
+# 3) ownership and permissions on the config file
+start_pre() {
+	checkpath \
+	-d \
+	--mode 0750 \
+	--owner "${YONAD_USER}:${YONAD_GROUP}" \
+	"${YONAD_DATADIR}"
+
+	checkpath \
+	-d \
+	--mode 0755 \
+	--owner "${YONAD_USER}:${YONAD_GROUP}" \
+	"${YONAD_PIDDIR}"
+
+	checkpath -f \
+	-o ${YONAD_USER}:${YONAD_GROUP} \
+	-m 0660 \
+	${YONAD_CONFIGFILE}
+
+	checkconfig || return 1
+}
+
+checkconfig()
+{
+	if ! grep -qs '^rpcpassword=' "${YONAD_CONFIGFILE}" ; then
+		eerror ""
+		eerror "ERROR: You must set a secure rpcpassword to run yonad."
+		eerror "The setting must appear in ${YONAD_CONFIGFILE}"
+		eerror ""
+		eerror "This password is security critical to securing wallets "
+		eerror "and must not be the same as the rpcuser setting."
+		eerror "You can generate a suitable random password using the following "
+		eerror "command from the shell:"
+		eerror ""
+		eerror "bash -c 'tr -dc a-zA-Z0-9 < /dev/urandom | head -c32 && echo'"
+		eerror ""
+		eerror "It is recommended that you also set alertnotify so you are "
+		eerror "notified of problems:"
+		eerror ""
+		eerror "ie: alertnotify=echo %%s | mail -s \"Yona Alert\"" \
+			"admin@foo.com"
+		eerror ""
+		return 1
+	fi
+}

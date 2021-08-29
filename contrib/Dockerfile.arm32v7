@@ -1,0 +1,23 @@
+FROM arm32v7/ubuntu:latest
+
+MAINTAINER cade <cade.call@mediciventures.com>
+
+EXPOSE $RPCPORT
+
+EXPOSE $PORT
+
+RUN useradd -ms /bin/bash yona
+
+RUN mkdir /etc/yona
+
+RUN mkdir /var/lib/yona
+
+RUN chown yona:yona /etc/yona /var/lib/yona
+
+WORKDIR /home/yona
+
+COPY --chown=yona:yona linux64/* ./run.sh /home/yona/
+
+USER yona
+
+CMD ["/home/yona/run.sh"]
