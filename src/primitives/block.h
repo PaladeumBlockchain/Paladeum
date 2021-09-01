@@ -19,8 +19,6 @@
  * of the block.
  */
 
-extern uint32_t nKAWPOWActivationTime;
-
 class BlockNetwork
 {
 public:
@@ -64,13 +62,8 @@ public:
         READWRITE(hashMerkleRoot);
         READWRITE(nTime);
         READWRITE(nBits);
-        if (nTime < nKAWPOWActivationTime) {
-            READWRITE(nNonce);
-        } else {
-            READWRITE(nHeight);
-            READWRITE(nNonce64);
-            READWRITE(mix_hash);
-        }
+        READWRITE(nNonce);
+        READWRITE(nHeight);
     }
 
     void SetNull()
@@ -81,10 +74,7 @@ public:
         nTime = 0;
         nBits = 0;
         nNonce = 0;
-
-        nNonce64 = 0;
         nHeight = 0;
-        mix_hash.SetNull();
     }
 
     bool IsNull() const
@@ -93,11 +83,7 @@ public:
     }
 
     uint256 GetHash() const;
-    uint256 GetX16RHash() const;
-    uint256 GetX16RV2Hash() const;
 
-    uint256 GetHashFull(uint256& mix_hash) const;
-    uint256 GetKAWPOWHeaderHash() const;
     std::string ToString() const;
 
     /// Use for testing algo switch
@@ -157,11 +143,7 @@ public:
         block.nTime          = nTime;
         block.nBits          = nBits;
         block.nNonce         = nNonce;
-
-        // KAWPOW
         block.nHeight        = nHeight;
-        block.nNonce64       = nNonce64;
-        block.mix_hash       = mix_hash;
         return block;
     }
 
@@ -203,32 +185,6 @@ struct CBlockLocator
     bool IsNull() const
     {
         return vHave.empty();
-    }
-};
-
-/**
- * Custom serializer for CBlockHeader that omits the nNonce and mixHash, for use
- * as input to ProgPow.
- */
-class CKAWPOWInput : private CBlockHeader
-{
-public:
-    CKAWPOWInput(const CBlockHeader &header)
-    {
-        CBlockHeader::SetNull();
-        *((CBlockHeader*)this) = header;
-    }
-
-    ADD_SERIALIZE_METHODS;
-
-    template <typename Stream, typename Operation>
-    inline void SerializationOp(Stream& s, Operation ser_action) {
-        READWRITE(this->nVersion);
-        READWRITE(hashPrevBlock);
-        READWRITE(hashMerkleRoot);
-        READWRITE(nTime);
-        READWRITE(nBits);
-        READWRITE(nHeight);
     }
 };
 

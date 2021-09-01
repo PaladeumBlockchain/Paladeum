@@ -251,7 +251,6 @@ UniValue blockToJSON(const CBlock& block, const CBlockIndex* blockindex, bool tx
     result.push_back(Pair("bits", strprintf("%08x", block.nBits)));
     result.push_back(Pair("difficulty", GetDifficulty(blockindex)));
     result.push_back(Pair("chainwork", blockindex->nChainWork.GetHex()));
-    result.push_back(Pair("headerhash", block.GetKAWPOWHeaderHash().GetHex()));
     result.push_back(Pair("mixhash", block.mix_hash.GetHex()));
     result.push_back(Pair("nonce64", (uint64_t)block.nNonce64));
 
@@ -260,36 +259,6 @@ UniValue blockToJSON(const CBlock& block, const CBlockIndex* blockindex, bool tx
     CBlockIndex *pnext = chainActive.Next(blockindex);
     if (pnext)
         result.push_back(Pair("nextblockhash", pnext->GetBlockHash().GetHex()));
-    return result;
-}
-
-UniValue decodeblockToJSON(const CBlock& block)
-{
-    UniValue result(UniValue::VOBJ);
-    result.push_back(Pair("hash", block.GetHash().GetHex()));
-
-    result.push_back(Pair("strippedsize", (int)::GetSerializeSize(block, SER_NETWORK, PROTOCOL_VERSION | SERIALIZE_TRANSACTION_NO_WITNESS)));
-    result.push_back(Pair("size", (int)::GetSerializeSize(block, SER_NETWORK, PROTOCOL_VERSION)));
-    result.push_back(Pair("weight", (int)::GetBlockWeight(block)));
-    result.push_back(Pair("height", (int)block.nHeight));
-    result.push_back(Pair("version", block.nVersion));
-    result.push_back(Pair("versionHex", strprintf("%08x", block.nVersion)));
-    result.push_back(Pair("merkleroot", block.hashMerkleRoot.GetHex()));
-    UniValue txs(UniValue::VARR);
-    for(const auto& tx : block.vtx)
-    {
-        UniValue objTx(UniValue::VOBJ);
-        TxToUniv(*tx, uint256(), objTx, true, RPCSerializationFlags());
-        txs.push_back(objTx);
-    }
-    result.push_back(Pair("tx", txs));
-    result.push_back(Pair("time", block.GetBlockTime()));
-    result.push_back(Pair("nonce", (uint64_t)block.nNonce));
-    result.push_back(Pair("bits", strprintf("%08x", block.nBits)));
-    result.push_back(Pair("headerhash", block.GetKAWPOWHeaderHash().GetHex()));
-    result.push_back(Pair("mixhash", block.mix_hash.GetHex()));
-    result.push_back(Pair("nonce64", (uint64_t)block.nNonce64));
-
     return result;
 }
 
@@ -1019,44 +988,6 @@ UniValue getblock(const JSONRPCRequest& request)
 
     return blockToJSON(block, pblockindex, verbosity >= 2);
 }
-
-UniValue decodeblock(const JSONRPCRequest& request)
-{
-    if (request.fHelp || request.params.size() != 1)
-        throw std::runtime_error(
-                "decodeblock \"blockhex\"\n"
-                "\nArguments:\n"
-                "1. \"blockhex\"          (string, required) The block hex\n"
-                "\nResult:\n"
-                "{\n"
-                "  \"hash\" : \"hash\",     (string) the block hash (same as provided)\n"
-                "  \"size\" : n,            (numeric) The block size\n"
-                "  \"strippedsize\" : n,    (numeric) The block size excluding witness data\n"
-                "  \"weight\" : n           (numeric) The block weight as defined in BIP 141\n"
-                "  \"height\" : n,          (numeric) The block height or index\n"
-                "  \"version\" : n,         (numeric) The block version\n"
-                "  \"versionHex\" : \"00000000\", (string) The block version formatted in hexadecimal\n"
-                "  \"merkleroot\" : \"xxxx\", (string) The merkle root\n"
-                "  \"tx\" : [               (array of string) The transaction ids\n"
-                "     \"transactionid\"     (string) The transaction id\n"
-                "     ,...\n"
-                "  ],\n"
-                "  \"time\" : ttt,          (numeric) The block time in seconds since epoch (Jan 1 1970 GMT)\n"
-                "  \"nonce\" : n,           (numeric) The nonce\n"
-                "  \"bits\" : \"1d00ffff\", (string) The bits\n"
-                "}\n"
-                "\nExamples:\n"
-                + HelpExampleCli("decodeblock", "\"xxxx\"")
-                + HelpExampleRpc("decodeblock", "\"xxxx\"")
-        );
-
-    std::string strHex = request.params[0].get_str();
-    CBlock block;
-    DecodeHexBlk(block, strHex);
-
-    return decodeblockToJSON(block);
-}
-
 
 
 struct CCoinsStats
@@ -1904,7 +1835,6 @@ static const CRPCCommand commands[] =
     { "blockchain",         "getbestblockhash",       &getbestblockhash,       {} },
     { "blockchain",         "getblockcount",          &getblockcount,          {} },
     { "blockchain",         "getblock",               &getblock,               {"blockhash","verbosity|verbose"} },
-    { "blockchain",         "decodeblock",            &decodeblock,               {"blockhex"} },
     { "blockchain",         "getblockdeltas",         &getblockdeltas,         {} },
     { "blockchain",         "getblockhashes",         &getblockhashes,         {} },
     { "blockchain",         "getblockhash",           &getblockhash,           {"height"} },

@@ -189,8 +189,7 @@ std::unique_ptr<CBlockTemplate> BlockAssembler::CreateNewBlock(const CScript& sc
     UpdateTime(pblock, chainparams.GetConsensus(), pindexPrev);
     pblock->nBits          = GetNextWorkRequired(pindexPrev, pblock, chainparams.GetConsensus());
     pblock->nNonce         = 0;
-    pblock->nNonce64         = 0;
-    pblock->nHeight          = nHeight;
+    pblock->nHeight        = nHeight;
     pblocktemplate->vTxSigOpsCost[0] = WITNESS_SCALE_FACTOR * GetLegacySigOpCount(*pblock->vtx[0]);
 
     CValidationState state;
@@ -631,13 +630,11 @@ void static YonaMiner(const CChainParams& chainparams)
             {
 
                 uint256 hash;
-                uint256 mix_hash;
                 while (true)
                 {
-                    hash = pblock->GetHashFull(mix_hash);
+                    hash = pblock->GetHash();
                     if (UintToArith256(hash) <= hashTarget)
                     {
-                        pblock->mix_hash = mix_hash;
                         // Found a solution
                         SetThreadPriority(THREAD_PRIORITY_NORMAL);
                         LogPrintf("YonaMiner:\n  proof-of-work found\n  hash: %s\n  target: %s\n", hash.GetHex(), hashTarget.GetHex());
