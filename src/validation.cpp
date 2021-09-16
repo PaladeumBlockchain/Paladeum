@@ -5759,68 +5759,33 @@ void SetEnforcedCoinbase(bool value)
 
 bool AreEnforcedValuesDeployed()
 {
-    if (fEnforcedValuesIsActive)
-        return true;
-
-    const ThresholdState thresholdState = VersionBitsTipState(GetParams().GetConsensus(), Consensus::DEPLOYMENT_ENFORCE_VALUE);
-    if (thresholdState == THRESHOLD_ACTIVE || thresholdState == THRESHOLD_LOCKED_IN)
-        fEnforcedValuesIsActive = true;
-
-    return fEnforcedValuesIsActive;
+    return true;
 }
 
 bool AreCoinbaseCheckAssetsDeployed()
 {
-    if (fCheckCoinbaseAssetsIsActive)
-        return true;
-
-    const ThresholdState thresholdState = VersionBitsTipState(GetParams().GetConsensus(), Consensus::DEPLOYMENT_COINBASE_ASSETS);
-    if (thresholdState == THRESHOLD_ACTIVE)
-        fCheckCoinbaseAssetsIsActive = true;
-
-    return fCheckCoinbaseAssetsIsActive;
+    return true;
 }
 
 bool AreAssetsDeployed()
 {
 
-    if (fAssetsIsActive)
-        return true;
-
-    const ThresholdState thresholdState = VersionBitsTipState(GetParams().GetConsensus(), Consensus::DEPLOYMENT_ASSETS);
-    if (thresholdState == THRESHOLD_ACTIVE)
-        fAssetsIsActive = true;
-
-    return fAssetsIsActive;
+    return true;
 }
 
 bool IsRip5Active()
 {
-    if (fRip5IsActive)
-        return true;
-
-    const ThresholdState thresholdState = VersionBitsTipState(GetParams().GetConsensus(), Consensus::DEPLOYMENT_MSG_REST_ASSETS);
-    if (thresholdState == THRESHOLD_ACTIVE)
-        fRip5IsActive = true;
-
-    return fRip5IsActive;
+    return true;
 }
 
 bool AreMessagesDeployed() {
 
-    return IsRip5Active();
+    return true;
 }
 
 bool AreTransferScriptsSizeDeployed() {
 
-    if (fTransferScriptIsActive)
-        return true;
-
-    const ThresholdState thresholdState = VersionBitsTipState(GetParams().GetConsensus(), Consensus::DEPLOYMENT_TRANSFER_SCRIPT_SIZE);
-    if (thresholdState == THRESHOLD_ACTIVE)
-        fTransferScriptIsActive = true;
-
-    return fTransferScriptIsActive;
+    return true;
 }
 
 bool AreRestrictedAssetsDeployed() {
@@ -5829,33 +5794,21 @@ bool AreRestrictedAssetsDeployed() {
 }
 
 bool IsDGWActive(unsigned int nBlockNumber) {
-    return nBlockNumber >= GetParams().DGWActivationBlock();
+    return true;
 }
 
 bool IsMessagingActive(unsigned int nBlockNumber) {
-    if (GetParams().MessagingActivationBlock()) {
-        return nBlockNumber > GetParams().MessagingActivationBlock();
-    } else {
-        return AreMessagesDeployed();
-    }
+    return true;
 }
 
 bool IsRestrictedActive(unsigned int nBlockNumber)
 {
-    if (GetParams().RestrictedActivationBlock()) {
-        return nBlockNumber > GetParams().RestrictedActivationBlock();
-    } else {
-        return AreRestrictedAssetsDeployed();
-    }
+    return true;
 }
 
 bool AreP2SHAssetsAllowed()
 {
-    const ThresholdState thresholdState = VersionBitsTipState(GetParams().GetConsensus(), Consensus::DEPLOYMENT_P2SH_ASSETS);
-    if (thresholdState == THRESHOLD_ACTIVE)
-        return true;
-
-    return false;
+    return true;
 }
 
 CAssetsCache* GetCurrentAssetCache()

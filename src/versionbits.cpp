@@ -15,30 +15,30 @@ const struct VBDeploymentInfo VersionBitsDeploymentInfo[Consensus::MAX_VERSION_B
 //		/*.name =*/ "segwit",
 //		/*.gbt_force =*/ true,
 //	}
-    {
-            /*.name =*/ "assets",
-            /*.gbt_force =*/ true,
-    },
-    {
-            /*.name =*/ "messaging_restricted",
-            /*.gbt_force =*/ true,
-    },
-    {
-            /*.name =*/ "transfer_script",
-            /*.gbt_force =*/ true,
-    },
-    {
-            /*.name =*/ "enforce_value",
-            /*.gbt_force =*/ true,
-    },
-    {
-            /*.name =*/ "coinbase",
-            /*.gbt_force =*/ true,
-    },
-    {
-            /*.name =*/ "p2sh_assets",
-            /*.gbt_force =*/ true,
-    }
+    // {
+    //         /*.name =*/ "assets",
+    //         /*.gbt_force =*/ true,
+    // },
+    // {
+    //         /*.name =*/ "messaging_restricted",
+    //         /*.gbt_force =*/ true,
+    // },
+    // {
+    //         /*.name =*/ "transfer_script",
+    //         /*.gbt_force =*/ true,
+    // },
+    // {
+    //         /*.name =*/ "enforce_value",
+    //         /*.gbt_force =*/ true,
+    // },
+    // {
+    //         /*.name =*/ "coinbase",
+    //         /*.gbt_force =*/ true,
+    // },
+    // {
+    //         /*.name =*/ "p2sh_assets",
+    //         /*.gbt_force =*/ true,
+    // }
 };
 
 ThresholdState AbstractThresholdConditionChecker::GetStateFor(const CBlockIndex* pindexPrev, const Consensus::Params& params, ThresholdConditionCache& cache) const
