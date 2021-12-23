@@ -34,6 +34,7 @@ build-aux/test-driver
 config.log
 config.status
 configure
+configure~
 libtool
 src/config/yona-config.h
 src/config/yona-config.h.in
