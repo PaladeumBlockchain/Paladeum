@@ -91,24 +91,24 @@ public:
     bool CSVEnabled() const;
 
     /** YONA Start **/
-    const CAmount& IssueAssetBurnAmount() const { return nIssueAssetBurnAmount; }
-    const CAmount& ReissueAssetBurnAmount() const { return nReissueAssetBurnAmount; }
-    const CAmount& IssueSubAssetBurnAmount() const { return nIssueSubAssetBurnAmount; }
-    const CAmount& IssueUniqueAssetBurnAmount() const { return nIssueUniqueAssetBurnAmount; }
-    const CAmount& IssueMsgChannelAssetBurnAmount() const { return nIssueMsgChannelAssetBurnAmount; }
-    const CAmount& IssueQualifierAssetBurnAmount() const { return nIssueQualifierAssetBurnAmount; }
-    const CAmount& IssueSubQualifierAssetBurnAmount() const { return nIssueSubQualifierAssetBurnAmount; }
-    const CAmount& IssueRestrictedAssetBurnAmount() const { return nIssueRestrictedAssetBurnAmount; }
+    const CAmount& IssueTokenBurnAmount() const { return nIssueTokenBurnAmount; }
+    const CAmount& ReissueTokenBurnAmount() const { return nReissueTokenBurnAmount; }
+    const CAmount& IssueSubTokenBurnAmount() const { return nIssueSubTokenBurnAmount; }
+    const CAmount& IssueUniqueTokenBurnAmount() const { return nIssueUniqueTokenBurnAmount; }
+    const CAmount& IssueMsgChannelTokenBurnAmount() const { return nIssueMsgChannelTokenBurnAmount; }
+    const CAmount& IssueQualifierTokenBurnAmount() const { return nIssueQualifierTokenBurnAmount; }
+    const CAmount& IssueSubQualifierTokenBurnAmount() const { return nIssueSubQualifierTokenBurnAmount; }
+    const CAmount& IssueRestrictedTokenBurnAmount() const { return nIssueRestrictedTokenBurnAmount; }
     const CAmount& AddNullQualifierTagBurnAmount() const { return nAddNullQualifierTagBurnAmount; }
 
-    const std::string& IssueAssetBurnAddress() const { return strIssueAssetBurnAddress; }
-    const std::string& ReissueAssetBurnAddress() const { return strReissueAssetBurnAddress; }
-    const std::string& IssueSubAssetBurnAddress() const { return strIssueSubAssetBurnAddress; }
-    const std::string& IssueUniqueAssetBurnAddress() const { return strIssueUniqueAssetBurnAddress; }
-    const std::string& IssueMsgChannelAssetBurnAddress() const { return strIssueMsgChannelAssetBurnAddress; }
-    const std::string& IssueQualifierAssetBurnAddress() const { return strIssueQualifierAssetBurnAddress; }
-    const std::string& IssueSubQualifierAssetBurnAddress() const { return strIssueSubQualifierAssetBurnAddress; }
-    const std::string& IssueRestrictedAssetBurnAddress() const { return strIssueRestrictedAssetBurnAddress; }
+    const std::string& IssueTokenBurnAddress() const { return strIssueTokenBurnAddress; }
+    const std::string& ReissueTokenBurnAddress() const { return strReissueTokenBurnAddress; }
+    const std::string& IssueSubTokenBurnAddress() const { return strIssueSubTokenBurnAddress; }
+    const std::string& IssueUniqueTokenBurnAddress() const { return strIssueUniqueTokenBurnAddress; }
+    const std::string& IssueMsgChannelTokenBurnAddress() const { return strIssueMsgChannelTokenBurnAddress; }
+    const std::string& IssueQualifierTokenBurnAddress() const { return strIssueQualifierTokenBurnAddress; }
+    const std::string& IssueSubQualifierTokenBurnAddress() const { return strIssueSubQualifierTokenBurnAddress; }
+    const std::string& IssueRestrictedTokenBurnAddress() const { return strIssueRestrictedTokenBurnAddress; }
     const std::string& AddNullQualifierTagBurnAddress() const { return strAddNullQualifierTagBurnAddress; }
     const std::string& GlobalBurnAddress() const { return strGlobalBurnAddress; }
 
@@ -116,14 +116,14 @@ public:
     bool IsBurnAddress(const std::string & p_address) const
     {
         if (
-            p_address == strIssueAssetBurnAddress
-            || p_address == strReissueAssetBurnAddress
-            || p_address == strIssueSubAssetBurnAddress
-            || p_address == strIssueUniqueAssetBurnAddress
-            || p_address == strIssueMsgChannelAssetBurnAddress
-            || p_address == strIssueQualifierAssetBurnAddress
-            || p_address == strIssueSubQualifierAssetBurnAddress
-            || p_address == strIssueRestrictedAssetBurnAddress
+            p_address == strIssueTokenBurnAddress
+            || p_address == strReissueTokenBurnAddress
+            || p_address == strIssueSubTokenBurnAddress
+            || p_address == strIssueUniqueTokenBurnAddress
+            || p_address == strIssueMsgChannelTokenBurnAddress
+            || p_address == strIssueQualifierTokenBurnAddress
+            || p_address == strIssueSubQualifierTokenBurnAddress
+            || p_address == strIssueRestrictedTokenBurnAddress
             || p_address == strAddNullQualifierTagBurnAddress
             || p_address == strGlobalBurnAddress
         ) {
@@ -141,7 +141,7 @@ public:
     int MinReorganizationPeers() const { return nMinReorganizationPeers; }
     int MinReorganizationAge() const { return nMinReorganizationAge; }
 
-    int GetAssetActivationHeight() const { return nAssetActivationHeight; }
+    int GetTokenActivationHeight() const { return nTokenActivationHeight; }
     /** YONA End **/
 
 protected:
@@ -166,25 +166,25 @@ protected:
 
     /** YONA Start **/
     // Burn Amounts
-    CAmount nIssueAssetBurnAmount;
-    CAmount nReissueAssetBurnAmount;
-    CAmount nIssueSubAssetBurnAmount;
-    CAmount nIssueUniqueAssetBurnAmount;
-    CAmount nIssueMsgChannelAssetBurnAmount;
-    CAmount nIssueQualifierAssetBurnAmount;
-    CAmount nIssueSubQualifierAssetBurnAmount;
-    CAmount nIssueRestrictedAssetBurnAmount;
+    CAmount nIssueTokenBurnAmount;
+    CAmount nReissueTokenBurnAmount;
+    CAmount nIssueSubTokenBurnAmount;
+    CAmount nIssueUniqueTokenBurnAmount;
+    CAmount nIssueMsgChannelTokenBurnAmount;
+    CAmount nIssueQualifierTokenBurnAmount;
+    CAmount nIssueSubQualifierTokenBurnAmount;
+    CAmount nIssueRestrictedTokenBurnAmount;
     CAmount nAddNullQualifierTagBurnAmount;
 
     // Burn Addresses
-    std::string strIssueAssetBurnAddress;
-    std::string strReissueAssetBurnAddress;
-    std::string strIssueSubAssetBurnAddress;
-    std::string strIssueUniqueAssetBurnAddress;
-    std::string strIssueMsgChannelAssetBurnAddress;
-    std::string strIssueQualifierAssetBurnAddress;
-    std::string strIssueSubQualifierAssetBurnAddress;
-    std::string strIssueRestrictedAssetBurnAddress;
+    std::string strIssueTokenBurnAddress;
+    std::string strReissueTokenBurnAddress;
+    std::string strIssueSubTokenBurnAddress;
+    std::string strIssueUniqueTokenBurnAddress;
+    std::string strIssueMsgChannelTokenBurnAddress;
+    std::string strIssueQualifierTokenBurnAddress;
+    std::string strIssueSubQualifierTokenBurnAddress;
+    std::string strIssueRestrictedTokenBurnAddress;
     std::string strAddNullQualifierTagBurnAddress;
 
     // Global Burn Address
@@ -198,7 +198,7 @@ protected:
     int nMinReorganizationPeers;
     int nMinReorganizationAge;
 
-    int nAssetActivationHeight;
+    int nTokenActivationHeight;
     /** YONA End **/
 };
 

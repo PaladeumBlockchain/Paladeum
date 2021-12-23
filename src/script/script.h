@@ -185,7 +185,7 @@ enum opcodetype
     OP_NOP10 = 0xb9,
 
     /** YONA START */
-    OP_YONA_ASSET = 0xc0,
+    OP_YONA_TOKEN = 0xc0,
     /** YONA END */
 
 
@@ -575,9 +575,9 @@ public:
             pc += nSize;
         }
 
-        // If we see an op yona asset, we consider all data after it has data, and not op codes
+        // If we see an op yona token, we consider all data after it has data, and not op codes
         // Move the pc to the end of the script
-        if (opcode == OP_YONA_ASSET) {
+        if (opcode == OP_YONA_TOKEN) {
             unsigned int nSize = end() - pc;
             if (pvchRet)
                 pvchRet->assign(pc, pc + nSize);
@@ -664,20 +664,20 @@ public:
 
     /** YONA START */
     enum class txnouttype;
-    bool IsAssetScript() const;
-    bool IsAssetScript(int& nType, bool& fIsOwner) const;
-    bool IsAssetScript(int& nType, int& nScriptType, bool& fIsOwner) const;
-    bool IsAssetScript(int& nTXType, int& nScriptType, bool& fIsOwner, int& nStartingIndex) const;
-    bool IsP2SHAssetScript() const;
-    bool IsNewAsset() const;
-    bool IsOwnerAsset() const;
-    bool IsReissueAsset() const;
-    bool IsTransferAsset() const;
-    bool IsAsset() const;
-    bool IsNullAsset() const; // Checks all three of the NULL Asset Tx types
-    bool IsNullAssetTxDataScript() const;
-    bool IsNullAssetVerifierTxDataScript() const;
-    bool IsNullGlobalRestrictionAssetTxDataScript() const;
+    bool IsTokenScript() const;
+    bool IsTokenScript(int& nType, bool& fIsOwner) const;
+    bool IsTokenScript(int& nType, int& nScriptType, bool& fIsOwner) const;
+    bool IsTokenScript(int& nTXType, int& nScriptType, bool& fIsOwner, int& nStartingIndex) const;
+    bool IsP2SHTokenScript() const;
+    bool IsNewToken() const;
+    bool IsOwnerToken() const;
+    bool IsReissueToken() const;
+    bool IsTransferToken() const;
+    bool IsToken() const;
+    bool IsNullToken() const; // Checks all three of the NULL Token Tx types
+    bool IsNullTokenTxDataScript() const;
+    bool IsNullTokenVerifierTxDataScript() const;
+    bool IsNullGlobalRestrictionTokenTxDataScript() const;
     /** YONA END */
 
     /** Used for obsolete pay-to-pubkey addresses indexing. */
@@ -730,16 +730,16 @@ public:
     virtual ~CReserveScript() {}
 };
 
-//! These are needed because script.h and script.cpp do not have access to asset.h and asset.cpp functions. This is
+//! These are needed because script.h and script.cpp do not have access to token.h and token.cpp functions. This is
 //! because the make file compiles them at different times. This is becauses script files are compiled with other
-//! consensus files, and asset files are compiled with core files
-bool GetAssetAmountFromScript(const CScript& script, CAmount& nAmount);
-bool AmountFromNewAssetScript(const CScript& scriptPubKey, CAmount& nAmount);
+//! consensus files, and token files are compiled with core files
+bool GetTokenAmountFromScript(const CScript& script, CAmount& nAmount);
+bool AmountFromNewTokenScript(const CScript& scriptPubKey, CAmount& nAmount);
 bool AmountFromTransferScript(const CScript& scriptPubKey, CAmount& nAmount);
 bool AmountFromReissueScript(const CScript& scriptPubKey, CAmount& nAmount);
-bool ScriptNewAsset(const CScript& scriptPubKey, int& nStartingIndex);
-bool ScriptTransferAsset(const CScript& scriptPubKey, int& nStartingIndex);
-bool ScriptReissueAsset(const CScript& scriptPubKey, int& nStartingIndex);
+bool ScriptNewToken(const CScript& scriptPubKey, int& nStartingIndex);
+bool ScriptTransferToken(const CScript& scriptPubKey, int& nStartingIndex);
+bool ScriptReissueToken(const CScript& scriptPubKey, int& nStartingIndex);
 
 int SearchForYONA(const CScript& script, const int startingValue);
 

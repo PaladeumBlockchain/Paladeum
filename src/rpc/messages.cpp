@@ -2,10 +2,10 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#include "assets/assets.h"
-#include "assets/assetdb.h"
-#include "assets/messages.h"
-#include "assets/myassetsdb.h"
+#include "tokens/tokens.h"
+#include "tokens/tokendb.h"
+#include "tokens/messages.h"
+#include "tokens/mytokensdb.h"
 #include <map>
 #include "tinyformat.h"
 
@@ -46,7 +46,7 @@ UniValue viewallmessages(const JSONRPCRequest& request) {
                 "\nView all messages that the wallet contains\n"
 
                 "\nResult:\n"
-                "\"Asset Name:\"                     (string) The name of the asset the message was sent on\n"
+                "\"Token Name:\"                     (string) The name of the token the message was sent on\n"
                 "\"Message:\"                        (string) The IPFS hash of the message\n"
                 "\"Time:\"                           (Date) The time as a date in the format (YY-mm-dd Hour-minute-second)\n"
                 "\"Block Height:\"                   (number) The height of the block the message was included in\n"
@@ -100,8 +100,8 @@ UniValue viewallmessages(const JSONRPCRequest& request) {
     for (auto message : setMessages) {
         UniValue obj(UniValue::VOBJ);
 
-        obj.push_back(Pair("Asset Name", message.strName));
-        obj.push_back(Pair("Message", EncodeAssetData(message.ipfsHash)));
+        obj.push_back(Pair("Token Name", message.strName));
+        obj.push_back(Pair("Message", EncodeTokenData(message.ipfsHash)));
         obj.push_back(Pair("Time", DateTimeStrFormat("%Y-%m-%d %H:%M:%S", message.time)));
         obj.push_back(Pair("Block Height", message.nBlockHeight));
         obj.push_back(Pair("Status", MessageStatusToString(message.status)));
@@ -128,7 +128,7 @@ UniValue viewallmessagechannels(const JSONRPCRequest& request) {
                 "\nView all message channels the wallet is subscribed to\n"
 
                 "\nResult:[\n"
-                "\"Asset Name\"                      (string) The asset channel name\n"
+                "\"Token Name\"                      (string) The token channel name\n"
                 "\n]\n"
                 "\nExamples:\n"
                 + HelpExampleCli("viewallmessagechannels", "")
@@ -183,8 +183,8 @@ UniValue subscribetochannel(const JSONRPCRequest& request) {
                 "\nResult:[\n"
                 "\n]\n"
                 "\nExamples:\n"
-                + HelpExampleCli("subscribetochannel", "\"ASSET_NAME!\"")
-                + HelpExampleRpc("subscribetochannel", "\"ASSET_NAME!\"")
+                + HelpExampleCli("subscribetochannel", "\"TOKEN_NAME!\"")
+                + HelpExampleRpc("subscribetochannel", "\"TOKEN_NAME!\"")
         );
 
     if (!fMessaging) {
@@ -197,22 +197,22 @@ UniValue subscribetochannel(const JSONRPCRequest& request) {
 
     std::string channel_name = request.params[0].get_str();
 
-    AssetType type;
-    if (!IsAssetNameValid(channel_name, type))
+    TokenType type;
+    if (!IsTokenNameValid(channel_name, type))
         throw JSONRPCError(
                 RPC_INVALID_PARAMETER, "Channel Name is not valid.");
 
-    // if the given asset name is a root of sub asset, subscribe to that assets owner token
-    if (type == AssetType::ROOT || type == AssetType::SUB) {
+    // if the given token name is a root of sub token, subscribe to that tokens owner token
+    if (type == TokenType::ROOT || type == TokenType::SUB) {
         channel_name += "!";
-        if (!IsAssetNameValid(channel_name, type))
+        if (!IsTokenNameValid(channel_name, type))
         throw JSONRPCError(
                 RPC_INVALID_PARAMETER, "Channel Name is not valid.");
     }
 
-    if (type != AssetType::OWNER && type != AssetType::MSGCHANNEL)
+    if (type != TokenType::OWNER && type != TokenType::MSGCHANNEL)
         throw JSONRPCError(
-                RPC_INVALID_PARAMETER, "Channel Name must be a owner asset, or a message channel asset e.g OWNER!, MSG_CHANNEL~123.");
+                RPC_INVALID_PARAMETER, "Channel Name must be a owner token, or a message channel token e.g OWNER!, MSG_CHANNEL~123.");
 
     AddChannel(channel_name);
 
@@ -233,8 +233,8 @@ UniValue unsubscribefromchannel(const JSONRPCRequest& request) {
                 "\nResult:[\n"
                 "\n]\n"
                 "\nExamples:\n"
-                + HelpExampleCli("unsubscribefromchannel", "\"ASSET_NAME!\"")
-                + HelpExampleRpc("unsubscribefromchannel", "\"ASSET_NAME!\"")
+                + HelpExampleCli("unsubscribefromchannel", "\"TOKEN_NAME!\"")
+                + HelpExampleRpc("unsubscribefromchannel", "\"TOKEN_NAME!\"")
         );
 
     if (!fMessaging) {
@@ -247,23 +247,23 @@ UniValue unsubscribefromchannel(const JSONRPCRequest& request) {
 
     std::string channel_name = request.params[0].get_str();
 
-    AssetType type;
-    if (!IsAssetNameValid(channel_name, type))
+    TokenType type;
+    if (!IsTokenNameValid(channel_name, type))
         throw JSONRPCError(
                 RPC_INVALID_PARAMETER, "Channel Name is not valid.");
 
-    // if the given asset name is a root of sub asset, subscribe to that assets owner token
-    if (type == AssetType::ROOT || type == AssetType::SUB) {
+    // if the given token name is a root of sub token, subscribe to that tokens owner token
+    if (type == TokenType::ROOT || type == TokenType::SUB) {
         channel_name += "!";
 
-        if (!IsAssetNameValid(channel_name, type))
+        if (!IsTokenNameValid(channel_name, type))
         throw JSONRPCError(
                 RPC_INVALID_PARAMETER, "Channel Name is not valid.");
     }
 
-    if (type != AssetType::OWNER && type != AssetType::MSGCHANNEL)
+    if (type != TokenType::OWNER && type != TokenType::MSGCHANNEL)
         throw JSONRPCError(
-                RPC_INVALID_PARAMETER, "Channel Name must be a owner asset, or a message channel asset e.g OWNER!, MSG_CHANNEL~123.");
+                RPC_INVALID_PARAMETER, "Channel Name must be a owner token, or a message channel token e.g OWNER!, MSG_CHANNEL~123.");
 
     RemoveChannel(channel_name);
 
@@ -313,7 +313,7 @@ UniValue sendmessage(const JSONRPCRequest& request) {
                 "\nCreates and broadcasts a message transaction to the network for a channel this wallet owns"
 
                 "\nArguments:\n"
-                "1. \"channel_name\"             (string, required) Name of the channel that you want to send a message with (message channel, administrator asset), if a non administrator asset name is given, the administrator '!' will be added to it\n"
+                "1. \"channel_name\"             (string, required) Name of the channel that you want to send a message with (message channel, administrator token), if a non administrator token name is given, the administrator '!' will be added to it\n"
                 "2. \"ipfs_hash\"                (string, required) The IPFS hash of the message\n"
                 "3. \"expire_time\"              (numeric, optional) UTC timestamp of when the message expires\n"
 
@@ -322,8 +322,8 @@ UniValue sendmessage(const JSONRPCRequest& request) {
                 "]\n"
 
                 "\nExamples:\n"
-                + HelpExampleCli("sendmessage", "\"ASSET_NAME!\" \"QmTqu3Lk3gmTsQVtjU7rYYM37EAW4xNmbuEAp2Mjr4AV7E\" 15863654")
-                + HelpExampleCli("sendmessage", "\"ASSET_NAME!\" \"QmTqu3Lk3gmTsQVtjU7rYYM37EAW4xNmbuEAp2Mjr4AV7E\" 15863654")
+                + HelpExampleCli("sendmessage", "\"TOKEN_NAME!\" \"QmTqu3Lk3gmTsQVtjU7rYYM37EAW4xNmbuEAp2Mjr4AV7E\" 15863654")
+                + HelpExampleCli("sendmessage", "\"TOKEN_NAME!\" \"QmTqu3Lk3gmTsQVtjU7rYYM37EAW4xNmbuEAp2Mjr4AV7E\" 15863654")
         );
 
     CWallet * const pwallet = GetWalletForJSONRPCRequest(request);
@@ -336,7 +336,7 @@ UniValue sendmessage(const JSONRPCRequest& request) {
 
     EnsureWalletIsUnlocked(pwallet);
 
-    std::string asset_name = request.params[0].get_str();
+    std::string token_name = request.params[0].get_str();
     std::string ipfs_hash = request.params[1].get_str();
 
     int64_t expire_time = 0;
@@ -346,34 +346,34 @@ UniValue sendmessage(const JSONRPCRequest& request) {
 
     CheckIPFSTxidMessage(ipfs_hash, expire_time);
 
-    AssetType type;
+    TokenType type;
     std::string strNameError;
-    if (!IsAssetNameValid(asset_name, type, strNameError))
-        throw JSONRPCError(RPC_INVALID_PARAMETER, std::string("Invalid asset_name: ") + strNameError);
+    if (!IsTokenNameValid(token_name, type, strNameError))
+        throw JSONRPCError(RPC_INVALID_PARAMETER, std::string("Invalid token_name: ") + strNameError);
 
-    if (type != AssetType::MSGCHANNEL && type != AssetType::OWNER && type != AssetType::ROOT && type != AssetType::SUB && type != AssetType::RESTRICTED) {
-        throw JSONRPCError(RPC_INVALID_PARAMETER, std::string("Invalid asset_name: Only message channels, root, sub, restricted, and owner assets are allowed"));
+    if (type != TokenType::MSGCHANNEL && type != TokenType::OWNER && type != TokenType::ROOT && type != TokenType::SUB && type != TokenType::RESTRICTED) {
+        throw JSONRPCError(RPC_INVALID_PARAMETER, std::string("Invalid token_name: Only message channels, root, sub, restricted, and owner tokens are allowed"));
     }
 
-    if (type == AssetType::ROOT || type == AssetType::SUB || type == AssetType::RESTRICTED)
-        asset_name += OWNER_TAG;
+    if (type == TokenType::ROOT || type == TokenType::SUB || type == TokenType::RESTRICTED)
+        token_name += OWNER_TAG;
 
     std::pair<int, std::string> error;
-    std::vector< std::pair<CAssetTransfer, std::string> >vTransfers;
+    std::vector< std::pair<CTokenTransfer, std::string> >vTransfers;
 
-    std::map<std::string, std::vector<COutput> > mapAssetCoins;
-    pwallet->AvailableAssets(mapAssetCoins);
+    std::map<std::string, std::vector<COutput> > mapTokenCoins;
+    pwallet->AvailableTokens(mapTokenCoins);
 
-    if (!mapAssetCoins.count(asset_name)) {
-        throw JSONRPCError(RPC_INVALID_PARAMETER, std::string("Wallet doesn't own the asset_name: " + asset_name));
+    if (!mapTokenCoins.count(token_name)) {
+        throw JSONRPCError(RPC_INVALID_PARAMETER, std::string("Wallet doesn't own the token_name: " + token_name));
     }
 
     // Get the address that the coin resides in, because to send a valid message. You need to send it to the same address that it currently resides in.
     CTxDestination dest;
-    ExtractDestination(mapAssetCoins.at(asset_name)[0].tx->tx->vout[mapAssetCoins.at(asset_name)[0].i].scriptPubKey, dest);
+    ExtractDestination(mapTokenCoins.at(token_name)[0].tx->tx->vout[mapTokenCoins.at(token_name)[0].i].scriptPubKey, dest);
     std::string address = EncodeDestination(dest);
 
-    vTransfers.emplace_back(std::make_pair(CAssetTransfer(asset_name, OWNER_ASSET_AMOUNT, DecodeAssetData(ipfs_hash), expire_time), address));
+    vTransfers.emplace_back(std::make_pair(CTokenTransfer(token_name, OWNER_TOKEN_AMOUNT, DecodeTokenData(ipfs_hash), expire_time), address));
     CReserveKey reservekey(pwallet);
     CWalletTx transaction;
     CAmount nRequiredFee;
@@ -381,12 +381,12 @@ UniValue sendmessage(const JSONRPCRequest& request) {
     CCoinControl ctrl;
 
     // Create the Transaction
-    if (!CreateTransferAssetTransaction(pwallet, ctrl, vTransfers, "", error, transaction, reservekey, nRequiredFee))
+    if (!CreateTransferTokenTransaction(pwallet, ctrl, vTransfers, "", error, transaction, reservekey, nRequiredFee))
         throw JSONRPCError(error.first, error.second);
 
     // Send the Transaction to the network
     std::string txid;
-    if (!SendAssetTransaction(pwallet, transaction, reservekey, error, txid))
+    if (!SendTokenTransaction(pwallet, transaction, reservekey, error, txid))
         throw JSONRPCError(error.first, error.second);
 
     // Display the transaction id
@@ -396,7 +396,7 @@ UniValue sendmessage(const JSONRPCRequest& request) {
 }
 
 UniValue viewmytaggedaddresses(const JSONRPCRequest& request) {
-    if (request.fHelp || !AreRestrictedAssetsDeployed() || request.params.size() != 0)
+    if (request.fHelp || !AreRestrictedTokensDeployed() || request.params.size() != 0)
         throw std::runtime_error(
                 "viewmytaggedaddresses \n"
                 + MessageActivationWarning() +
@@ -405,7 +405,7 @@ UniValue viewmytaggedaddresses(const JSONRPCRequest& request) {
                 "\nResult:\n"
                 "{\n"
                 "\"Address:\"                        (string) The address that was tagged\n"
-                "\"Tag Name:\"                       (string) The asset name\n"
+                "\"Tag Name:\"                       (string) The token name\n"
                 "\"[Assigned|Removed]:\"             (Date) The UTC datetime of the assignment or removal of the tag in the format (YY-mm-dd HH:MM:SS)\n"
                 "                                         (Only the most recent tagging/untagging event will be returned for each address)\n"
                 "}...\n"
@@ -440,7 +440,7 @@ UniValue viewmytaggedaddresses(const JSONRPCRequest& request) {
 }
 
 UniValue viewmyrestrictedaddresses(const JSONRPCRequest& request) {
-    if (request.fHelp || !AreRestrictedAssetsDeployed() || request.params.size() != 0)
+    if (request.fHelp || !AreRestrictedTokensDeployed() || request.params.size() != 0)
         throw std::runtime_error(
                 "viewmyrestrictedaddresses \n"
                 + MessageActivationWarning() +
@@ -449,7 +449,7 @@ UniValue viewmyrestrictedaddresses(const JSONRPCRequest& request) {
                 "\nResult:\n"
                 "{\n"
                 "\"Address:\"                        (string) The address that was restricted\n"
-                "\"Asset Name:\"                     (string) The asset that the restriction applies to\n"
+                "\"Token Name:\"                     (string) The token that the restriction applies to\n"
                 "\"[Restricted|Derestricted]:\"      (Date) The UTC datetime of the restriction or derestriction in the format (YY-mm-dd HH:MM:SS))\n"
                 "                                         (Only the most recent restriction/derestriction event will be returned for each address)\n"
                 "}...\n"
@@ -471,7 +471,7 @@ UniValue viewmyrestrictedaddresses(const JSONRPCRequest& request) {
         UniValue obj(UniValue::VOBJ);
 
         obj.push_back(Pair("Address", std::get<0>(item)));
-        obj.push_back(Pair("Asset Name", std::get<1>(item)));
+        obj.push_back(Pair("Token Name", std::get<1>(item)));
         if (std::get<2>(item))
             obj.push_back(Pair("Restricted", DateTimeStrFormat("%Y-%m-%d %H:%M:%S", std::get<3>(item))));
         else

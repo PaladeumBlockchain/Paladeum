@@ -46,7 +46,7 @@
      <item row="1" column="0">
       <widget class="QLabel" name="labelRestricted">
        <property name="text">
-        <string>Restricted Asset:</string>
+        <string>Restricted Token:</string>
        </property>
       </widget>
      </item>
@@ -82,17 +82,17 @@
       </widget>
      </item>
      <item row="1" column="1">
-      <widget class="QComboBox" name="assetComboBox"/>
+      <widget class="QComboBox" name="tokenComboBox"/>
      </item>
      <item row="4" column="0">
-      <widget class="QLabel" name="labelAssetData">
+      <widget class="QLabel" name="labelTokenData">
        <property name="text">
         <string>IPFS / Hash:</string>
        </property>
       </widget>
      </item>
      <item row="4" column="1">
-      <widget class="QLineEdit" name="lineEditAssetData"/>
+      <widget class="QLineEdit" name="lineEditTokenData"/>
      </item>
     </layout>
    </item>
@@ -153,14 +153,14 @@
             <item>
              <widget class="QRadioButton" name="radioButtonGlobalFreeze">
               <property name="text">
-               <string>Freeze all &amp;trading for the selected restricted asset</string>
+               <string>Freeze all &amp;trading for the selected restricted token</string>
               </property>
              </widget>
             </item>
             <item>
              <widget class="QRadioButton" name="radioButtonGlobalUnfreeze">
               <property name="text">
-               <string>&amp;Unfreeze all trading for the selected restricted asset</string>
+               <string>&amp;Unfreeze all trading for the selected restricted token</string>
               </property>
              </widget>
             </item>

@@ -50,8 +50,8 @@ static const int TIMEOUT_INTERVAL = 20 * 60;
 static const int FEELER_INTERVAL = 120;
 /** The maximum number of entries in an 'inv' protocol message */
 static const unsigned int MAX_INV_SZ = 50000;
-/** The maximum number of entries in an 'asset inv' protocol message */
-static const unsigned int MAX_ASSET_INV_SZ = 1024;
+/** The maximum number of entries in an 'token inv' protocol message */
+static const unsigned int MAX_TOKEN_INV_SZ = 1024;
 /** The maximum number of new addresses to accumulate before announcing. */
 static const unsigned int MAX_ADDR_TO_SEND = 1000;
 /** Maximum length of incoming protocol messages (no message over 4 MB is currently acceptable). */
@@ -623,7 +623,7 @@ public:
     CCriticalSection cs_sendProcessing;
 
     std::deque<CInv> vRecvGetData;
-    std::deque<CInvAsset> vRecvAssetGetData;
+    std::deque<CInvToken> vRecvTokenGetData;
     uint64_t nRecvBytes;
     std::atomic<int> nRecvVersion;
 
@@ -681,8 +681,8 @@ public:
     int64_t nNextAddrSend;
     int64_t nNextLocalAddrSend;
 
-    bool fGetAssetData;
-    std::set<std::string> setInventoryAssetsSend;
+    bool fGetTokenData;
+    std::set<std::string> setInventoryTokensSend;
 
     // inventory based relay
     CRollingBloomFilter filterInventoryKnown;
@@ -837,10 +837,10 @@ public:
         }
     }
 
-    void PushAssetInventory(const std::string& name)
+    void PushTokenInventory(const std::string& name)
     {
         LOCK(cs_inventory);
-        setInventoryAssetsSend.insert(name);
+        setInventoryTokensSend.insert(name);
     }
 
     void PushBlockHash(const uint256 &hash)

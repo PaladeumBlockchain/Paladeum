@@ -61,7 +61,7 @@ Notable changes
 - Fix for -txindex after immediate BIP activation
 - Fix null pointer bug.
 - Fix qt amount formatting.
-- Python script for bulk issuance in assets/tools.
+- Python script for bulk issuance in tokens/tools.
 - Python script for finding signed meta data.
 
 

@@ -5,7 +5,7 @@ Yona Core version *2.1.0* is now available!!
 
 
 This is a major release containing bug fixes for 2.0.4.0/2.0.4.1.  It is highly recommended that users 
-upgrade to this version.  This is the final release for the phase 2 development (assets).
+upgrade to this version.  This is the final release for the phase 2 development (tokens).
 
 Please report bugs using the issue tracker at GitHub:
 
@@ -62,14 +62,14 @@ known issues running the release binaries on Mojave.
 Notable changes
 ==============
 
-- Mainnet asset activation (Voting begins October 31, 2018)
+- Mainnet token activation (Voting begins October 31, 2018)
 - Double-spend attack mitigation
 - Many QT Wallet UI enhancement
 - Removed Replace by Fee (RBF)
 - Functional test overhaul, added tests for new features
 - Reissue with zero amount (with owner token)
 - Moved testnet to v6
-- Added asset transaction chaining
+- Added token transaction chaining
 - Chain synchronization stability
 
 2.1.0 Change log

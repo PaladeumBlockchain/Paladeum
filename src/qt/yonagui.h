@@ -127,12 +127,12 @@ private:
     QAction *showHelpMessageAction;
 
     /** YONA START */
-    QAction *transferAssetAction;
-    QAction *createAssetAction;
-    QAction *manageAssetAction;
+    QAction *transferTokenAction;
+    QAction *createTokenAction;
+    QAction *manageTokenAction;
     QAction *messagingAction;
     QAction *votingAction;
-    QAction *restrictedAssetAction;
+    QAction *restrictedTokenAction;
     QAction *getMyWordsAction;
     QWidget *headerWidget;
     QLabel *labelCurrentMarket;
@@ -236,10 +236,10 @@ public Q_SLOTS:
     bool handlePaymentRequest(const SendCoinsRecipient& recipient);
 
     /** Show incoming transaction notification for new transactions. */
-    void incomingTransaction(const QString& date, int unit, const CAmount& amount, const QString& type, const QString& address, const QString& label, const QString& assetName);
+    void incomingTransaction(const QString& date, int unit, const CAmount& amount, const QString& type, const QString& address, const QString& label, const QString& tokenName);
 
-    /** Show the assets button if assets are active */
-    void checkAssets();
+    /** Show the tokens button if tokens are active */
+    void checkTokens();
 
     void mnemonic();
 #endif // ENABLE_WALLET
@@ -263,11 +263,11 @@ private Q_SLOTS:
     void openClicked();
 
     /** YONA START */
-    /** Switch to assets page */
-    void gotoAssetsPage();
-    void gotoCreateAssetsPage();
-    void gotoManageAssetsPage();
-    void gotoRestrictedAssetsPage();
+    /** Switch to tokens page */
+    void gotoTokensPage();
+    void gotoCreateTokensPage();
+    void gotoManageTokensPage();
+    void gotoRestrictedTokensPage();
     /** YONA END */
 
 #endif // ENABLE_WALLET

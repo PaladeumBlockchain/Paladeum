@@ -96,10 +96,10 @@ CAmount CTransaction::GetValueOut(const bool fAreEnforcedValues) const
 
         // Stop doing this check after Enforced Values BIP goes active
         if (!fAreEnforcedValues) {
-            // Because we don't want to deal with assets messing up this calculation
-            // If this is an asset tx, we should move onto the next output in the transaction
-            // This will also help with processing speed of transaction that contain a large amounts of asset outputs in a transaction
-            if (tx_out.scriptPubKey.IsAssetScript())
+            // Because we don't want to deal with tokens messing up this calculation
+            // If this is an token tx, we should move onto the next output in the transaction
+            // This will also help with processing speed of transaction that contain a large amounts of token outputs in a transaction
+            if (tx_out.scriptPubKey.IsTokenScript())
                 continue;
         }
         

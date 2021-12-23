@@ -8,9 +8,9 @@
 Test sweeping from an address
 
 - 6 nodes
-  * node0 will have a collection of YONA and a few assets
-  * node1 will sweep on a specific asset
-  * node2 will sweep on a different specific asset
+  * node0 will have a collection of YONA and a few tokens
+  * node1 will sweep on a specific token
+  * node2 will sweep on a different specific token
   * node3 will sweep on all YONA
   * node4 will sweep everything else
   * node5 will attempt to sweep, but fail
@@ -29,16 +29,16 @@ class FeatureSweepTest(YonaTestFramework):
     def set_test_params(self):
         self.setup_clean_chain = True
         self.num_nodes = 6
-        self.extra_args = [['-assetindex', '-txindex', '-addressindex'] for _ in range(self.num_nodes)]
+        self.extra_args = [['-tokenindex', '-txindex', '-addressindex'] for _ in range(self.num_nodes)]
 
-    def check_asset(self, assets, asset_name, balance):
-        asset_names = list(assets.keys())
+    def check_token(self, tokens, token_name, balance):
+        token_names = list(tokens.keys())
 
-        assert_equal(asset_names.count(asset_name), 1)
-        assert_equal(balance, assets[asset_name]["balance"])
+        assert_equal(token_names.count(token_name), 1)
+        assert_equal(balance, tokens[token_name]["balance"])
 
     def prime_src(self, src_node):
-        self.log.info("Priming node to be swept from with some YONA and 4 different assets!")
+        self.log.info("Priming node to be swept from with some YONA and 4 different tokens!")
 
         # Generate the YONA
         self.log.info("> Generating YONA...")
@@ -46,41 +46,41 @@ class FeatureSweepTest(YonaTestFramework):
         self.sync_all()
         src_node.generate(431)
         self.sync_all()
-        assert_equal("active", src_node.getblockchaininfo()['bip9_softforks']['assets']['status'])
+        assert_equal("active", src_node.getblockchaininfo()['bip9_softforks']['tokens']['status'])
 
-        # Issue 3 different assets
-        self.log.info("> Generating 4 different assets...")
+        # Issue 3 different tokens
+        self.log.info("> Generating 4 different tokens...")
         addr = src_node.getnewaddress()
 
         src_node.sendtoaddress(addr, 1000)
-        src_node.issue(asset_name="ASSET.1", qty=1)
-        src_node.issue(asset_name="ASSET.2", qty=2)
-        src_node.issue(asset_name="ASSET.3", qty=3)
-        src_node.issue(asset_name="ASSET.4", qty=4)
+        src_node.issue(token_name="TOKEN.1", qty=1)
+        src_node.issue(token_name="TOKEN.2", qty=2)
+        src_node.issue(token_name="TOKEN.3", qty=3)
+        src_node.issue(token_name="TOKEN.4", qty=4)
 
         self.log.info("> Waiting for ten confirmations after issue...")
         src_node.generate(10)
         self.sync_all()
 
         # Transfer to the address we will be using
-        self.log.info("> Transfer assets to the right address")
-        src_node.transfer(asset_name="ASSET.1", qty=1, to_address=addr)
-        src_node.transfer(asset_name="ASSET.2", qty=2, to_address=addr)
-        src_node.transfer(asset_name="ASSET.3", qty=3, to_address=addr)
-        src_node.transfer(asset_name="ASSET.4", qty=4, to_address=addr)
+        self.log.info("> Transfer tokens to the right address")
+        src_node.transfer(token_name="TOKEN.1", qty=1, to_address=addr)
+        src_node.transfer(token_name="TOKEN.2", qty=2, to_address=addr)
+        src_node.transfer(token_name="TOKEN.3", qty=3, to_address=addr)
+        src_node.transfer(token_name="TOKEN.4", qty=4, to_address=addr)
 
         self.log.info("> Waiting for ten confirmations after transfer...")
         src_node.generate(10)
         self.sync_all()
 
         # Assert that we have everything correctly set up
-        assets = src_node.listmyassets(asset="ASSET.*", verbose=True)
+        tokens = src_node.listmytokens(token="TOKEN.*", verbose=True)
 
         assert_equal(100000000000, src_node.getaddressbalance(addr)["balance"])
-        self.check_asset(assets, "ASSET.1", 1)
-        self.check_asset(assets, "ASSET.2", 2)
-        self.check_asset(assets, "ASSET.3", 3)
-        self.check_asset(assets, "ASSET.4", 4)
+        self.check_token(tokens, "TOKEN.1", 1)
+        self.check_token(tokens, "TOKEN.2", 2)
+        self.check_token(tokens, "TOKEN.3", 3)
+        self.check_token(tokens, "TOKEN.4", 4)
 
         # We return the address for getting its private key
         return addr
@@ -97,73 +97,73 @@ class FeatureSweepTest(YonaTestFramework):
         all_node   = self.nodes[4]
         fail_node  = self.nodes[5]
 
-        # Activate assets and prime the src node
-        asset_addr = self.prime_src(src_node)
-        privkey = src_node.dumpprivkey(asset_addr)
+        # Activate tokens and prime the src node
+        token_addr = self.prime_src(src_node)
+        privkey = src_node.dumpprivkey(token_addr)
 
-        # Sweep single asset
-        self.log.info("Testing sweeping of a single asset")
-        txid_asset = ast1_node.sweep(privkey=privkey, asset_name="ASSET.2")
+        # Sweep single token
+        self.log.info("Testing sweeping of a single token")
+        txid_token = ast1_node.sweep(privkey=privkey, token_name="TOKEN.2")
         ast1_node.generate(10)
         self.sync_all()
 
-        swept_assets = ast1_node.listmyassets(asset="*", verbose=True)
-        swept_keys = list(swept_assets.keys())
+        swept_tokens = ast1_node.listmytokens(token="*", verbose=True)
+        swept_keys = list(swept_tokens.keys())
 
-        assert_does_not_contain_key("ASSET.1", swept_keys)
-        self.check_asset(swept_assets, "ASSET.2", 2)
-        assert_does_not_contain_key("ASSET.2", src_node.listmyassets(asset="*", verbose=True).keys())
-        assert_does_not_contain_key("ASSET.3", swept_keys)
-        assert_does_not_contain_key("ASSET.4", swept_keys)
+        assert_does_not_contain_key("TOKEN.1", swept_keys)
+        self.check_token(swept_tokens, "TOKEN.2", 2)
+        assert_does_not_contain_key("TOKEN.2", src_node.listmytokens(token="*", verbose=True).keys())
+        assert_does_not_contain_key("TOKEN.3", swept_keys)
+        assert_does_not_contain_key("TOKEN.4", swept_keys)
 
-        # Sweep a different single asset
-        self.log.info("Testing sweeping of a different single asset")
-        txid_asset = ast2_node.sweep(privkey=privkey, asset_name="ASSET.4")
+        # Sweep a different single token
+        self.log.info("Testing sweeping of a different single token")
+        txid_token = ast2_node.sweep(privkey=privkey, token_name="TOKEN.4")
         ast2_node.generate(10)
         self.sync_all()
 
-        swept_assets = ast2_node.listmyassets(asset="*", verbose=True)
-        swept_keys = list(swept_assets.keys())
+        swept_tokens = ast2_node.listmytokens(token="*", verbose=True)
+        swept_keys = list(swept_tokens.keys())
 
-        assert_does_not_contain_key("ASSET.1", swept_keys)
-        assert_does_not_contain_key("ASSET.2", swept_keys)
-        assert_does_not_contain_key("ASSET.3", swept_keys)
-        self.check_asset(swept_assets, "ASSET.4", 4)
-        assert_does_not_contain_key("ASSET.4", src_node.listmyassets(asset="*", verbose=True).keys())
+        assert_does_not_contain_key("TOKEN.1", swept_keys)
+        assert_does_not_contain_key("TOKEN.2", swept_keys)
+        assert_does_not_contain_key("TOKEN.3", swept_keys)
+        self.check_token(swept_tokens, "TOKEN.4", 4)
+        assert_does_not_contain_key("TOKEN.4", src_node.listmytokens(token="*", verbose=True).keys())
 
         # Sweep YONA
         self.log.info("Testing sweeping of all YONA")
-        txid_yona = yona_node.sweep(privkey=privkey, asset_name="YONA")
+        txid_yona = yona_node.sweep(privkey=privkey, token_name="YONA")
         yona_node.generate(10)
         self.sync_all()
 
         assert (yona_node.getbalance() > 900)
 
-        # Sweep remaining assets (fail)
+        # Sweep remaining tokens (fail)
         self.log.info("Testing failure of sweeping everything else with insufficient funds")
-        assert_raises_rpc_error(-6, f"Please add YONA to address '{asset_addr}' to be able to sweep asset ''", all_node.sweep, privkey)
+        assert_raises_rpc_error(-6, f"Please add YONA to address '{token_addr}' to be able to sweep token ''", all_node.sweep, privkey)
 
         # Fund the all_node so that we can fund the transaction
         src_node.sendtoaddress(all_node.getnewaddress(), 100)
         src_node.generate(10)
         self.sync_all()
 
-        # Sweep remaining assets (pass)
+        # Sweep remaining tokens (pass)
         self.log.info("Testing sweeping of everything else")
         txid_all = all_node.sweep(privkey=privkey)
         all_node.generate(10)
         self.sync_all()
 
-        all_assets = all_node.listmyassets(asset="*", verbose=True)
+        all_tokens = all_node.listmytokens(token="*", verbose=True)
 
-        self.check_asset(all_assets, "ASSET.1", 1)
-        assert_does_not_contain_key("ASSET.2", all_assets.keys())
-        self.check_asset(all_assets, "ASSET.3", 3)
-        assert_does_not_contain_key("ASSET.4", all_assets.keys())
+        self.check_token(all_tokens, "TOKEN.1", 1)
+        assert_does_not_contain_key("TOKEN.2", all_tokens.keys())
+        self.check_token(all_tokens, "TOKEN.3", 3)
+        assert_does_not_contain_key("TOKEN.4", all_tokens.keys())
 
-        # Fail with no assets to sweep
-        self.log.info("Testing failure of sweeping an address with no assets")
-        assert_raises_rpc_error(-26, "No assets to sweep!", all_node.sweep, privkey)
+        # Fail with no tokens to sweep
+        self.log.info("Testing failure of sweeping an address with no tokens")
+        assert_raises_rpc_error(-26, "No tokens to sweep!", all_node.sweep, privkey)
 
 if __name__ == '__main__':
     FeatureSweepTest().main()

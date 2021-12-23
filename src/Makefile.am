@@ -85,15 +85,15 @@ YONA_CORE_H = \
   spentindex.h \
   timestampindex.h \
   addrman.h \
-  assets/assets.h \
-  assets/assetdb.h \
-  assets/assettypes.h \
-  assets/messages.h \
-  assets/myassetsdb.h \
-  assets/restricteddb.h \
-  assets/snapshotrequestdb.h \
-  assets/assetsnapshotdb.h \
-  assets/rewards.h \
+  tokens/tokens.h \
+  tokens/tokendb.h \
+  tokens/tokentypes.h \
+  tokens/messages.h \
+  tokens/mytokensdb.h \
+  tokens/restricteddb.h \
+  tokens/snapshotrequestdb.h \
+  tokens/tokensnapshotdb.h \
+  tokens/rewards.h \
   base58.h \
   bloom.h \
   blockencodings.h \
@@ -220,21 +220,21 @@ libyona_server_a_SOURCES = \
   net.cpp \
   net_processing.cpp \
   noui.cpp \
-  assets/assets.cpp \
-  assets/assetdb.cpp \
-  assets/assettypes.cpp \
-  assets/messages.cpp \
-  assets/myassetsdb.cpp \
-  assets/restricteddb.cpp \
-  assets/snapshotrequestdb.cpp \
-  assets/assetsnapshotdb.cpp \
-  assets/rewards.cpp \
+  tokens/tokens.cpp \
+  tokens/tokendb.cpp \
+  tokens/tokentypes.cpp \
+  tokens/messages.cpp \
+  tokens/mytokensdb.cpp \
+  tokens/restricteddb.cpp \
+  tokens/snapshotrequestdb.cpp \
+  tokens/tokensnapshotdb.cpp \
+  tokens/rewards.cpp \
   policy/fees.cpp \
   policy/policy.cpp \
   policy/rbf.cpp \
   pow.cpp \
   rest.cpp \
-  rpc/assets.cpp \
+  rpc/tokens.cpp \
   rpc/blockchain.cpp \
   rpc/messages.cpp \
   rpc/mining.cpp \

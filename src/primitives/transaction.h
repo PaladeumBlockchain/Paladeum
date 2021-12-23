@@ -16,7 +16,7 @@
 static const int SERIALIZE_TRANSACTION_NO_WITNESS = 0x40000000;
 
 class CCoinsViewCache;
-class CNullAssetTxVerifierString;
+class CNullTokenTxVerifierString;
 
 /** An outpoint - a combination of a transaction hash and an index n into its vout */
 class COutPoint
@@ -330,23 +330,23 @@ public:
     // inputs must be known to compute value in.
 
     /** YONA START */
-    bool IsNewAsset() const;
-    bool VerifyNewAsset(std::string& strError) const;
-    bool IsNewUniqueAsset() const;
-    bool VerifyNewUniqueAsset(std::string& strError) const;
-    bool IsReissueAsset() const;
-    bool VerifyReissueAsset(std::string& strError) const;
-    bool IsNewMsgChannelAsset() const;
-    bool VerifyNewMsgChannelAsset(std::string& strError) const;
-    bool IsNewQualifierAsset() const;
-    bool VerifyNewQualfierAsset(std::string &strError) const;
-    bool IsNewRestrictedAsset() const;
-    bool VerifyNewRestrictedAsset(std::string& strError) const;
+    bool IsNewToken() const;
+    bool VerifyNewToken(std::string& strError) const;
+    bool IsNewUniqueToken() const;
+    bool VerifyNewUniqueToken(std::string& strError) const;
+    bool IsReissueToken() const;
+    bool VerifyReissueToken(std::string& strError) const;
+    bool IsNewMsgChannelToken() const;
+    bool VerifyNewMsgChannelToken(std::string& strError) const;
+    bool IsNewQualifierToken() const;
+    bool VerifyNewQualfierToken(std::string &strError) const;
+    bool IsNewRestrictedToken() const;
+    bool VerifyNewRestrictedToken(std::string& strError) const;
 
     bool CheckAddingTagBurnFee(const int& count) const;
 
-    bool GetVerifierStringFromTx(CNullAssetTxVerifierString& verifier, std::string& strError) const;
-    bool GetVerifierStringFromTx(CNullAssetTxVerifierString& verifier, std::string& strError, bool& fNotFound) const;
+    bool GetVerifierStringFromTx(CNullTokenTxVerifierString& verifier, std::string& strError) const;
+    bool GetVerifierStringFromTx(CNullTokenTxVerifierString& verifier, std::string& strError, bool& fNotFound) const;
 
     /** YONA END */
 

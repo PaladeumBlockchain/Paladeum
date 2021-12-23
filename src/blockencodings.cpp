@@ -219,13 +219,13 @@ ReadStatus PartiallyDownloadedBlock::FillBlock(CBlock& block, const std::vector<
     return READ_STATUS_OK;
 }
 
-SerializedAssetData::SerializedAssetData(const CDatabasedAssetData &assetData)
+SerializedTokenData::SerializedTokenData(const CDatabasedTokenData &tokenData)
 {
-    name = assetData.asset.strName;
-    amount = assetData.asset.nAmount;
-    units = assetData.asset.units;
-    reissuable = assetData.asset.nReissuable;
-    hasIPFS = assetData.asset.nHasIPFS;
-    ipfs = assetData.asset.strIPFSHash;
-    nHeight = assetData.nHeight;
+    name = tokenData.token.strName;
+    amount = tokenData.token.nAmount;
+    units = tokenData.token.units;
+    reissuable = tokenData.token.nReissuable;
+    hasIPFS = tokenData.token.nHasIPFS;
+    ipfs = tokenData.token.strIPFSHash;
+    nHeight = tokenData.nHeight;
 }

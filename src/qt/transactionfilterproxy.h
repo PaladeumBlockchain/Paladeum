@@ -37,7 +37,7 @@ public:
 
     void setDateRange(const QDateTime &from, const QDateTime &to);
     void setAddressPrefix(const QString &addrPrefix);
-    void setAssetNamePrefix(const QString &assetNamePrefix);
+    void setTokenNamePrefix(const QString &tokenNamePrefix);
     /**
       @note Type filter takes a bit field created with TYPE() or ALL_TYPES
      */
@@ -60,7 +60,7 @@ private:
     QDateTime dateFrom;
     QDateTime dateTo;
     QString addrPrefix;
-    QString assetNamePrefix;
+    QString tokenNamePrefix;
     quint32 typeFilter;
     WatchOnlyFilter watchOnlyFilter;
     CAmount minAmount;

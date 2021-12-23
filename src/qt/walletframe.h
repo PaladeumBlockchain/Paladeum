@@ -98,11 +98,11 @@ public Q_SLOTS:
 
     /** YONA START */
 
-    /** Switch to assets page */
-    void gotoAssetsPage();
-    void gotoCreateAssetsPage();
-    void gotoManageAssetsPage();
-    void gotoRestrictedAssetsPage();
+    /** Switch to tokens page */
+    void gotoTokensPage();
+    void gotoCreateTokensPage();
+    void gotoManageTokensPage();
+    void gotoRestrictedTokensPage();
     /** YONA END */
 };
 

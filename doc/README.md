@@ -137,7 +137,7 @@ Yonacoin repo's [root README](https://github.com/YonaProject/Yonacoin/blob/maste
 - Visit the project home [Yonacoin.org](https://yonacoin.org)
 
 ### Miscellaneous
-- [Assets Attribution](https://github.com/YonaProject/Yonacoin/blob/master/doc/assets-attribution.md)
+- [Tokens Attribution](https://github.com/YonaProject/Yonacoin/blob/master/doc/tokens-attribution.md)
 - [Files](https://github.com/YonaProject/Yonacoin/blob/master/doc/files.md)
 - [Fuzz-testing](https://github.com/YonaProject/Yonacoin/blob/master/doc/fuzzing.md)
 - [Reduce Traffic](https://github.com/YonaProject/Yonacoin/blob/master/doc/reduce-traffic.md)

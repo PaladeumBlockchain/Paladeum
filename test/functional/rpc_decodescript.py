@@ -172,22 +172,22 @@ class DecodeScriptTest(YonaTestFramework):
         rpc_result = self.nodes[0].decoderawtransaction(bytes_to_hex_str(txSave.serialize()))
         assert_equal('OP_RETURN 3011020701010101010101020601010101010101', rpc_result['vin'][0]['scriptSig']['asm'])
 
-    def decodescript_assets(self):
-        """Test decoding YONA_ASSETS scripts (regtest scripts)."""
+    def decodescript_tokens(self):
+        """Test decoding YONA_TOKENS scripts (regtest scripts)."""
 
-        # make sure assets are activated
+        # make sure tokens are activated
         self.nodes[0].generate(500)
 
         # issue (main output)
         script = "76a91435a8d9b395f1594e2cf3e06e6ec357d1da89736888acc01a72766e710954455354415353455400e40b54020000000800000075"
         result = self.nodes[0].decodescript(script)
-        assert_equal('OP_DUP OP_HASH160 35a8d9b395f1594e2cf3e06e6ec357d1da897368 OP_EQUALVERIFY OP_CHECKSIG OP_YONA_ASSET 1a72766e710954455354415353455400e40b54020000000800000075', result['asm'])
+        assert_equal('OP_DUP OP_HASH160 35a8d9b395f1594e2cf3e06e6ec357d1da897368 OP_EQUALVERIFY OP_CHECKSIG OP_YONA_TOKEN 1a72766e710954455354415353455400e40b54020000000800000075', result['asm'])
         assert_equal(1, result['reqSigs'])
-        assert_equal('new_asset', result['type'])
+        assert_equal('new_token', result['type'])
         assert_equal(1, len(result['addresses']))
         assert_equal('mkQgP9nSuRocxERXGnPaWr8NPTWtCM4uiN', result['addresses'][0])
         assert_equal('2MvanKE2hxx2A5jcFZ5paHZHSb6VPZMEvGe', result['p2sh'])
-        assert_equal('TESTASSET', result['asset_name'])
+        assert_equal('TESTTOKEN', result['token_name'])
         assert_equal(100.0, result['amount'])
         assert_equal(8, result['units'])
         assert_equal(False, result['reissuable'])
@@ -196,7 +196,7 @@ class DecodeScriptTest(YonaTestFramework):
         # issue (owner output)
         script = "76a91435a8d9b395f1594e2cf3e06e6ec357d1da89736888acc00f72766e6f0a5445535441535345542175"
         result = self.nodes[0].decodescript(script)
-        assert_equal('TESTASSET!', result['asset_name'])
+        assert_equal('TESTTOKEN!', result['token_name'])
         assert_equal(1, result['amount'])
         assert_equal(0, result['units'])
 
@@ -204,7 +204,7 @@ class DecodeScriptTest(YonaTestFramework):
         self.decodescript_script_sig()
         self.decodescript_script_pub_key()
         self.decoderawtransaction_asm_sighashtype()
-        self.decodescript_assets()
+        self.decodescript_tokens()
 
 if __name__ == '__main__':
     DecodeScriptTest().main()

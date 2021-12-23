@@ -34,7 +34,7 @@ from test_framework.siphash import siphash256
 from test_framework.util import hex_str_to_bytes, bytes_to_hex_str, x16_hash_block
 
 BIP0031_VERSION = 60000
-MY_VERSION = 70025  # This needs to match the ASSETDATA_VERSION in version.h!
+MY_VERSION = 70025  # This needs to match the TOKENDATA_VERSION in version.h!
 MY_SUBVERSION = b"/python-mininode-tester:0.0.3/"
 MY_RELAY = 1  # from version 70001 onwards, fRelay should be appended to version messages (BIP37)
 

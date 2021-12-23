@@ -97,14 +97,14 @@ BOOST_FIXTURE_TEST_SUITE(script_standard_tests, BasicTestingSetup)
         BOOST_CHECK_EQUAL(whichType, TX_NULL_DATA);
         BOOST_CHECK_EQUAL(solutions.size(), (uint64_t)0);
 
-        // TX_RESTRICTED_ASSET_DATA
+        // TX_RESTRICTED_TOKEN_DATA
         s.clear();
-        s << OP_YONA_ASSET <<
+        s << OP_YONA_TOKEN <<
           std::vector<unsigned char>({0}) <<
           std::vector<unsigned char>({75}) <<
           std::vector<unsigned char>({255});
         BOOST_CHECK(Solver(s, whichType, whichScriptType, solutions));
-        BOOST_CHECK_EQUAL(whichType, TX_RESTRICTED_ASSET_DATA);
+        BOOST_CHECK_EQUAL(whichType, TX_RESTRICTED_TOKEN_DATA);
         BOOST_CHECK_EQUAL(solutions.size(), (uint64_t)0);
 
         // TX_WITNESS_V0_KEYHASH
@@ -188,9 +188,9 @@ BOOST_FIXTURE_TEST_SUITE(script_standard_tests, BasicTestingSetup)
         s << OP_RETURN << std::vector<unsigned char>({75}) << OP_ADD;
         BOOST_CHECK(!Solver(s, whichType, whichScriptType, solutions));
 
-        // TX_RESTRICTED_ASSET_DATA with other opcodes
+        // TX_RESTRICTED_TOKEN_DATA with other opcodes
         s.clear();
-        s << OP_YONA_ASSET << std::vector<unsigned char>({75}) << OP_ADD;
+        s << OP_YONA_TOKEN << std::vector<unsigned char>({75}) << OP_ADD;
         BOOST_CHECK(!Solver(s, whichType, whichScriptType, solutions));
 
         // TX_WITNESS with unknown version
@@ -248,14 +248,14 @@ BOOST_FIXTURE_TEST_SUITE(script_standard_tests, BasicTestingSetup)
         s << OP_RETURN << std::vector<unsigned char>({75});
         BOOST_CHECK(!ExtractDestination(s, address));
 
-        // TX_RESTRICTED_ASSET_DATA without an address
+        // TX_RESTRICTED_TOKEN_DATA without an address
         s.clear();
-        s << OP_YONA_ASSET << std::vector<unsigned char>({75});
+        s << OP_YONA_TOKEN << std::vector<unsigned char>({75});
         BOOST_CHECK(!ExtractDestination(s, address));
 
-        // TX_RESTRICTED_ASSET_DATA with an address
-        CNullAssetTxData data("#NAME", 1);
-        CScript dataScript = GetScriptForNullAssetDataDestination(address);
+        // TX_RESTRICTED_TOKEN_DATA with an address
+        CNullTokenTxData data("#NAME", 1);
+        CScript dataScript = GetScriptForNullTokenDataDestination(address);
         data.ConstructTransaction(dataScript);
         BOOST_CHECK(ExtractDestination(dataScript, address));
 
@@ -339,9 +339,9 @@ BOOST_FIXTURE_TEST_SUITE(script_standard_tests, BasicTestingSetup)
         s << OP_RETURN << std::vector<unsigned char>({75});
         BOOST_CHECK(!ExtractDestinations(s, whichType, scriptType, addresses, nRequired));
 
-        // TX_RESTRICTED_ASSET_DATA
+        // TX_RESTRICTED_TOKEN_DATA
         s.clear();
-        s << OP_YONA_ASSET << std::vector<unsigned char>({75});
+        s << OP_YONA_TOKEN << std::vector<unsigned char>({75});
         BOOST_CHECK(!ExtractDestinations(s, whichType, scriptType, addresses, nRequired));
 
         // TX_WITNESS_V0_KEYHASH
@@ -775,13 +775,13 @@ BOOST_FIXTURE_TEST_SUITE(script_standard_tests, BasicTestingSetup)
             BOOST_CHECK(!isInvalid);
         }
 
-        // OP_YONA_ASSET at front of script
+        // OP_YONA_TOKEN at front of script
         {
             CBasicKeyStore keystore;
             keystore.AddKey(keys[0]);
 
             scriptPubKey.clear();
-            scriptPubKey << OP_YONA_ASSET << ToByteVector(pubkeys[0]);
+            scriptPubKey << OP_YONA_TOKEN << ToByteVector(pubkeys[0]);
 
             result = IsMine(keystore, scriptPubKey, isInvalid);
             BOOST_CHECK_EQUAL(result, ISMINE_NO);

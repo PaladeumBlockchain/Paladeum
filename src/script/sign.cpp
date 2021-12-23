@@ -81,12 +81,12 @@ static bool SignStep(const BaseSignatureCreator& creator, const CScript& scriptP
     case TX_NONSTANDARD:
     case TX_NULL_DATA:
         return false;
-    case TX_RESTRICTED_ASSET_DATA:
+    case TX_RESTRICTED_TOKEN_DATA:
         return false;
     /** YONA START */
-    case TX_NEW_ASSET:
-    case TX_TRANSFER_ASSET:
-    case TX_REISSUE_ASSET: {
+    case TX_NEW_TOKEN:
+    case TX_TRANSFER_TOKEN:
+    case TX_REISSUE_TOKEN: {
         if (whichScriptTypeRet == TX_PUBKEYHASH) {
             keyID = CKeyID(uint160(vSolutions[0]));
             if (!Sign1(keyID, creator, scriptPubKey, ret, sigversion))
@@ -169,8 +169,8 @@ bool ProduceSignature(const BaseSignatureCreator& creator, const CScript& fromPu
     CScript script = fromPubKey;
     CScript modifiedScript = fromPubKey;
 
-    // If this is a P2SH Asset Script, grab the P2SH section of the script
-    if(fromPubKey.IsP2SHAssetScript()) {
+    // If this is a P2SH Token Script, grab the P2SH section of the script
+    if(fromPubKey.IsP2SHTokenScript()) {
         modifiedScript = CScript(fromPubKey.begin(), fromPubKey.begin() + 23);
         script = modifiedScript;
     }
@@ -359,7 +359,7 @@ static Stacks CombineSignatures(const CScript& scriptPubKey, const BaseSignature
         if (sigs1.script.size() >= sigs2.script.size())
             return sigs1;
         return sigs2;
-    case TX_RESTRICTED_ASSET_DATA:
+    case TX_RESTRICTED_TOKEN_DATA:
         // Don't know anything about this, assume bigger one is correct:
         if (sigs1.script.size() >= sigs2.script.size())
             return sigs1;
@@ -423,17 +423,17 @@ static Stacks CombineSignatures(const CScript& scriptPubKey, const BaseSignature
             result.witness.push_back(valtype(pubKey2.begin(), pubKey2.end()));
             return result;
         }
-    case TX_TRANSFER_ASSET:
+    case TX_TRANSFER_TOKEN:
         // Signatures are bigger than placeholders or empty scripts:
         if (sigs1.script.empty() || sigs1.script[0].empty())
             return sigs2;
         return sigs1;
-    case TX_NEW_ASSET:
+    case TX_NEW_TOKEN:
         // Signatures are bigger than placeholders or empty scripts:
         if (sigs1.script.empty() || sigs1.script[0].empty())
             return sigs2;
         return sigs1;
-    case TX_REISSUE_ASSET:
+    case TX_REISSUE_TOKEN:
         // Signatures are bigger than placeholders or empty scripts:
         if (sigs1.script.empty() || sigs1.script[0].empty())
             return sigs2;
@@ -453,8 +453,8 @@ SignatureData CombineSignatures(const CScript& scriptPubKey, const BaseSignature
 
     CScript modifiedScript = scriptPubKey;
 
-    // If this is a P2SH Asset Script, grab the P2SH section of the script
-    if(scriptPubKey.IsP2SHAssetScript()) {
+    // If this is a P2SH Token Script, grab the P2SH section of the script
+    if(scriptPubKey.IsP2SHTokenScript()) {
         modifiedScript = CScript(scriptPubKey.begin(), scriptPubKey.begin() + 23);
     }
 

@@ -17,7 +17,7 @@ static const char *MSG_HASHBLOCK   = "hashblock";
 static const char *MSG_HASHTX      = "hashtx";
 static const char *MSG_RAWBLOCK    = "rawblock";
 static const char *MSG_RAWTX       = "rawtx";
-static const char *MSG_RAWASSETMSG = "rawmessage";
+static const char *MSG_RAWTOKENMSG = "rawmessage";
 
 // Internal function to send multipart message
 static int zmq_send_multipart(void *sock, const void* data, size_t size, ...)
@@ -198,11 +198,11 @@ bool CZMQPublishRawTransactionNotifier::NotifyTransaction(const CTransaction &tr
     return SendMessage(MSG_RAWTX, &(*ss.begin()), ss.size());
 }
 
-bool CZMQPublishNewAssetMessageNotifier::NotifyMessage(const CMessage &message)
+bool CZMQPublishNewTokenMessageNotifier::NotifyMessage(const CMessage &message)
 {
     LogPrint(BCLog::ZMQ, "zmq: Publish message %s\n", message.ToString());
 
     CZMQMessage zmqmessage(message);
     std::string str = zmqmessage.createJsonString();
-    return SendMessage(MSG_RAWASSETMSG, &(*str.begin()), str.size());
+    return SendMessage(MSG_RAWTOKENMSG, &(*str.begin()), str.size());
 }

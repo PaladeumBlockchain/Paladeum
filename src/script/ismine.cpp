@@ -64,7 +64,7 @@ isminetype IsMine(const CKeyStore &keystore, const CScript& scriptPubKey, bool& 
         case TX_NONSTANDARD:
         case TX_NULL_DATA:
             break;
-        case TX_RESTRICTED_ASSET_DATA:
+        case TX_RESTRICTED_TOKEN_DATA:
             break;
         case TX_PUBKEY:
             keyID = CPubKey(vSolutions[0]).GetID();
@@ -146,10 +146,10 @@ isminetype IsMine(const CKeyStore &keystore, const CScript& scriptPubKey, bool& 
             break;
         }
             /** YONA START */
-        case TX_NEW_ASSET:
-        case TX_TRANSFER_ASSET:
-        case TX_REISSUE_ASSET: {
-            if (!AreAssetsDeployed())
+        case TX_NEW_TOKEN:
+        case TX_TRANSFER_TOKEN:
+        case TX_REISSUE_TOKEN: {
+            if (!AreTokensDeployed())
                 return ISMINE_NO;
 
             if (scriptType == TX_PUBKEYHASH) {

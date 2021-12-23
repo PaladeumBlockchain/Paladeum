@@ -214,30 +214,30 @@ void WalletFrame::outOfSyncWarningClicked()
 }
 
 /** YONA START */
-void WalletFrame::gotoAssetsPage()
+void WalletFrame::gotoTokensPage()
 {
     QMap<QString, WalletView*>::const_iterator i;
     for (i = mapWalletViews.constBegin(); i != mapWalletViews.constEnd(); ++i)
-        i.value()->gotoAssetsPage();
+        i.value()->gotoTokensPage();
 }
 
-void WalletFrame::gotoCreateAssetsPage()
+void WalletFrame::gotoCreateTokensPage()
 {
     QMap<QString, WalletView*>::const_iterator i;
     for (i = mapWalletViews.constBegin(); i != mapWalletViews.constEnd(); ++i)
-        i.value()->gotoCreateAssetsPage();
+        i.value()->gotoCreateTokensPage();
 }
 
-void WalletFrame::gotoManageAssetsPage()
+void WalletFrame::gotoManageTokensPage()
 {
     QMap<QString, WalletView*>::const_iterator i;
     for (i = mapWalletViews.constBegin(); i != mapWalletViews.constEnd(); ++i)
-        i.value()->gotoManageAssetsPage();
+        i.value()->gotoManageTokensPage();
 }
 
-void WalletFrame::gotoRestrictedAssetsPage()
+void WalletFrame::gotoRestrictedTokensPage()
 {
     QMap<QString, WalletView*>::const_iterator i;
     for (i = mapWalletViews.constBegin(); i != mapWalletViews.constEnd(); ++i)
-        i.value()->gotoRestrictedAssetsPage();
+        i.value()->gotoRestrictedTokensPage();
 }

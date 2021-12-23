@@ -12,8 +12,8 @@
 #include "optionsmodel.h"
 #include "platformstyle.h"
 #include "walletmodel.h"
-#include "assetfilterproxy.h"
-#include "assettablemodel.h"
+#include "tokenfilterproxy.h"
+#include "tokentablemodel.h"
 
 #include <QAbstractItemDelegate>
 #include <QPainter>
@@ -33,17 +33,17 @@ FreezeAddress::FreezeAddress(const PlatformStyle *_platformStyle, QWidget *paren
     ui->buttonSubmit->setDisabled(true);
     ui->lineEditAddress->installEventFilter(this);
     ui->lineEditChangeAddress->installEventFilter(this);
-    ui->lineEditAssetData->installEventFilter(this);
+    ui->lineEditTokenData->installEventFilter(this);
     connect(ui->buttonClear, SIGNAL(clicked()), this, SLOT(clear()));
     connect(ui->buttonCheck, SIGNAL(clicked()), this, SLOT(check()));
     connect(ui->lineEditAddress, SIGNAL(textChanged(QString)), this, SLOT(dataChanged()));
     connect(ui->lineEditChangeAddress, SIGNAL(textChanged(QString)), this, SLOT(dataChanged()));
-    connect(ui->lineEditAssetData, SIGNAL(textChanged(QString)), this, SLOT(dataChanged()));
+    connect(ui->lineEditTokenData, SIGNAL(textChanged(QString)), this, SLOT(dataChanged()));
     connect(ui->radioButtonFreezeAddress, SIGNAL(clicked()), this, SLOT(dataChanged()));
     connect(ui->radioButtonUnfreezeAddress, SIGNAL(clicked()), this, SLOT(dataChanged()));
     connect(ui->radioButtonGlobalFreeze, SIGNAL(clicked()), this, SLOT(dataChanged()));
     connect(ui->radioButtonGlobalUnfreeze, SIGNAL(clicked()), this, SLOT(dataChanged()));
-    connect(ui->assetComboBox, SIGNAL(currentIndexChanged(int)), this, SLOT(dataChanged()));
+    connect(ui->tokenComboBox, SIGNAL(currentIndexChanged(int)), this, SLOT(dataChanged()));
     connect(ui->radioButtonGlobalFreeze, SIGNAL(clicked()), this, SLOT(globalOptionSelected()));
     connect(ui->radioButtonGlobalUnfreeze, SIGNAL(clicked()), this, SLOT(globalOptionSelected()));
     connect(ui->checkBoxChangeAddress, SIGNAL(stateChanged(int)), this, SLOT(dataChanged()));
@@ -55,8 +55,8 @@ FreezeAddress::FreezeAddress(const PlatformStyle *_platformStyle, QWidget *paren
     ui->labelAddress->setStyleSheet(STRING_LABEL_COLOR);
     ui->labelAddress->setFont(GUIUtil::getTopLabelFont());
 
-    ui->labelAssetData->setStyleSheet(STRING_LABEL_COLOR);
-    ui->labelAssetData->setFont(GUIUtil::getTopLabelFont());
+    ui->labelTokenData->setStyleSheet(STRING_LABEL_COLOR);
+    ui->labelTokenData->setFont(GUIUtil::getTopLabelFont());
 
     ui->checkBoxChangeAddress->setStyleSheet(QString(".QCheckBox{ %1; }").arg(STRING_LABEL_COLOR));
 
@@ -78,19 +78,19 @@ void FreezeAddress::setWalletModel(WalletModel *model)
 {
     this->walletModel = model;
 
-    assetFilterProxy = new AssetFilterProxy(this);
-    assetFilterProxy->setSourceModel(model->getAssetTableModel());
-    assetFilterProxy->setDynamicSortFilter(true);
-    assetFilterProxy->setAssetNamePrefix("$");
-    assetFilterProxy->setSortCaseSensitivity(Qt::CaseInsensitive);
-    assetFilterProxy->setFilterCaseSensitivity(Qt::CaseInsensitive);
+    tokenFilterProxy = new TokenFilterProxy(this);
+    tokenFilterProxy->setSourceModel(model->getTokenTableModel());
+    tokenFilterProxy->setDynamicSortFilter(true);
+    tokenFilterProxy->setTokenNamePrefix("$");
+    tokenFilterProxy->setSortCaseSensitivity(Qt::CaseInsensitive);
+    tokenFilterProxy->setFilterCaseSensitivity(Qt::CaseInsensitive);
 
-    ui->assetComboBox->setModel(assetFilterProxy);
+    ui->tokenComboBox->setModel(tokenFilterProxy);
 }
 
 bool FreezeAddress::eventFilter(QObject* object, QEvent* event)
 {
-    if((object == ui->lineEditAddress || object == ui->lineEditChangeAddress || object == ui->lineEditAssetData) && event->type() == QEvent::FocusIn) {
+    if((object == ui->lineEditAddress || object == ui->lineEditChangeAddress || object == ui->lineEditTokenData) && event->type() == QEvent::FocusIn) {
         static_cast<QLineEdit*>(object)->setStyleSheet(STYLE_VALID);
         // bring up your custom edit
         return false; // lets the event continue to the edit
@@ -131,11 +131,11 @@ void FreezeAddress::clear()
 {
     ui->lineEditAddress->clear();
     ui->lineEditChangeAddress->clear();
-    ui->lineEditAssetData->clear();
+    ui->lineEditTokenData->clear();
     ui->buttonSubmit->setDisabled(true);
     ui->lineEditAddress->setStyleSheet(STYLE_VALID);
     ui->lineEditChangeAddress->setStyleSheet(STYLE_VALID);
-    ui->lineEditAssetData->setStyleSheet(STYLE_VALID);
+    ui->lineEditTokenData->setStyleSheet(STYLE_VALID);
     ui->radioButtonFreezeAddress->setChecked(true);
     hideWarning();
 }
@@ -165,7 +165,7 @@ void FreezeAddress::changeAddressChanged(int state)
 
 void FreezeAddress::check()
 {
-    QString restricted_asset = ui->assetComboBox->currentData(AssetTableModel::RoleIndex::AssetNameRole).toString();
+    QString restricted_token = ui->tokenComboBox->currentData(TokenTableModel::RoleIndex::TokenNameRole).toString();
     QString address = ui->lineEditAddress->text();
     bool freeze_address = ui->radioButtonFreezeAddress->isChecked();
     bool unfreeze_address = ui->radioButtonUnfreezeAddress->isChecked();
@@ -176,8 +176,8 @@ void FreezeAddress::check()
     bool isGlobal = freeze_global || unfreeze_global;
 
     bool failed = false;
-    if (!IsAssetNameAnRestricted(restricted_asset.toStdString())){
-        showWarning(tr("Must have a restricteds asset selected"));
+    if (!IsTokenNameAnRestricted(restricted_token.toStdString())){
+        showWarning(tr("Must have a restricteds token selected"));
         failed = true;
     }
 
@@ -201,20 +201,20 @@ void FreezeAddress::check()
         }
     }
 
-    if (ui->lineEditAssetData->text().size()) {
-        std::string strAssetData = ui->lineEditAssetData->text().toStdString();
+    if (ui->lineEditTokenData->text().size()) {
+        std::string strTokenData = ui->lineEditTokenData->text().toStdString();
 
-        if (DecodeAssetData(strAssetData).empty()) {
-            ui->lineEditAssetData->setStyleSheet(STYLE_INVALID);
+        if (DecodeTokenData(strTokenData).empty()) {
+            ui->lineEditTokenData->setStyleSheet(STYLE_INVALID);
             failed = true;
         }
     }
 
     if (failed) return;
 
-    if (passets) {
+    if (ptokens) {
         if (isSingleAddress) {
-            bool fCurrentlyAddressRestricted = passets->CheckForAddressRestriction(restricted_asset.toStdString(), address.toStdString(), true);
+            bool fCurrentlyAddressRestricted = ptokens->CheckForAddressRestriction(restricted_token.toStdString(), address.toStdString(), true);
 
             if (freeze_address && fCurrentlyAddressRestricted) {
                 showWarning(tr("Address is already frozen"));
@@ -224,12 +224,12 @@ void FreezeAddress::check()
                 enableSubmitButton();
             }
         } else if (isGlobal) {
-           bool fCurrentlyGloballyRestricted = passets->CheckForGlobalRestriction(restricted_asset.toStdString(), true);
+           bool fCurrentlyGloballyRestricted = ptokens->CheckForGlobalRestriction(restricted_token.toStdString(), true);
 
            if (freeze_global && fCurrentlyGloballyRestricted) {
-               showWarning(tr("Restricted asset is already frozen globally"));
+               showWarning(tr("Restricted token is already frozen globally"));
            } else if (unfreeze_global && !fCurrentlyGloballyRestricted) {
-               showWarning(tr("Restricted asset is not frozen globally"));
+               showWarning(tr("Restricted token is not frozen globally"));
            } else {
                enableSubmitButton();
            }

@@ -54,8 +54,8 @@ static const bool DEFAULT_SPLASHSCREEN = true;
 #define COLOR_DARK_BLUE QColor("#384192")
 /* Yonacoin light blue */
 #define COLOR_LIGHT_BLUE QColor("#5874cf")
-/* Yonacoin asset text */
-#define COLOR_ASSET_TEXT QColor(255, 255, 255)
+/* Yonacoin token text */
+#define COLOR_TOKEN_TEXT QColor(255, 255, 255)
 /* Yonacoin shadow color - light mode */
 #define COLOR_SHADOW_LIGHT QColor("#e1e6f3")
 /* Toolbar not selected text color */
@@ -79,9 +79,9 @@ static const bool DEFAULT_SPLASHSCREEN = true;
 #define COLOR_PRICING_WIDGET QColor("#161e2d")
 /* Yonacoin dark mode administrator background color */
 #define COLOR_ADMIN_CARD_DARK COLOR_BLACK
-/* Yonacoin dark mode regular asset background color */
+/* Yonacoin dark mode regular token background color */
 #define COLOR_REGULAR_CARD_DARK_BLUE_DARK_MODE QColor("#06132a")
-/* Yonacoin dark mode regular asset background color */
+/* Yonacoin dark mode regular token background color */
 #define COLOR_REGULAR_CARD_LIGHT_BLUE_DARK_MODE QColor("#0e1b3b")
 /* Toolbar not selected text color */
 #define COLOR_TOOLBAR_NOT_SELECTED_TEXT_DARK_MODE QColor("#6c80c5")
@@ -122,7 +122,7 @@ static const int MAX_URI_LENGTH = 255;
 #define QAPP_APP_NAME_TESTNET "Yona-Qt-testnet"
 
 /* Default third party browser urls */
-#define DEFAULT_THIRD_PARTY_BROWSERS "https://api.yonacoin.org/tx/%s|https://yona.cryptoscope.io/tx/?txid=%s|https://blockbook.yonacoin.org/tx/%s|https://explorer.mangofarmassets.com/tx/%s|https://www.assetsexplorer.com/tx/%s|https://explorer.yonaland.org/tx/%s"
+#define DEFAULT_THIRD_PARTY_BROWSERS "https://api.yonacoin.org/tx/%s|https://yona.cryptoscope.io/tx/?txid=%s|https://blockbook.yonacoin.org/tx/%s|https://explorer.mangofarmtokens.com/tx/%s|https://www.tokensexplorer.com/tx/%s|https://explorer.yonaland.org/tx/%s"
 
 /* Default IPFS viewer */
 #define DEFAULT_IPFS_VIEWER "https://ipfs.io/ipfs/%s"

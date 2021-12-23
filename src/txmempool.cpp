@@ -448,20 +448,20 @@ void CTxMemPool::addAddressIndex(const CTxMemPoolEntry &entry, const CCoinsViewC
             inserted.push_back(key);
         } else {
             /** YONA START */
-            if (AreAssetsDeployed()) {
+            if (AreTokensDeployed()) {
                 uint160 hashBytes;
-                std::string assetName;
-                CAmount assetAmount;
+                std::string tokenName;
+                CAmount tokenAmount;
                 int nScriptType;
-                if (ParseAssetScript(prevout.scriptPubKey,hashBytes, nScriptType, assetName, assetAmount)) {
+                if (ParseTokenScript(prevout.scriptPubKey,hashBytes, nScriptType, tokenName, tokenAmount)) {
                     if (nScriptType == TX_SCRIPTHASH) {
-                        CMempoolAddressDeltaKey key(2, hashBytes, assetName, txhash, j, 1);
-                        CMempoolAddressDelta delta(entry.GetTime(), assetAmount * -1, input.prevout.hash, input.prevout.n);
+                        CMempoolAddressDeltaKey key(2, hashBytes, tokenName, txhash, j, 1);
+                        CMempoolAddressDelta delta(entry.GetTime(), tokenAmount * -1, input.prevout.hash, input.prevout.n);
                         mapAddress.insert(std::make_pair(key, delta));
                         inserted.push_back(key);
                     } else if (nScriptType == TX_PUBKEYHASH) {
-                        CMempoolAddressDeltaKey key(1, hashBytes, assetName, txhash, j, 1);
-                        CMempoolAddressDelta delta(entry.GetTime(), assetAmount * -1, input.prevout.hash, input.prevout.n);
+                        CMempoolAddressDeltaKey key(1, hashBytes, tokenName, txhash, j, 1);
+                        CMempoolAddressDelta delta(entry.GetTime(), tokenAmount * -1, input.prevout.hash, input.prevout.n);
                         mapAddress.insert(std::make_pair(key, delta));
                         inserted.push_back(key);
                     }
@@ -492,19 +492,19 @@ void CTxMemPool::addAddressIndex(const CTxMemPoolEntry &entry, const CCoinsViewC
             inserted.push_back(key);
         } else {
             /** YONA START */
-            if (AreAssetsDeployed()) {
+            if (AreTokensDeployed()) {
                 uint160 hashBytes;
-                std::string assetName;
-                CAmount assetAmount;
+                std::string tokenName;
+                CAmount tokenAmount;
                 int nScriptType;
-                if (ParseAssetScript(out.scriptPubKey, hashBytes, nScriptType, assetName, assetAmount)) {
+                if (ParseTokenScript(out.scriptPubKey, hashBytes, nScriptType, tokenName, tokenAmount)) {
                     if (nScriptType == TX_SCRIPTHASH) {
-                        CMempoolAddressDeltaKey key(2, hashBytes, assetName, txhash, k, 0);
-                        mapAddress.insert(std::make_pair(key, CMempoolAddressDelta(entry.GetTime(), assetAmount * -1)));
+                        CMempoolAddressDeltaKey key(2, hashBytes, tokenName, txhash, k, 0);
+                        mapAddress.insert(std::make_pair(key, CMempoolAddressDelta(entry.GetTime(), tokenAmount * -1)));
                         inserted.push_back(key);
                     } else if (nScriptType == TX_PUBKEYHASH) {
-                        CMempoolAddressDeltaKey key(1, hashBytes, assetName, txhash, k, 0);
-                        mapAddress.insert(std::make_pair(key, CMempoolAddressDelta(entry.GetTime(), assetAmount * -1)));
+                        CMempoolAddressDeltaKey key(1, hashBytes, tokenName, txhash, k, 0);
+                        mapAddress.insert(std::make_pair(key, CMempoolAddressDelta(entry.GetTime(), tokenAmount * -1)));
                         inserted.push_back(key);
                     }
                 }
@@ -516,15 +516,15 @@ void CTxMemPool::addAddressIndex(const CTxMemPoolEntry &entry, const CCoinsViewC
     mapAddressInserted.insert(std::make_pair(txhash, inserted));
 }
 
-bool CTxMemPool::getAddressIndex(std::vector<std::pair<uint160, int> > &addresses, std::string assetName,
+bool CTxMemPool::getAddressIndex(std::vector<std::pair<uint160, int> > &addresses, std::string tokenName,
                                  std::vector<std::pair<CMempoolAddressDeltaKey, CMempoolAddressDelta> > &results)
 {
     LOCK(cs);
     for (std::vector<std::pair<uint160, int> >::iterator it = addresses.begin(); it != addresses.end(); it++) {
         addressDeltaMap::iterator ait = mapAddress.lower_bound(CMempoolAddressDeltaKey((*it).second, (*it).first,
-                                                                                       assetName));
+                                                                                       tokenName));
         while (ait != mapAddress.end() && (*ait).first.addressBytes == (*it).first && (*ait).first.type == (*it).second
-                && (*ait).first.asset == assetName) {
+                && (*ait).first.token == tokenName) {
             results.push_back(*ait);
             ait++;
         }
@@ -659,19 +659,19 @@ void CTxMemPool::removeUnchecked(txiter it, MemPoolRemovalReason reason)
     /** YONA START */
     // If the transaction being removed from the mempool is locking other reissues. Free them
     if (mapReissuedTx.count(hash)) {
-        if (mapReissuedAssets.count(mapReissuedTx.at(hash))) {
-            mapReissuedAssets.erase(mapReissuedTx.at((hash)));
+        if (mapReissuedTokens.count(mapReissuedTx.at(hash))) {
+            mapReissuedTokens.erase(mapReissuedTx.at((hash)));
             mapReissuedTx.erase(hash);
         }
     }
 
-    // Erase from the asset mempool maps if they match txid
-    if (mapHashToAsset.count(hash)) {
-        mapAssetToHash.erase(mapHashToAsset.at(hash));
-        mapHashToAsset.erase(hash);
+    // Erase from the token mempool maps if they match txid
+    if (mapHashToToken.count(hash)) {
+        mapTokenToHash.erase(mapHashToToken.at(hash));
+        mapHashToToken.erase(hash);
     }
 
-    // Erase from the restricted asset mempool maps if they match txids
+    // Erase from the restricted token mempool maps if they match txids
     if (mapHashToAddressMarkedFrozen.count(hash)) {
         for (auto item : mapHashToAddressMarkedFrozen.at(hash))
             mapAddressesMarkedFrozen.at(item).erase(hash);
@@ -680,7 +680,7 @@ void CTxMemPool::removeUnchecked(txiter it, MemPoolRemovalReason reason)
 
     if (mapHashMarkedGlobalFrozen.count(hash)) {
         for (auto item : mapHashMarkedGlobalFrozen.at(hash))
-            mapAssetMarkedGlobalFrozen.at(item).erase(hash);
+            mapTokenMarkedGlobalFrozen.at(item).erase(hash);
         mapHashMarkedGlobalFrozen.erase(hash);
     }
 
@@ -692,30 +692,30 @@ void CTxMemPool::removeUnchecked(txiter it, MemPoolRemovalReason reason)
 
     if (mapHashVerifierChanged.count(hash)) {
         for (auto item : mapHashVerifierChanged.at(hash))
-            mapAssetVerifierChanged.at(item).erase(hash);
+            mapTokenVerifierChanged.at(item).erase(hash);
         mapHashVerifierChanged.erase(hash);
     }
 
-    if (mapHashGlobalFreezingAssetTransactions.count(hash)) {
-        for (auto item : mapHashGlobalFreezingAssetTransactions.at(hash)) {
-            if (mapGlobalFreezingAssetTransactions.count(item)) {
-                mapGlobalFreezingAssetTransactions.at(item).erase(hash);
-                if (mapGlobalFreezingAssetTransactions.at(item).size() == 0)
-                    mapGlobalFreezingAssetTransactions.erase(item);
+    if (mapHashGlobalFreezingTokenTransactions.count(hash)) {
+        for (auto item : mapHashGlobalFreezingTokenTransactions.at(hash)) {
+            if (mapGlobalFreezingTokenTransactions.count(item)) {
+                mapGlobalFreezingTokenTransactions.at(item).erase(hash);
+                if (mapGlobalFreezingTokenTransactions.at(item).size() == 0)
+                    mapGlobalFreezingTokenTransactions.erase(item);
             }
         }
-        mapHashGlobalFreezingAssetTransactions.erase(hash);
+        mapHashGlobalFreezingTokenTransactions.erase(hash);
     }
 
-    if (mapHashGlobalUnFreezingAssetTransactions.count(hash)) {
-        for (auto item : mapHashGlobalUnFreezingAssetTransactions.at(hash)) {
-            if (mapGlobalUnFreezingAssetTransactions.count(item)) {
-                mapGlobalUnFreezingAssetTransactions.at(item).erase(hash);
-                if (mapGlobalUnFreezingAssetTransactions.at(item).size() == 0)
-                    mapGlobalUnFreezingAssetTransactions.erase(item);
+    if (mapHashGlobalUnFreezingTokenTransactions.count(hash)) {
+        for (auto item : mapHashGlobalUnFreezingTokenTransactions.at(hash)) {
+            if (mapGlobalUnFreezingTokenTransactions.count(item)) {
+                mapGlobalUnFreezingTokenTransactions.at(item).erase(hash);
+                if (mapGlobalUnFreezingTokenTransactions.at(item).size() == 0)
+                    mapGlobalUnFreezingTokenTransactions.erase(item);
             }
         }
-        mapHashGlobalUnFreezingAssetTransactions.erase(hash);
+        mapHashGlobalUnFreezingTokenTransactions.erase(hash);
     }
 
     if (mapHashToAddressAddedTag.count(hash)) {
@@ -861,14 +861,14 @@ void CTxMemPool::removeConflicts(const CTransaction &tx)
  */
 void CTxMemPool::removeForBlock(const std::vector<CTransactionRef>& vtx, unsigned int nBlockHeight)
 {
-    ConnectedBlockAssetData connectedBlockAssetData;
-    removeForBlock(vtx, nBlockHeight, connectedBlockAssetData);
+    ConnectedBlockTokenData connectedBlockTokenData;
+    removeForBlock(vtx, nBlockHeight, connectedBlockTokenData);
 }
 
 /**
  * Called when a block is connected. Removes from mempool and updates the miner fee estimator.
  */
-void CTxMemPool::removeForBlock(const std::vector<CTransactionRef>& vtx, unsigned int nBlockHeight, ConnectedBlockAssetData& connectedBlockData)
+void CTxMemPool::removeForBlock(const std::vector<CTransactionRef>& vtx, unsigned int nBlockHeight, ConnectedBlockTokenData& connectedBlockData)
 {
     LOCK(cs);
     std::set<uint256> setAlreadyRemoving;
@@ -884,26 +884,26 @@ void CTxMemPool::removeForBlock(const std::vector<CTransactionRef>& vtx, unsigne
     }
 
     /** YONA START */
-    // Get the newly added assets, and make sure they are in the entries
+    // Get the newly added tokens, and make sure they are in the entries
     std::vector<CTransaction> trans;
-    for (auto it : connectedBlockData.newAssetsToAdd) {
-        if (mapAssetToHash.count(it.asset.strName)) {
-            indexed_transaction_set::iterator i = mapTx.find(mapAssetToHash.at(it.asset.strName));
+    for (auto it : connectedBlockData.newTokensToAdd) {
+        if (mapTokenToHash.count(it.token.strName)) {
+            indexed_transaction_set::iterator i = mapTx.find(mapTokenToHash.at(it.token.strName));
             if (i != mapTx.end()) {
                 entries.push_back(&*i);
                 trans.emplace_back(i->GetTx());
-                setAlreadyRemoving.insert(mapAssetToHash.at(it.asset.strName));
+                setAlreadyRemoving.insert(mapTokenToHash.at(it.token.strName));
             }
         }
     }
 
     for (auto it : connectedBlockData.newVerifiersToAdd) {
-        if (mapAssetVerifierChanged.count(it.assetName)) {
-            for (auto hash : mapAssetVerifierChanged.at(it.assetName)) {
+        if (mapTokenVerifierChanged.count(it.tokenName)) {
+            for (auto hash : mapTokenVerifierChanged.at(it.tokenName)) {
                 indexed_transaction_set::iterator i = mapTx.find(hash);
                 if (i != mapTx.end()) {
                     CValidationState state;
-                    if (!setAlreadyRemoving.count(hash) && !CheckTransaction(i->GetTx(), state, passets)) {
+                    if (!setAlreadyRemoving.count(hash) && !CheckTransaction(i->GetTx(), state, ptokens)) {
                         entries.push_back(&*i);
                         trans.emplace_back(i->GetTx());
                         setAlreadyRemoving.insert(hash);
@@ -919,7 +919,7 @@ void CTxMemPool::removeForBlock(const std::vector<CTransactionRef>& vtx, unsigne
                 indexed_transaction_set::iterator i = mapTx.find(hash);
                 if (i != mapTx.end()) {
                     CValidationState state;
-                    if (!setAlreadyRemoving.count(hash) && !CheckTransaction(i->GetTx(), state, passets)) {
+                    if (!setAlreadyRemoving.count(hash) && !CheckTransaction(i->GetTx(), state, ptokens)) {
                         entries.push_back(&*i);
                         trans.emplace_back(i->GetTx());
                         setAlreadyRemoving.insert(hash);
@@ -931,12 +931,12 @@ void CTxMemPool::removeForBlock(const std::vector<CTransactionRef>& vtx, unsigne
 
     for (auto it : connectedBlockData.newGlobalRestrictionsToAdd) {
         if (it.type == RestrictedType::GLOBAL_FREEZE) {
-            if (mapAssetMarkedGlobalFrozen.count(it.assetName)) {
-                for (auto hash : mapAssetMarkedGlobalFrozen.at(it.assetName)) {
+            if (mapTokenMarkedGlobalFrozen.count(it.tokenName)) {
+                for (auto hash : mapTokenMarkedGlobalFrozen.at(it.tokenName)) {
                     indexed_transaction_set::iterator i = mapTx.find(hash);
                     if (i != mapTx.end()) {
                         CValidationState state;
-                        if (!setAlreadyRemoving.count(hash) && !CheckTransaction(i->GetTx(), state, passets)) {
+                        if (!setAlreadyRemoving.count(hash) && !CheckTransaction(i->GetTx(), state, ptokens)) {
                             entries.push_back(&*i);
                             trans.emplace_back(i->GetTx());
                             setAlreadyRemoving.insert(hash);
@@ -945,8 +945,8 @@ void CTxMemPool::removeForBlock(const std::vector<CTransactionRef>& vtx, unsigne
                 }
             }
 
-            if (mapGlobalFreezingAssetTransactions.count(it.assetName)) {
-                for (auto hash : mapGlobalFreezingAssetTransactions.at(it.assetName)) {
+            if (mapGlobalFreezingTokenTransactions.count(it.tokenName)) {
+                for (auto hash : mapGlobalFreezingTokenTransactions.at(it.tokenName)) {
                     indexed_transaction_set::iterator i = mapTx.find(hash);
                     if (i != mapTx.end()) {
                         CValidationState state;
@@ -959,8 +959,8 @@ void CTxMemPool::removeForBlock(const std::vector<CTransactionRef>& vtx, unsigne
                 }
             }
         } else if (it.type == RestrictedType::GLOBAL_UNFREEZE) {
-            if (mapGlobalUnFreezingAssetTransactions.count(it.assetName)) {
-                for (auto hash : mapGlobalUnFreezingAssetTransactions.at(it.assetName)) {
+            if (mapGlobalUnFreezingTokenTransactions.count(it.tokenName)) {
+                for (auto hash : mapGlobalUnFreezingTokenTransactions.at(it.tokenName)) {
                     indexed_transaction_set::iterator i = mapTx.find(hash);
                     if (i != mapTx.end()) {
                         CValidationState state;
@@ -977,14 +977,14 @@ void CTxMemPool::removeForBlock(const std::vector<CTransactionRef>& vtx, unsigne
 
     for (auto it : connectedBlockData.newAddressRestrictionsToAdd) {
         if (it.type == RestrictedType::FREEZE_ADDRESS) {
-            auto pair = std::make_pair(it.address, it.assetName);
+            auto pair = std::make_pair(it.address, it.tokenName);
             if (mapAddressesMarkedFrozen.count(pair)) {
                 for (auto hash : mapAddressesMarkedFrozen.at(pair)) {
                     indexed_transaction_set::iterator i = mapTx.find(hash);
                     if (i != mapTx.end()) {
                         CValidationState state;
-                        std::vector<std::pair<std::string, uint256>> vReissueAssets;
-                        if (!setAlreadyRemoving.count(hash) && !Consensus::CheckTxAssets(i->GetTx(), state, pcoinsTip, passets, false, vReissueAssets)) {
+                        std::vector<std::pair<std::string, uint256>> vReissueTokens;
+                        if (!setAlreadyRemoving.count(hash) && !Consensus::CheckTxTokens(i->GetTx(), state, pcoinsTip, ptokens, false, vReissueTokens)) {
                             entries.push_back(&*i);
                             trans.emplace_back(i->GetTx());
                             setAlreadyRemoving.insert(hash);
@@ -1011,7 +1011,7 @@ void CTxMemPool::removeForBlock(const std::vector<CTransactionRef>& vtx, unsigne
     }
 
     /** YONA START */
-    // Remove newly added asset issue transactions from the mempool if they haven't been removed already
+    // Remove newly added token issue transactions from the mempool if they haven't been removed already
     for (auto tx : trans)
     {
         txiter it = mapTx.find(tx.GetHash());
@@ -1040,16 +1040,16 @@ void CTxMemPool::_clear()
     blockSinceLastRollingFeeBump = false;
     rollingMinimumFeeRate = 0;
     ++nTransactionsUpdated;
-    mapAssetToHash.clear();
-    mapHashToAsset.clear();
+    mapTokenToHash.clear();
+    mapHashToToken.clear();
 
     mapAddressesMarkedFrozen.clear();
     mapHashToAddressMarkedFrozen.clear();
-    mapAssetMarkedGlobalFrozen.clear();
+    mapTokenMarkedGlobalFrozen.clear();
     mapHashMarkedGlobalFrozen.clear();
     mapAddressesQualifiersChanged.clear();
     mapHashQualifiersChanged.clear();
-    mapAssetVerifierChanged.clear();
+    mapTokenVerifierChanged.clear();
     mapHashVerifierChanged.clear();
 
     mapHashToAddressAddedTag.clear();
@@ -1057,11 +1057,11 @@ void CTxMemPool::_clear()
     mapHashToAddressRemoveTag.clear();
     mapAddressRemoveTag.clear();
 
-    mapGlobalFreezingAssetTransactions.clear();
-    mapHashGlobalFreezingAssetTransactions.clear();
+    mapGlobalFreezingTokenTransactions.clear();
+    mapHashGlobalFreezingTokenTransactions.clear();
 
-    mapGlobalUnFreezingAssetTransactions.clear();
-    mapHashGlobalUnFreezingAssetTransactions.clear();
+    mapGlobalUnFreezingTokenTransactions.clear();
+    mapHashGlobalUnFreezingTokenTransactions.clear();
 }
 
 void CTxMemPool::clear()
@@ -1075,10 +1075,10 @@ static void CheckInputsAndUpdateCoins(const CTransaction& tx, CCoinsViewCache& m
     CAmount txfee = 0;
     bool fCheckResult = tx.IsCoinBase() || Consensus::CheckTxInputs(tx, state, mempoolDuplicate, spendheight, txfee);
     /** YONA START */
-    if (AreAssetsDeployed()) {
-        std::vector<std::pair<std::string, uint256>> vReissueAssets;
-        bool fCheckAssets = Consensus::CheckTxAssets(tx, state, mempoolDuplicate, passets, false, vReissueAssets);
-        assert(fCheckResult && fCheckAssets);
+    if (AreTokensDeployed()) {
+        std::vector<std::pair<std::string, uint256>> vReissueTokens;
+        bool fCheckTokens = Consensus::CheckTxTokens(tx, state, mempoolDuplicate, ptokens, false, vReissueTokens);
+        assert(fCheckResult && fCheckTokens);
     } else
         assert(fCheckResult);
     /** YONA END */

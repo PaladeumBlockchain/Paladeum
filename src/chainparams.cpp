@@ -203,25 +203,25 @@ public:
 
         /** YONA Start **/
         // Burn Amounts
-        nIssueAssetBurnAmount = 500 * COIN;
-        nReissueAssetBurnAmount = 100 * COIN;
-        nIssueSubAssetBurnAmount = 100 * COIN;
-        nIssueUniqueAssetBurnAmount = 5 * COIN;
-        nIssueMsgChannelAssetBurnAmount = 100 * COIN;
-        nIssueQualifierAssetBurnAmount = 1000 * COIN;
-        nIssueSubQualifierAssetBurnAmount = 100 * COIN;
-        nIssueRestrictedAssetBurnAmount = 1500 * COIN;
+        nIssueTokenBurnAmount = 500 * COIN;
+        nReissueTokenBurnAmount = 100 * COIN;
+        nIssueSubTokenBurnAmount = 100 * COIN;
+        nIssueUniqueTokenBurnAmount = 5 * COIN;
+        nIssueMsgChannelTokenBurnAmount = 100 * COIN;
+        nIssueQualifierTokenBurnAmount = 1000 * COIN;
+        nIssueSubQualifierTokenBurnAmount = 100 * COIN;
+        nIssueRestrictedTokenBurnAmount = 1500 * COIN;
         nAddNullQualifierTagBurnAmount = .1 * COIN;
 
         // Burn Addresses
-        strIssueAssetBurnAddress = "RXissueAssetXXXXXXXXXXXXXXXXXhhZGt";
-        strReissueAssetBurnAddress = "RXReissueAssetXXXXXXXXXXXXXXVEFAWu";
-        strIssueSubAssetBurnAddress = "RXissueSubAssetXXXXXXXXXXXXXWcwhwL";
-        strIssueUniqueAssetBurnAddress = "RXissueUniqueAssetXXXXXXXXXXWEAe58";
-        strIssueMsgChannelAssetBurnAddress = "RXissueMsgChanneLAssetXXXXXXSjHvAY";
-        strIssueQualifierAssetBurnAddress = "RXissueQuaLifierXXXXXXXXXXXXUgEDbC";
-        strIssueSubQualifierAssetBurnAddress = "RXissueSubQuaLifierXXXXXXXXXVTzvv5";
-        strIssueRestrictedAssetBurnAddress = "RXissueRestrictedXXXXXXXXXXXXzJZ1q";
+        strIssueTokenBurnAddress = "RXissueTokenXXXXXXXXXXXXXXXXXhhZGt";
+        strReissueTokenBurnAddress = "RXReissueTokenXXXXXXXXXXXXXXVEFAWu";
+        strIssueSubTokenBurnAddress = "RXissueSubTokenXXXXXXXXXXXXXWcwhwL";
+        strIssueUniqueTokenBurnAddress = "RXissueUniqueTokenXXXXXXXXXXWEAe58";
+        strIssueMsgChannelTokenBurnAddress = "RXissueMsgChanneLTokenXXXXXXSjHvAY";
+        strIssueQualifierTokenBurnAddress = "RXissueQuaLifierXXXXXXXXXXXXUgEDbC";
+        strIssueSubQualifierTokenBurnAddress = "RXissueSubQuaLifierXXXXXXXXXVTzvv5";
+        strIssueRestrictedTokenBurnAddress = "RXissueRestrictedXXXXXXXXXXXXzJZ1q";
         strAddNullQualifierTagBurnAddress = "RXaddTagBurnXXXXXXXXXXXXXXXXZQm5ya";
 
             //Global Burn Address
@@ -234,7 +234,7 @@ public:
         nMinReorganizationPeers = 4;
         nMinReorganizationAge = 60 * 60 * 12; // 12 hours
 
-        nAssetActivationHeight = 435456; // Asset activated block height
+        nTokenActivationHeight = 435456; // Token activated block height
         nMessagingActivationBlock = 1092672; // Messaging activated block height
         nRestrictedActivationBlock = 1092672; // Restricted activated block height
         /** YONA End **/
@@ -396,25 +396,25 @@ public:
 
         /** YONA Start **/
         // Burn Amounts
-        nIssueAssetBurnAmount = 500 * COIN;
-        nReissueAssetBurnAmount = 100 * COIN;
-        nIssueSubAssetBurnAmount = 100 * COIN;
-        nIssueUniqueAssetBurnAmount = 5 * COIN;
-        nIssueMsgChannelAssetBurnAmount = 100 * COIN;
-        nIssueQualifierAssetBurnAmount = 1000 * COIN;
-        nIssueSubQualifierAssetBurnAmount = 100 * COIN;
-        nIssueRestrictedAssetBurnAmount = 1500 * COIN;
+        nIssueTokenBurnAmount = 500 * COIN;
+        nReissueTokenBurnAmount = 100 * COIN;
+        nIssueSubTokenBurnAmount = 100 * COIN;
+        nIssueUniqueTokenBurnAmount = 5 * COIN;
+        nIssueMsgChannelTokenBurnAmount = 100 * COIN;
+        nIssueQualifierTokenBurnAmount = 1000 * COIN;
+        nIssueSubQualifierTokenBurnAmount = 100 * COIN;
+        nIssueRestrictedTokenBurnAmount = 1500 * COIN;
         nAddNullQualifierTagBurnAmount = .1 * COIN;
 
         // Burn Addresses
-        strIssueAssetBurnAddress = "n1issueAssetXXXXXXXXXXXXXXXXWdnemQ";
-        strReissueAssetBurnAddress = "n1ReissueAssetXXXXXXXXXXXXXXWG9NLd";
-        strIssueSubAssetBurnAddress = "n1issueSubAssetXXXXXXXXXXXXXbNiH6v";
-        strIssueUniqueAssetBurnAddress = "n1issueUniqueAssetXXXXXXXXXXS4695i";
-        strIssueMsgChannelAssetBurnAddress = "n1issueMsgChanneLAssetXXXXXXT2PBdD";
-        strIssueQualifierAssetBurnAddress = "n1issueQuaLifierXXXXXXXXXXXXUysLTj";
-        strIssueSubQualifierAssetBurnAddress = "n1issueSubQuaLifierXXXXXXXXXYffPLh";
-        strIssueRestrictedAssetBurnAddress = "n1issueRestrictedXXXXXXXXXXXXZVT9V";
+        strIssueTokenBurnAddress = "n1issueTokenXXXXXXXXXXXXXXXXWdnemQ";
+        strReissueTokenBurnAddress = "n1ReissueTokenXXXXXXXXXXXXXXWG9NLd";
+        strIssueSubTokenBurnAddress = "n1issueSubTokenXXXXXXXXXXXXXbNiH6v";
+        strIssueUniqueTokenBurnAddress = "n1issueUniqueTokenXXXXXXXXXXS4695i";
+        strIssueMsgChannelTokenBurnAddress = "n1issueMsgChanneLTokenXXXXXXT2PBdD";
+        strIssueQualifierTokenBurnAddress = "n1issueQuaLifierXXXXXXXXXXXXUysLTj";
+        strIssueSubQualifierTokenBurnAddress = "n1issueSubQuaLifierXXXXXXXXXYffPLh";
+        strIssueRestrictedTokenBurnAddress = "n1issueRestrictedXXXXXXXXXXXXZVT9V";
         strAddNullQualifierTagBurnAddress = "n1addTagBurnXXXXXXXXXXXXXXXXX5oLMH";
 
         // Global Burn Address
@@ -427,7 +427,7 @@ public:
         nMinReorganizationPeers = 4;
         nMinReorganizationAge = 60 * 60 * 12; // 12 hours
 
-        nAssetActivationHeight = 6048; // Asset activated block height
+        nTokenActivationHeight = 6048; // Token activated block height
         nMessagingActivationBlock = 10080; // Messaging activated block height
         nRestrictedActivationBlock = 10080; // Restricted activated block height
         /** YONA End **/
@@ -569,25 +569,25 @@ public:
 
         /** YONA Start **/
         // Burn Amounts
-        nIssueAssetBurnAmount = 500 * COIN;
-        nReissueAssetBurnAmount = 100 * COIN;
-        nIssueSubAssetBurnAmount = 100 * COIN;
-        nIssueUniqueAssetBurnAmount = 5 * COIN;
-        nIssueMsgChannelAssetBurnAmount = 100 * COIN;
-        nIssueQualifierAssetBurnAmount = 1000 * COIN;
-        nIssueSubQualifierAssetBurnAmount = 100 * COIN;
-        nIssueRestrictedAssetBurnAmount = 1500 * COIN;
+        nIssueTokenBurnAmount = 500 * COIN;
+        nReissueTokenBurnAmount = 100 * COIN;
+        nIssueSubTokenBurnAmount = 100 * COIN;
+        nIssueUniqueTokenBurnAmount = 5 * COIN;
+        nIssueMsgChannelTokenBurnAmount = 100 * COIN;
+        nIssueQualifierTokenBurnAmount = 1000 * COIN;
+        nIssueSubQualifierTokenBurnAmount = 100 * COIN;
+        nIssueRestrictedTokenBurnAmount = 1500 * COIN;
         nAddNullQualifierTagBurnAmount = .1 * COIN;
 
         // Burn Addresses
-        strIssueAssetBurnAddress = "n1issueAssetXXXXXXXXXXXXXXXXWdnemQ";
-        strReissueAssetBurnAddress = "n1ReissueAssetXXXXXXXXXXXXXXWG9NLd";
-        strIssueSubAssetBurnAddress = "n1issueSubAssetXXXXXXXXXXXXXbNiH6v";
-        strIssueUniqueAssetBurnAddress = "n1issueUniqueAssetXXXXXXXXXXS4695i";
-        strIssueMsgChannelAssetBurnAddress = "n1issueMsgChanneLAssetXXXXXXT2PBdD";
-        strIssueQualifierAssetBurnAddress = "n1issueQuaLifierXXXXXXXXXXXXUysLTj";
-        strIssueSubQualifierAssetBurnAddress = "n1issueSubQuaLifierXXXXXXXXXYffPLh";
-        strIssueRestrictedAssetBurnAddress = "n1issueRestrictedXXXXXXXXXXXXZVT9V";
+        strIssueTokenBurnAddress = "n1issueTokenXXXXXXXXXXXXXXXXWdnemQ";
+        strReissueTokenBurnAddress = "n1ReissueTokenXXXXXXXXXXXXXXWG9NLd";
+        strIssueSubTokenBurnAddress = "n1issueSubTokenXXXXXXXXXXXXXbNiH6v";
+        strIssueUniqueTokenBurnAddress = "n1issueUniqueTokenXXXXXXXXXXS4695i";
+        strIssueMsgChannelTokenBurnAddress = "n1issueMsgChanneLTokenXXXXXXT2PBdD";
+        strIssueQualifierTokenBurnAddress = "n1issueQuaLifierXXXXXXXXXXXXUysLTj";
+        strIssueSubQualifierTokenBurnAddress = "n1issueSubQuaLifierXXXXXXXXXYffPLh";
+        strIssueRestrictedTokenBurnAddress = "n1issueRestrictedXXXXXXXXXXXXZVT9V";
         strAddNullQualifierTagBurnAddress = "n1addTagBurnXXXXXXXXXXXXXXXXX5oLMH";
 
         // Global Burn Address
@@ -600,7 +600,7 @@ public:
         nMinReorganizationPeers = 4;
         nMinReorganizationAge = 60 * 60 * 12; // 12 hours
 
-        nAssetActivationHeight = 0; // Asset activated block height
+        nTokenActivationHeight = 0; // Token activated block height
         nMessagingActivationBlock = 0; // Messaging activated block height
         nRestrictedActivationBlock = 0; // Restricted activated block height
 

@@ -1214,45 +1214,45 @@ void static ProcessGetData(CNode* pfrom, const Consensus::Params& consensusParam
     }
 }
 
-void static ProcessAssetGetData(CNode* pfrom, const Consensus::Params& consensusParams, CConnman* connman, const std::atomic<bool>& interruptMsgProc)
+void static ProcessTokenGetData(CNode* pfrom, const Consensus::Params& consensusParams, CConnman* connman, const std::atomic<bool>& interruptMsgProc)
 {
-    std::deque<CInvAsset>::iterator it = pfrom->vRecvAssetGetData.begin();
-    std::vector<CInvAsset> vNotFound;
+    std::deque<CInvToken>::iterator it = pfrom->vRecvTokenGetData.begin();
+    std::vector<CInvToken> vNotFound;
     const CNetMsgMaker msgMaker(pfrom->GetSendVersion());
     LOCK(cs_main);
 
-    while (it != pfrom->vRecvAssetGetData.end()) {
+    while (it != pfrom->vRecvTokenGetData.end()) {
         // Don't bother if send buffer is too full to respond anyway
         if (pfrom->fPauseSend)
             break;
 
-        const CInvAsset &inv = *it;
+        const CInvToken &inv = *it;
         {
             if (interruptMsgProc)
                 return;
 
             it++;
 
-            if (!IsAssetNameValid(inv.name)) {
+            if (!IsTokenNameValid(inv.name)) {
                 vNotFound.push_back(inv);
                 continue;
             }
 
             UNUSED_VAR bool push = false;
-            auto currentActiveAssetCache = GetCurrentAssetCache();
-            if (currentActiveAssetCache) {
-                CNewAsset asset;
+            auto currentActiveTokenCache = GetCurrentTokenCache();
+            if (currentActiveTokenCache) {
+                CNewToken token;
                 int height;
                 uint256 hash;
-                if (currentActiveAssetCache->GetAssetMetaDataIfExists(inv.name, asset, height, hash)) {
-                    auto data = CDatabasedAssetData(asset, height, hash);
-                    passetsCache->Put(inv.name, data);
-                    connman->PushMessage(pfrom, msgMaker.Make(NetMsgType::ASSETDATA, SerializedAssetData(data)));
+                if (currentActiveTokenCache->GetTokenMetaDataIfExists(inv.name, token, height, hash)) {
+                    auto data = CDatabasedTokenData(token, height, hash);
+                    ptokensCache->Put(inv.name, data);
+                    connman->PushMessage(pfrom, msgMaker.Make(NetMsgType::TOKENDATA, SerializedTokenData(data)));
                     push = true;
                 } else {
-                    CDatabasedAssetData data;
-                    data.asset.strName = "_NF"; // Return _NF for NOT Found
-                    connman->PushMessage(pfrom, msgMaker.Make(NetMsgType::ASSETDATA, SerializedAssetData(data)));
+                    CDatabasedTokenData data;
+                    data.token.strName = "_NF"; // Return _NF for NOT Found
+                    connman->PushMessage(pfrom, msgMaker.Make(NetMsgType::TOKENDATA, SerializedTokenData(data)));
                 }
             }
 
@@ -1262,7 +1262,7 @@ void static ProcessAssetGetData(CNode* pfrom, const Consensus::Params& consensus
         }
     }
 
-    pfrom->vRecvAssetGetData.erase(pfrom->vRecvAssetGetData.begin(), it);
+    pfrom->vRecvTokenGetData.erase(pfrom->vRecvTokenGetData.begin(), it);
 
 //    if (!vNotFound.empty()) {
 //        // Let the peer know that we didn't find what it asked for, so it doesn't
@@ -1272,10 +1272,10 @@ void static ProcessAssetGetData(CNode* pfrom, const Consensus::Params& consensus
 //        // do that because they want to know about (and store and rebroadcast and
 //        // risk analyze) the dependencies of transactions relevant to them, without
 //        // having to download the entire memory pool.
-//        for (auto assetinv : vNotFound) {
-//            CDatabasedAssetData data;
-//            data.asset.strName = "_NF"; // Return _NF for NOT Found
-//            connman->PushMessage(pfrom, msgMaker.Make(NetMsgType::ASSETDATA, SerializedAssetData(data)));
+//        for (auto tokeninv : vNotFound) {
+//            CDatabasedTokenData data;
+//            data.token.strName = "_NF"; // Return _NF for NOT Found
+//            connman->PushMessage(pfrom, msgMaker.Make(NetMsgType::TOKENDATA, SerializedTokenData(data)));
 //        }
 //    }
 }
@@ -1633,10 +1633,10 @@ bool static ProcessMessage(CNode* pfrom, const std::string& strCommand, CDataStr
             return false;
         }
 
-        if (IsRip5Active() && nVersion < MESSAGING_RESTRICTED_ASSETS_VERSION) {
-            LogPrintf("peer=%d using obsolete version %i; disconnecting because peer isn't signalling protocol version for restricted and messaging assets\n", pfrom->GetId(), nVersion);
+        if (IsRip5Active() && nVersion < MESSAGING_RESTRICTED_TOKENS_VERSION) {
+            LogPrintf("peer=%d using obsolete version %i; disconnecting because peer isn't signalling protocol version for restricted and messaging tokens\n", pfrom->GetId(), nVersion);
             connman->PushMessage(pfrom, CNetMsgMaker(INIT_PROTO_VERSION).Make(NetMsgType::REJECT, strCommand, REJECT_OBSOLETE,
-                                                                              strprintf("Version must be %d or greater", MESSAGING_RESTRICTED_ASSETS_VERSION)));
+                                                                              strprintf("Version must be %d or greater", MESSAGING_RESTRICTED_TOKENS_VERSION)));
             pfrom->fDisconnect = true;
             return false;
         }
@@ -1979,39 +1979,39 @@ bool static ProcessMessage(CNode* pfrom, const std::string& strCommand, CDataStr
         ProcessGetData(pfrom, chainparams.GetConsensus(), connman, interruptMsgProc);
     }
 
-    else if (strCommand == NetMsgType::GETASSETDATA)
+    else if (strCommand == NetMsgType::GETTOKENDATA)
     {
         if (IsInitialBlockDownload()) {
-            LogPrint(BCLog::NET, "Ignoring getassetdata from peer=%d because node is in initial block download\n", pfrom->GetId());
+            LogPrint(BCLog::NET, "Ignoring gettokendata from peer=%d because node is in initial block download\n", pfrom->GetId());
             return true;
         }
 
-        std::vector<CInvAsset> vInvAsset;
-        vRecv >> vInvAsset;
+        std::vector<CInvToken> vInvToken;
+        vRecv >> vInvToken;
 
-        if (vInvAsset.size() > MAX_ASSET_INV_SZ)
+        if (vInvToken.size() > MAX_TOKEN_INV_SZ)
         {
             LOCK(cs_main);
             Misbehaving(pfrom->GetId(), 20);
-            return error("message getassetdata size() = %u", vInvAsset.size());
+            return error("message gettokendata size() = %u", vInvToken.size());
         }
 
-        for (auto item : vInvAsset) {
-            if (item.name.size() > MAX_ASSET_LENGTH) {
+        for (auto item : vInvToken) {
+            if (item.name.size() > MAX_TOKEN_LENGTH) {
                 LOCK(cs_main);
                 Misbehaving(pfrom->GetId(), 100);
-                return error("message getassetdata assetname size() = %u", item.name.size());
+                return error("message gettokendata tokenname size() = %u", item.name.size());
             }
         }
 
-        LogPrint(BCLog::NET, "received getassetdata (%u invassetsz) peer=%d\n", vInvAsset.size(), pfrom->GetId());
+        LogPrint(BCLog::NET, "received gettokendata (%u invtokensz) peer=%d\n", vInvToken.size(), pfrom->GetId());
 
-        if (vInvAsset.size() > 0) {
-            LogPrint(BCLog::NET, "received getassetdata for: %s peer=%d\n", vInvAsset[0].ToString(), pfrom->GetId());
+        if (vInvToken.size() > 0) {
+            LogPrint(BCLog::NET, "received gettokendata for: %s peer=%d\n", vInvToken[0].ToString(), pfrom->GetId());
         }
 
-        pfrom->vRecvAssetGetData.insert(pfrom->vRecvAssetGetData.end(), vInvAsset.begin(), vInvAsset.end());
-        ProcessAssetGetData(pfrom, chainparams.GetConsensus(), connman, interruptMsgProc);
+        pfrom->vRecvTokenGetData.insert(pfrom->vRecvTokenGetData.end(), vInvToken.begin(), vInvToken.end());
+        ProcessTokenGetData(pfrom, chainparams.GetConsensus(), connman, interruptMsgProc);
     }
 
     else if (strCommand == NetMsgType::GETBLOCKS)
@@ -2928,8 +2928,8 @@ bool static ProcessMessage(CNode* pfrom, const std::string& strCommand, CDataStr
         // message would be undesirable as we transmit it ourselves.
     }
 
-    else if (strCommand == NetMsgType::ASSETNOTFOUND) {
-        // We do not care about the ASSETNOTFOUND message, but logging an Unknown Command
+    else if (strCommand == NetMsgType::TOKENNOTFOUND) {
+        // We do not care about the TOKENNOTFOUND message, but logging an Unknown Command
         // message would be undesirable as we transmit it ourselves.
     }
 
@@ -3324,29 +3324,29 @@ bool PeerLogicValidation::SendMessages(CNode* pto, std::atomic<bool>& interruptM
         }
 
         //
-        // Message: getassetdata
+        // Message: gettokendata
         //
-        if (pto->nVersion >= ASSETDATA_VERSION && pto->fGetAssetData) {
+        if (pto->nVersion >= TOKENDATA_VERSION && pto->fGetTokenData) {
             LOCK(pto->cs_inventory);
 
-            pto->fGetAssetData = false;
+            pto->fGetTokenData = false;
 
             // Produce a vector with all candidates for sending
-            std::vector<CInvAsset> vInvAssets;
-            vInvAssets.reserve(std::max<size_t>(pto->setInventoryAssetsSend.size(), INVENTORY_BROADCAST_MAX));
+            std::vector<CInvToken> vInvTokens;
+            vInvTokens.reserve(std::max<size_t>(pto->setInventoryTokensSend.size(), INVENTORY_BROADCAST_MAX));
 
-            // Add asset inv
-            for (auto& it : pto->setInventoryAssetsSend) {
-                vInvAssets.push_back(CInvAsset(it));
-                if (vInvAssets.size() == MAX_ASSET_INV_SZ) {
-                    connman->PushMessage(pto, msgMaker.Make(NetMsgType::GETASSETDATA, vInvAssets));
-                    vInvAssets.clear();
+            // Add token inv
+            for (auto& it : pto->setInventoryTokensSend) {
+                vInvTokens.push_back(CInvToken(it));
+                if (vInvTokens.size() == MAX_TOKEN_INV_SZ) {
+                    connman->PushMessage(pto, msgMaker.Make(NetMsgType::GETTOKENDATA, vInvTokens));
+                    vInvTokens.clear();
                 }
             }
-            pto->setInventoryAssetsSend.clear();
+            pto->setInventoryTokensSend.clear();
 
-            if (!vInvAssets.empty())
-                connman->PushMessage(pto, msgMaker.Make(NetMsgType::GETASSETDATA, vInvAssets));
+            if (!vInvTokens.empty())
+                connman->PushMessage(pto, msgMaker.Make(NetMsgType::GETTOKENDATA, vInvTokens));
         }
 
         // Start block sync

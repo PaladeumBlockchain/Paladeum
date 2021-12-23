@@ -76,7 +76,7 @@ private Q_SLOTS:
 
 
 
-class AssetAmountField: public QWidget
+class TokenAmountField: public QWidget
 {
 Q_OBJECT
 
@@ -85,7 +85,7 @@ Q_OBJECT
     Q_PROPERTY(qint64 value READ value WRITE setValue NOTIFY valueChanged USER true)
 
 public:
-    explicit AssetAmountField(QWidget *parent = 0);
+    explicit TokenAmountField(QWidget *parent = 0);
 
     CAmount value(bool *value=0) const;
     void setValue(const CAmount& value);
@@ -122,7 +122,7 @@ protected:
 
 private:
     AmountSpinBox *amount;
-    int assetUnit;
+    int tokenUnit;
 
 };
 

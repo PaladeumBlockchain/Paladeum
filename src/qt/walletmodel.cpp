@@ -14,8 +14,8 @@
 #include "recentrequeststablemodel.h"
 #include "sendcoinsdialog.h"
 #include "transactiontablemodel.h"
-#include "assettablemodel.h"
-#include "myrestrictedassettablemodel.h"
+#include "tokentablemodel.h"
+#include "myrestrictedtokentablemodel.h"
 
 #include "base58.h"
 #include "chain.h"
@@ -46,7 +46,7 @@ using namespace boost::placeholders;
 WalletModel::WalletModel(const PlatformStyle *platformStyle, CWallet *_wallet, OptionsModel *_optionsModel, QObject *parent) :
     QObject(parent), wallet(_wallet), optionsModel(_optionsModel), addressTableModel(0),
     transactionTableModel(0),
-    assetTableModel(0),
+    tokenTableModel(0),
     recentRequestsTableModel(0),
     cachedBalance(0), cachedUnconfirmedBalance(0), cachedImmatureBalance(0),
     cachedEncryptionStatus(Unencrypted),
@@ -57,9 +57,9 @@ WalletModel::WalletModel(const PlatformStyle *platformStyle, CWallet *_wallet, O
 
     addressTableModel = new AddressTableModel(wallet, this);
     transactionTableModel = new TransactionTableModel(platformStyle, wallet, this);
-    assetTableModel = new AssetTableModel(this);
+    tokenTableModel = new TokenTableModel(this);
     recentRequestsTableModel = new RecentRequestsTableModel(wallet, this);
-    myRestrictedAssetsTableModel = new MyRestrictedAssetsTableModel(platformStyle, wallet, this);
+    myRestrictedTokensTableModel = new MyRestrictedTokensTableModel(platformStyle, wallet, this);
 
     // This timer will be fired repeatedly to update the balance
     pollTimer = new QTimer(this);
@@ -144,8 +144,8 @@ void WalletModel::pollBalanceChanged()
         checkBalanceChanged();
         if(transactionTableModel)
             transactionTableModel->updateConfirmations();
-        if(assetTableModel)
-            assetTableModel->checkBalanceChanged();
+        if(tokenTableModel)
+            tokenTableModel->checkBalanceChanged();
     }
 }
 
@@ -383,7 +383,7 @@ WalletModel::SendCoinsReturn WalletModel::sendCoins(WalletModelTransaction &tran
     return SendCoinsReturn(OK);
 }
 
-WalletModel::SendCoinsReturn WalletModel::sendAssets(CWalletTx& tx, QList<SendAssetsRecipient>& recipients, CReserveKey& reservekey)
+WalletModel::SendCoinsReturn WalletModel::sendTokens(CWalletTx& tx, QList<SendTokensRecipient>& recipients, CReserveKey& reservekey)
 {
     QByteArray transaction_array; /* store serialized transaction */
 
@@ -392,7 +392,7 @@ WalletModel::SendCoinsReturn WalletModel::sendAssets(CWalletTx& tx, QList<SendAs
 
         std::pair<int, std::string> error;
         std::string txid;
-        if (!SendAssetTransaction(this->wallet, tx, reservekey, error, txid))
+        if (!SendTokenTransaction(this->wallet, tx, reservekey, error, txid))
             return SendCoinsReturn(TransactionCommitFailed, QString::fromStdString(error.second));
 
         CDataStream ssTx(SER_NETWORK, PROTOCOL_VERSION);
@@ -402,7 +402,7 @@ WalletModel::SendCoinsReturn WalletModel::sendAssets(CWalletTx& tx, QList<SendAs
 
     // Add addresses / update labels that we've sent to the address book,
     // and emit coinsSent signal for each recipient
-    for (const SendAssetsRecipient &rcp : recipients)
+    for (const SendTokensRecipient &rcp : recipients)
     {
         // Don't touch the address book when we have a payment request
         if (!rcp.paymentRequest.IsInitialized())
@@ -426,7 +426,7 @@ WalletModel::SendCoinsReturn WalletModel::sendAssets(CWalletTx& tx, QList<SendAs
                 }
             }
         }
-        Q_EMIT assetsSent(wallet, rcp, transaction_array);
+        Q_EMIT tokensSent(wallet, rcp, transaction_array);
     }
     checkBalanceChanged(); // update balance immediately, otherwise there could be a short noticeable delay until pollBalanceChanged hits
 
@@ -448,14 +448,14 @@ TransactionTableModel *WalletModel::getTransactionTableModel()
     return transactionTableModel;
 }
 
-AssetTableModel *WalletModel::getAssetTableModel()
+TokenTableModel *WalletModel::getTokenTableModel()
 {
-    return assetTableModel;
+    return tokenTableModel;
 }
 
-MyRestrictedAssetsTableModel *WalletModel::getMyRestrictedAssetsTableModel()
+MyRestrictedTokensTableModel *WalletModel::getMyRestrictedTokensTableModel()
 {
-    return myRestrictedAssetsTableModel;
+    return myRestrictedTokensTableModel;
 }
 
 RecentRequestsTableModel *WalletModel::getRecentRequestsTableModel()
@@ -555,14 +555,14 @@ static void NotifyTransactionChanged(WalletModel *walletmodel, CWallet *wallet, 
     QMetaObject::invokeMethod(walletmodel, "updateTransaction", Qt::QueuedConnection);
 }
 
-static void NotifyMyRestrictedAssetChanged(WalletModel *walletmodel, CWallet *wallet, const std::string &address, const std::string& asset_name,  int type, uint32_t date)
+static void NotifyMyRestrictedTokenChanged(WalletModel *walletmodel, CWallet *wallet, const std::string &address, const std::string& token_name,  int type, uint32_t date)
 {
     Q_UNUSED(wallet);
     Q_UNUSED(address);
-    Q_UNUSED(asset_name);
+    Q_UNUSED(token_name);
     Q_UNUSED(type);
     Q_UNUSED(date);
-    QMetaObject::invokeMethod(walletmodel, "updateMyRestrictedAssets", Qt::QueuedConnection);
+    QMetaObject::invokeMethod(walletmodel, "updateMyRestrictedTokens", Qt::QueuedConnection);
 }
 
 static void ShowProgress(WalletModel *walletmodel, const std::string &title, int nProgress)
@@ -585,7 +585,7 @@ void WalletModel::subscribeToCoreSignals()
     wallet->NotifyStatusChanged.connect(boost::bind(&NotifyKeyStoreStatusChanged, this, _1));
     wallet->NotifyAddressBookChanged.connect(boost::bind(NotifyAddressBookChanged, this, _1, _2, _3, _4, _5, _6));
     wallet->NotifyTransactionChanged.connect(boost::bind(NotifyTransactionChanged, this, _1, _2, _3));
-    wallet->NotifyMyRestrictedAssetsChanged.connect(boost::bind(NotifyMyRestrictedAssetChanged, this, _1, _2, _3, _4, _5));
+    wallet->NotifyMyRestrictedTokensChanged.connect(boost::bind(NotifyMyRestrictedTokenChanged, this, _1, _2, _3, _4, _5));
     wallet->ShowProgress.connect(boost::bind(ShowProgress, this, _1, _2));
     wallet->NotifyWatchonlyChanged.connect(boost::bind(NotifyWatchonlyChanged, this, _1));
 }
@@ -596,7 +596,7 @@ void WalletModel::unsubscribeFromCoreSignals()
     wallet->NotifyStatusChanged.disconnect(boost::bind(&NotifyKeyStoreStatusChanged, this, _1));
     wallet->NotifyAddressBookChanged.disconnect(boost::bind(NotifyAddressBookChanged, this, _1, _2, _3, _4, _5, _6));
     wallet->NotifyTransactionChanged.disconnect(boost::bind(NotifyTransactionChanged, this, _1, _2, _3));
-    wallet->NotifyMyRestrictedAssetsChanged.disconnect(boost::bind(NotifyMyRestrictedAssetChanged, this, _1, _2, _3, _4, _5));
+    wallet->NotifyMyRestrictedTokensChanged.disconnect(boost::bind(NotifyMyRestrictedTokenChanged, this, _1, _2, _3, _4, _5));
     wallet->ShowProgress.disconnect(boost::bind(ShowProgress, this, _1, _2));
     wallet->NotifyWatchonlyChanged.disconnect(boost::bind(NotifyWatchonlyChanged, this, _1));
 }
@@ -687,27 +687,27 @@ void WalletModel::listCoins(std::map<QString, std::vector<COutput> >& mapCoins) 
 
 /** YONA START */
 // AvailableCoins + LockedCoins grouped by wallet address (put change in one group with wallet address)
-void WalletModel::listAssets(std::map<QString, std::map<QString, std::vector<COutput> > >& mapCoins) const
+void WalletModel::listTokens(std::map<QString, std::map<QString, std::vector<COutput> > >& mapCoins) const
 {
-    std::map<QString, std::map<QString, std::vector<COutput> > > mapSortedByAssetName;
-    auto list = wallet->ListAssets();
+    std::map<QString, std::map<QString, std::vector<COutput> > > mapSortedByTokenName;
+    auto list = wallet->ListTokens();
 
     for (auto& group : list) {
         auto address = QString::fromStdString(EncodeDestination(group.first));
 
         for (auto& coin : group.second) {
             auto out = coin.tx->tx->vout[coin.i];
-            std::string strAssetName;
+            std::string strTokenName;
             CAmount nAmount;
-            if (!GetAssetInfoFromScript(out.scriptPubKey, strAssetName, nAmount))
+            if (!GetTokenInfoFromScript(out.scriptPubKey, strTokenName, nAmount))
                 continue;
 
             if (nAmount == 0)
                 continue;
 
-            QString assetName = QString::fromStdString(strAssetName);
-            auto& assetMap = mapCoins[assetName];
-            assetMap[address].emplace_back(coin);
+            QString tokenName = QString::fromStdString(strTokenName);
+            auto& tokenMap = mapCoins[tokenName];
+            tokenMap[address].emplace_back(coin);
         }
     }
 }

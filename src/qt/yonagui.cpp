@@ -154,12 +154,12 @@ YonaGUI::YonaGUI(const PlatformStyle *_platformStyle, const NetworkStyle *networ
     openWalletRepairAction(0),
     openAction(0),
     showHelpMessageAction(0),
-    transferAssetAction(0),
-    createAssetAction(0),
-    manageAssetAction(0),
+    transferTokenAction(0),
+    createTokenAction(0),
+    manageTokenAction(0),
     messagingAction(0),
     votingAction(0),
-    restrictedAssetAction(0),
+    restrictedTokenAction(0),
     headerWidget(0),
     labelCurrentMarket(0),
     labelCurrentPrice(0),
@@ -425,29 +425,29 @@ void YonaGUI::createActions()
     tabGroup->addAction(historyAction);
 
     /** YONA START */
-    transferAssetAction = new QAction(platformStyle->SingleColorIconOnOff(":/icons/asset_transfer_selected", ":/icons/asset_transfer"), tr("&Transfer Assets"), this);
-    transferAssetAction->setStatusTip(tr("Transfer assets to YONA addresses"));
-    transferAssetAction->setToolTip(transferAssetAction->statusTip());
-    transferAssetAction->setCheckable(true);
-    transferAssetAction->setShortcut(QKeySequence(Qt::ALT + Qt::Key_5));
-    transferAssetAction->setFont(font);
-    tabGroup->addAction(transferAssetAction);
+    transferTokenAction = new QAction(platformStyle->SingleColorIconOnOff(":/icons/token_transfer_selected", ":/icons/token_transfer"), tr("&Transfer Tokens"), this);
+    transferTokenAction->setStatusTip(tr("Transfer tokens to YONA addresses"));
+    transferTokenAction->setToolTip(transferTokenAction->statusTip());
+    transferTokenAction->setCheckable(true);
+    transferTokenAction->setShortcut(QKeySequence(Qt::ALT + Qt::Key_5));
+    transferTokenAction->setFont(font);
+    tabGroup->addAction(transferTokenAction);
 
-    createAssetAction = new QAction(platformStyle->SingleColorIconOnOff(":/icons/asset_create_selected", ":/icons/asset_create"), tr("&Create Assets"), this);
-    createAssetAction->setStatusTip(tr("Create new main/sub/unique assets"));
-    createAssetAction->setToolTip(createAssetAction->statusTip());
-    createAssetAction->setCheckable(true);
-    createAssetAction->setShortcut(QKeySequence(Qt::ALT + Qt::Key_6));
-    createAssetAction->setFont(font);
-    tabGroup->addAction(createAssetAction);
+    createTokenAction = new QAction(platformStyle->SingleColorIconOnOff(":/icons/token_create_selected", ":/icons/token_create"), tr("&Create Tokens"), this);
+    createTokenAction->setStatusTip(tr("Create new main/sub/unique tokens"));
+    createTokenAction->setToolTip(createTokenAction->statusTip());
+    createTokenAction->setCheckable(true);
+    createTokenAction->setShortcut(QKeySequence(Qt::ALT + Qt::Key_6));
+    createTokenAction->setFont(font);
+    tabGroup->addAction(createTokenAction);
 
-    manageAssetAction = new QAction(platformStyle->SingleColorIconOnOff(":/icons/asset_manage_selected", ":/icons/asset_manage"), tr("&Manage Assets"), this);
-    manageAssetAction->setStatusTip(tr("Manage assets you are the administrator of"));
-    manageAssetAction->setToolTip(manageAssetAction->statusTip());
-    manageAssetAction->setCheckable(true);
-    manageAssetAction->setShortcut(QKeySequence(Qt::ALT + Qt::Key_7));
-    manageAssetAction->setFont(font);
-    tabGroup->addAction(manageAssetAction);
+    manageTokenAction = new QAction(platformStyle->SingleColorIconOnOff(":/icons/token_manage_selected", ":/icons/token_manage"), tr("&Manage Tokens"), this);
+    manageTokenAction->setStatusTip(tr("Manage tokens you are the administrator of"));
+    manageTokenAction->setToolTip(manageTokenAction->statusTip());
+    manageTokenAction->setCheckable(true);
+    manageTokenAction->setShortcut(QKeySequence(Qt::ALT + Qt::Key_7));
+    manageTokenAction->setFont(font);
+    tabGroup->addAction(manageTokenAction);
 
     messagingAction = new QAction(platformStyle->SingleColorIcon(":/icons/editcopy"), tr("&Messaging"), this);
     messagingAction->setStatusTip(tr("Coming Soon"));
@@ -465,13 +465,13 @@ void YonaGUI::createActions()
     votingAction->setFont(font);
     tabGroup->addAction(votingAction);
 
-    restrictedAssetAction = new QAction(platformStyle->SingleColorIconOnOff(":/icons/restricted_asset_selected", ":/icons/restricted_asset"), tr("&Restricted Assets"), this);
-    restrictedAssetAction->setStatusTip(tr("Manage restricted assets"));
-    restrictedAssetAction->setToolTip(restrictedAssetAction->statusTip());
-    restrictedAssetAction->setCheckable(true);
-//    restrictedAssetAction->setShortcut(QKeySequence(Qt::ALT + Qt::Key_9));
-    restrictedAssetAction->setFont(font);
-    tabGroup->addAction(restrictedAssetAction);
+    restrictedTokenAction = new QAction(platformStyle->SingleColorIconOnOff(":/icons/restricted_token_selected", ":/icons/restricted_token"), tr("&Restricted Tokens"), this);
+    restrictedTokenAction->setStatusTip(tr("Manage restricted tokens"));
+    restrictedTokenAction->setToolTip(restrictedTokenAction->statusTip());
+    restrictedTokenAction->setCheckable(true);
+//    restrictedTokenAction->setShortcut(QKeySequence(Qt::ALT + Qt::Key_9));
+    restrictedTokenAction->setFont(font);
+    tabGroup->addAction(restrictedTokenAction);
 
     /** YONA END */
 
@@ -490,14 +490,14 @@ void YonaGUI::createActions()
     connect(receiveCoinsMenuAction, SIGNAL(triggered()), this, SLOT(gotoReceiveCoinsPage()));
     connect(historyAction, SIGNAL(triggered()), this, SLOT(showNormalIfMinimized()));
     connect(historyAction, SIGNAL(triggered()), this, SLOT(gotoHistoryPage()));
-    connect(transferAssetAction, SIGNAL(triggered()), this, SLOT(showNormalIfMinimized()));
-    connect(transferAssetAction, SIGNAL(triggered()), this, SLOT(gotoAssetsPage()));
-    connect(createAssetAction, SIGNAL(triggered()), this, SLOT(showNormalIfMinimized()));
-    connect(createAssetAction, SIGNAL(triggered()), this, SLOT(gotoCreateAssetsPage()));
-    connect(manageAssetAction, SIGNAL(triggered()), this, SLOT(showNormalIfMinimized()));
-    connect(manageAssetAction, SIGNAL(triggered()), this, SLOT(gotoManageAssetsPage()));
-    connect(restrictedAssetAction, SIGNAL(triggered()), this, SLOT(showNormalIfMinimized()));
-    connect(restrictedAssetAction, SIGNAL(triggered()), this, SLOT(gotoRestrictedAssetsPage()));
+    connect(transferTokenAction, SIGNAL(triggered()), this, SLOT(showNormalIfMinimized()));
+    connect(transferTokenAction, SIGNAL(triggered()), this, SLOT(gotoTokensPage()));
+    connect(createTokenAction, SIGNAL(triggered()), this, SLOT(showNormalIfMinimized()));
+    connect(createTokenAction, SIGNAL(triggered()), this, SLOT(gotoCreateTokensPage()));
+    connect(manageTokenAction, SIGNAL(triggered()), this, SLOT(showNormalIfMinimized()));
+    connect(manageTokenAction, SIGNAL(triggered()), this, SLOT(gotoManageTokensPage()));
+    connect(restrictedTokenAction, SIGNAL(triggered()), this, SLOT(showNormalIfMinimized()));
+    connect(restrictedTokenAction, SIGNAL(triggered()), this, SLOT(gotoRestrictedTokensPage()));
     // TODO add messaging actions to go to messaging page when clicked
     // TODO add voting actions to go to voting page when clicked
 #endif // ENABLE_WALLET
@@ -663,12 +663,12 @@ void YonaGUI::createToolBars()
         toolbar->addAction(sendCoinsAction);
         toolbar->addAction(receiveCoinsAction);
         toolbar->addAction(historyAction);
-        toolbar->addAction(createAssetAction);
-        toolbar->addAction(transferAssetAction);
-        toolbar->addAction(manageAssetAction);
+        toolbar->addAction(createTokenAction);
+        toolbar->addAction(transferTokenAction);
+        toolbar->addAction(manageTokenAction);
 //        toolbar->addAction(messagingAction);
 //        toolbar->addAction(votingAction);
-        toolbar->addAction(restrictedAssetAction);
+        toolbar->addAction(restrictedTokenAction);
 
         QString openSansFontString = "font: normal 22pt \"Open Sans\";";
         QString normalString = "font: normal 22pt \"Arial\";";
@@ -1064,12 +1064,12 @@ void YonaGUI::setWalletActionsEnabled(bool enabled)
     openAction->setEnabled(enabled);
 
     /** YONA START */
-    transferAssetAction->setEnabled(false);
-    createAssetAction->setEnabled(false);
-    manageAssetAction->setEnabled(false);
+    transferTokenAction->setEnabled(false);
+    createTokenAction->setEnabled(false);
+    manageTokenAction->setEnabled(false);
     messagingAction->setEnabled(false);
     votingAction->setEnabled(false);
-    restrictedAssetAction->setEnabled(false);
+    restrictedTokenAction->setEnabled(false);
     /** YONA END */
 }
 
@@ -1222,28 +1222,28 @@ void YonaGUI::gotoVerifyMessageTab(QString addr)
 }
 
 /** YONA START */
-void YonaGUI::gotoAssetsPage()
+void YonaGUI::gotoTokensPage()
 {
-    transferAssetAction->setChecked(true);
-    if (walletFrame) walletFrame->gotoAssetsPage();
+    transferTokenAction->setChecked(true);
+    if (walletFrame) walletFrame->gotoTokensPage();
 };
 
-void YonaGUI::gotoCreateAssetsPage()
+void YonaGUI::gotoCreateTokensPage()
 {
-    createAssetAction->setChecked(true);
-    if (walletFrame) walletFrame->gotoCreateAssetsPage();
+    createTokenAction->setChecked(true);
+    if (walletFrame) walletFrame->gotoCreateTokensPage();
 };
 
-void YonaGUI::gotoManageAssetsPage()
+void YonaGUI::gotoManageTokensPage()
 {
-    manageAssetAction->setChecked(true);
-    if (walletFrame) walletFrame->gotoManageAssetsPage();
+    manageTokenAction->setChecked(true);
+    if (walletFrame) walletFrame->gotoManageTokensPage();
 };
 
-void YonaGUI::gotoRestrictedAssetsPage()
+void YonaGUI::gotoRestrictedTokensPage()
 {
-    restrictedAssetAction->setChecked(true);
-    if (walletFrame) walletFrame->gotoRestrictedAssetsPage();
+    restrictedTokenAction->setChecked(true);
+    if (walletFrame) walletFrame->gotoRestrictedTokensPage();
 };
 /** YONA END */
 #endif // ENABLE_WALLET
@@ -1517,14 +1517,14 @@ void YonaGUI::showEvent(QShowEvent *event)
 }
 
 #ifdef ENABLE_WALLET
-void YonaGUI::incomingTransaction(const QString& date, int unit, const CAmount& amount, const QString& type, const QString& address, const QString& label, const QString& assetName)
+void YonaGUI::incomingTransaction(const QString& date, int unit, const CAmount& amount, const QString& type, const QString& address, const QString& label, const QString& tokenName)
 {
     // On new transaction, make an info balloon
     QString msg = tr("Date: %1\n").arg(date);
-    if (assetName == "YONA")
+    if (tokenName == "YONA")
         msg += tr("Amount: %1\n").arg(YonaUnits::formatWithUnit(unit, amount, true));
     else
-        msg += tr("Amount: %1\n").arg(YonaUnits::formatWithCustomName(assetName, amount, MAX_ASSET_UNITS, true));
+        msg += tr("Amount: %1\n").arg(YonaUnits::formatWithCustomName(tokenName, amount, MAX_TOKEN_UNITS, true));
 
     msg += tr("Type: %1\n").arg(type);
 
@@ -1536,31 +1536,31 @@ void YonaGUI::incomingTransaction(const QString& date, int unit, const CAmount& 
              msg, CClientUIInterface::MSG_INFORMATION);
 }
 
-void YonaGUI::checkAssets()
+void YonaGUI::checkTokens()
 {
-    // Check that status of RIP2 and activate the assets icon if it is active
-    if(AreAssetsDeployed()) {
-        transferAssetAction->setDisabled(false);
-        transferAssetAction->setToolTip(tr("Transfer assets to YONA addresses"));
-        createAssetAction->setDisabled(false);
-        createAssetAction->setToolTip(tr("Create new main/sub/unique assets"));
-        manageAssetAction->setDisabled(false);
+    // Check that status of RIP2 and activate the tokens icon if it is active
+    if(AreTokensDeployed()) {
+        transferTokenAction->setDisabled(false);
+        transferTokenAction->setToolTip(tr("Transfer tokens to YONA addresses"));
+        createTokenAction->setDisabled(false);
+        createTokenAction->setToolTip(tr("Create new main/sub/unique tokens"));
+        manageTokenAction->setDisabled(false);
         }
     else {
-        transferAssetAction->setDisabled(true);
-        transferAssetAction->setToolTip(tr("Assets not yet active"));
-        createAssetAction->setDisabled(true);
-        createAssetAction->setToolTip(tr("Assets not yet active"));
-        manageAssetAction->setDisabled(true);
+        transferTokenAction->setDisabled(true);
+        transferTokenAction->setToolTip(tr("Tokens not yet active"));
+        createTokenAction->setDisabled(true);
+        createTokenAction->setToolTip(tr("Tokens not yet active"));
+        manageTokenAction->setDisabled(true);
         }
 
-    if (AreRestrictedAssetsDeployed()) {
-        restrictedAssetAction->setDisabled(false);
-        restrictedAssetAction->setToolTip(tr("Manage restricted assets"));
+    if (AreRestrictedTokensDeployed()) {
+        restrictedTokenAction->setDisabled(false);
+        restrictedTokenAction->setToolTip(tr("Manage restricted tokens"));
 
     } else {
-        restrictedAssetAction->setDisabled(true);
-        restrictedAssetAction->setToolTip(tr("Restricted Assets not yet active"));
+        restrictedTokenAction->setDisabled(true);
+        restrictedTokenAction->setToolTip(tr("Restricted Tokens not yet active"));
     }
 }
 #endif // ENABLE_WALLET

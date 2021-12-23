@@ -17,13 +17,13 @@
 #include "sendcoinsdialog.h"
 #include "signverifymessagedialog.h"
 #include "transactiontablemodel.h"
-#include "assettablemodel.h"
+#include "tokentablemodel.h"
 #include "transactionview.h"
 #include "walletmodel.h"
-#include "assetsdialog.h"
-#include "createassetdialog.h"
-#include "reissueassetdialog.h"
-#include "restrictedassetsdialog.h"
+#include "tokensdialog.h"
+#include "createtokendialog.h"
+#include "reissuetokendialog.h"
+#include "restrictedtokensdialog.h"
 #include <validation.h>
 
 #include "ui_interface.h"
@@ -63,10 +63,10 @@ WalletView::WalletView(const PlatformStyle *_platformStyle, QWidget *parent):
     receiveCoinsPage = new ReceiveCoinsDialog(platformStyle);
     sendCoinsPage = new SendCoinsDialog(platformStyle);
 
-    assetsPage = new AssetsDialog(platformStyle);
-    createAssetsPage = new CreateAssetDialog(platformStyle);
-    manageAssetsPage = new ReissueAssetDialog(platformStyle);
-    restrictedAssetsPage = new RestrictedAssetsDialog(platformStyle);
+    tokensPage = new TokensDialog(platformStyle);
+    createTokensPage = new CreateTokenDialog(platformStyle);
+    manageTokensPage = new ReissueTokenDialog(platformStyle);
+    restrictedTokensPage = new RestrictedTokensDialog(platformStyle);
 
     usedSendingAddressesPage = new AddressBookPage(platformStyle, AddressBookPage::ForEditing, AddressBookPage::SendingTab, this);
     usedReceivingAddressesPage = new AddressBookPage(platformStyle, AddressBookPage::ForEditing, AddressBookPage::ReceivingTab, this);
@@ -77,10 +77,10 @@ WalletView::WalletView(const PlatformStyle *_platformStyle, QWidget *parent):
     addWidget(sendCoinsPage);
 
     /** YONA START */
-    addWidget(assetsPage);
-    addWidget(createAssetsPage);
-    addWidget(manageAssetsPage);
-    addWidget(restrictedAssetsPage);
+    addWidget(tokensPage);
+    addWidget(createTokensPage);
+    addWidget(manageTokensPage);
+    addWidget(restrictedTokensPage);
     /** YONA END */
 
     // Clicking on a transaction on the overview pre-selects the transaction on the transaction history page
@@ -99,14 +99,14 @@ WalletView::WalletView(const PlatformStyle *_platformStyle, QWidget *parent):
     connect(transactionView, SIGNAL(message(QString,QString,unsigned int)), this, SIGNAL(message(QString,QString,unsigned int)));
 
     /** YONA START */
-    connect(assetsPage, SIGNAL(message(QString,QString,unsigned int)), this, SIGNAL(message(QString,QString,unsigned int)));
-    connect(createAssetsPage, SIGNAL(message(QString,QString,unsigned int)), this, SIGNAL(message(QString,QString,unsigned int)));
-    connect(manageAssetsPage, SIGNAL(message(QString,QString,unsigned int)), this, SIGNAL(message(QString,QString,unsigned int)));
-    connect(restrictedAssetsPage, SIGNAL(message(QString,QString,unsigned int)), this, SIGNAL(message(QString,QString,unsigned int)));
-    connect(overviewPage, SIGNAL(assetSendClicked(QModelIndex)), assetsPage, SLOT(focusAsset(QModelIndex)));
-    connect(overviewPage, SIGNAL(assetIssueSubClicked(QModelIndex)), createAssetsPage, SLOT(focusSubAsset(QModelIndex)));
-    connect(overviewPage, SIGNAL(assetIssueUniqueClicked(QModelIndex)), createAssetsPage, SLOT(focusUniqueAsset(QModelIndex)));
-    connect(overviewPage, SIGNAL(assetReissueClicked(QModelIndex)), manageAssetsPage, SLOT(focusReissueAsset(QModelIndex)));
+    connect(tokensPage, SIGNAL(message(QString,QString,unsigned int)), this, SIGNAL(message(QString,QString,unsigned int)));
+    connect(createTokensPage, SIGNAL(message(QString,QString,unsigned int)), this, SIGNAL(message(QString,QString,unsigned int)));
+    connect(manageTokensPage, SIGNAL(message(QString,QString,unsigned int)), this, SIGNAL(message(QString,QString,unsigned int)));
+    connect(restrictedTokensPage, SIGNAL(message(QString,QString,unsigned int)), this, SIGNAL(message(QString,QString,unsigned int)));
+    connect(overviewPage, SIGNAL(tokenSendClicked(QModelIndex)), tokensPage, SLOT(focusToken(QModelIndex)));
+    connect(overviewPage, SIGNAL(tokenIssueSubClicked(QModelIndex)), createTokensPage, SLOT(focusSubToken(QModelIndex)));
+    connect(overviewPage, SIGNAL(tokenIssueUniqueClicked(QModelIndex)), createTokensPage, SLOT(focusUniqueToken(QModelIndex)));
+    connect(overviewPage, SIGNAL(tokenReissueClicked(QModelIndex)), manageTokensPage, SLOT(focusReissueToken(QModelIndex)));
     /** RNV END */
 }
 
@@ -121,17 +121,17 @@ void WalletView::setYonaGUI(YonaGUI *gui)
         // Clicking on a transaction on the overview page simply sends you to transaction history page
         connect(overviewPage, SIGNAL(transactionClicked(QModelIndex)), gui, SLOT(gotoHistoryPage()));
 
-        // Clicking on a asset menu item Send
-        connect(overviewPage, SIGNAL(assetSendClicked(QModelIndex)), gui, SLOT(gotoAssetsPage()));
+        // Clicking on a token menu item Send
+        connect(overviewPage, SIGNAL(tokenSendClicked(QModelIndex)), gui, SLOT(gotoTokensPage()));
 
-        // Clicking on a asset menu item Issue Sub
-        connect(overviewPage, SIGNAL(assetIssueSubClicked(QModelIndex)), gui, SLOT(gotoCreateAssetsPage()));
+        // Clicking on a token menu item Issue Sub
+        connect(overviewPage, SIGNAL(tokenIssueSubClicked(QModelIndex)), gui, SLOT(gotoCreateTokensPage()));
 
-        // Clicking on a asset menu item Issue Unique
-        connect(overviewPage, SIGNAL(assetIssueUniqueClicked(QModelIndex)), gui, SLOT(gotoCreateAssetsPage()));
+        // Clicking on a token menu item Issue Unique
+        connect(overviewPage, SIGNAL(tokenIssueUniqueClicked(QModelIndex)), gui, SLOT(gotoCreateTokensPage()));
 
-        // Clicking on a asset menu item Reissue
-        connect(overviewPage, SIGNAL(assetReissueClicked(QModelIndex)), gui, SLOT(gotoManageAssetsPage()));
+        // Clicking on a token menu item Reissue
+        connect(overviewPage, SIGNAL(tokenReissueClicked(QModelIndex)), gui, SLOT(gotoManageTokensPage()));
 
         // Receive and report messages
         connect(this, SIGNAL(message(QString,QString,unsigned int)), gui, SLOT(message(QString,QString,unsigned int)));
@@ -145,8 +145,8 @@ void WalletView::setYonaGUI(YonaGUI *gui)
         // Connect HD enabled state signal 
         connect(this, SIGNAL(hdEnabledStatusChanged(int)), gui, SLOT(setHDStatus(int)));
 
-        // Pass through checkAssets calls to the GUI
-        connect(this, SIGNAL(checkAssets()), gui, SLOT(checkAssets()));
+        // Pass through checkTokens calls to the GUI
+        connect(this, SIGNAL(checkTokens()), gui, SLOT(checkTokens()));
     }
 }
 
@@ -171,10 +171,10 @@ void WalletView::setWalletModel(WalletModel *_walletModel)
     usedSendingAddressesPage->setModel(_walletModel ? _walletModel->getAddressTableModel() : nullptr);
 
     /** YONA START */
-    assetsPage->setModel(_walletModel);
-    createAssetsPage->setModel(_walletModel);
-    manageAssetsPage->setModel(_walletModel);
-    restrictedAssetsPage->setModel(_walletModel);
+    tokensPage->setModel(_walletModel);
+    createTokensPage->setModel(_walletModel);
+    manageTokensPage->setModel(_walletModel);
+    restrictedTokensPage->setModel(_walletModel);
 
     if (_walletModel)
     {
@@ -211,10 +211,10 @@ void WalletView::processNewTransaction(const QModelIndex& parent, int start, int
         return;
 
     /** YONA START */
-    // With the addition of asset transactions, there can be multiple transaction that need notifications
+    // With the addition of token transactions, there can be multiple transaction that need notifications
     // so we need to loop through all new transaction that were added to the transaction table and display
     // notifications for each individual transaction
-    QString assetName = "";
+    QString tokenName = "";
     for (int i = start; i <= end; i++) {
         QString date = ttm->index(i, TransactionTableModel::Date, parent).data().toString();
         qint64 amount = ttm->index(i, TransactionTableModel::Amount, parent).data(Qt::EditRole).toULongLong();
@@ -222,28 +222,28 @@ void WalletView::processNewTransaction(const QModelIndex& parent, int start, int
         QModelIndex index = ttm->index(i, 0, parent);
         QString address = ttm->data(index, TransactionTableModel::AddressRole).toString();
         QString label = ttm->data(index, TransactionTableModel::LabelRole).toString();
-        assetName = ttm->data(index, TransactionTableModel::AssetNameRole).toString();
+        tokenName = ttm->data(index, TransactionTableModel::TokenNameRole).toString();
 
         Q_EMIT incomingTransaction(date, walletModel->getOptionsModel()->getDisplayUnit(), amount, type, address, label,
-                                   assetName);
+                                   tokenName);
     }
     /** YONA END */
 
-    /** Everytime we get an new transaction. We should check to see if assets are enabled or not */
-    overviewPage->showAssets();
-    transactionView->showAssets();
-    Q_EMIT checkAssets();
+    /** Everytime we get an new transaction. We should check to see if tokens are enabled or not */
+    overviewPage->showTokens();
+    transactionView->showTokens();
+    Q_EMIT checkTokens();
 
-    assetsPage->processNewTransaction();
-    createAssetsPage->updateAssetList();
-    manageAssetsPage->updateAssetsList();
+    tokensPage->processNewTransaction();
+    createTokensPage->updateTokenList();
+    manageTokensPage->updateTokensList();
 
 }
 
 void WalletView::gotoOverviewPage()
 {
     setCurrentWidget(overviewPage);
-    Q_EMIT checkAssets();
+    Q_EMIT checkTokens();
 }
 
 void WalletView::gotoHistoryPage()
@@ -425,28 +425,28 @@ void WalletView::requestedSyncWarningInfo()
 
 bool fFirstVisit = true;
 /** YONA START */
-void WalletView::gotoAssetsPage()
+void WalletView::gotoTokensPage()
 {
     if (fFirstVisit){
         fFirstVisit = false;
-        assetsPage->handleFirstSelection();
+        tokensPage->handleFirstSelection();
     }
-    setCurrentWidget(assetsPage);
-    assetsPage->focusAssetListBox();
+    setCurrentWidget(tokensPage);
+    tokensPage->focusTokenListBox();
 }
 
-void WalletView::gotoCreateAssetsPage()
+void WalletView::gotoCreateTokensPage()
 {
-    setCurrentWidget(createAssetsPage);
+    setCurrentWidget(createTokensPage);
 }
 
-void WalletView::gotoManageAssetsPage()
+void WalletView::gotoManageTokensPage()
 {
-    setCurrentWidget(manageAssetsPage);
+    setCurrentWidget(manageTokensPage);
 }
 
-void WalletView::gotoRestrictedAssetsPage()
+void WalletView::gotoRestrictedTokensPage()
 {
-    setCurrentWidget(restrictedAssetsPage);
+    setCurrentWidget(restrictedTokensPage);
 }
 /** YONA END */

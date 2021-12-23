@@ -17,11 +17,11 @@ class CBlockIndex;
 class CCoinsViewCache;
 class CTransaction;
 class CValidationState;
-class CAssetsCache;
+class CTokensCache;
 class CTxOut;
 class uint256;
 class CMessage;
-class CNullAssetTxData;
+class CNullTokenTxData;
 
 /** Transaction validation functions */
 
@@ -38,7 +38,7 @@ namespace Consensus {
 bool CheckTxInputs(const CTransaction& tx, CValidationState& state, const CCoinsViewCache& inputs, int nSpendHeight, CAmount& txfee);
 
 /** YONA START */
-bool CheckTxAssets(const CTransaction& tx, CValidationState& state, const CCoinsViewCache& inputs, CAssetsCache* assetCache, bool fCheckMempool, std::vector<std::pair<std::string, uint256> >& vPairReissueAssets, const bool fRunningUnitTests = false, std::set<CMessage>* setMessages = nullptr, int64_t nBlocktime = 0,  std::vector<std::pair<std::string, CNullAssetTxData>>* myNullAssetData = nullptr);
+bool CheckTxTokens(const CTransaction& tx, CValidationState& state, const CCoinsViewCache& inputs, CTokensCache* tokenCache, bool fCheckMempool, std::vector<std::pair<std::string, uint256> >& vPairReissueTokens, const bool fRunningUnitTests = false, std::set<CMessage>* setMessages = nullptr, int64_t nBlocktime = 0,  std::vector<std::pair<std::string, CNullTokenTxData>>* myNullTokenData = nullptr);
 /** YONA END */
 } // namespace Consensus
 

@@ -12,8 +12,8 @@
 #include "optionsmodel.h"
 #include "platformstyle.h"
 #include "walletmodel.h"
-#include "assetfilterproxy.h"
-#include "assettablemodel.h"
+#include "tokenfilterproxy.h"
+#include "tokentablemodel.h"
 
 #include <QAbstractItemDelegate>
 #include <QPainter>
@@ -33,15 +33,15 @@ AssignQualifier::AssignQualifier(const PlatformStyle *_platformStyle, QWidget *p
     ui->buttonSubmit->setDisabled(true);
     ui->lineEditAddress->installEventFilter(this);
     ui->lineEditChangeAddress->installEventFilter(this);
-    ui->lineEditAssetData->installEventFilter(this);
+    ui->lineEditTokenData->installEventFilter(this);
     connect(ui->buttonClear, SIGNAL(clicked()), this, SLOT(clear()));
     connect(ui->buttonCheck, SIGNAL(clicked()), this, SLOT(check()));
     connect(ui->lineEditAddress, SIGNAL(textChanged(QString)), this, SLOT(dataChanged()));
     connect(ui->lineEditChangeAddress, SIGNAL(textChanged(QString)), this, SLOT(dataChanged()));
-    connect(ui->lineEditAssetData, SIGNAL(textChanged(QString)), this, SLOT(dataChanged()));
+    connect(ui->lineEditTokenData, SIGNAL(textChanged(QString)), this, SLOT(dataChanged()));
     connect(ui->checkBoxChangeAddress, SIGNAL(stateChanged(int)), this, SLOT(dataChanged()));
     connect(ui->checkBoxChangeAddress, SIGNAL(stateChanged(int)), this, SLOT(changeAddressChanged(int)));
-    connect(ui->assetComboBox, SIGNAL(currentIndexChanged(int)), this, SLOT(dataChanged()));
+    connect(ui->tokenComboBox, SIGNAL(currentIndexChanged(int)), this, SLOT(dataChanged()));
     connect(ui->assignTypeComboBox, SIGNAL(currentIndexChanged(int)), this, SLOT(dataChanged()));
 
     ui->labelQualifier->setStyleSheet(STRING_LABEL_COLOR);
@@ -53,8 +53,8 @@ AssignQualifier::AssignQualifier(const PlatformStyle *_platformStyle, QWidget *p
     ui->labelAssignType->setStyleSheet(STRING_LABEL_COLOR);
     ui->labelAssignType ->setFont(GUIUtil::getTopLabelFont());
 
-    ui->labelAssetData->setStyleSheet(STRING_LABEL_COLOR);
-    ui->labelAssetData ->setFont(GUIUtil::getTopLabelFont());
+    ui->labelTokenData->setStyleSheet(STRING_LABEL_COLOR);
+    ui->labelTokenData ->setFont(GUIUtil::getTopLabelFont());
 
     ui->checkBoxChangeAddress->setStyleSheet(QString(".QCheckBox{ %1; }").arg(STRING_LABEL_COLOR));
 
@@ -76,14 +76,14 @@ void AssignQualifier::setWalletModel(WalletModel *model)
 {
     this->walletModel = model;
 
-    assetFilterProxy = new AssetFilterProxy(this);
-    assetFilterProxy->setSourceModel(model->getAssetTableModel());
-    assetFilterProxy->setDynamicSortFilter(true);
-    assetFilterProxy->setAssetNamePrefix("#");
-    assetFilterProxy->setSortCaseSensitivity(Qt::CaseInsensitive);
-    assetFilterProxy->setFilterCaseSensitivity(Qt::CaseInsensitive);
+    tokenFilterProxy = new TokenFilterProxy(this);
+    tokenFilterProxy->setSourceModel(model->getTokenTableModel());
+    tokenFilterProxy->setDynamicSortFilter(true);
+    tokenFilterProxy->setTokenNamePrefix("#");
+    tokenFilterProxy->setSortCaseSensitivity(Qt::CaseInsensitive);
+    tokenFilterProxy->setFilterCaseSensitivity(Qt::CaseInsensitive);
 
-    ui->assetComboBox->setModel(assetFilterProxy);
+    ui->tokenComboBox->setModel(tokenFilterProxy);
 
     ui->assignTypeComboBox->addItem(tr("Assign Qualifier"));
     ui->assignTypeComboBox->addItem(tr("Remove Qualifier"));
@@ -91,7 +91,7 @@ void AssignQualifier::setWalletModel(WalletModel *model)
 
 bool AssignQualifier::eventFilter(QObject* object, QEvent* event)
 {
-    if((object == ui->lineEditAddress || object == ui->lineEditChangeAddress || object == ui->lineEditAssetData) && event->type() == QEvent::FocusIn) {
+    if((object == ui->lineEditAddress || object == ui->lineEditChangeAddress || object == ui->lineEditTokenData) && event->type() == QEvent::FocusIn) {
         static_cast<QLineEdit*>(object)->setStyleSheet(STYLE_VALID);
         // bring up your custom edit
         return false; // lets the event continue to the edit
@@ -131,12 +131,12 @@ void AssignQualifier::hideWarning()
 void AssignQualifier::clear()
 {
     ui->lineEditAddress->clear();
-    ui->lineEditAssetData->clear();
+    ui->lineEditTokenData->clear();
     ui->lineEditChangeAddress->clear();
     ui->buttonSubmit->setDisabled(true);
     ui->lineEditAddress->setStyleSheet(STYLE_VALID);
     ui->lineEditChangeAddress->setStyleSheet(STYLE_VALID);
-    ui->lineEditAssetData->setStyleSheet(STYLE_VALID);
+    ui->lineEditTokenData->setStyleSheet(STYLE_VALID);
     ui->assignTypeComboBox->setCurrentIndex(0);
     hideWarning();
 }
@@ -161,13 +161,13 @@ void AssignQualifier::changeAddressChanged(int state)
 
 void AssignQualifier::check()
 {
-    QString qualifier = ui->assetComboBox->currentData(AssetTableModel::RoleIndex::AssetNameRole).toString();
+    QString qualifier = ui->tokenComboBox->currentData(TokenTableModel::RoleIndex::TokenNameRole).toString();
     QString address = ui->lineEditAddress->text();
     bool removing = ui->assignTypeComboBox->currentIndex() == 1;
 
     bool failed = false;
-    if (!IsAssetNameAQualifier(qualifier.toStdString())){
-        showWarning(tr("Must have a qualifier asset selected"));
+    if (!IsTokenNameAQualifier(qualifier.toStdString())){
+        showWarning(tr("Must have a qualifier token selected"));
         failed = true;
     }
 
@@ -189,20 +189,20 @@ void AssignQualifier::check()
         }
     }
 
-    if (ui->lineEditAssetData->text().size()) {
-        std::string strAssetData = ui->lineEditAssetData->text().toStdString();
+    if (ui->lineEditTokenData->text().size()) {
+        std::string strTokenData = ui->lineEditTokenData->text().toStdString();
 
-        if (DecodeAssetData(strAssetData).empty()) {
-            ui->lineEditAssetData->setStyleSheet(STYLE_INVALID);
+        if (DecodeTokenData(strTokenData).empty()) {
+            ui->lineEditTokenData->setStyleSheet(STYLE_INVALID);
             failed = true;
         }
     }
 
     if (failed) return;
 
-    if (passets) {
+    if (ptokens) {
         // returns true if the address has the qualifier
-        if (passets->CheckForAddressQualifier(qualifier.toStdString(), address.toStdString(), true)) {
+        if (ptokens->CheckForAddressQualifier(qualifier.toStdString(), address.toStdString(), true)) {
             if (removing) {
                 enableSubmitButton();
             } else {

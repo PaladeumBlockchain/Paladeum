@@ -18,7 +18,7 @@
 #include "util.h"
 #include "utilmoneystr.h"
 #include "utilstrencodings.h"
-#include "assets/assets.h"
+#include "tokens/tokens.h"
 
 std::string ValueFromAmountString(const CAmount& amount, const int8_t units)
 {
@@ -113,8 +113,8 @@ std::string ScriptToAsmStr(const CScript& script, const bool fAttemptSighashDeco
             return str;
         }
 
-        if (opcode == OP_YONA_ASSET) {
-            // Once we hit an OP_YONA_ASSET, we know that all the next data should be considered as hex
+        if (opcode == OP_YONA_TOKEN) {
+            // Once we hit an OP_YONA_TOKEN, we know that all the next data should be considered as hex
             str += GetOpName(opcode);
             str += " ";
             str += HexStr(vch);
@@ -176,19 +176,19 @@ void ScriptPubKeyToUniv(const CScript& scriptPubKey,
     out.pushKV("type", GetTxnOutputType(type));
 
     /** YONA START */
-    if (type == TX_NEW_ASSET || type == TX_TRANSFER_ASSET || type == TX_REISSUE_ASSET) {
-        UniValue assetInfo(UniValue::VOBJ);
+    if (type == TX_NEW_TOKEN || type == TX_TRANSFER_TOKEN || type == TX_REISSUE_TOKEN) {
+        UniValue tokenInfo(UniValue::VOBJ);
 
-        std::string _assetAddress;
+        std::string _tokenAddress;
 
-        CAssetOutputEntry data;
-        if (GetAssetData(scriptPubKey, data)) {
-            assetInfo.pushKV("name", data.assetName);
-            assetInfo.pushKV("amount", ValueFromAmount(data.nAmount));
+        CTokenOutputEntry data;
+        if (GetTokenData(scriptPubKey, data)) {
+            tokenInfo.pushKV("name", data.tokenName);
+            tokenInfo.pushKV("amount", ValueFromAmount(data.nAmount));
             if (!data.message.empty())
-                assetInfo.pushKV("message", EncodeAssetData(data.message));
+                tokenInfo.pushKV("message", EncodeTokenData(data.message));
             if(data.expireTime)
-                assetInfo.pushKV("expire_time", data.expireTime);
+                tokenInfo.pushKV("expire_time", data.expireTime);
 
             switch (type) {
                 case TX_NONSTANDARD:
@@ -199,69 +199,69 @@ void ScriptPubKeyToUniv(const CScript& scriptPubKey,
                 case TX_NULL_DATA:
                 case TX_WITNESS_V0_SCRIPTHASH:
                 case TX_WITNESS_V0_KEYHASH:
-                case TX_RESTRICTED_ASSET_DATA:
+                case TX_RESTRICTED_TOKEN_DATA:
                 default:
                     break;
-                case TX_NEW_ASSET:
-                    if (IsAssetNameAnOwner(data.assetName)) {
+                case TX_NEW_TOKEN:
+                    if (IsTokenNameAnOwner(data.tokenName)) {
                         // pwnd n00b
                     } else {
-                        CNewAsset asset;
-                        if (AssetFromScript(scriptPubKey, asset, _assetAddress)) {
-                            assetInfo.pushKV("units", asset.units);
-                            assetInfo.pushKV("reissuable", asset.nReissuable > 0 ? true : false);
-                            if (asset.nHasIPFS > 0) {
-                                assetInfo.pushKV("ipfs_hash", EncodeAssetData(asset.strIPFSHash));
+                        CNewToken token;
+                        if (TokenFromScript(scriptPubKey, token, _tokenAddress)) {
+                            tokenInfo.pushKV("units", token.units);
+                            tokenInfo.pushKV("reissuable", token.nReissuable > 0 ? true : false);
+                            if (token.nHasIPFS > 0) {
+                                tokenInfo.pushKV("ipfs_hash", EncodeTokenData(token.strIPFSHash));
                             }
                         }
                     }
                     break;
-                case TX_TRANSFER_ASSET:
+                case TX_TRANSFER_TOKEN:
                     break;
-                case TX_REISSUE_ASSET:
-                    CReissueAsset asset;
-                    if (ReissueAssetFromScript(scriptPubKey, asset, _assetAddress)) {
-                        if (asset.nUnits >= 0) {
-                            assetInfo.pushKV("units", asset.nUnits);
+                case TX_REISSUE_TOKEN:
+                    CReissueToken token;
+                    if (ReissueTokenFromScript(scriptPubKey, token, _tokenAddress)) {
+                        if (token.nUnits >= 0) {
+                            tokenInfo.pushKV("units", token.nUnits);
                         }
-                        assetInfo.pushKV("reissuable", asset.nReissuable > 0 ? true : false);
-                        if (!asset.strIPFSHash.empty()) {
-                            assetInfo.pushKV("ipfs_hash", EncodeAssetData(asset.strIPFSHash));
+                        tokenInfo.pushKV("reissuable", token.nReissuable > 0 ? true : false);
+                        if (!token.strIPFSHash.empty()) {
+                            tokenInfo.pushKV("ipfs_hash", EncodeTokenData(token.strIPFSHash));
                         }
                     }
                     break;
             }
         }
 
-        out.pushKV("asset", assetInfo);
+        out.pushKV("token", tokenInfo);
     }
 
-    if (type == TX_RESTRICTED_ASSET_DATA) {
-        UniValue assetInfo(UniValue::VOBJ);
-        CNullAssetTxData data;
-        CNullAssetTxVerifierString verifierData;
+    if (type == TX_RESTRICTED_TOKEN_DATA) {
+        UniValue tokenInfo(UniValue::VOBJ);
+        CNullTokenTxData data;
+        CNullTokenTxVerifierString verifierData;
         std::string address;
-        if (AssetNullDataFromScript(scriptPubKey, data, address)) {
-            AssetType type;
-            IsAssetNameValid(data.asset_name, type);
-            if (type == AssetType::QUALIFIER || type == AssetType::SUB_QUALIFIER) {
-                assetInfo.pushKV("asset_name", data.asset_name);
-                assetInfo.pushKV("qualifier_type", data.flag ? "adding qualifier" : "removing qualifier");
-                assetInfo.pushKV("address", address);
-            } else if (type == AssetType::RESTRICTED) {
-                assetInfo.pushKV("asset_name", data.asset_name);
-                assetInfo.pushKV("restricted_type", data.flag ? "freezing address" : "unfreezing address");
-                assetInfo.pushKV("address", address);
+        if (TokenNullDataFromScript(scriptPubKey, data, address)) {
+            TokenType type;
+            IsTokenNameValid(data.token_name, type);
+            if (type == TokenType::QUALIFIER || type == TokenType::SUB_QUALIFIER) {
+                tokenInfo.pushKV("token_name", data.token_name);
+                tokenInfo.pushKV("qualifier_type", data.flag ? "adding qualifier" : "removing qualifier");
+                tokenInfo.pushKV("address", address);
+            } else if (type == TokenType::RESTRICTED) {
+                tokenInfo.pushKV("token_name", data.token_name);
+                tokenInfo.pushKV("restricted_type", data.flag ? "freezing address" : "unfreezing address");
+                tokenInfo.pushKV("address", address);
             }
-        } else if (GlobalAssetNullDataFromScript(scriptPubKey, data)) {
-            assetInfo.pushKV("restricted_name", data.asset_name);
-            assetInfo.pushKV("restricted_type", data.flag ? "freezing" : "unfreezing");
-            assetInfo.pushKV("address", "all addresses");
-        } else if (AssetNullVerifierDataFromScript(scriptPubKey, verifierData)) {
-            assetInfo.pushKV("verifier_string", verifierData.verifier_string);
+        } else if (GlobalTokenNullDataFromScript(scriptPubKey, data)) {
+            tokenInfo.pushKV("restricted_name", data.token_name);
+            tokenInfo.pushKV("restricted_type", data.flag ? "freezing" : "unfreezing");
+            tokenInfo.pushKV("address", "all addresses");
+        } else if (TokenNullVerifierDataFromScript(scriptPubKey, verifierData)) {
+            tokenInfo.pushKV("verifier_string", verifierData.verifier_string);
         }
 
-        out.pushKV("asset_data", assetInfo);
+        out.pushKV("token_data", tokenInfo);
     }
      /** YONA END */
 

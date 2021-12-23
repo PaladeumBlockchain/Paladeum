@@ -31,7 +31,7 @@ using namespace boost::placeholders;
 #include <unordered_map>
 #include <validation.h>
 
-#include "assets/assets.h"
+#include "tokens/tokens.h"
 
 static bool fRPCRunning = false;
 static bool fRPCInWarmup = true;

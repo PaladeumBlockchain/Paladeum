@@ -20,10 +20,10 @@ class SendCoinsRecipient;
 class TransactionView;
 class WalletModel;
 class AddressBookPage;
-class AssetsDialog;
-class CreateAssetDialog;
-class ReissueAssetDialog;
-class RestrictedAssetsDialog;
+class TokensDialog;
+class CreateTokenDialog;
+class ReissueTokenDialog;
+class RestrictedTokensDialog;
 
 QT_BEGIN_NAMESPACE
 class QModelIndex;
@@ -77,10 +77,10 @@ private:
 
 
     /** YONA START */
-    AssetsDialog *assetsPage;
-    CreateAssetDialog *createAssetsPage;
-    ReissueAssetDialog *manageAssetsPage;
-    RestrictedAssetsDialog *restrictedAssetsPage;
+    TokensDialog *tokensPage;
+    CreateTokenDialog *createTokensPage;
+    ReissueTokenDialog *manageTokensPage;
+    RestrictedTokensDialog *restrictedTokensPage;
     /** YONA END */
 
 public Q_SLOTS:
@@ -131,12 +131,12 @@ public Q_SLOTS:
 
 
     /** YONA START */
-    /** Switch to assets page */
+    /** Switch to tokens page */
 
-    void gotoAssetsPage();
-    void gotoCreateAssetsPage();
-    void gotoManageAssetsPage();
-    void gotoRestrictedAssetsPage();
+    void gotoTokensPage();
+    void gotoCreateTokensPage();
+    void gotoManageTokensPage();
+    void gotoRestrictedTokensPage();
 
     /** YONA END */
 
@@ -150,11 +150,11 @@ Q_SIGNALS:
     /** HD-Enabled status of wallet changed (only possible during startup) */
     void hdEnabledStatusChanged(int hdEnabled);
     /** Notify that a new transaction appeared */
-    void incomingTransaction(const QString& date, int unit, const CAmount& amount, const QString& type, const QString& address, const QString& label, const QString& assetName);
+    void incomingTransaction(const QString& date, int unit, const CAmount& amount, const QString& type, const QString& address, const QString& label, const QString& tokenName);
     /** Notify that the out of sync warning icon has been pressed */
     void outOfSyncWarningClicked();
-    /** Show the assets GUI */
-    void checkAssets();
+    /** Show the tokens GUI */
+    void checkTokens();
 };
 
 #endif // YONA_QT_WALLETVIEW_H

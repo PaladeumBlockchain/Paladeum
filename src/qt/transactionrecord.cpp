@@ -5,7 +5,7 @@
 
 #include "transactionrecord.h"
 
-#include "assets/assets.h"
+#include "tokens/tokens.h"
 #include "base58.h"
 #include "consensus/consensus.h"
 #include "validation.h"
@@ -49,7 +49,7 @@ QList<TransactionRecord> TransactionRecord::decomposeTransaction(const CWallet *
             isminetype mine = wallet->IsMine(txout);
 
             /** YONA START */
-            if (txout.scriptPubKey.IsAssetScript() || txout.scriptPubKey.IsNullAssetTxDataScript() || txout.scriptPubKey.IsNullGlobalRestrictionAssetTxDataScript())
+            if (txout.scriptPubKey.IsTokenScript() || txout.scriptPubKey.IsNullTokenTxDataScript() || txout.scriptPubKey.IsNullGlobalRestrictionTokenTxDataScript())
                 continue;
             /** YONA START */
 
@@ -97,7 +97,7 @@ QList<TransactionRecord> TransactionRecord::decomposeTransaction(const CWallet *
         for (const CTxOut& txout : wtx.tx->vout)
         {
             /** YONA START */
-            if (txout.scriptPubKey.IsAssetScript() || txout.scriptPubKey.IsNullAssetTxDataScript() || txout.scriptPubKey.IsNullGlobalRestrictionAssetTxDataScript())
+            if (txout.scriptPubKey.IsTokenScript() || txout.scriptPubKey.IsNullTokenTxDataScript() || txout.scriptPubKey.IsNullGlobalRestrictionTokenTxDataScript())
                 continue;
             /** YONA START */
 
@@ -127,7 +127,7 @@ QList<TransactionRecord> TransactionRecord::decomposeTransaction(const CWallet *
                 const CTxOut& txout = wtx.tx->vout[nOut];
 
                 /** YONA START */
-                if (txout.scriptPubKey.IsAssetScript())
+                if (txout.scriptPubKey.IsTokenScript())
                     continue;
                 /** YONA START */
 
@@ -177,14 +177,14 @@ QList<TransactionRecord> TransactionRecord::decomposeTransaction(const CWallet *
 
             /** YONA START */
             // We will only show mixed debit transactions that are nNet < 0 or if they are nNet == 0 and
-            // they do not contain assets. This is so the list of transaction doesn't add 0 amount transactions to the
+            // they do not contain tokens. This is so the list of transaction doesn't add 0 amount transactions to the
             // list.
             bool fIsMixedDebit = true;
             if (nNet == 0) {
                 for (unsigned int nOut = 0; nOut < wtx.tx->vout.size(); nOut++) {
                     const CTxOut &txout = wtx.tx->vout[nOut];
 
-                    if (txout.scriptPubKey.IsAssetScript() || txout.scriptPubKey.IsNullAssetTxDataScript() || txout.scriptPubKey.IsNullGlobalRestrictionAssetTxDataScript()) {
+                    if (txout.scriptPubKey.IsTokenScript() || txout.scriptPubKey.IsNullTokenTxDataScript() || txout.scriptPubKey.IsNullGlobalRestrictionTokenTxDataScript()) {
                         fIsMixedDebit = false;
                         break;
                     }
@@ -201,20 +201,20 @@ QList<TransactionRecord> TransactionRecord::decomposeTransaction(const CWallet *
 
 
     /** YONA START */
-    if (AreAssetsDeployed()) {
+    if (AreTokensDeployed()) {
         CAmount nFee;
         std::string strSentAccount;
         std::list<COutputEntry> listReceived;
         std::list<COutputEntry> listSent;
 
-        std::list<CAssetOutputEntry> listAssetsReceived;
-        std::list<CAssetOutputEntry> listAssetsSent;
+        std::list<CTokenOutputEntry> listTokensReceived;
+        std::list<CTokenOutputEntry> listTokensSent;
 
-        wtx.GetAmounts(listReceived, listSent, nFee, strSentAccount, ISMINE_ALL, listAssetsReceived, listAssetsSent);
+        wtx.GetAmounts(listReceived, listSent, nFee, strSentAccount, ISMINE_ALL, listTokensReceived, listTokensSent);
 
-        if (listAssetsReceived.size() > 0)
+        if (listTokensReceived.size() > 0)
         {
-            for (const CAssetOutputEntry &data : listAssetsReceived)
+            for (const CTokenOutputEntry &data : listTokensReceived)
             {
                 TransactionRecord sub(hash, nTime);
                 sub.idx = data.vout;
@@ -223,15 +223,15 @@ QList<TransactionRecord> TransactionRecord::decomposeTransaction(const CWallet *
                 isminetype mine = wallet->IsMine(txout);
 
                 sub.address = EncodeDestination(data.destination);
-                sub.assetName = data.assetName;
+                sub.tokenName = data.tokenName;
                 sub.credit = data.nAmount;
                 sub.involvesWatchAddress = mine & ISMINE_WATCH_ONLY;
 
-                if (data.type == TX_NEW_ASSET)
+                if (data.type == TX_NEW_TOKEN)
                     sub.type = TransactionRecord::Issue;
-                else if (data.type == TX_REISSUE_ASSET)
+                else if (data.type == TX_REISSUE_TOKEN)
                     sub.type = TransactionRecord::Reissue;
-                else if (data.type == TX_TRANSFER_ASSET)
+                else if (data.type == TX_TRANSFER_TOKEN)
                     sub.type = TransactionRecord::TransferFrom;
                 else {
                     sub.type = TransactionRecord::Other;
@@ -239,56 +239,56 @@ QList<TransactionRecord> TransactionRecord::decomposeTransaction(const CWallet *
 
                 sub.units = DEFAULT_UNITS;
 
-                if (IsAssetNameAnOwner(sub.assetName))
+                if (IsTokenNameAnOwner(sub.tokenName))
                     sub.units = OWNER_UNITS;
                 else if (CheckIssueDataTx(wtx.tx->vout[sub.idx]))
                 {
-                    CNewAsset asset;
+                    CNewToken token;
                     std::string strAddress;
-                    if (AssetFromTransaction(wtx, asset, strAddress))
-                        sub.units = asset.units;
+                    if (TokenFromTransaction(wtx, token, strAddress))
+                        sub.units = token.units;
                 }
                 else
                 {
-                    CNewAsset asset;
-                    if (passets->GetAssetMetaDataIfExists(sub.assetName, asset))
-                        sub.units = asset.units;
+                    CNewToken token;
+                    if (ptokens->GetTokenMetaDataIfExists(sub.tokenName, token))
+                        sub.units = token.units;
                 }
 
                 parts.append(sub);
             }
         }
 
-        if (listAssetsSent.size() > 0)
+        if (listTokensSent.size() > 0)
         {
-            for (const CAssetOutputEntry &data : listAssetsSent)
+            for (const CTokenOutputEntry &data : listTokensSent)
             {
                 TransactionRecord sub(hash, nTime);
                 sub.idx = data.vout;
                 sub.address = EncodeDestination(data.destination);
-                sub.assetName = data.assetName;
+                sub.tokenName = data.tokenName;
                 sub.credit = -data.nAmount;
                 sub.involvesWatchAddress = false;
 
-                if (data.type == TX_TRANSFER_ASSET)
+                if (data.type == TX_TRANSFER_TOKEN)
                     sub.type = TransactionRecord::TransferTo;
                 else
                     sub.type = TransactionRecord::Other;
 
-                if (IsAssetNameAnOwner(sub.assetName))
+                if (IsTokenNameAnOwner(sub.tokenName))
                     sub.units = OWNER_UNITS;
                 else if (CheckIssueDataTx(wtx.tx->vout[sub.idx]))
                 {
-                    CNewAsset asset;
+                    CNewToken token;
                     std::string strAddress;
-                    if (AssetFromTransaction(wtx, asset, strAddress))
-                        sub.units = asset.units;
+                    if (TokenFromTransaction(wtx, token, strAddress))
+                        sub.units = token.units;
                 }
                 else
                 {
-                    CNewAsset asset;
-                    if (passets->GetAssetMetaDataIfExists(sub.assetName, asset))
-                        sub.units = asset.units;
+                    CNewToken token;
+                    if (ptokens->GetTokenMetaDataIfExists(sub.tokenName, token))
+                        sub.units = token.units;
                 }
 
                 parts.append(sub);

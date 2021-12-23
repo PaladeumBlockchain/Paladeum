@@ -19,7 +19,7 @@
 #include "wallet/crypter.h"
 #include "wallet/walletdb.h"
 #include "wallet/rpcwallet.h"
-#include "assets/assettypes.h"
+#include "tokens/tokentypes.h"
 
 #include <algorithm>
 #include <atomic>
@@ -191,11 +191,11 @@ struct COutputEntry
 };
 
 /** YONA START */
-struct CAssetOutputEntry
+struct CTokenOutputEntry
 {
     txnouttype type;
     txnouttype scriptType;
-    std::string assetName;
+    std::string tokenName;
     CTxDestination destination;
     CAmount nAmount;
     std::string message;
@@ -477,7 +477,7 @@ public:
                     std::list<COutputEntry>& listSent, CAmount& nFee, std::string& strSentAccount, const isminefilter& filter) const;
 
     void GetAmounts(std::list<COutputEntry>& listReceived,
-                    std::list<COutputEntry>& listSent, CAmount& nFee, std::string& strSentAccount, const isminefilter& filter, std::list<CAssetOutputEntry>& assetsReceived, std::list<CAssetOutputEntry>& assetsSent) const;
+                    std::list<COutputEntry>& listSent, CAmount& nFee, std::string& strSentAccount, const isminefilter& filter, std::list<CTokenOutputEntry>& tokensReceived, std::list<CTokenOutputEntry>& tokensSent) const;
 
     bool IsFromMe(const isminefilter& filter) const
     {
@@ -688,7 +688,7 @@ private:
      */
     bool SelectCoins(const std::vector<COutput>& vAvailableCoins, const CAmount& nTargetValue, std::set<CInputCoin>& setCoinsRet, CAmount& nValueRet, const CCoinControl *coinControl = nullptr) const;
 
-    bool SelectAssets(const std::map<std::string, std::vector<COutput> >& mapAvailableAssets, const std::map<std::string, CAmount>& mapAssetTargetValue, std::set<CInputCoin>& setCoinsRet, std::map<std::string, CAmount>& nValueRet) const;
+    bool SelectTokens(const std::map<std::string, std::vector<COutput> >& mapAvailableTokens, const std::map<std::string, CAmount>& mapTokenTargetValue, std::set<CInputCoin>& setCoinsRet, std::map<std::string, CAmount>& nValueRet) const;
 
     CWalletDB *pwalletdbEncryption;
 
@@ -840,27 +840,27 @@ public:
     bool CanSupportFeature(enum WalletFeature wf) const { AssertLockHeld(cs_wallet); return nWalletMaxVersion >= wf; }
 
     /**
-     * populate vCoins with vector of available COutputs, and populates vAssetCoins in fWithAssets is set to true.
+     * populate vCoins with vector of available COutputs, and populates vTokenCoins in fWithTokens is set to true.
      */
-    void AvailableCoinsAll(std::vector<COutput>& vCoins, std::map<std::string, std::vector<COutput> >& mapAssetCoins,
-                            bool fGetYONA = true, bool fOnlyAssets = false,
+    void AvailableCoinsAll(std::vector<COutput>& vCoins, std::map<std::string, std::vector<COutput> >& mapTokenCoins,
+                            bool fGetYONA = true, bool fOnlyTokens = false,
                             bool fOnlySafe = true, const CCoinControl *coinControl = nullptr,
                             const CAmount& nMinimumAmount = 1, const CAmount& nMaximumAmount = MAX_MONEY,
                             const CAmount& nMinimumSumAmount = MAX_MONEY, const uint64_t& nMaximumCount = 0,
                             const int& nMinDepth = 0, const int& nMaxDepth = 9999999) const;
 
     /**
-     * Helper function that calls AvailableCoinsAll, used for transfering assets
+     * Helper function that calls AvailableCoinsAll, used for transfering tokens
      */
-    void AvailableAssets(std::map<std::string, std::vector<COutput> > &mapAssetCoins, bool fOnlySafe = true,
+    void AvailableTokens(std::map<std::string, std::vector<COutput> > &mapTokenCoins, bool fOnlySafe = true,
                          const CCoinControl *coinControl = nullptr, const CAmount &nMinimumAmount = 1,
                          const CAmount &nMaximumAmount = MAX_MONEY, const CAmount &nMinimumSumAmount = MAX_MONEY,
                          const uint64_t &nMaximumCount = 0, const int &nMinDepth = 0, const int &nMaxDepth = 9999999) const;
 
     /**
-     * Helper function that calls AvailableCoinsAll, used to receive all coins, Assets and YONA
+     * Helper function that calls AvailableCoinsAll, used to receive all coins, Tokens and YONA
      */
-    void AvailableCoinsWithAssets(std::vector<COutput> &vCoins, std::map<std::string, std::vector<COutput> > &mapAssetCoins,
+    void AvailableCoinsWithTokens(std::vector<COutput> &vCoins, std::map<std::string, std::vector<COutput> > &mapTokenCoins,
                                   bool fOnlySafe = true, const CCoinControl *coinControl = nullptr, const CAmount &nMinimumAmount = 1,
                                   const CAmount &nMaximumAmount = MAX_MONEY, const CAmount &nMinimumSumAmount = MAX_MONEY,
                                   const uint64_t &nMaximumCount = 0, const int &nMinDepth = 0, const int &nMaxDepth = 9999999) const;
@@ -878,9 +878,9 @@ public:
     std::map<CTxDestination, std::vector<COutput>> ListCoins() const;
 
     /**
-     * Return list of available assets and locked assets grouped by non-change output address.
+     * Return list of available tokens and locked tokens grouped by non-change output address.
      */
-    std::map<CTxDestination, std::vector<COutput>> ListAssets() const;
+    std::map<CTxDestination, std::vector<COutput>> ListTokens() const;
 
 
     /**
@@ -895,7 +895,7 @@ public:
      * assembled
      */
     bool SelectCoinsMinConf(const CAmount& nTargetValue, int nConfMine, int nConfTheirs, uint64_t nMaxAncestors, std::vector<COutput> vCoins, std::set<CInputCoin>& setCoinsRet, CAmount& nValueRet) const;
-    bool SelectAssetsMinConf(const CAmount& nTargetValue, const int nConfMine, const int nConfTheirs, const uint64_t nMaxAncestors, const std::string& strAssetName, std::vector<COutput> vCoins, std::set<CInputCoin>& setCoinsRet, CAmount& nValueRet) const;
+    bool SelectTokensMinConf(const CAmount& nTargetValue, const int nConfMine, const int nConfTheirs, const uint64_t nMaxAncestors, const std::string& strTokenName, std::vector<COutput> vCoins, std::set<CInputCoin>& setCoinsRet, CAmount& nValueRet) const;
 
     bool IsSpent(const uint256& hash, unsigned int n) const;
 
@@ -1008,14 +1008,14 @@ public:
     bool SignTransaction(CMutableTransaction& tx);
 
     /** YONA START */
-    bool CreateTransactionWithAssets(const std::vector<CRecipient>& vecSend, CWalletTx& wtxNew, CReserveKey& reservekey, CAmount& nFeeRet, int& nChangePosInOut,
-                                   std::string& strFailReason, const CCoinControl& coin_control, const std::vector<CNewAsset> assets, const CTxDestination destination, const AssetType& assetType, bool sign = true);
+    bool CreateTransactionWithTokens(const std::vector<CRecipient>& vecSend, CWalletTx& wtxNew, CReserveKey& reservekey, CAmount& nFeeRet, int& nChangePosInOut,
+                                   std::string& strFailReason, const CCoinControl& coin_control, const std::vector<CNewToken> tokens, const CTxDestination destination, const TokenType& tokenType, bool sign = true);
 
-    bool CreateTransactionWithTransferAsset(const std::vector<CRecipient>& vecSend, CWalletTx& wtxNew, CReserveKey& reservekey, CAmount& nFeeRet, int& nChangePosInOut,
+    bool CreateTransactionWithTransferToken(const std::vector<CRecipient>& vecSend, CWalletTx& wtxNew, CReserveKey& reservekey, CAmount& nFeeRet, int& nChangePosInOut,
                                                      std::string& strFailReason, const CCoinControl& coin_control, bool sign = true);
 
-    bool CreateTransactionWithReissueAsset(const std::vector<CRecipient>& vecSend, CWalletTx& wtxNew, CReserveKey& reservekey, CAmount& nFeeRet, int& nChangePosInOut,
-                                                    std::string& strFailReason, const CCoinControl& coin_control, const CReissueAsset& reissueAsset, const CTxDestination destination, bool sign = true);
+    bool CreateTransactionWithReissueToken(const std::vector<CRecipient>& vecSend, CWalletTx& wtxNew, CReserveKey& reservekey, CAmount& nFeeRet, int& nChangePosInOut,
+                                                    std::string& strFailReason, const CCoinControl& coin_control, const CReissueToken& reissueToken, const CTxDestination destination, bool sign = true);
 
     bool CreateTransaction(const std::vector<CRecipient>& vecSend, CWalletTx& wtxNew, CReserveKey& reservekey, CAmount& nFeeRet, int& nChangePosInOut,
                            std::string& strFailReason, const CCoinControl& coin_control, bool sign = true);
@@ -1026,10 +1026,10 @@ public:
      * @note passing nChangePosInOut as -1 will result in setting a random position
      */
     bool CreateTransactionAll(const std::vector<CRecipient>& vecSend, CWalletTx& wtxNew, CReserveKey& reservekey, CAmount& nFeeRet, int& nChangePosInOut,
-                           std::string& strFailReason, const CCoinControl& coin_control, bool fNewAsset, const CNewAsset& asset, const CTxDestination dest, bool fTransferAsset, bool fReissueAsset, const CReissueAsset& reissueAsset, const AssetType& assetType, bool sign = true);
+                           std::string& strFailReason, const CCoinControl& coin_control, bool fNewToken, const CNewToken& token, const CTxDestination dest, bool fTransferToken, bool fReissueToken, const CReissueToken& reissueToken, const TokenType& tokenType, bool sign = true);
 
     bool CreateTransactionAll(const std::vector<CRecipient>& vecSend, CWalletTx& wtxNew, CReserveKey& reservekey, CAmount& nFeeRet,
-                              int& nChangePosInOut, std::string& strFailReason, const CCoinControl& coin_control, bool fNewAsset, const std::vector<CNewAsset> assets, const CTxDestination destination, bool fTransferAsset, bool fReissueAsset, const CReissueAsset& reissueAsset, const AssetType& assetType, bool sign);
+                              int& nChangePosInOut, std::string& strFailReason, const CCoinControl& coin_control, bool fNewToken, const std::vector<CNewToken> tokens, const CTxDestination destination, bool fTransferToken, bool fReissueToken, const CReissueToken& reissueToken, const TokenType& tokenType, bool sign);
 
     bool CreateNewChangeAddress(CReserveKey& reservekey, CKeyID& keyID, std::string& strFailReason);
 
@@ -1072,7 +1072,7 @@ public:
      * filter, otherwise returns 0
      */
     CAmount GetDebit(const CTxIn& txin, const isminefilter& filter) const;
-    CAmount GetDebit(const CTxIn& txin, const isminefilter& filter, CAssetOutputEntry& assetData) const;
+    CAmount GetDebit(const CTxIn& txin, const isminefilter& filter, CTokenOutputEntry& tokenData) const;
     isminetype IsMine(const CTxOut& txout) const;
     CAmount GetCredit(const CTxOut& txout, const isminefilter& filter) const;
     bool IsChange(const CTxOut& txout) const;
@@ -1135,7 +1135,7 @@ public:
     //! Flush wallet (bitdb flush)
     void Flush(bool shutdown=false);
 
-    void UpdateMyRestrictedAssets(std::string& address, std::string& asset_name,
+    void UpdateMyRestrictedTokens(std::string& address, std::string& token_name,
                                   int type, uint32_t date);
 
     /** 
@@ -1155,11 +1155,11 @@ public:
             ChangeType status)> NotifyTransactionChanged;
 
     /**
-     * Wallets Restricted Asset Address data added or updated.
+     * Wallets Restricted Token Address data added or updated.
      * @note called with lock cs_wallet held.
      */
-    boost::signals2::signal<void (CWallet *wallet, std::string& address, std::string& asset_name,
-                                  int type, uint32_t date)> NotifyMyRestrictedAssetsChanged;
+    boost::signals2::signal<void (CWallet *wallet, std::string& address, std::string& token_name,
+                                  int type, uint32_t date)> NotifyMyRestrictedTokensChanged;
 
     /** Show progress e.g. for rescan */
     boost::signals2::signal<void (const std::string &title, int nProgress)> ShowProgress;

@@ -33,13 +33,13 @@
 #include <vector>
 
 #include <atomic>
-#include <assets/assets.h>
-#include <assets/assetdb.h>
-#include <assets/messages.h>
-#include <assets/myassetsdb.h>
-#include <assets/restricteddb.h>
-#include <assets/assetsnapshotdb.h>
-#include <assets/snapshotrequestdb.h>
+#include <tokens/tokens.h>
+#include <tokens/tokendb.h>
+#include <tokens/messages.h>
+#include <tokens/mytokensdb.h>
+#include <tokens/restricteddb.h>
+#include <tokens/tokensnapshotdb.h>
+#include <tokens/snapshotrequestdb.h>
 
 class CBlockIndex;
 class CBlockTreeDB;
@@ -54,8 +54,8 @@ class CValidationState;
 class CTxUndo;
 struct ChainTxData;
 
-class CAssetsDB;
-class CAssets;
+class CTokensDB;
+class CTokens;
 class CSnapshotRequestDB;
 
 struct PrecomputedTransactionData;
@@ -148,7 +148,7 @@ static const int64_t MAX_FEE_ESTIMATION_TIP_AGE = 3 * 60 * 60;
 static const bool DEFAULT_PERMIT_BAREMULTISIG = true;
 static const bool DEFAULT_CHECKPOINTS_ENABLED = true;
 static const bool DEFAULT_TXINDEX = false;
-static const bool DEFAULT_ASSETINDEX = false;
+static const bool DEFAULT_TOKENINDEX = false;
 static const bool DEFAULT_ADDRESSINDEX = false;
 static const bool DEFAULT_TIMESTAMPINDEX = false;
 static const bool DEFAULT_SPENTINDEX = false;
@@ -196,7 +196,7 @@ extern std::atomic_bool fReindex;
 extern bool fMessaging;
 extern int nScriptCheckThreads;
 extern bool fTxIndex;
-extern bool fAssetIndex;
+extern bool fTokenIndex;
 extern bool fAddressIndex;
 extern bool fSpentIndex;
 extern bool fTimestampIndex;
@@ -361,7 +361,7 @@ int VersionBitsTipStateSinceHeight(const Consensus::Params& params, Consensus::D
 /** Apply the effects of this transaction on the UTXO set represented by view */
 void UpdateCoins(const CTransaction& tx, CCoinsViewCache& inputs, int nHeight);
 
-void UpdateCoins(const CTransaction& tx, CCoinsViewCache& inputs, CTxUndo& txundo, int nHeight, uint256 blockHash, CAssetsCache* assetCache = nullptr, std::pair<std::string, CBlockAssetUndo>* undoAssetData = nullptr);
+void UpdateCoins(const CTransaction& tx, CCoinsViewCache& inputs, CTxUndo& txundo, int nHeight, uint256 blockHash, CTokensCache* tokenCache = nullptr, std::pair<std::string, CBlockTokenUndo>* undoTokenData = nullptr);
 
 /** Transaction validation functions */
 
@@ -433,13 +433,13 @@ void InitScriptExecutionCache();
 bool GetTimestampIndex(const unsigned int &high, const unsigned int &low, const bool fActiveOnly, std::vector<std::pair<uint256, unsigned int> > &hashes);
 bool GetSpentIndex(CSpentIndexKey &key, CSpentIndexValue &value);
 bool HashOnchainActive(const uint256 &hash);
-bool GetAddressIndex(uint160 addressHash, int type, std::string assetName,
+bool GetAddressIndex(uint160 addressHash, int type, std::string tokenName,
                      std::vector<std::pair<CAddressIndexKey, CAmount> > &addressIndex,
                      int start = 0, int end = 0);
 bool GetAddressIndex(uint160 addressHash, int type,
                      std::vector<std::pair<CAddressIndexKey, CAmount> > &addressIndex,
                      int start = 0, int end = 0);
-bool GetAddressUnspent(uint160 addressHash, int type, std::string assetName,
+bool GetAddressUnspent(uint160 addressHash, int type, std::string tokenName,
                        std::vector<std::pair<CAddressUnspentKey, CAddressUnspentValue> > &unspentOutputs);
 bool GetAddressUnspent(uint160 addressHash, int type,
                        std::vector<std::pair<CAddressUnspentKey, CAddressUnspentValue> > &unspentOutputs);
@@ -505,14 +505,14 @@ extern CBlockTreeDB *pblocktree;
 
 /** YONA START */
 
-/** Global variable that point to the active assets database (protected by cs_main) */
-extern CAssetsDB *passetsdb;
+/** Global variable that point to the active tokens database (protected by cs_main) */
+extern CTokensDB *ptokensdb;
 
-/** Global variable that point to the active assets (protected by cs_main) */
-extern CAssetsCache *passets;
+/** Global variable that point to the active tokens (protected by cs_main) */
+extern CTokensCache *ptokens;
 
-/** Global variable that point to the assets metadata LRU Cache (protected by cs_main) */
-extern CLRUCache<std::string, CDatabasedAssetData> *passetsCache;
+/** Global variable that point to the tokens metadata LRU Cache (protected by cs_main) */
+extern CLRUCache<std::string, CDatabasedTokenData> *ptokensCache;
 
 /** Global variable that points to the subscribed channel LRU Cache (protected by cs_main) */
 extern CLRUCache<std::string, CMessage> *pMessagesCache;
@@ -532,26 +532,26 @@ extern CMessageChannelDB *pmessagechanneldb;
 /** Global variable that points to my wallets restricted database (protected by cs_main) */
 extern CMyRestrictedDB *pmyrestricteddb;
 
-/** Global variable that points to the active restricted asset database (protected by cs_main) */
+/** Global variable that points to the active restricted token database (protected by cs_main) */
 extern CRestrictedDB *prestricteddb;
 
-/** Global variable that points to the asset verifier LRU Cache (protected by cs_main) */
-extern CLRUCache<std::string, CNullAssetTxVerifierString> *passetsVerifierCache;
+/** Global variable that points to the token verifier LRU Cache (protected by cs_main) */
+extern CLRUCache<std::string, CNullTokenTxVerifierString> *ptokensVerifierCache;
 
-/** Global variable that points to the asset address qualifier LRU Cache (protected by cs_main) */
-extern CLRUCache<std::string, int8_t> *passetsQualifierCache; // hash(address,qualifier_name) ->int8_t
+/** Global variable that points to the token address qualifier LRU Cache (protected by cs_main) */
+extern CLRUCache<std::string, int8_t> *ptokensQualifierCache; // hash(address,qualifier_name) ->int8_t
 
-/** Global variable that points to the asset address restriction LRU Cache (protected by cs_main) */
-extern CLRUCache<std::string, int8_t> *passetsRestrictionCache; // hash(address,qualifier_name) ->int8_t
+/** Global variable that points to the token address restriction LRU Cache (protected by cs_main) */
+extern CLRUCache<std::string, int8_t> *ptokensRestrictionCache; // hash(address,qualifier_name) ->int8_t
 
-/** Global variable that points to the global asset restriction LRU Cache (protected by cs_main) */
-extern CLRUCache<std::string, int8_t> *passetsGlobalRestrictionCache;
+/** Global variable that points to the global token restriction LRU Cache (protected by cs_main) */
+extern CLRUCache<std::string, int8_t> *ptokensGlobalRestrictionCache;
 
 /** Global variable that point to the active Snapshot Request database (protected by cs_main) */
 extern CSnapshotRequestDB *pSnapshotRequestDb;
 
-/** Global variable that point to the active asset snapshot database (protected by cs_main) */
-extern CAssetSnapshotDB *pAssetSnapshotDb;
+/** Global variable that point to the active token snapshot database (protected by cs_main) */
+extern CTokenSnapshotDB *pTokenSnapshotDb;
 
 extern CDistributeSnapshotRequestDB *pDistributeSnapshotDb;
 
@@ -589,17 +589,17 @@ bool DumpMempool();
 bool LoadMempool();
 
 /** YONA START */
-bool AreAssetsDeployed();
+bool AreTokensDeployed();
 
 bool AreMessagesDeployed();
 
-bool AreRestrictedAssetsDeployed();
+bool AreRestrictedTokensDeployed();
 
 bool AreEnforcedValuesDeployed();
 
-bool AreCoinbaseCheckAssetsDeployed();
+bool AreCoinbaseCheckTokensDeployed();
 
-bool AreP2SHAssetsAllowed();
+bool AreP2SHTokensAllowed();
 
 // Only used by test framework
 void SetEnforcedValues(bool value);
@@ -614,7 +614,7 @@ bool IsDGWActive(unsigned int nBlockNumber);
 bool IsMessagingActive(unsigned int nBlockNumber);
 bool IsRestrictedActive(unsigned int nBlockNumber);
 
-CAssetsCache* GetCurrentAssetCache();
+CTokensCache* GetCurrentTokenCache();
 /** YONA END */
 
 #endif // YONA_VALIDATION_H

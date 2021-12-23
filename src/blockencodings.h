@@ -11,7 +11,7 @@
 #include <memory>
 
 class CTxMemPool;
-class CDatabasedAssetData;
+class CDatabasedTokenData;
 
 // Dumb helper to handle CTransaction compression at serialize-time
 struct TransactionCompressor {
@@ -208,7 +208,7 @@ public:
     ReadStatus FillBlock(CBlock& block, const std::vector<CTransactionRef>& vtx_missing);
 };
 
-class SerializedAssetData {
+class SerializedTokenData {
 public:
     std::string name;
     int8_t units;
@@ -218,7 +218,7 @@ public:
     std::string ipfs;
     int32_t nHeight;
 
-    SerializedAssetData(const CDatabasedAssetData &assetData);
+    SerializedTokenData(const CDatabasedTokenData &tokenData);
 
     ADD_SERIALIZE_METHODS;
 

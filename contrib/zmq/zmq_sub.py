@@ -71,7 +71,7 @@ class ZMQHandler():
             print('- RAW TX ('+sequence+') -')
             print(binascii.hexlify(body))
         elif topic == b"rawmessage":
-            print('- RAW ASSET MSG ('+sequence+') -')
+            print('- RAW TOKEN MSG ('+sequence+') -')
             print(body)
         # schedule ourselves to receive the next message
         asyncio.ensure_future(self.handle())

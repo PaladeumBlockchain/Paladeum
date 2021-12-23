@@ -15,7 +15,7 @@ class MessagingTest(YonaTestFramework):
     def set_test_params(self):
         self.setup_clean_chain = True
         self.num_nodes = 3
-        self.extra_args = [['-assetindex'], ['-assetindex'], ['-assetindex']]
+        self.extra_args = [['-tokenindex'], ['-tokenindex'], ['-tokenindex']]
 
     def activate_messaging(self):
         self.log.info("Generating YONA for node[0] and activating messaging...")
@@ -32,17 +32,17 @@ class MessagingTest(YonaTestFramework):
         n0, n1 = self.nodes[0], self.nodes[1]
 
         spam_name = "SPAM"
-        asset_name = "MESSAGING"
+        token_name = "MESSAGING"
         owner_name = "MESSAGING!"
         channel_one = "MESSAGING~ONE"
         channel_two = "MESSAGING~TWO"
         ipfs_hash = "QmZPGfJojdTzaqCWJu2m3krark38X1rqEHBo4SjeqHKB26"
 
         # need ownership before channels can be created
-        assert_raises_rpc_error(-32600, "Wallet doesn't have asset: " + owner_name,
+        assert_raises_rpc_error(-32600, "Wallet doesn't have token: " + owner_name,
             n0.issue, channel_one)
 
-        n0.issue(asset_name, 100)
+        n0.issue(token_name, 100)
         n0.issue(channel_one)
         n0.issue(channel_two)
         n0.issue(spam_name, 100)
@@ -74,7 +74,7 @@ class MessagingTest(YonaTestFramework):
         n1_messages = n1.viewallmessages()
         assert_equal(1, len(n1_messages))
         message = n1_messages[0]
-        assert_contains_pair("Asset Name", owner_name, message)
+        assert_contains_pair("Token Name", owner_name, message)
         assert_contains_pair("Message", ipfs_hash, message)
         n1.clearmessages()
         n1_messages = n1.viewallmessages()
@@ -90,7 +90,7 @@ class MessagingTest(YonaTestFramework):
         n1_messages = n1.viewallmessages()
         assert_equal(1, len(n1_messages))
         message = n1_messages[0]
-        assert_contains_pair("Asset Name", channel_one, message)
+        assert_contains_pair("Token Name", channel_one, message)
         assert_contains_pair("Message", ipfs_hash, message)
         n1.clearmessages()
         n1_messages = n1.viewallmessages()
@@ -103,7 +103,7 @@ class MessagingTest(YonaTestFramework):
 
         # auto-subscribe / spam protection (first address use only)
         addr1 = n1.getnewaddress()
-        n0.transfer(asset_name, 10, addr1)
+        n0.transfer(token_name, 10, addr1)
         n0.generate(1)
         self.sync_all()
         n0.transfer(spam_name, 10, addr1)
@@ -125,7 +125,7 @@ class MessagingTest(YonaTestFramework):
         n0.generate(1)
         self.sync_all()
         assert_equal(1, len(n1.viewallmessages()))
-        assert_contains_pair("Asset Name", channel_two, n1.viewallmessages()[0])
+        assert_contains_pair("Token Name", channel_two, n1.viewallmessages()[0])
         n1.clearmessages()
         n1.unsubscribefromchannel(channel_two)
 

@@ -724,12 +724,12 @@ UniValue getaddressmempool(const JSONRPCRequest& request)
             "      ,...\n"
             "    ]\n"
             "},\n"
-            "\"includeAssets\" (boolean, optional, default false)  If true this will return an expanded result which includes asset deltas\n"
+            "\"includeTokens\" (boolean, optional, default false)  If true this will return an expanded result which includes token deltas\n"
             "\nResult:\n"
             "[\n"
             "  {\n"
             "    \"address\"  (string) The base58check encoded address\n"
-            "    \"assetName\"  (string) The name of the associated asset (YONA for Yonacoin)\n"
+            "    \"tokenName\"  (string) The name of the associated token (YONA for Yonacoin)\n"
             "    \"txid\"  (string) The related txid\n"
             "    \"index\"  (number) The related input or output index\n"
             "    \"satoshis\"  (number) The difference of satoshis\n"
@@ -751,18 +751,18 @@ UniValue getaddressmempool(const JSONRPCRequest& request)
         throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, "Invalid address");
     }
 
-    bool includeAssets = false;
+    bool includeTokens = false;
     if (request.params.size() > 1) {
-        includeAssets = request.params[1].get_bool();
+        includeTokens = request.params[1].get_bool();
     }
 
-    if (includeAssets)
-        if (!AreAssetsDeployed())
-            throw JSONRPCError(RPC_INVALID_PARAMETER, "Assets aren't active.  includeAssets can't be true.");
+    if (includeTokens)
+        if (!AreTokensDeployed())
+            throw JSONRPCError(RPC_INVALID_PARAMETER, "Tokens aren't active.  includeTokens can't be true.");
 
     std::vector<std::pair<CMempoolAddressDeltaKey, CMempoolAddressDelta> > indexes;
 
-    if (includeAssets) {
+    if (includeTokens) {
         if (!mempool.getAddressIndex(addresses, indexes)) {
             throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, "No information available for address");
         }
@@ -786,7 +786,7 @@ UniValue getaddressmempool(const JSONRPCRequest& request)
 
         UniValue delta(UniValue::VOBJ);
         delta.push_back(Pair("address", address));
-        delta.push_back(Pair("assetName", it->first.asset));
+        delta.push_back(Pair("tokenName", it->first.token));
         delta.push_back(Pair("txid", it->first.txhash.GetHex()));
         delta.push_back(Pair("index", (int)it->first.index));
         delta.push_back(Pair("satoshis", it->second.amount));
@@ -815,13 +815,13 @@ UniValue getaddressutxos(const JSONRPCRequest& request)
             "      ,...\n"
             "    ],\n"
             "  \"chainInfo\",  (boolean, optional, default false) Include chain info with results\n"
-            "  \"assetName\"   (string, optional) Get UTXOs for a particular asset instead of YONA ('*' for all assets).\n"
+            "  \"tokenName\"   (string, optional) Get UTXOs for a particular token instead of YONA ('*' for all tokens).\n"
             "}\n"
             "\nResult\n"
             "[\n"
             "  {\n"
             "    \"address\"  (string) The address base58check encoded\n"
-            "    \"assetName\" (string) The asset associated with the UTXOs (YONA for Yonacoin)\n"
+            "    \"tokenName\" (string) The token associated with the UTXOs (YONA for Yonacoin)\n"
             "    \"txid\"  (string) The output txid\n"
             "    \"height\"  (number) The block height\n"
             "    \"outputIndex\"  (number) The output index\n"
@@ -832,22 +832,22 @@ UniValue getaddressutxos(const JSONRPCRequest& request)
             "\nExamples:\n"
             + HelpExampleCli("getaddressutxos", "'{\"addresses\": [\"12c6DSiU4Rq3P4ZxziKxzrL5LmMBrzjrJX\"]}'")
             + HelpExampleRpc("getaddressutxos", "{\"addresses\": [\"12c6DSiU4Rq3P4ZxziKxzrL5LmMBrzjrJX\"]}")
-            + HelpExampleCli("getaddressutxos", "'{\"addresses\": [\"12c6DSiU4Rq3P4ZxziKxzrL5LmMBrzjrJX\"],\"assetName\":\"MY_ASSET\"}'")
-            + HelpExampleRpc("getaddressutxos", "{\"addresses\": [\"12c6DSiU4Rq3P4ZxziKxzrL5LmMBrzjrJX\"],\"assetName\":\"MY_ASSET\"}")
+            + HelpExampleCli("getaddressutxos", "'{\"addresses\": [\"12c6DSiU4Rq3P4ZxziKxzrL5LmMBrzjrJX\"],\"tokenName\":\"MY_TOKEN\"}'")
+            + HelpExampleRpc("getaddressutxos", "{\"addresses\": [\"12c6DSiU4Rq3P4ZxziKxzrL5LmMBrzjrJX\"],\"tokenName\":\"MY_TOKEN\"}")
             );
 
     bool includeChainInfo = false;
-    std::string assetName = YONA;
+    std::string tokenName = YONA;
     if (request.params[0].isObject()) {
         UniValue chainInfo = find_value(request.params[0].get_obj(), "chainInfo");
         if (chainInfo.isBool()) {
             includeChainInfo = chainInfo.get_bool();
         }
-        UniValue assetNameParam = find_value(request.params[0].get_obj(), "assetName");
-        if (assetNameParam.isStr()) {
-            if (!AreAssetsDeployed())
-                throw JSONRPCError(RPC_INVALID_PARAMETER, "Assets aren't active.  assetName can't be specified.");
-            assetName = assetNameParam.get_str();
+        UniValue tokenNameParam = find_value(request.params[0].get_obj(), "tokenName");
+        if (tokenNameParam.isStr()) {
+            if (!AreTokensDeployed())
+                throw JSONRPCError(RPC_INVALID_PARAMETER, "Tokens aren't active.  tokenName can't be specified.");
+            tokenName = tokenNameParam.get_str();
         }
     }
 
@@ -860,12 +860,12 @@ UniValue getaddressutxos(const JSONRPCRequest& request)
     std::vector<std::pair<CAddressUnspentKey, CAddressUnspentValue> > unspentOutputs;
 
     for (std::vector<std::pair<uint160, int> >::iterator it = addresses.begin(); it != addresses.end(); it++) {
-        if (assetName == "*") {
+        if (tokenName == "*") {
             if (!GetAddressUnspent((*it).first, (*it).second, unspentOutputs)) {
                 throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, "No information available for address");
             }
         } else {
-            if (!GetAddressUnspent((*it).first, (*it).second, assetName, unspentOutputs)) {
+            if (!GetAddressUnspent((*it).first, (*it).second, tokenName, unspentOutputs)) {
                 throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, "No information available for address");
             }
         }
@@ -882,16 +882,16 @@ UniValue getaddressutxos(const JSONRPCRequest& request)
             throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, "Unknown address type");
         }
 
-        std::string assetNameOut = "YONA";
-        if (assetName != "YONA") {
+        std::string tokenNameOut = "YONA";
+        if (tokenName != "YONA") {
             CAmount _amount;
-            if (!GetAssetInfoFromScript(it->second.script, assetNameOut, _amount)) {
-                throw JSONRPCError(RPC_INTERNAL_ERROR, "Couldn't decode asset script");
+            if (!GetTokenInfoFromScript(it->second.script, tokenNameOut, _amount)) {
+                throw JSONRPCError(RPC_INTERNAL_ERROR, "Couldn't decode token script");
             }
         }
 
         output.push_back(Pair("address", address));
-        output.push_back(Pair("assetName", assetNameOut));
+        output.push_back(Pair("tokenName", tokenNameOut));
         output.push_back(Pair("txid", it->first.txhash.GetHex()));
         output.push_back(Pair("outputIndex", (int)it->first.index));
         output.push_back(Pair("script", HexStr(it->second.script.begin(), it->second.script.end())));
@@ -929,12 +929,12 @@ UniValue getaddressdeltas(const JSONRPCRequest& request)
             "  \"start\" (number) The start block height\n"
             "  \"end\" (number) The end block height\n"
             "  \"chainInfo\" (boolean) Include chain info in results, only applies if start and end specified\n"
-            "  \"assetName\"   (string, optional) Get deltas for a particular asset instead of YONA.\n"
+            "  \"tokenName\"   (string, optional) Get deltas for a particular token instead of YONA.\n"
             "}\n"
             "\nResult:\n"
             "[\n"
             "  {\n"
-            "    \"assetName\"  (string) The asset associated with the deltas (YONA for Yonacoin)\n"
+            "    \"tokenName\"  (string) The token associated with the deltas (YONA for Yonacoin)\n"
             "    \"satoshis\"  (number) The difference of satoshis\n"
             "    \"txid\"  (string) The related txid\n"
             "    \"index\"  (number) The related input or output index\n"
@@ -945,8 +945,8 @@ UniValue getaddressdeltas(const JSONRPCRequest& request)
             "\nExamples:\n"
             + HelpExampleCli("getaddressdeltas", "'{\"addresses\": [\"12c6DSiU4Rq3P4ZxziKxzrL5LmMBrzjrJX\"]}'")
             + HelpExampleRpc("getaddressdeltas", "{\"addresses\": [\"12c6DSiU4Rq3P4ZxziKxzrL5LmMBrzjrJX\"]}")
-            + HelpExampleCli("getaddressdeltas", "'{\"addresses\": [\"12c6DSiU4Rq3P4ZxziKxzrL5LmMBrzjrJX\"],\"assetName\":\"MY_ASSET\"}'")
-            + HelpExampleRpc("getaddressdeltas", "{\"addresses\": [\"12c6DSiU4Rq3P4ZxziKxzrL5LmMBrzjrJX\"],\"assetName\":\"MY_ASSET\"}")
+            + HelpExampleCli("getaddressdeltas", "'{\"addresses\": [\"12c6DSiU4Rq3P4ZxziKxzrL5LmMBrzjrJX\"],\"tokenName\":\"MY_TOKEN\"}'")
+            + HelpExampleRpc("getaddressdeltas", "{\"addresses\": [\"12c6DSiU4Rq3P4ZxziKxzrL5LmMBrzjrJX\"],\"tokenName\":\"MY_TOKEN\"}")
         );
 
 
@@ -959,12 +959,12 @@ UniValue getaddressdeltas(const JSONRPCRequest& request)
         includeChainInfo = chainInfo.get_bool();
     }
 
-    std::string assetName = YONA;
-    UniValue assetNameParam = find_value(request.params[0].get_obj(), "assetName");
-    if (assetNameParam.isStr()) {
-        if (!AreAssetsDeployed())
-            throw JSONRPCError(RPC_INVALID_PARAMETER, "Assets aren't active.  assetName can't be specified.");
-        assetName = assetNameParam.get_str();
+    std::string tokenName = YONA;
+    UniValue tokenNameParam = find_value(request.params[0].get_obj(), "tokenName");
+    if (tokenNameParam.isStr()) {
+        if (!AreTokensDeployed())
+            throw JSONRPCError(RPC_INVALID_PARAMETER, "Tokens aren't active.  tokenName can't be specified.");
+        tokenName = tokenNameParam.get_str();
     }
 
     int start = 0;
@@ -991,11 +991,11 @@ UniValue getaddressdeltas(const JSONRPCRequest& request)
 
     for (std::vector<std::pair<uint160, int> >::iterator it = addresses.begin(); it != addresses.end(); it++) {
         if (start > 0 && end > 0) {
-            if (!GetAddressIndex((*it).first, (*it).second, assetName, addressIndex, start, end)) {
+            if (!GetAddressIndex((*it).first, (*it).second, tokenName, addressIndex, start, end)) {
                 throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, "No information available for address");
             }
         } else {
-            if (!GetAddressIndex((*it).first, (*it).second, assetName, addressIndex)) {
+            if (!GetAddressIndex((*it).first, (*it).second, tokenName, addressIndex)) {
                 throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, "No information available for address");
             }
         }
@@ -1010,7 +1010,7 @@ UniValue getaddressdeltas(const JSONRPCRequest& request)
         }
 
         UniValue delta(UniValue::VOBJ);
-        delta.push_back(Pair("assetName", it->first.asset));
+        delta.push_back(Pair("tokenName", it->first.token));
         delta.push_back(Pair("satoshis", it->second));
         delta.push_back(Pair("txid", it->first.txhash.GetHex()));
         delta.push_back(Pair("index", (int)it->first.index));
@@ -1065,7 +1065,7 @@ UniValue getaddressbalance(const JSONRPCRequest& request)
             "      ,...\n"
             "    ]\n"
             "},\n"
-            "\"includeAssets\" (boolean, optional, default false)  If true this will return an expanded result which includes asset balances\n"
+            "\"includeTokens\" (boolean, optional, default false)  If true this will return an expanded result which includes token balances\n"
             "\n"
             "\nResult:\n"
             "{\n"
@@ -1075,7 +1075,7 @@ UniValue getaddressbalance(const JSONRPCRequest& request)
             "OR\n"
             "[\n"
             "  {\n"
-            "    \"assetName\"  (string) The asset associated with the balance (YONA for Yonacoin)\n"
+            "    \"tokenName\"  (string) The token associated with the balance (YONA for Yonacoin)\n"
             "    \"balance\"  (string) The current balance in satoshis\n"
             "    \"received\"  (string) The total number of satoshis received (including change)\n"
             "  },...\n"
@@ -1093,14 +1093,14 @@ UniValue getaddressbalance(const JSONRPCRequest& request)
         throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, "Invalid address");
     }
 
-    bool includeAssets = false;
+    bool includeTokens = false;
     if (request.params.size() > 1) {
-        includeAssets = request.params[1].get_bool();
+        includeTokens = request.params[1].get_bool();
     }
 
-    if (includeAssets) {
-        if (!AreAssetsDeployed())
-            throw JSONRPCError(RPC_INVALID_PARAMETER, "Assets aren't active.  includeAssets can't be true.");
+    if (includeTokens) {
+        if (!AreTokensDeployed())
+            throw JSONRPCError(RPC_INVALID_PARAMETER, "Tokens aren't active.  includeTokens can't be true.");
 
         std::vector<std::pair<CAddressIndexKey, CAmount> > addressIndex;
 
@@ -1110,19 +1110,19 @@ UniValue getaddressbalance(const JSONRPCRequest& request)
             }
         }
 
-        //assetName -> (received, balance)
+        //tokenName -> (received, balance)
         std::map<std::string, std::pair<CAmount, CAmount>> balances;
 
         for (std::vector<std::pair<CAddressIndexKey, CAmount> >::const_iterator it = addressIndex.begin();
              it != addressIndex.end(); it++) {
-            std::string assetName = it->first.asset;
-            if (balances.count(assetName) == 0) {
-                balances[assetName] = std::make_pair(0, 0);
+            std::string tokenName = it->first.token;
+            if (balances.count(tokenName) == 0) {
+                balances[tokenName] = std::make_pair(0, 0);
             }
             if (it->second > 0) {
-                balances[assetName].first += it->second;
+                balances[tokenName].first += it->second;
             }
-            balances[assetName].second += it->second;
+            balances[tokenName].second += it->second;
         }
 
         UniValue result(UniValue::VARR);
@@ -1130,7 +1130,7 @@ UniValue getaddressbalance(const JSONRPCRequest& request)
         for (std::map<std::string, std::pair<CAmount, CAmount>>::const_iterator it = balances.begin();
                 it != balances.end(); it++) {
             UniValue balance(UniValue::VOBJ);
-            balance.push_back(Pair("assetName", it->first));
+            balance.push_back(Pair("tokenName", it->first));
             balance.push_back(Pair("balance", it->second.second));
             balance.push_back(Pair("received", it->second.first));
             result.push_back(balance);
@@ -1183,7 +1183,7 @@ UniValue getaddresstxids(const JSONRPCRequest& request)
             "  \"start\" (number, optional) The start block height\n"
             "  \"end\" (number, optional) The end block height\n"
             "},\n"
-            "\"includeAssets\" (boolean, optional, default false)  If true this will return an expanded result which includes asset transactions\n"
+            "\"includeTokens\" (boolean, optional, default false)  If true this will return an expanded result which includes token transactions\n"
             "\nResult:\n"
             "[\n"
             "  \"transactionid\"  (string) The transaction id\n"
@@ -1213,19 +1213,19 @@ UniValue getaddresstxids(const JSONRPCRequest& request)
         }
     }
 
-    bool includeAssets = false;
+    bool includeTokens = false;
     if (request.params.size() > 1) {
-        includeAssets = request.params[1].get_bool();
+        includeTokens = request.params[1].get_bool();
     }
 
-    if (includeAssets)
-        if (!AreAssetsDeployed())
-            throw JSONRPCError(RPC_INVALID_PARAMETER, "Assets aren't active.  includeAssets can't be true.");
+    if (includeTokens)
+        if (!AreTokensDeployed())
+            throw JSONRPCError(RPC_INVALID_PARAMETER, "Tokens aren't active.  includeTokens can't be true.");
 
     std::vector<std::pair<CAddressIndexKey, CAmount> > addressIndex;
 
     for (std::vector<std::pair<uint160, int> >::iterator it = addresses.begin(); it != addresses.end(); it++) {
-        if (includeAssets) {
+        if (includeTokens) {
             if (start > 0 && end > 0) {
                 if (!GetAddressIndex((*it).first, (*it).second, addressIndex, start, end)) {
                     throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, "No information available for address");
@@ -1333,11 +1333,11 @@ static const CRPCCommand commands[] =
     { "util",               "signmessagewithprivkey", &signmessagewithprivkey, {"privkey","message"} },
 
     /* Address index */
-    { "addressindex",       "getaddressmempool",      &getaddressmempool,      {"addresses","includeAssets"} },
+    { "addressindex",       "getaddressmempool",      &getaddressmempool,      {"addresses","includeTokens"} },
     { "addressindex",       "getaddressutxos",        &getaddressutxos,        {"addresses"} },
     { "addressindex",       "getaddressdeltas",       &getaddressdeltas,       {"addresses"} },
-    { "addressindex",       "getaddresstxids",        &getaddresstxids,        {"addresses","includeAssets"} },
-    { "addressindex",       "getaddressbalance",      &getaddressbalance,      {"addresses","includeAssets"} },
+    { "addressindex",       "getaddresstxids",        &getaddresstxids,        {"addresses","includeTokens"} },
+    { "addressindex",       "getaddressbalance",      &getaddressbalance,      {"addresses","includeTokens"} },
 
     /* Blockchain */
     { "blockchain",         "getspentinfo",           &getspentinfo,           {} },

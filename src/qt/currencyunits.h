@@ -9,7 +9,7 @@
 #include <QString>
 #include <array>
 
-/** Currency unit definitions. Stores basic title and symbol for a yona swap asset,
+/** Currency unit definitions. Stores basic title and symbol for a yona swap token,
  * as well as how many decimals to format the dispaly with.
 */
 struct CurrencyUnitDetails

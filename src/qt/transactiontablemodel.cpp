@@ -39,7 +39,7 @@ static int column_alignments[] = {
         Qt::AlignLeft|Qt::AlignVCenter, /* type */
         Qt::AlignLeft|Qt::AlignVCenter, /* address */
         Qt::AlignRight|Qt::AlignVCenter,  /* amount */
-        Qt::AlignLeft|Qt::AlignVCenter /* assetName */
+        Qt::AlignLeft|Qt::AlignVCenter /* tokenName */
     };
 
 // Comparison operator for sort/binary search of model tx list
@@ -251,7 +251,7 @@ TransactionTableModel::TransactionTableModel(const PlatformStyle *_platformStyle
         fProcessingQueuedTransactions(false),
         platformStyle(_platformStyle)
 {
-    columns << QString() << QString() << tr("Date") << tr("Type") << tr("Label") << tr("Amount") << tr("Asset");
+    columns << QString() << QString() << tr("Date") << tr("Type") << tr("Label") << tr("Amount") << tr("Token");
 
     priv->refreshWallet();
 
@@ -390,13 +390,13 @@ QString TransactionTableModel::formatTxType(const TransactionRecord *wtx) const
     case TransactionRecord::Generated:
         return tr("Mined");
     case TransactionRecord::Issue:
-        return tr("Asset Issued");
+        return tr("Token Issued");
     case TransactionRecord::Reissue:
-        return tr("Asset Reissued");
+        return tr("Token Reissued");
     case TransactionRecord::TransferFrom:
-        return tr("Assets Received");
+        return tr("Tokens Received");
     case TransactionRecord::TransferTo:
-        return tr("Assets Sent");
+        return tr("Tokens Sent");
     default:
         return QString();
     }
@@ -417,9 +417,9 @@ QVariant TransactionTableModel::txAddressDecoration(const TransactionRecord *wtx
     case TransactionRecord::Issue:
     case TransactionRecord::Reissue:
     case TransactionRecord::TransferFrom:
-        return QIcon(":/icons/tx_asset_input");
+        return QIcon(":/icons/tx_token_input");
     case TransactionRecord::TransferTo:
-        return QIcon(":/icons/tx_asset_output");
+        return QIcon(":/icons/tx_token_output");
     default:
         return QIcon(":/icons/tx_inout");
     }
@@ -576,8 +576,8 @@ QVariant TransactionTableModel::data(const QModelIndex &index, int role) const
         case Type: return {};
         case ToAddress:
             return txAddressDecoration(rec);
-        case AssetName:
-            return QString::fromStdString(rec->assetName);
+        case TokenName:
+            return QString::fromStdString(rec->tokenName);
         case Amount: return {};
         } // no default case, so the compiler can warn about missing cases
         assert(false);
@@ -598,9 +598,9 @@ QVariant TransactionTableModel::data(const QModelIndex &index, int role) const
             return formatTxToAddress(rec, false);
         case Amount:
             return formatTxAmount(rec, true, YonaUnits::separatorAlways);
-        case AssetName:
-            if (rec->assetName != "YONA")
-               return QString::fromStdString(rec->assetName);
+        case TokenName:
+            if (rec->tokenName != "YONA")
+               return QString::fromStdString(rec->tokenName);
             else
                return QString(YonaUnits::name(walletModel->getOptionsModel()->getDisplayUnit()));
         } // no default case, so the compiler can warn about missing cases
@@ -620,8 +620,8 @@ QVariant TransactionTableModel::data(const QModelIndex &index, int role) const
             return formatTxToAddress(rec, true);
         case Amount:
             return qint64(rec->credit + rec->debit);
-        case AssetName:
-            return QString::fromStdString(rec->assetName);
+        case TokenName:
+            return QString::fromStdString(rec->tokenName);
         } // no default case, so the compiler can warn about missing cases
         assert(false);
     case Qt::ToolTipRole:
@@ -647,10 +647,10 @@ QVariant TransactionTableModel::data(const QModelIndex &index, int role) const
         {
             return addressColor(rec);
         }
-        if(index.column() == AssetName)
+        if(index.column() == TokenName)
         {
-            if (rec->assetName != "YONA")
-               return platformStyle->AssetTxColor();
+            if (rec->tokenName != "YONA")
+               return platformStyle->TokenTxColor();
         }
         break;
     case TypeRole:
@@ -708,14 +708,14 @@ QVariant TransactionTableModel::data(const QModelIndex &index, int role) const
     case FormattedAmountRole:
         // Used for copy/export, so don't include separators
         return formatTxAmount(rec, false, YonaUnits::separatorNever);
-    case AssetNameRole:
+    case TokenNameRole:
         {
-            QString assetName;
-            if (rec->assetName != "YONA")
-               assetName.append(QString::fromStdString(rec->assetName));
+            QString tokenName;
+            if (rec->tokenName != "YONA")
+               tokenName.append(QString::fromStdString(rec->tokenName));
             else
-               assetName.append(QString(YonaUnits::name(walletModel->getOptionsModel()->getDisplayUnit())));
-            return assetName;
+               tokenName.append(QString(YonaUnits::name(walletModel->getOptionsModel()->getDisplayUnit())));
+            return tokenName;
         }
     case StatusRole:
         return rec->status.status;
@@ -750,8 +750,8 @@ QVariant TransactionTableModel::headerData(int section, Qt::Orientation orientat
                 return tr("User-defined intent/purpose of the transaction.");
             case Amount:
                 return tr("Amount removed from or added to balance.");
-            case AssetName:
-                return tr("The asset (or YONA) removed or added to balance.");
+            case TokenName:
+                return tr("The token (or YONA) removed or added to balance.");
             }
         }
     }

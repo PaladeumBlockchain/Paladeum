@@ -2,9 +2,9 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#include "assets/assets.h"
-#include "assets/assetdb.h"
-#include "assets/messages.h"
+#include "tokens/tokens.h"
+#include "tokens/tokendb.h"
+#include "tokens/messages.h"
 #include <map>
 #include "tinyformat.h"
 
@@ -33,8 +33,8 @@
 #include "wallet/feebumper.h"
 #include "wallet/wallet.h"
 #include "wallet/walletdb.h"
-#include "assets/snapshotrequestdb.h"
-#include "assets/assetsnapshotdb.h"
+#include "tokens/snapshotrequestdb.h"
+#include "tokens/tokensnapshotdb.h"
 
 #ifdef ENABLE_WALLET
 
@@ -72,11 +72,11 @@
 UniValue requestsnapshot(const JSONRPCRequest& request) {
     if (request.fHelp || request.params.size() < 2)
         throw std::runtime_error(
-                "requestsnapshot \"asset_name\" block_height\n"
-                "\nSchedules a snapshot of the specified asset at the specified block height.\n"
+                "requestsnapshot \"token_name\" block_height\n"
+                "\nSchedules a snapshot of the specified token at the specified block height.\n"
 
                 "\nArguments:\n"
-                "1. \"asset_name\"              (string, required) The asset name for which the snapshot will be taken\n"
+                "1. \"token_name\"              (string, required) The token name for which the snapshot will be taken\n"
                 "2. \"block_height\"            (number, required) The block height at which the snapshot will be take\n"
 
                 "\nResult:\n"
@@ -89,28 +89,28 @@ UniValue requestsnapshot(const JSONRPCRequest& request) {
                 + HelpExampleRpc("requestsnapshot", "\"PHATSTACKS\" 34987")
         );
 
-    if (!fAssetIndex) {
-        return "_This rpc call is not functional unless -assetindex is enabled. To enable, please run the wallet with -assetindex, this will require a reindex to occur";
+    if (!fTokenIndex) {
+        return "_This rpc call is not functional unless -tokenindex is enabled. To enable, please run the wallet with -tokenindex, this will require a reindex to occur";
     }
 
     //  Extract parameters
-    std::string asset_name = request.params[0].get_str();
+    std::string token_name = request.params[0].get_str();
     int block_height = request.params[1].get_int();
 
-    AssetType ownershipAssetType;
+    TokenType ownershipTokenType;
 
-    if (!IsAssetNameValid(asset_name, ownershipAssetType))
-        throw JSONRPCError(RPC_INVALID_PARAMETER, std::string("Invalid asset_name: Please use a valid asset name"));
+    if (!IsTokenNameValid(token_name, ownershipTokenType))
+        throw JSONRPCError(RPC_INVALID_PARAMETER, std::string("Invalid token_name: Please use a valid token name"));
 
-    if (ownershipAssetType == AssetType::UNIQUE || ownershipAssetType == AssetType::OWNER || ownershipAssetType == AssetType::MSGCHANNEL)
-        throw JSONRPCError(RPC_INVALID_PARAMETER, std::string("Invalid asset_name: OWNER, UNQIUE, MSGCHANNEL assets are not allowed for this call"));
+    if (ownershipTokenType == TokenType::UNIQUE || ownershipTokenType == TokenType::OWNER || ownershipTokenType == TokenType::MSGCHANNEL)
+        throw JSONRPCError(RPC_INVALID_PARAMETER, std::string("Invalid token_name: OWNER, UNQIUE, MSGCHANNEL tokens are not allowed for this call"));
 
-    auto currentActiveAssetCache = GetCurrentAssetCache();
-    if (!currentActiveAssetCache)
-        return "_Couldn't get current asset cache.";
-    CNewAsset asset;
-    if (!currentActiveAssetCache->GetAssetMetaDataIfExists(asset_name, asset))
-        throw JSONRPCError(RPC_INVALID_PARAMETER, std::string("Invalid asset_name: asset does not exist."));
+    auto currentActiveTokenCache = GetCurrentTokenCache();
+    if (!currentActiveTokenCache)
+        return "_Couldn't get current token cache.";
+    CNewToken token;
+    if (!currentActiveTokenCache->GetTokenMetaDataIfExists(token_name, token))
+        throw JSONRPCError(RPC_INVALID_PARAMETER, std::string("Invalid token_name: token does not exist."));
 
     if (block_height <= chainActive.Height()) {
         throw JSONRPCError(RPC_INVALID_PARAMETER, std::string("Invalid block_height: block height should be greater than current active chain height"));
@@ -120,7 +120,7 @@ UniValue requestsnapshot(const JSONRPCRequest& request) {
         throw JSONRPCError(RPC_DATABASE_ERROR, std::string("Snapshot Request database is not setup. Please restart wallet to try again"));
 
     //  Build our snapshot request record for scheduling
-    if (pSnapshotRequestDb->ScheduleSnapshot(asset_name, block_height)) {
+    if (pSnapshotRequestDb->ScheduleSnapshot(token_name, block_height)) {
         UniValue obj(UniValue::VOBJ);
 
         obj.push_back(Pair("request_status", "Added"));
@@ -134,16 +134,16 @@ UniValue requestsnapshot(const JSONRPCRequest& request) {
 UniValue getsnapshotrequest(const JSONRPCRequest& request) {
     if (request.fHelp || request.params.size() < 2)
         throw std::runtime_error(
-                "getsnapshotrequest \"asset_name\" block_height\n"
+                "getsnapshotrequest \"token_name\" block_height\n"
                 "\nRetrieves the specified snapshot request details.\n"
 
                 "\nArguments:\n"
-                "1. \"asset_name\"              (string, required) The asset name for which the snapshot will be taken\n"
+                "1. \"token_name\"              (string, required) The token name for which the snapshot will be taken\n"
                 "2. \"block_height\"            (number, required) The block height at which the snapshot will be take\n"
 
                 "\nResult:\n"
                 "{\n"
-                "  asset_name: (string),\n"
+                "  token_name: (string),\n"
                 "  block_height: (number),\n"
                 "}\n"
 
@@ -152,12 +152,12 @@ UniValue getsnapshotrequest(const JSONRPCRequest& request) {
                 + HelpExampleRpc("getsnapshotrequest", "\"PHATSTACKS\" 34987")
         );
 
-    if (!fAssetIndex) {
-        return "_This rpc call is not functional unless -assetindex is enabled. To enable, please run the wallet with -assetindex, this will require a reindex to occur";
+    if (!fTokenIndex) {
+        return "_This rpc call is not functional unless -tokenindex is enabled. To enable, please run the wallet with -tokenindex, this will require a reindex to occur";
     }
 
     //  Extract parameters
-    std::string asset_name = request.params[0].get_str();
+    std::string token_name = request.params[0].get_str();
     int block_height = request.params[1].get_int();
 
     if (!pSnapshotRequestDb)
@@ -166,17 +166,17 @@ UniValue getsnapshotrequest(const JSONRPCRequest& request) {
     //  Retrieve the specified snapshot request
     CSnapshotRequestDBEntry snapshotRequest;
 
-    if (pSnapshotRequestDb->RetrieveSnapshotRequest(asset_name, block_height, snapshotRequest)) {
+    if (pSnapshotRequestDb->RetrieveSnapshotRequest(token_name, block_height, snapshotRequest)) {
         UniValue obj(UniValue::VOBJ);
 
-        obj.push_back(Pair("asset_name", snapshotRequest.assetName));
+        obj.push_back(Pair("token_name", snapshotRequest.tokenName));
         obj.push_back(Pair("block_height", snapshotRequest.heightForSnapshot));
 
         return obj;
     }
     else {
-       LogPrint(BCLog::REWARDS, "Failed to retrieve specified snapshot request for asset '%s' at height %d!\n",
-            asset_name.c_str(), block_height);
+       LogPrint(BCLog::REWARDS, "Failed to retrieve specified snapshot request for token '%s' at height %d!\n",
+            token_name.c_str(), block_height);
     }
 
     throw JSONRPCError(RPC_MISC_ERROR, std::string("Failed to retrieve specified snapshot request"));
@@ -185,17 +185,17 @@ UniValue getsnapshotrequest(const JSONRPCRequest& request) {
 UniValue listsnapshotrequests(const JSONRPCRequest& request) {
     if (request.fHelp || request.params.size() > 2)
         throw std::runtime_error(
-                "listsnapshotrequests [\"asset_name\" [block_height]]\n"
+                "listsnapshotrequests [\"token_name\" [block_height]]\n"
                 "\nList snapshot request details.\n"
 
                 "\nArguments:\n"
-                "asset_name: (string, optional) List only requests for a specific asset (default is \"\" for ALL)\n"
+                "token_name: (string, optional) List only requests for a specific token (default is \"\" for ALL)\n"
                 "block_height: (number, optional) List only requests for a particular block height (default is 0 for ALL)\n"
 
                 "\nResult:\n"
                 "[\n"
                 "  {\n"
-                "    asset_name: (string),\n"
+                "    token_name: (string),\n"
                 "    block_height: (number)\n"
                 "  }\n"
                 "]\n"
@@ -205,14 +205,14 @@ UniValue listsnapshotrequests(const JSONRPCRequest& request) {
                 + HelpExampleRpc("listsnapshotrequests", "\"TRONCO\" 345333")
         );
 
-    if (!fAssetIndex)
-        return "_This rpc call is not functional unless -assetindex is enabled. To enable, please run the wallet with -assetindex, this will require a reindex to occur";
+    if (!fTokenIndex)
+        return "_This rpc call is not functional unless -tokenindex is enabled. To enable, please run the wallet with -tokenindex, this will require a reindex to occur";
 
     //  Extract parameters
-    std::string asset_name = "";
+    std::string token_name = "";
     int block_height = 0;
     if (request.params.size() > 0)
-        asset_name = request.params[0].get_str();
+        token_name = request.params[0].get_str();
     if (request.params.size() > 1)
         block_height = request.params[1].get_int();
 
@@ -221,18 +221,18 @@ UniValue listsnapshotrequests(const JSONRPCRequest& request) {
 
     UniValue result(UniValue::VARR);
     std::set<CSnapshotRequestDBEntry> entries;
-    if (pSnapshotRequestDb->RetrieveSnapshotRequestsForHeight(asset_name, block_height, entries)) {
+    if (pSnapshotRequestDb->RetrieveSnapshotRequestsForHeight(token_name, block_height, entries)) {
         for (auto const &entry : entries) {
             UniValue item(UniValue::VOBJ);
-            item.push_back(Pair("asset_name", entry.assetName));
+            item.push_back(Pair("token_name", entry.tokenName));
             item.push_back(Pair("block_height", entry.heightForSnapshot));
             result.push_back(item);
         }
         return result;
     }
     else {
-        LogPrint(BCLog::REWARDS, "Failed to cancel specified snapshot request for asset '%s' at height %d!\n",
-                 asset_name.c_str(), block_height);
+        LogPrint(BCLog::REWARDS, "Failed to cancel specified snapshot request for token '%s' at height %d!\n",
+                 token_name.c_str(), block_height);
     }
 
     return NullUniValue;
@@ -241,11 +241,11 @@ UniValue listsnapshotrequests(const JSONRPCRequest& request) {
 UniValue cancelsnapshotrequest(const JSONRPCRequest& request) {
     if (request.fHelp || request.params.size() < 2)
         throw std::runtime_error(
-                "cancelsnapshotrequest \"asset_name\" block_height\n"
+                "cancelsnapshotrequest \"token_name\" block_height\n"
                 "\nCancels the specified snapshot request.\n"
 
                 "\nArguments:\n"
-                "1. \"asset_name\"              (string, required) The asset name for which the snapshot will be taken\n"
+                "1. \"token_name\"              (string, required) The token name for which the snapshot will be taken\n"
                 "2. \"block_height\"            (number, required) The block height at which the snapshot will be take\n"
 
                 "\nResult:\n"
@@ -258,19 +258,19 @@ UniValue cancelsnapshotrequest(const JSONRPCRequest& request) {
                 + HelpExampleRpc("cancelsnapshotrequest", "\"PHATSTACKS\" 34987")
         );
 
-    if (!fAssetIndex) {
-        return "_This rpc call is not functional unless -assetindex is enabled. To enable, please run the wallet with -assetindex, this will require a reindex to occur";
+    if (!fTokenIndex) {
+        return "_This rpc call is not functional unless -tokenindex is enabled. To enable, please run the wallet with -tokenindex, this will require a reindex to occur";
     }
 
     //  Extract parameters
-    std::string asset_name = request.params[0].get_str();
+    std::string token_name = request.params[0].get_str();
     int block_height = request.params[1].get_int();
 
     if (!pSnapshotRequestDb)
         throw JSONRPCError(RPC_DATABASE_ERROR, std::string("Snapshot Request database is not setup. Please restart wallet to try again"));
 
     //  Retrieve the specified reward
-    if (pSnapshotRequestDb->RemoveSnapshotRequest(asset_name, block_height)) {
+    if (pSnapshotRequestDb->RemoveSnapshotRequest(token_name, block_height)) {
         UniValue obj(UniValue::VOBJ);
 
         obj.push_back(Pair("request_status", "Removed"));
@@ -278,8 +278,8 @@ UniValue cancelsnapshotrequest(const JSONRPCRequest& request) {
         return obj;
     }
     else {
-        LogPrint(BCLog::REWARDS, "Failed to cancel specified snapshot request for asset '%s' at height %d!\n",
-            asset_name.c_str(), block_height);
+        LogPrint(BCLog::REWARDS, "Failed to cancel specified snapshot request for token '%s' at height %d!\n",
+            token_name.c_str(), block_height);
     }
 
     throw JSONRPCError(RPC_MISC_ERROR, std::string("Failed to remove specified snapshot request"));
@@ -288,14 +288,14 @@ UniValue cancelsnapshotrequest(const JSONRPCRequest& request) {
 UniValue distributereward(const JSONRPCRequest& request) {
     if (request.fHelp || request.params.size() < 4)
         throw std::runtime_error(
-                "distributereward \"asset_name\" snapshot_height \"distribution_asset_name\" gross_distribution_amount ( \"exception_addresses\" ) (\"change_address\") (\"dry_run\")\n"
-                "\nSplits the specified amount of the distribution asset to all owners of asset_name that are not in the optional exclusion_addresses\n"
+                "distributereward \"token_name\" snapshot_height \"distribution_token_name\" gross_distribution_amount ( \"exception_addresses\" ) (\"change_address\") (\"dry_run\")\n"
+                "\nSplits the specified amount of the distribution token to all owners of token_name that are not in the optional exclusion_addresses\n"
 
                 "\nArguments:\n"
-                "1. \"asset_name\"                 (string, required) The reward will be distributed all owners of this asset\n"
+                "1. \"token_name\"                 (string, required) The reward will be distributed all owners of this token\n"
                 "2. \"snapshot_height\"            (number, required) The block height of the ownership snapshot\n"
-                "3. \"distribution_asset_name\"    (string, required) The name of the asset that will be distributed, or YONA\n"
-                "4. \"gross_distribution_amount\"  (number, required) The amount of the distribution asset that will be split amongst all owners\n"
+                "3. \"distribution_token_name\"    (string, required) The name of the token that will be distributed, or YONA\n"
+                "4. \"gross_distribution_amount\"  (number, required) The amount of the distribution token that will be split amongst all owners\n"
                 "5. \"exception_addresses\"        (string, optional) Ownership addresses that should be excluded\n"
                 "6. \"change_address\"             (string, optional) If the rewards can't be fully distributed. The change will be sent to this address\n"
 
@@ -324,8 +324,8 @@ UniValue distributereward(const JSONRPCRequest& request) {
                 + HelpExampleRpc("distributereward", "\"PHATSTACKS\" 34987 \"YONA\" 100000 \"mwN7xC3yomYdvJuVXkVC7ymY9wNBjWNduD,n4Rf18edydDaRBh7t6gHUbuByLbWEoWUTg\"")
         );
 
-    if (!fAssetIndex) {
-        return "_This rpc call is not functional unless -assetindex is enabled. To enable, please run the wallet with -assetindex, this will require a reindex to occur";
+    if (!fTokenIndex) {
+        return "_This rpc call is not functional unless -tokenindex is enabled. To enable, please run the wallet with -tokenindex, this will require a reindex to occur";
     }
 
     //  Figure out which wallet to use
@@ -342,10 +342,10 @@ UniValue distributereward(const JSONRPCRequest& request) {
     EnsureWalletIsUnlocked(walletPtr);
 
     //  Extract parameters
-    std::string asset_name(request.params[0].get_str());
+    std::string token_name(request.params[0].get_str());
     int snapshot_height = request.params[1].get_int();
-    std::string distribution_asset_name(request.params[2].get_str());
-    CAmount distribution_amount = AmountFromValue(request.params[3], (distribution_asset_name == "YONA"));
+    std::string distribution_token_name(request.params[2].get_str());
+    CAmount distribution_amount = AmountFromValue(request.params[3], (distribution_token_name == "YONA"));
     std::string exception_addresses;
     if (request.params.size() > 4) {
         exception_addresses = request.params[4].get_str();
@@ -360,29 +360,29 @@ UniValue distributereward(const JSONRPCRequest& request) {
             throw JSONRPCError(RPC_INVALID_PARAMETER, std::string("Invalid change address: Use a valid YONA address"));
     }
 
-    AssetType ownershipAssetType;
-    AssetType distributionAssetType;
+    TokenType ownershipTokenType;
+    TokenType distributionTokenType;
 
-    if (!IsAssetNameValid(asset_name, ownershipAssetType))
-        throw JSONRPCError(RPC_INVALID_PARAMETER, std::string("Invalid asset_name: Please use a valid asset name"));
+    if (!IsTokenNameValid(token_name, ownershipTokenType))
+        throw JSONRPCError(RPC_INVALID_PARAMETER, std::string("Invalid token_name: Please use a valid token name"));
 
-    if (ownershipAssetType == AssetType::UNIQUE || ownershipAssetType == AssetType::OWNER || ownershipAssetType == AssetType::MSGCHANNEL)
-        throw JSONRPCError(RPC_INVALID_PARAMETER, std::string("Invalid asset_name: OWNER, UNQIUE, MSGCHANNEL assets are not allowed for this call"));
+    if (ownershipTokenType == TokenType::UNIQUE || ownershipTokenType == TokenType::OWNER || ownershipTokenType == TokenType::MSGCHANNEL)
+        throw JSONRPCError(RPC_INVALID_PARAMETER, std::string("Invalid token_name: OWNER, UNQIUE, MSGCHANNEL tokens are not allowed for this call"));
 
     if (snapshot_height > chainActive.Height()) {
         throw JSONRPCError(RPC_INVALID_PARAMETER, std::string("Invalid snapshot_height: block height should be less than or equal to the current active chain height"));
     }
 
-    if (distribution_asset_name != "YONA") {
-        if (!IsAssetNameValid(distribution_asset_name, distributionAssetType))
-            throw JSONRPCError(RPC_INVALID_PARAMETER, std::string("Invalid distribution_asset_name: Please use a valid asset name"));
+    if (distribution_token_name != "YONA") {
+        if (!IsTokenNameValid(distribution_token_name, distributionTokenType))
+            throw JSONRPCError(RPC_INVALID_PARAMETER, std::string("Invalid distribution_token_name: Please use a valid token name"));
 
-        if (distributionAssetType == AssetType::UNIQUE || distributionAssetType == AssetType::OWNER || distributionAssetType == AssetType::MSGCHANNEL)
-            throw JSONRPCError(RPC_INVALID_PARAMETER, std::string("Invalid distribution_asset_name: OWNER, UNQIUE, MSGCHANNEL assets are not allowed for this call"));
+        if (distributionTokenType == TokenType::UNIQUE || distributionTokenType == TokenType::OWNER || distributionTokenType == TokenType::MSGCHANNEL)
+            throw JSONRPCError(RPC_INVALID_PARAMETER, std::string("Invalid distribution_token_name: OWNER, UNQIUE, MSGCHANNEL tokens are not allowed for this call"));
 
         std::pair<int, std::string> errorPair;
-        if (!VerifyWalletHasAsset(distribution_asset_name + OWNER_TAG, errorPair))
-            throw JSONRPCError(RPC_INVALID_REQUEST, std::string("Wallet doesn't have the ownership token(!) for the distribution asset"));
+        if (!VerifyWalletHasToken(distribution_token_name + OWNER_TAG, errorPair))
+            throw JSONRPCError(RPC_INVALID_REQUEST, std::string("Wallet doesn't have the ownership token(!) for the distribution token"));
     }
 
     if (chainActive.Height() - snapshot_height < gArgs.GetArg("-minrewardheight", MINIMUM_REWARDS_PAYOUT_HEIGHT)) {
@@ -390,25 +390,25 @@ UniValue distributereward(const JSONRPCRequest& request) {
                 "For security of the rewards payout, it is recommended to wait until chain is 60 blocks ahead of the snapshot height. You can modify this by using the -minrewardsheight."));
     }
 
-    if (!passets)
-        throw JSONRPCError(RPC_DATABASE_ERROR, std::string("Asset cache not setup. Please restart wallet to try again"));
+    if (!ptokens)
+        throw JSONRPCError(RPC_DATABASE_ERROR, std::string("Token cache not setup. Please restart wallet to try again"));
 
-    CNewAsset assetMetaData;
-    if (!passets->GetAssetMetaDataIfExists(asset_name, assetMetaData))
-        throw JSONRPCError(RPC_INVALID_REQUEST, std::string("The asset hasn't been created: ") + asset_name);
+    CNewToken tokenMetaData;
+    if (!ptokens->GetTokenMetaDataIfExists(token_name, tokenMetaData))
+        throw JSONRPCError(RPC_INVALID_REQUEST, std::string("The token hasn't been created: ") + token_name);
 
-    if (!passetsdb)
-        throw JSONRPCError(RPC_DATABASE_ERROR, std::string("Assets database is not setup. Please restart wallet to try again"));
-    if (!pAssetSnapshotDb)
-        throw JSONRPCError(RPC_DATABASE_ERROR, std::string("Asset Snapshot database is not setup. Please restart wallet to try again"));
+    if (!ptokensdb)
+        throw JSONRPCError(RPC_DATABASE_ERROR, std::string("Tokens database is not setup. Please restart wallet to try again"));
+    if (!pTokenSnapshotDb)
+        throw JSONRPCError(RPC_DATABASE_ERROR, std::string("Token Snapshot database is not setup. Please restart wallet to try again"));
 
     if (!pSnapshotRequestDb)
         throw JSONRPCError(RPC_DATABASE_ERROR, std::string("Snapshot Request database is not setup. Please restart wallet to try again"));
 
-    if (!pSnapshotRequestDb->ContainsSnapshotRequest(asset_name, snapshot_height))
+    if (!pSnapshotRequestDb->ContainsSnapshotRequest(token_name, snapshot_height))
         throw JSONRPCError(RPC_INVALID_REQUEST, std::string("Snapshot request not found"));
 
-    CRewardSnapshot distribRewardSnapshotData(asset_name, distribution_asset_name, exception_addresses, distribution_amount, snapshot_height);
+    CRewardSnapshot distribRewardSnapshotData(token_name, distribution_token_name, exception_addresses, distribution_amount, snapshot_height);
     if (!AddDistributeRewardSnapshot(distribRewardSnapshotData))
         throw JSONRPCError(RPC_INVALID_REQUEST, std::string("Distribution of reward has already be created. You must remove the distribution before creating another one"));
 
@@ -421,14 +421,14 @@ UniValue distributereward(const JSONRPCRequest& request) {
 UniValue getdistributestatus(const JSONRPCRequest& request) {
     if (request.fHelp || request.params.size() < 4)
         throw std::runtime_error(
-                "getdistributestatus \"asset_name\" snapshot_height \"distribution_asset_name\" gross_distribution_amount ( \"exception_addresses\" )\n"
+                "getdistributestatus \"token_name\" snapshot_height \"distribution_token_name\" gross_distribution_amount ( \"exception_addresses\" )\n"
                 "\nGive information about the status of the distribution\n"
 
                 "\nArguments:\n"
-                "1. \"asset_name\"                 (string, required) The reward will be distributed all owners of this asset\n"
+                "1. \"token_name\"                 (string, required) The reward will be distributed all owners of this token\n"
                 "2. \"snapshot_height\"            (number, required) The block height of the ownership snapshot\n"
-                "3. \"distribution_asset_name\"    (string, required) The name of the asset that will be distributed, or YONA\n"
-                "4. \"gross_distribution_amount\"  (number, required) The amount of the distribution asset that will be split amongst all owners\n"
+                "3. \"distribution_token_name\"    (string, required) The name of the token that will be distributed, or YONA\n"
+                "4. \"gross_distribution_amount\"  (number, required) The amount of the distribution token that will be split amongst all owners\n"
                 "5. \"exception_addresses\"        (string, optional) Ownership addresses that should be excluded\n"
 
                 "\nExamples:\n"
@@ -438,17 +438,17 @@ UniValue getdistributestatus(const JSONRPCRequest& request) {
                 + HelpExampleRpc("getdistributestatus", "\"PHATSTACKS\" 34987 \"YONA\" 100000 \"mwN7xC3yomYdvJuVXkVC7ymY9wNBjWNduD,n4Rf18edydDaRBh7t6gHUbuByLbWEoWUTg\"")
         );
 
-    if (!fAssetIndex) {
-        return "_This rpc call is not functional unless -assetindex is enabled. To enable, please run the wallet with -assetindex, this will require a reindex to occur";
+    if (!fTokenIndex) {
+        return "_This rpc call is not functional unless -tokenindex is enabled. To enable, please run the wallet with -tokenindex, this will require a reindex to occur";
     }
 
     ObserveSafeMode();
 
     //  Extract parameters
-    std::string asset_name(request.params[0].get_str());
+    std::string token_name(request.params[0].get_str());
     int snapshot_height = request.params[1].get_int();
-    std::string distribution_asset_name(request.params[2].get_str());
-    CAmount distribution_amount = AmountFromValue(request.params[3], (distribution_asset_name == "YONA"));
+    std::string distribution_token_name(request.params[2].get_str());
+    CAmount distribution_amount = AmountFromValue(request.params[3], (distribution_token_name == "YONA"));
     std::string exception_addresses;
     if (request.params.size() > 4) {
         exception_addresses = request.params[4].get_str();
@@ -459,7 +459,7 @@ UniValue getdistributestatus(const JSONRPCRequest& request) {
     if (!pDistributeSnapshotDb)
         throw JSONRPCError(RPC_INVALID_REQUEST, std::string("Snapshot request database is not setup.  Please restart wallet to try again"));
 
-    CRewardSnapshot distribRewardSnapshotData(asset_name, distribution_asset_name, exception_addresses, distribution_amount, snapshot_height);
+    CRewardSnapshot distribRewardSnapshotData(token_name, distribution_token_name, exception_addresses, distribution_amount, snapshot_height);
     auto hash = distribRewardSnapshotData.GetHash();
 
     CRewardSnapshot temp;
@@ -469,9 +469,9 @@ UniValue getdistributestatus(const JSONRPCRequest& request) {
 
     UniValue responseObj(UniValue::VOBJ);
 
-    responseObj.push_back(std::make_pair("Asset Name", temp.strOwnershipAsset));
+    responseObj.push_back(std::make_pair("Token Name", temp.strOwnershipToken));
     responseObj.push_back(std::make_pair("Height", std::to_string(temp.nHeight)));
-    responseObj.push_back(std::make_pair("Distribution Name", temp.strDistributionAsset));
+    responseObj.push_back(std::make_pair("Distribution Name", temp.strDistributionToken));
     responseObj.push_back(std::make_pair("Distribution Amount", ValueFromAmount(temp.nDistributionAmount)));
     responseObj.push_back(std::make_pair("Status", temp.nStatus));
 
@@ -485,12 +485,12 @@ static const CRPCCommand commands[] =
     {           //  category    name                          actor (function)             argNames
                 //  ----------- ------------------------      -----------------------      ----------
 #ifdef ENABLE_WALLET
-            {   "rewards",      "requestsnapshot",            &requestsnapshot,            {"asset_name", "block_height"}},
-            {   "rewards",      "getsnapshotrequest",         &getsnapshotrequest,         {"asset_name", "block_height"}},
-            {   "rewards",      "listsnapshotrequests",         &listsnapshotrequests,         {"asset_name", "block_height"}},
-            {   "rewards",      "cancelsnapshotrequest",      &cancelsnapshotrequest,      {"asset_name", "block_height"}},
-            {   "rewards",      "distributereward",           &distributereward,           {"asset_name", "snapshot_height", "distribution_asset_name", "gross_distribution_amount", "exception_addresses", "change_address"}},
-            {   "rewards",      "getdistributestatus",        &getdistributestatus,            {"asset_name", "block_height", "distribution_asset_name", "gross_distribution_amount", "exception_addresses"}}
+            {   "rewards",      "requestsnapshot",            &requestsnapshot,            {"token_name", "block_height"}},
+            {   "rewards",      "getsnapshotrequest",         &getsnapshotrequest,         {"token_name", "block_height"}},
+            {   "rewards",      "listsnapshotrequests",         &listsnapshotrequests,         {"token_name", "block_height"}},
+            {   "rewards",      "cancelsnapshotrequest",      &cancelsnapshotrequest,      {"token_name", "block_height"}},
+            {   "rewards",      "distributereward",           &distributereward,           {"token_name", "snapshot_height", "distribution_token_name", "gross_distribution_amount", "exception_addresses", "change_address"}},
+            {   "rewards",      "getdistributestatus",        &getdistributestatus,            {"token_name", "block_height", "distribution_token_name", "gross_distribution_amount", "exception_addresses"}}
     #endif
     };
 

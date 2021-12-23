@@ -14,10 +14,10 @@
 #include "platformstyle.h"
 #include "transactionfilterproxy.h"
 #include "transactiontablemodel.h"
-#include "assetfilterproxy.h"
-#include "assettablemodel.h"
+#include "tokenfilterproxy.h"
+#include "tokentablemodel.h"
 #include "walletmodel.h"
-#include "assetrecord.h"
+#include "tokenrecord.h"
 
 #include <QAbstractItemDelegate>
 #include <QDateTime>
@@ -124,15 +124,15 @@ public:
         painter->setPen(foreground);
         painter->drawText(addressRect, Qt::AlignRight|Qt::AlignVCenter, amountText);
 
-        QString assetName = index.data(TransactionTableModel::AssetNameRole).toString();
+        QString tokenName = index.data(TransactionTableModel::TokenNameRole).toString();
 
         // Concatenate the strings if needed before painting
         #ifndef QTversionPreFiveEleven
-    		GUIUtil::concatenate(painter, assetName, painter->fontMetrics().horizontalAdvance(GUIUtil::dateTimeStr(date)), amountRect.left(), amountRect.right());
+    		GUIUtil::concatenate(painter, tokenName, painter->fontMetrics().horizontalAdvance(GUIUtil::dateTimeStr(date)), amountRect.left(), amountRect.right());
     	#else
-    		GUIUtil::concatenate(painter, assetName, painter->fontMetrics().width(GUIUtil::dateTimeStr(date)), amountRect.left(), amountRect.right());
+    		GUIUtil::concatenate(painter, tokenName, painter->fontMetrics().width(GUIUtil::dateTimeStr(date)), amountRect.left(), amountRect.right());
     	#endif
-    	painter->drawText(amountRect, Qt::AlignRight|Qt::AlignVCenter, assetName);
+    	painter->drawText(amountRect, Qt::AlignRight|Qt::AlignVCenter, tokenName);
 
         painter->setPen(platformStyle->TextColor());
         painter->drawText(amountRect, Qt::AlignLeft|Qt::AlignVCenter, GUIUtil::dateTimeStr(date));
@@ -150,11 +150,11 @@ public:
 
 };
 
-class AssetViewDelegate : public QAbstractItemDelegate
+class TokenViewDelegate : public QAbstractItemDelegate
 {
 Q_OBJECT
 public:
-    explicit AssetViewDelegate(const PlatformStyle *_platformStyle, QObject *parent=nullptr):
+    explicit TokenViewDelegate(const PlatformStyle *_platformStyle, QObject *parent=nullptr):
             QAbstractItemDelegate(parent), unit(YonaUnits::YONA),
             platformStyle(_platformStyle)
     {
@@ -166,13 +166,13 @@ public:
     {
         painter->save();
 
-        /** Get the icon for the administrator of the asset */
+        /** Get the icon for the administrator of the token */
         QPixmap pixmap = qvariant_cast<QPixmap>(index.data(Qt::DecorationRole));
-        QPixmap ipfspixmap = qvariant_cast<QPixmap>(index.data(AssetTableModel::AssetIPFSHashDecorationRole));
+        QPixmap ipfspixmap = qvariant_cast<QPixmap>(index.data(TokenTableModel::TokenIPFSHashDecorationRole));
 
-        bool admin = index.data(AssetTableModel::AdministratorRole).toBool();
+        bool admin = index.data(TokenTableModel::AdministratorRole).toBool();
 
-        /** Need to know the heigh to the pixmap. If it is 0 we don't we dont own this asset so dont have room for the icon */
+        /** Need to know the heigh to the pixmap. If it is 0 we don't we dont own this token so dont have room for the icon */
         int nIconSize = admin ? pixmap.height() : 0;
         int nIPFSIconSize = ipfspixmap.height();
         int extraNameSpacing = 12;
@@ -193,12 +193,12 @@ public:
         int halfheight = (gradientRect.height() - 2*ypad)/2;
 
         /** Create the three main rectangles  (Icon, Name, Amount) */
-        QRect assetAdministratorRect(QPoint(20, gradientRect.top() + halfheight/2 - 3*ypad), QSize(nIconSize, nIconSize));
-        QRect assetNameRect(gradientRect.left() + xspace - extraNameSpacing, gradientRect.top()+ypad+(halfheight/2), gradientRect.width() - xspace, halfheight + ypad);
+        QRect tokenAdministratorRect(QPoint(20, gradientRect.top() + halfheight/2 - 3*ypad), QSize(nIconSize, nIconSize));
+        QRect tokenNameRect(gradientRect.left() + xspace - extraNameSpacing, gradientRect.top()+ypad+(halfheight/2), gradientRect.width() - xspace, halfheight + ypad);
         QRect amountRect(gradientRect.left() + xspace, gradientRect.top()+ypad+(halfheight/2), gradientRect.width() - xspace - 24, halfheight);
         QRect ipfsLinkRect(QPoint(gradientRect.right() - nIconSize/2, gradientRect.top() + halfheight/1.5), QSize(nIconSize/2, nIconSize/2));
 
-        // Create the gradient for the asset items
+        // Create the gradient for the token items
         QLinearGradient gradient(mainRect.topLeft(), mainRect.bottomRight());
 
         // Select the color of the gradient
@@ -228,14 +228,14 @@ public:
         painter->setRenderHint(QPainter::Antialiasing);
         painter->fillPath(path, gradient);
 
-        /** Draw asset administrator icon */
+        /** Draw token administrator icon */
         if (nIconSize)
-            painter->drawPixmap(assetAdministratorRect, pixmap);
+            painter->drawPixmap(tokenAdministratorRect, pixmap);
 
         if (nIPFSIconSize)
             painter->drawPixmap(ipfsLinkRect, ipfspixmap);
 
-        /** Create the font that is used for painting the asset name */
+        /** Create the font that is used for painting the token name */
         QFont nameFont;
 #if !defined(Q_OS_MAC)
         nameFont.setFamily("Open Sans");
@@ -244,7 +244,7 @@ public:
         nameFont.setWeight(QFont::Weight::Normal);
         nameFont.setLetterSpacing(QFont::SpacingType::AbsoluteSpacing, -0.4);
 
-        /** Create the font that is used for painting the asset amount */
+        /** Create the font that is used for painting the token amount */
         QFont amountFont;
 #if !defined(Q_OS_MAC)
         amountFont.setFamily("Open Sans");
@@ -254,8 +254,8 @@ public:
         amountFont.setLetterSpacing(QFont::SpacingType::AbsoluteSpacing, -0.3);
 
         /** Get the name and formatted amount from the data */
-        QString name = index.data(AssetTableModel::AssetNameRole).toString();
-        QString amountText = index.data(AssetTableModel::FormattedAmountRole).toString();
+        QString name = index.data(TokenTableModel::TokenNameRole).toString();
+        QString amountText = index.data(TokenTableModel::FormattedAmountRole).toString();
 
         // Setup the pens
         QColor textColor = COLOR_WHITE;
@@ -264,7 +264,7 @@ public:
 
         QPen penName(textColor);
 
-        /** Start Concatenation of Asset Name */
+        /** Start Concatenation of Token Name */
         // Get the width in pixels that the amount takes up (because they are different font,
         // we need to do this before we call the concatenate function
         painter->setFont(amountFont);
@@ -273,14 +273,14 @@ public:
 		#else
 			int amount_width = painter->fontMetrics().width(amountText);
 		#endif
-        // Set the painter for the font used for the asset name, so that the concatenate function estimated width correctly
+        // Set the painter for the font used for the token name, so that the concatenate function estimated width correctly
         painter->setFont(nameFont);
 
-        GUIUtil::concatenate(painter, name, amount_width, assetNameRect.left(), amountRect.right());
+        GUIUtil::concatenate(painter, name, amount_width, tokenNameRect.left(), amountRect.right());
 
-        /** Paint the asset name */
+        /** Paint the token name */
         painter->setPen(penName);
-        painter->drawText(assetNameRect, Qt::AlignLeft|Qt::AlignVCenter, name);
+        painter->drawText(tokenNameRect, Qt::AlignLeft|Qt::AlignVCenter, name);
 
         /** Paint the amount */
         painter->setFont(amountFont);
@@ -314,7 +314,7 @@ OverviewPage::OverviewPage(const PlatformStyle *platformStyle, QWidget *parent) 
     currentWatchUnconfBalance(-1),
     currentWatchImmatureBalance(-1),
     txdelegate(new TxViewDelegate(platformStyle, this)),
-    assetdelegate(new AssetViewDelegate(platformStyle, this))
+    tokendelegate(new TokenViewDelegate(platformStyle, this))
 {
     ui->setupUi(this);
 
@@ -323,7 +323,7 @@ OverviewPage::OverviewPage(const PlatformStyle *platformStyle, QWidget *parent) 
     icon.addPixmap(icon.pixmap(QSize(64,64), QIcon::Normal), QIcon::Disabled); // also set the disabled icon because we are using a disabled QPushButton to work around missing HiDPI support of QLabel (https://bugreports.qt.io/browse/QTBUG-42503)
     ui->labelTransactionsStatus->setIcon(icon);
     ui->labelWalletStatus->setIcon(icon);
-    ui->labelAssetStatus->setIcon(icon);
+    ui->labelTokenStatus->setIcon(icon);
 
     // Recent transactions
     ui->listTransactions->setItemDelegate(txdelegate);
@@ -331,43 +331,43 @@ OverviewPage::OverviewPage(const PlatformStyle *platformStyle, QWidget *parent) 
     ui->listTransactions->setMinimumHeight(NUM_ITEMS * (DECORATION_SIZE + 2));
     ui->listTransactions->setAttribute(Qt::WA_MacShowFocusRect, false);
 
-    /** Create the list of assets */
-    ui->listAssets->setItemDelegate(assetdelegate);
-    ui->listAssets->setIconSize(QSize(42, 42));
-    ui->listAssets->setMinimumHeight(5 * (42 + 2));
-    ui->listAssets->viewport()->setAutoFillBackground(false);
+    /** Create the list of tokens */
+    ui->listTokens->setItemDelegate(tokendelegate);
+    ui->listTokens->setIconSize(QSize(42, 42));
+    ui->listTokens->setMinimumHeight(5 * (42 + 2));
+    ui->listTokens->viewport()->setAutoFillBackground(false);
 
-    // Delay before filtering assetes in ms
+    // Delay before filtering tokenes in ms
     static const int input_filter_delay = 200;
 
-    QTimer *asset_typing_delay;
-    asset_typing_delay = new QTimer(this);
-    asset_typing_delay->setSingleShot(true);
-    asset_typing_delay->setInterval(input_filter_delay);
-    connect(ui->assetSearch, SIGNAL(textChanged(QString)), asset_typing_delay, SLOT(start()));
-    connect(asset_typing_delay, SIGNAL(timeout()), this, SLOT(assetSearchChanged()));
+    QTimer *token_typing_delay;
+    token_typing_delay = new QTimer(this);
+    token_typing_delay->setSingleShot(true);
+    token_typing_delay->setInterval(input_filter_delay);
+    connect(ui->tokenSearch, SIGNAL(textChanged(QString)), token_typing_delay, SLOT(start()));
+    connect(token_typing_delay, SIGNAL(timeout()), this, SLOT(tokenSearchChanged()));
 
     connect(ui->listTransactions, SIGNAL(clicked(QModelIndex)), this, SLOT(handleTransactionClicked(QModelIndex)));
-    ui->listAssets->viewport()->installEventFilter(this);
+    ui->listTokens->viewport()->installEventFilter(this);
 
     // start with displaying the "out of sync" warnings
     showOutOfSyncWarning(true);
     connect(ui->labelWalletStatus, SIGNAL(clicked()), this, SLOT(handleOutOfSyncWarningClicks()));
-    connect(ui->labelAssetStatus, SIGNAL(clicked()), this, SLOT(handleOutOfSyncWarningClicks()));
+    connect(ui->labelTokenStatus, SIGNAL(clicked()), this, SLOT(handleOutOfSyncWarningClicks()));
     connect(ui->labelTransactionsStatus, SIGNAL(clicked()), this, SLOT(handleOutOfSyncWarningClicks()));
 
     /** Set the overview page background colors, and the frames colors and padding */
-    ui->assetFrame->setStyleSheet(QString(".QFrame {background-color: %1; padding-top: 10px; padding-right: 5px;}").arg(platformStyle->WidgetBackGroundColor().name()));
+    ui->tokenFrame->setStyleSheet(QString(".QFrame {background-color: %1; padding-top: 10px; padding-right: 5px;}").arg(platformStyle->WidgetBackGroundColor().name()));
     ui->frame->setStyleSheet(QString(".QFrame {background-color: %1; padding-bottom: 10px; padding-right: 5px;}").arg(platformStyle->WidgetBackGroundColor().name()));
     ui->frame_2->setStyleSheet(QString(".QFrame {background-color: %1; padding-left: 5px;}").arg(platformStyle->WidgetBackGroundColor().name()));
 
     /** Create the shadow effects on the frames */
-    ui->assetFrame->setGraphicsEffect(GUIUtil::getShadowEffect());
+    ui->tokenFrame->setGraphicsEffect(GUIUtil::getShadowEffect());
     ui->frame->setGraphicsEffect(GUIUtil::getShadowEffect());
     ui->frame_2->setGraphicsEffect(GUIUtil::getShadowEffect());
 
     /** Update the labels colors */
-    ui->assetBalanceLabel->setStyleSheet(STRING_LABEL_COLOR);
+    ui->tokenBalanceLabel->setStyleSheet(STRING_LABEL_COLOR);
     ui->yonaBalancesLabel->setStyleSheet(STRING_LABEL_COLOR);
     ui->labelBalanceText->setStyleSheet(STRING_LABEL_COLOR);
     ui->labelPendingText->setStyleSheet(STRING_LABEL_COLOR);
@@ -379,7 +379,7 @@ OverviewPage::OverviewPage(const PlatformStyle *platformStyle, QWidget *parent) 
 
     /** Update the labels font */
     ui->yonaBalancesLabel->setFont(GUIUtil::getTopLabelFont());
-    ui->assetBalanceLabel->setFont(GUIUtil::getTopLabelFont());
+    ui->tokenBalanceLabel->setFont(GUIUtil::getTopLabelFont());
     ui->recentTransactionsLabel->setFont(GUIUtil::getTopLabelFont());
 
     /** Update the sub labels font */
@@ -398,28 +398,28 @@ OverviewPage::OverviewPage(const PlatformStyle *platformStyle, QWidget *parent) 
     ui->labelTotal->setFont(GUIUtil::getTopLabelFontBolded());
     ui->labelWatchTotal->setFont(GUIUtil::getTopLabelFontBolded());
 
-    /** Create the search bar for assets */
-    ui->assetSearch->setAttribute(Qt::WA_MacShowFocusRect, 0);
-    ui->assetSearch->setStyleSheet(QString(".QLineEdit {border: 1px solid %1; border-radius: 5px;}").arg(COLOR_LABELS.name()));
-    ui->assetSearch->setAlignment(Qt::AlignVCenter);
-    QFont font = ui->assetSearch->font();
+    /** Create the search bar for tokens */
+    ui->tokenSearch->setAttribute(Qt::WA_MacShowFocusRect, 0);
+    ui->tokenSearch->setStyleSheet(QString(".QLineEdit {border: 1px solid %1; border-radius: 5px;}").arg(COLOR_LABELS.name()));
+    ui->tokenSearch->setAlignment(Qt::AlignVCenter);
+    QFont font = ui->tokenSearch->font();
     font.setPointSize(12);
-    ui->assetSearch->setFont(font);
+    ui->tokenSearch->setFont(font);
 
-    QFontMetrics fm = QFontMetrics(ui->assetSearch->font());
-    ui->assetSearch->setFixedHeight(fm.height()+ 5);
+    QFontMetrics fm = QFontMetrics(ui->tokenSearch->font());
+    ui->tokenSearch->setFixedHeight(fm.height()+ 5);
 
-    // Trigger the call to show the assets table if assets are active
-    showAssets();
+    // Trigger the call to show the tokens table if tokens are active
+    showTokens();
 
     // context menu actions
-    sendAction = new QAction(tr("Send Asset"), this);
+    sendAction = new QAction(tr("Send Token"), this);
     QAction *copyAmountAction = new QAction(tr("Copy Amount"), this);
     QAction *copyNameAction = new QAction(tr("Copy Name"), this);
     copyHashAction = new QAction(tr("Copy Hash"), this);
-    issueSub = new QAction(tr("Issue Sub Asset"), this);
-    issueUnique = new QAction(tr("Issue Unique Asset"), this);
-    reissue = new QAction(tr("Reissue Asset"), this);
+    issueSub = new QAction(tr("Issue Sub Token"), this);
+    issueUnique = new QAction(tr("Issue Unique Token"), this);
+    reissue = new QAction(tr("Reissue Token"), this);
     openURL = new QAction(tr("Open IPFS in Browser"), this);
 
     sendAction->setObjectName("Send");
@@ -448,20 +448,20 @@ OverviewPage::OverviewPage(const PlatformStyle *platformStyle, QWidget *parent) 
 
 bool OverviewPage::eventFilter(QObject *object, QEvent *event)
 {
-    // If the asset viewport is being clicked
-    if (object == ui->listAssets->viewport() && event->type() == QEvent::MouseButtonPress) {
+    // If the token viewport is being clicked
+    if (object == ui->listTokens->viewport() && event->type() == QEvent::MouseButtonPress) {
 
         // Grab the mouse event
         QMouseEvent * mouseEv = static_cast<QMouseEvent*>(event);
 
         // Select the current index at the mouse location
-        QModelIndex currentIndex = ui->listAssets->indexAt(mouseEv->pos());
+        QModelIndex currentIndex = ui->listTokens->indexAt(mouseEv->pos());
 
         // Open the menu on right click, direct url on left click
         if (mouseEv->buttons() & Qt::RightButton ) {
-            handleAssetRightClicked(currentIndex);
+            handleTokenRightClicked(currentIndex);
         } else if (mouseEv->buttons() & Qt::LeftButton) {
-            openIPFSForAsset(currentIndex);
+            openIPFSForToken(currentIndex);
         }
     }
 
@@ -474,15 +474,15 @@ void OverviewPage::handleTransactionClicked(const QModelIndex &index)
         Q_EMIT transactionClicked(filter->mapToSource(index));
 }
 
-void OverviewPage::handleAssetRightClicked(const QModelIndex &index)
+void OverviewPage::handleTokenRightClicked(const QModelIndex &index)
 {
-    if(assetFilter) {
+    if(tokenFilter) {
         // Grab the data elements from the index that we need to disable and enable menu items
-        QString name = index.data(AssetTableModel::AssetNameRole).toString();
-        QString ipfshash = index.data(AssetTableModel::AssetIPFSHashRole).toString();
+        QString name = index.data(TokenTableModel::TokenNameRole).toString();
+        QString ipfshash = index.data(TokenTableModel::TokenIPFSHashRole).toString();
         QString ipfsbrowser = walletModel->getOptionsModel()->getIpfsUrl();
 
-        if (IsAssetNameAnOwner(name.toStdString())) {
+        if (IsTokenNameAnOwner(name.toStdString())) {
             name = name.left(name.size() - 1);
             sendAction->setDisabled(true);
         } else {
@@ -502,7 +502,7 @@ void OverviewPage::handleAssetRightClicked(const QModelIndex &index)
             copyHashAction->setDisabled(true);
         }
 
-        if (!index.data(AssetTableModel::AdministratorRole).toBool()) {
+        if (!index.data(TokenTableModel::AdministratorRole).toBool()) {
             issueSub->setDisabled(true);
             issueUnique->setDisabled(true);
             reissue->setDisabled(true);
@@ -510,10 +510,10 @@ void OverviewPage::handleAssetRightClicked(const QModelIndex &index)
             issueSub->setDisabled(false);
             issueUnique->setDisabled(false);
             reissue->setDisabled(true);
-            CNewAsset asset;
-            auto currentActiveAssetCache = GetCurrentAssetCache();
-            if (currentActiveAssetCache && currentActiveAssetCache->GetAssetMetaDataIfExists(name.toStdString(), asset))
-                if (asset.nReissuable)
+            CNewToken token;
+            auto currentActiveTokenCache = GetCurrentTokenCache();
+            if (currentActiveTokenCache && currentActiveTokenCache->GetTokenMetaDataIfExists(name.toStdString(), token))
+                if (token.nReissuable)
                     reissue->setDisabled(false);
 
         }
@@ -522,17 +522,17 @@ void OverviewPage::handleAssetRightClicked(const QModelIndex &index)
 
         if (action) {
             if (action->objectName() == "Send")
-                Q_EMIT assetSendClicked(assetFilter->mapToSource(index));
+                Q_EMIT tokenSendClicked(tokenFilter->mapToSource(index));
             else if (action->objectName() == "Sub")
-                Q_EMIT assetIssueSubClicked(assetFilter->mapToSource(index));
+                Q_EMIT tokenIssueSubClicked(tokenFilter->mapToSource(index));
             else if (action->objectName() == "Unique")
-                Q_EMIT assetIssueUniqueClicked(assetFilter->mapToSource(index));
+                Q_EMIT tokenIssueUniqueClicked(tokenFilter->mapToSource(index));
             else if (action->objectName() == "Reissue")
-                Q_EMIT assetReissueClicked(assetFilter->mapToSource(index));
+                Q_EMIT tokenReissueClicked(tokenFilter->mapToSource(index));
             else if (action->objectName() == "Copy Name")
-                GUIUtil::setClipboard(index.data(AssetTableModel::AssetNameRole).toString());
+                GUIUtil::setClipboard(index.data(TokenTableModel::TokenNameRole).toString());
             else if (action->objectName() == "Copy Amount")
-                GUIUtil::setClipboard(index.data(AssetTableModel::FormattedAmountRole).toString());
+                GUIUtil::setClipboard(index.data(TokenTableModel::FormattedAmountRole).toString());
             else if (action->objectName() == "Copy Hash")
                 GUIUtil::setClipboard(ipfshash);
             else if (action->objectName() == "Browse") {
@@ -623,14 +623,14 @@ void OverviewPage::setWalletModel(WalletModel *model)
         ui->listTransactions->setModel(filter.get());
         ui->listTransactions->setModelColumn(TransactionTableModel::ToAddress);
 
-        assetFilter.reset(new AssetFilterProxy());
-        assetFilter->setSourceModel(model->getAssetTableModel());
-        assetFilter->sort(AssetTableModel::AssetNameRole, Qt::DescendingOrder);
-        ui->listAssets->setModel(assetFilter.get());
-        ui->listAssets->setAutoFillBackground(false);
+        tokenFilter.reset(new TokenFilterProxy());
+        tokenFilter->setSourceModel(model->getTokenTableModel());
+        tokenFilter->sort(TokenTableModel::TokenNameRole, Qt::DescendingOrder);
+        ui->listTokens->setModel(tokenFilter.get());
+        ui->listTokens->setAutoFillBackground(false);
 
-        ui->assetVerticalSpaceWidget->setStyleSheet("background-color: transparent");
-        ui->assetVerticalSpaceWidget2->setStyleSheet("background-color: transparent");
+        ui->tokenVerticalSpaceWidget->setStyleSheet("background-color: transparent");
+        ui->tokenVerticalSpaceWidget2->setStyleSheet("background-color: transparent");
 
 
         // Keep up to date with wallet
@@ -673,43 +673,43 @@ void OverviewPage::showOutOfSyncWarning(bool fShow)
 {
     ui->labelWalletStatus->setVisible(fShow);
     ui->labelTransactionsStatus->setVisible(fShow);
-    if (AreAssetsDeployed()) {
-        ui->labelAssetStatus->setVisible(fShow);
+    if (AreTokensDeployed()) {
+        ui->labelTokenStatus->setVisible(fShow);
     }
 }
 
-void OverviewPage::showAssets()
+void OverviewPage::showTokens()
 {
-    if (AreAssetsDeployed()) {
-        ui->assetFrame->show();
-        ui->assetBalanceLabel->show();
-        ui->labelAssetStatus->show();
+    if (AreTokensDeployed()) {
+        ui->tokenFrame->show();
+        ui->tokenBalanceLabel->show();
+        ui->labelTokenStatus->show();
 
-        // Disable the vertical space so that listAssets goes to the bottom of the screen
-        ui->assetVerticalSpaceWidget->hide();
-        ui->assetVerticalSpaceWidget2->hide();
+        // Disable the vertical space so that listTokens goes to the bottom of the screen
+        ui->tokenVerticalSpaceWidget->hide();
+        ui->tokenVerticalSpaceWidget2->hide();
     } else {
-        ui->assetFrame->hide();
-        ui->assetBalanceLabel->hide();
-        ui->labelAssetStatus->hide();
+        ui->tokenFrame->hide();
+        ui->tokenBalanceLabel->hide();
+        ui->labelTokenStatus->hide();
 
-        // This keeps the YONA balance grid from expanding and looking terrible when asset balance is hidden
-        ui->assetVerticalSpaceWidget->show();
-        ui->assetVerticalSpaceWidget2->show();
+        // This keeps the YONA balance grid from expanding and looking terrible when token balance is hidden
+        ui->tokenVerticalSpaceWidget->show();
+        ui->tokenVerticalSpaceWidget2->show();
     }
 }
 
-void OverviewPage::assetSearchChanged()
+void OverviewPage::tokenSearchChanged()
 {
-    if (!assetFilter)
+    if (!tokenFilter)
         return;
-    assetFilter->setAssetNamePrefix(ui->assetSearch->text());
+    tokenFilter->setTokenNamePrefix(ui->tokenSearch->text());
 }
 
-void OverviewPage::openIPFSForAsset(const QModelIndex &index)
+void OverviewPage::openIPFSForToken(const QModelIndex &index)
 {
-    // Get the ipfs hash of the asset clicked
-    QString ipfshash = index.data(AssetTableModel::AssetIPFSHashRole).toString();
+    // Get the ipfs hash of the token clicked
+    QString ipfshash = index.data(TokenTableModel::TokenIPFSHashRole).toString();
     QString ipfsbrowser = walletModel->getOptionsModel()->getIpfsUrl();
 
     // If the ipfs hash isn't there or doesn't start with Qm, disable the action item

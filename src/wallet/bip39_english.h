@@ -131,7 +131,7 @@ const char * const wordlist[] = {
 "ask",
 "aspect",
 "assault",
-"asset",
+"token",
 "assist",
 "assume",
 "asthma",

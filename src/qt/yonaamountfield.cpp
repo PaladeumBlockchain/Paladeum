@@ -33,7 +33,7 @@ public:
         QAbstractSpinBox(parent),
         currentUnit(YonaUnits::YONA),
         singleStep(100000), // satoshis
-        assetUnit(-1)
+        tokenUnit(-1)
     {
         setAlignment(Qt::AlignRight);
 
@@ -56,7 +56,7 @@ public:
         CAmount val = parse(input, &valid);
         if(valid)
         {
-            input = YonaUnits::format(currentUnit, val, false, YonaUnits::separatorAlways, assetUnit);
+            input = YonaUnits::format(currentUnit, val, false, YonaUnits::separatorAlways, tokenUnit);
             lineEdit()->setText(input);
         }
     }
@@ -68,7 +68,7 @@ public:
 
     void setValue(const CAmount& value)
     {
-        lineEdit()->setText(YonaUnits::format(currentUnit, value, false, YonaUnits::separatorAlways, assetUnit));
+        lineEdit()->setText(YonaUnits::format(currentUnit, value, false, YonaUnits::separatorAlways, tokenUnit));
         Q_EMIT valueChanged();
     }
 
@@ -99,12 +99,12 @@ public:
         singleStep = step;
     }
 
-    void setAssetUnit(int unit)
+    void setTokenUnit(int unit)
     {
-        if (unit > MAX_ASSET_UNITS)
-            unit = MAX_ASSET_UNITS;
+        if (unit > MAX_TOKEN_UNITS)
+            unit = MAX_TOKEN_UNITS;
 
-        assetUnit = unit;
+        tokenUnit = unit;
 
         bool valid = false;
         CAmount val = value(&valid);
@@ -124,9 +124,9 @@ public:
             const QFontMetrics fm(fontMetrics());
             int h = lineEdit()->minimumSizeHint().height();
 			#ifndef QTversionPreFiveEleven
-            	int w = fm.horizontalAdvance(YonaUnits::format(YonaUnits::YONA, YonaUnits::maxMoney(), false, YonaUnits::separatorAlways, assetUnit));
+            	int w = fm.horizontalAdvance(YonaUnits::format(YonaUnits::YONA, YonaUnits::maxMoney(), false, YonaUnits::separatorAlways, tokenUnit));
 			#else
-				int w = fm.width(YonaUnits::format(YonaUnits::YONA, YonaUnits::maxMoney(), false, YonaUnits::separatorAlways, assetUnit));
+				int w = fm.width(YonaUnits::format(YonaUnits::YONA, YonaUnits::maxMoney(), false, YonaUnits::separatorAlways, tokenUnit));
 			#endif
             w += 2; // cursor blinking space
 
@@ -156,7 +156,7 @@ private:
     int currentUnit;
     CAmount singleStep;
     mutable QSize cachedMinimumSizeHint;
-    int assetUnit;
+    int tokenUnit;
 
     /**
      * Parse a string into a number of base monetary units and
@@ -167,10 +167,10 @@ private:
     {
         CAmount val = 0;
 
-        // Update parsing function to work with asset parsing units
+        // Update parsing function to work with token parsing units
         bool valid = false;
-        if (assetUnit >= 0) {
-            valid = YonaUnits::assetParse(assetUnit, text, &val);
+        if (tokenUnit >= 0) {
+            valid = YonaUnits::tokenParse(tokenUnit, text, &val);
         }
         else
             valid = YonaUnits::parse(currentUnit, text, &val);
@@ -340,7 +340,7 @@ void YonaAmountField::setSingleStep(const CAmount& step)
     amount->setSingleStep(step);
 }
 
-AssetAmountField::AssetAmountField(QWidget *parent) :
+TokenAmountField::TokenAmountField(QWidget *parent) :
         QWidget(parent),
         amount(0)
 {
@@ -363,21 +363,21 @@ AssetAmountField::AssetAmountField(QWidget *parent) :
     connect(amount, SIGNAL(valueChanged()), this, SIGNAL(valueChanged()));
 
     // Set default based on configuration
-    setUnit(MAX_ASSET_UNITS);
+    setUnit(MAX_TOKEN_UNITS);
 }
 
-void AssetAmountField::clear()
+void TokenAmountField::clear()
 {
     amount->clear();
-    setUnit(MAX_ASSET_UNITS);
+    setUnit(MAX_TOKEN_UNITS);
 }
 
-void AssetAmountField::setEnabled(bool fEnabled)
+void TokenAmountField::setEnabled(bool fEnabled)
 {
     amount->setEnabled(fEnabled);
 }
 
-bool AssetAmountField::validate()
+bool TokenAmountField::validate()
 {
     bool valid = false;
     value(&valid);
@@ -385,7 +385,7 @@ bool AssetAmountField::validate()
     return valid;
 }
 
-void AssetAmountField::setValid(bool valid)
+void TokenAmountField::setValid(bool valid)
 {
     if (valid) {
         amount->setStyleSheet("");
@@ -394,7 +394,7 @@ void AssetAmountField::setValid(bool valid)
     }
 }
 
-bool AssetAmountField::eventFilter(QObject *object, QEvent *event)
+bool TokenAmountField::eventFilter(QObject *object, QEvent *event)
 {
     if (event->type() == QEvent::FocusIn)
     {
@@ -404,28 +404,28 @@ bool AssetAmountField::eventFilter(QObject *object, QEvent *event)
     return QWidget::eventFilter(object, event);
 }
 
-CAmount AssetAmountField::value(bool *valid_out) const
+CAmount TokenAmountField::value(bool *valid_out) const
 {
-    return amount->value(valid_out) * YonaUnits::factorAsset(8 - assetUnit);
+    return amount->value(valid_out) * YonaUnits::factorToken(8 - tokenUnit);
 }
 
-void AssetAmountField::setValue(const CAmount& value)
+void TokenAmountField::setValue(const CAmount& value)
 {
     amount->setValue(value);
 }
 
-void AssetAmountField::setReadOnly(bool fReadOnly)
+void TokenAmountField::setReadOnly(bool fReadOnly)
 {
     amount->setReadOnly(fReadOnly);
 }
 
-void AssetAmountField::setSingleStep(const CAmount& step)
+void TokenAmountField::setSingleStep(const CAmount& step)
 {
     amount->setSingleStep(step);
 }
 
-void AssetAmountField::setUnit(int unit)
+void TokenAmountField::setUnit(int unit)
 {
-    assetUnit = unit;
-    amount->setAssetUnit(assetUnit);
+    tokenUnit = unit;
+    amount->setTokenUnit(tokenUnit);
 }

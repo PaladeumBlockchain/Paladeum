@@ -18,13 +18,13 @@ static const int INIT_PROTO_VERSION = 209;
 //! In this version, 'getheaders' was introduced.
 static const int GETHEADERS_VERSION = 31800;
 
-//! assetdata network request is allowed for this version
-static const int ASSETDATA_VERSION = 70017;
+//! tokendata network request is allowed for this version
+static const int TOKENDATA_VERSION = 70017;
 
-//! getassetdata reutrn asstnotfound, and assetdata doesn't have blockhash in the data
+//! gettokendata reutrn asstnotfound, and tokendata doesn't have blockhash in the data
 static const int X16RV2_VERSION = 70025;
 
-//! getassetdata reutrn asstnotfound, and assetdata doesn't have blockhash in the data
+//! gettokendata reutrn asstnotfound, and tokendata doesn't have blockhash in the data
 static const int KAWPOW_VERSION = 70027;
 
 //! disconnect from peers older than this proto version
@@ -54,11 +54,11 @@ static const int SHORT_IDS_BLOCKS_VERSION = 70014;
 //! not banning for invalid compact blocks starts with this version
 static const int INVALID_CB_NO_BAN_VERSION = 70015;
 
-//! getassetdata reutrn asstnotfound, and assetdata doesn't have blockhash in the data
-static const int ASSETDATA_VERSION_UPDATED = 70020;
+//! gettokendata reutrn asstnotfound, and tokendata doesn't have blockhash in the data
+static const int TOKENDATA_VERSION_UPDATED = 70020;
 
-//! In this version, 'rip5 (messaging and restricted assets)' was introduced
-static const int MESSAGING_RESTRICTED_ASSETS_VERSION = 70026;
+//! In this version, 'rip5 (messaging and restricted tokens)' was introduced
+static const int MESSAGING_RESTRICTED_TOKENS_VERSION = 70026;
 
 
 #endif // YONA_VERSION_H

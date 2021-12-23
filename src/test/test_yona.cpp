@@ -78,7 +78,7 @@ TestingSetup::TestingSetup(const std::string &chainName) : BasicTestingSetup(cha
         throw std::runtime_error("LoadGenesisBlock failed.");
     }
 
-    passets = new CAssetsCache();
+    ptokens = new CTokensCache();
     {
         CValidationState state;
         if (!ActivateBestChain(state, chainparams))
@@ -106,7 +106,7 @@ TestingSetup::~TestingSetup()
     delete pcoinsTip;
     delete pcoinsdbview;
     delete pblocktree;
-    delete passets;
+    delete ptokens;
     fs::remove_all(pathTemp);
 }
 

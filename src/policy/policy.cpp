@@ -53,7 +53,7 @@ CAmount GetDustThreshold(const CTxOut& txout, const CFeeRate& dustRelayFeeIn)
 bool IsDust(const CTxOut& txout, const CFeeRate& dustRelayFeeIn)
 {
 
-    if (txout.scriptPubKey.IsAssetScript())
+    if (txout.scriptPubKey.IsTokenScript())
         return false;
     else
         return (txout.nValue < GetDustThreshold(txout, dustRelayFeeIn));
@@ -76,7 +76,7 @@ bool IsStandard(const CScript& scriptPubKey, txnouttype& whichType, txnouttype& 
     } else if (whichType == TX_NULL_DATA &&
                (!fAcceptDatacarrier || scriptPubKey.size() > nMaxDatacarrierBytes))
         return false;
-    else if (whichType == TX_RESTRICTED_ASSET_DATA && scriptPubKey.size() > MAX_OP_RETURN_RELAY)
+    else if (whichType == TX_RESTRICTED_TOKEN_DATA && scriptPubKey.size() > MAX_OP_RETURN_RELAY)
         return false;
     else if (!witnessEnabled && (whichType == TX_WITNESS_V0_KEYHASH || whichType == TX_WITNESS_V0_SCRIPTHASH))
         return false;
@@ -121,7 +121,7 @@ bool IsStandardTx(const CTransaction& tx, std::string& reason, const bool witnes
     }
 
     unsigned int nDataOut = 0;
-    unsigned int nAssetDataOut = 0;
+    unsigned int nTokenDataOut = 0;
     txnouttype whichType;
     txnouttype scriptType;
     for (const CTxOut& txout : tx.vout) {
@@ -132,8 +132,8 @@ bool IsStandardTx(const CTransaction& tx, std::string& reason, const bool witnes
 
         if (whichType == TX_NULL_DATA)
             nDataOut++;
-        else if (whichType == TX_RESTRICTED_ASSET_DATA)
-            nAssetDataOut++;
+        else if (whichType == TX_RESTRICTED_TOKEN_DATA)
+            nTokenDataOut++;
         else if ((whichType == TX_MULTISIG) && (!fIsBareMultisigStd)) {
             reason = "bare-multisig";
             return false;
@@ -149,9 +149,9 @@ bool IsStandardTx(const CTransaction& tx, std::string& reason, const bool witnes
         return false;
     }
 
-    // only one hundred OP_YONA_ASSET txout is permitted
-    if (nAssetDataOut > 100) {
-        reason = "tomany-op-yona-asset";
+    // only one hundred OP_YONA_TOKEN txout is permitted
+    if (nTokenDataOut > 100) {
+        reason = "tomany-op-yona-token";
         return false;
     }
 

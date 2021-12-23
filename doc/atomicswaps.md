@@ -5,7 +5,7 @@ __Or, trading apples for bananas.__
 
 ## The Problem
 
-_Andy has some apples.  Barb has some bananas.  Andy agrees to give Barb two apples in exchange for one banana.  In order to make sure both parties hold up their end of the deal they need to create a single transaction that sends assets both directions._
+_Andy has some apples.  Barb has some bananas.  Andy agrees to give Barb two apples in exchange for one banana.  In order to make sure both parties hold up their end of the deal they need to create a single transaction that sends tokens both directions._
 
 ## The Inputs
 
@@ -27,10 +27,10 @@ Andy uses `listunspent` to find a suitable `txid` and `vout`:
 }
 ```
 
-Then each party uses `listmyassets` with `verbose=true` to find asset UTXOs:
+Then each party uses `listmytokens` with `verbose=true` to find token UTXOs:
 
 Andy:
-`listmyassets APPLES true`:
+`listmytokens APPLES true`:
 
 ```
 {
@@ -48,7 +48,7 @@ Andy:
 ```
 
 Barb:
-`listmyassets BANANAS true`:
+`listmytokens BANANAS true`:
 
 ```
 {
@@ -89,7 +89,7 @@ Barb's apple receive address:
 Andy's apple change address:
 `mzct8GQ5zdaCvbrnRDrR8T87ZuZxkRYNwL`
 
-All asset transfers have to be balanced.  Since we have 1000 APPLES coming in, we have to have 1000 going out.  So Andy will send 2 to Barb's receive address and the rest (998) to his change address.  The Yona will pay 0.0001 for the network fee as normal.
+All token transfers have to be balanced.  Since we have 1000 APPLES coming in, we have to have 1000 going out.  So Andy will send 2 to Barb's receive address and the rest (998) to his change address.  The Yona will pay 0.0001 for the network fee as normal.
 
 `'{"mvGfeg4uZA8XvjVDUywdgYE6TAyz77o5gB":4.8827125, \
   "msXQpCK8UexfgtMbUGwnKjDfE6vqJ4JUPF":{"transfer":{"BANANAS":1}}, \

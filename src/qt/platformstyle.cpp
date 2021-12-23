@@ -256,12 +256,12 @@ QColor PlatformStyle::DarkOrangeColor() const
 QColor PlatformStyle::SingleColor() const
 {
     if (darkModeEnabled)
-        return COLOR_ASSET_TEXT; // WHITE (black -> white)
+        return COLOR_TOKEN_TEXT; // WHITE (black -> white)
 
     return singleColor;
 }
 
-QColor PlatformStyle::AssetTxColor() const
+QColor PlatformStyle::TokenTxColor() const
 {
     if (darkModeEnabled)
         return COLOR_LIGHT_BLUE;

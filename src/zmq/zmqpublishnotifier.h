@@ -54,7 +54,7 @@ public:
     bool NotifyTransaction(const CTransaction &transaction) override;
 };
 
-class CZMQPublishNewAssetMessageNotifier : public CZMQAbstractPublishNotifier
+class CZMQPublishNewTokenMessageNotifier : public CZMQAbstractPublishNotifier
 {
 public:
     bool NotifyMessage(const CMessage& message) override;

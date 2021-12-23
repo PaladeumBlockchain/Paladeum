@@ -862,7 +862,7 @@
     </message>
     <message>
         <source>Use a custom data directory:</source>
-        <translation>Brug tilpasset mappe for data:</translation>
+        <translation>Brug tilptoken mappe for data:</translation>
     </message>
     <message>
         <source>Error: Specified data directory "%1" cannot be created.</source>
@@ -2008,7 +2008,7 @@
     </message>
     <message>
         <source>Custom change address</source>
-        <translation>Tilpasset byttepengeadresse</translation>
+        <translation>Tilptoken byttepengeadresse</translation>
     </message>
     <message>
         <source>Transaction Fee:</source>
@@ -2052,7 +2052,7 @@
     </message>
     <message>
         <source>Custom:</source>
-        <translation>Brugertilpasset:</translation>
+        <translation>Brugertilptoken:</translation>
     </message>
     <message>
         <source>(Smart fee not initialized yet. This usually takes a few blocks...)</source>
@@ -2212,7 +2212,7 @@
     </message>
     <message>
         <source>Confirm custom change address</source>
-        <translation>Bekræft tilpasset byttepengeadresse</translation>
+        <translation>Bekræft tilptoken byttepengeadresse</translation>
     </message>
     <message>
         <source>The address you selected for change is not part of this wallet. Any or all funds in your wallet may be sent to this address. Are you sure?</source>

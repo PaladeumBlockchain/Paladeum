@@ -11,7 +11,7 @@
 #include <QObject>
 
 class SendCoinsRecipient;
-class SendAssetsRecipient;
+class SendTokensRecipient;
 
 class CReserveKey;
 class CWallet;

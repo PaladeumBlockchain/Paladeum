@@ -16,7 +16,7 @@ const struct VBDeploymentInfo VersionBitsDeploymentInfo[Consensus::MAX_VERSION_B
 //		/*.gbt_force =*/ true,
 //	}
     // {
-    //         /*.name =*/ "assets",
+    //         /*.name =*/ "tokens",
     //         /*.gbt_force =*/ true,
     // },
     // {
@@ -36,7 +36,7 @@ const struct VBDeploymentInfo VersionBitsDeploymentInfo[Consensus::MAX_VERSION_B
     //         /*.gbt_force =*/ true,
     // },
     // {
-    //         /*.name =*/ "p2sh_assets",
+    //         /*.name =*/ "p2sh_tokens",
     //         /*.gbt_force =*/ true,
     // }
 };

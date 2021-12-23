@@ -52,11 +52,11 @@ class MaxReorgTest(YonaTestFramework):
         self.log.info(f"Doing a reorg test with height: {height}, peers: {peers}, tip_age: {tip_age}.  " + \
                       f"Should reorg? *{should_reorg}*")
 
-        asset_name = "MOON_STONES"
+        token_name = "MOON_STONES"
         adversary = self.nodes[0]
         subject = self.nodes[-1]
 
-        # enough to activate assets
+        # enough to activate tokens
         start = 432
 
         self.log.info(f"Setting all node times to {tip_age} seconds ago...")
@@ -72,8 +72,8 @@ class MaxReorgTest(YonaTestFramework):
         self.log.info("Stopping adversary node...")
         self.stop_node(0)
 
-        self.log.info(f"Subject is issuing asset: {asset_name}...")
-        subject.issue(asset_name)
+        self.log.info(f"Subject is issuing token: {token_name}...")
+        subject.issue(token_name)
 
         self.log.info(f"Miners are mining {height} blocks...")
         subject.generate(height)
@@ -83,8 +83,8 @@ class MaxReorgTest(YonaTestFramework):
         self.log.info("Restarting adversary node...")
         self.start_node(0)
 
-        self.log.info(f"Adversary is issuing asset: {asset_name}...")
-        adversary.issue(asset_name)
+        self.log.info(f"Adversary is issuing token: {token_name}...")
+        adversary.issue(token_name)
 
         self.log.info(f"Adversary is mining {height*2} (2 x {height}) blocks over the next ~{tip_age} seconds...")
         interval = round(tip_age / (height * 2)) + 1
@@ -104,13 +104,13 @@ class MaxReorgTest(YonaTestFramework):
             connect_nodes_bi(self.nodes, 0, i, should_reorg)
 
         expected_height = start + height
-        subject_owns_asset = True
+        subject_owns_token = True
         if should_reorg > 0:
-            self.log.info(f"Expected a reorg -- blockcount should be {expected_height} and subject should own {asset_name} (waiting 5 seconds)...")
+            self.log.info(f"Expected a reorg -- blockcount should be {expected_height} and subject should own {token_name} (waiting 5 seconds)...")
             expected_height += height
-            subject_owns_asset = False
+            subject_owns_token = False
         else:
-            self.log.info(f"Didn't expect a reorg -- blockcount should remain {expected_height} and both subject and adversary should own {asset_name} (waiting 5 seconds)...")
+            self.log.info(f"Didn't expect a reorg -- blockcount should remain {expected_height} and both subject and adversary should own {token_name} (waiting 5 seconds)...")
 
         # noinspection PyBroadException
         try:
@@ -119,11 +119,11 @@ class MaxReorgTest(YonaTestFramework):
             pass
         self.log.info("BlockCount: " +str([n.getblockcount() for n in self.nodes]))
         assert_equal(subject.getblockcount(), expected_height)
-        assert_contains_pair(asset_name + '!', 1, adversary.listmyassets())
-        if subject_owns_asset:
-            assert_contains_pair(asset_name + '!', 1, subject.listmyassets())
+        assert_contains_pair(token_name + '!', 1, adversary.listmytokens())
+        if subject_owns_token:
+            assert_contains_pair(token_name + '!', 1, subject.listmytokens())
         else:
-            assert_does_not_contain_key(asset_name + '!', subject.listmyassets())
+            assert_does_not_contain_key(token_name + '!', subject.listmytokens())
 
 
     def run_test(self):

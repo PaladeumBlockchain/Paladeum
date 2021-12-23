@@ -70,10 +70,10 @@ Notable changes
 - New QT interface
 - QT dark mode (not using OSX Mojave dark mode)
 - Chain split attack vector fix
-- Better asset caching
+- Better token caching
 - Enhancements for Yonacoin Dev Kit and Mobile Wallet Support
-- Limit listaddressesbyasset RPC call to only return 5,000 asset-addresses per call
-- Updates and fixes to the functional and unit tests for better asset coverage and stability
+- Limit listaddressesbytoken RPC call to only return 5,000 token-addresses per call
+- Updates and fixes to the functional and unit tests for better token coverage and stability
 
 
 2.2.2 Change log

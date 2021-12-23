@@ -5,7 +5,7 @@
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
 #include <base58.h>
-#include <assets/assets.h>
+#include <tokens/tokens.h>
 #include <validation.h>
 #include "script/standard.h"
 
@@ -31,14 +31,14 @@ const char* GetTxnOutputType(txnouttype t)
     case TX_SCRIPTHASH: return "scripthash";
     case TX_MULTISIG: return "multisig";
     case TX_NULL_DATA: return "nulldata";
-    case TX_RESTRICTED_ASSET_DATA: return "nullassetdata";
+    case TX_RESTRICTED_TOKEN_DATA: return "nulltokendata";
     case TX_WITNESS_V0_KEYHASH: return "witness_v0_keyhash";
     case TX_WITNESS_V0_SCRIPTHASH: return "witness_v0_scripthash";
 
     /** YONA START */
-    case TX_NEW_ASSET: return ASSET_NEW_STRING;
-    case TX_TRANSFER_ASSET: return ASSET_TRANSFER_STRING;
-    case TX_REISSUE_ASSET: return ASSET_REISSUE_STRING;
+    case TX_NEW_TOKEN: return TOKEN_NEW_STRING;
+    case TX_TRANSFER_TOKEN: return TOKEN_TRANSFER_STRING;
+    case TX_REISSUE_TOKEN: return TOKEN_REISSUE_STRING;
     /** YONA END */
     }
     return nullptr;
@@ -75,7 +75,7 @@ bool Solver(const CScript& scriptPubKey, txnouttype& typeRet, txnouttype& script
     int nType = 0;
     int nScriptType = 0;
     bool fIsOwner = false;
-    if (scriptPubKey.IsAssetScript(nType, nScriptType, fIsOwner)) {
+    if (scriptPubKey.IsTokenScript(nType, nScriptType, fIsOwner)) {
         typeRet = (txnouttype)nType;
         scriptTypeRet = (txnouttype)nScriptType;
 
@@ -118,12 +118,12 @@ bool Solver(const CScript& scriptPubKey, txnouttype& typeRet, txnouttype& script
         return true;
     }
 
-    // Provably prunable, asset data-carrying output
+    // Provably prunable, token data-carrying output
     //
     // So long as script passes the IsUnspendable() test and all but the first three
     // byte passes the IsPushOnly()
-    if (scriptPubKey.size() >= 1 && scriptPubKey[0] == OP_YONA_ASSET && scriptPubKey.IsPushOnly(scriptPubKey.begin()+1)) {
-        typeRet = TX_RESTRICTED_ASSET_DATA;
+    if (scriptPubKey.size() >= 1 && scriptPubKey[0] == OP_YONA_TOKEN && scriptPubKey.IsPushOnly(scriptPubKey.begin()+1)) {
+        typeRet = TX_RESTRICTED_TOKEN_DATA;
 
         if (scriptPubKey.size() >= 23 && scriptPubKey[1] != OP_RESERVED) {
             std::vector<unsigned char> hashBytes(scriptPubKey.begin() + 2, scriptPubKey.begin() + 22);
@@ -246,14 +246,14 @@ bool ExtractDestination(const CScript& scriptPubKey, CTxDestination& addressRet)
         addressRet = CScriptID(uint160(vSolutions[0]));
         return true;
     /** YONA START */
-    } else if (whichType == TX_NEW_ASSET || whichType == TX_REISSUE_ASSET || whichType == TX_TRANSFER_ASSET) {
+    } else if (whichType == TX_NEW_TOKEN || whichType == TX_REISSUE_TOKEN || whichType == TX_TRANSFER_TOKEN) {
         if (scriptType == TX_SCRIPTHASH) {
             addressRet = CScriptID(uint160(vSolutions[0]));
         } else {
             addressRet = CKeyID(uint160(vSolutions[0]));
         }
         return true;
-    } else if (whichType == TX_RESTRICTED_ASSET_DATA) {
+    } else if (whichType == TX_RESTRICTED_TOKEN_DATA) {
         if (vSolutions.size()) {
             addressRet = CKeyID(uint160(vSolutions[0]));
             return true;
@@ -335,12 +335,12 @@ public:
 
 namespace
 {
-    class CNullAssetScriptVisitor : public boost::static_visitor<bool>
+    class CNullTokenScriptVisitor : public boost::static_visitor<bool>
     {
     private:
         CScript *script;
     public:
-        explicit CNullAssetScriptVisitor(CScript *scriptin) { script = scriptin; }
+        explicit CNullTokenScriptVisitor(CScript *scriptin) { script = scriptin; }
 
         bool operator()(const CNoDestination &dest) const {
             script->clear();
@@ -349,13 +349,13 @@ namespace
 
         bool operator()(const CKeyID &keyID) const {
             script->clear();
-            *script << OP_YONA_ASSET << ToByteVector(keyID);
+            *script << OP_YONA_TOKEN << ToByteVector(keyID);
             return true;
         }
 
         bool operator()(const CScriptID &scriptID) const {
             script->clear();
-            *script << OP_YONA_ASSET << ToByteVector(scriptID);
+            *script << OP_YONA_TOKEN << ToByteVector(scriptID);
             return true;
         }
     };
@@ -369,11 +369,11 @@ CScript GetScriptForDestination(const CTxDestination& dest)
     return script;
 }
 
-CScript GetScriptForNullAssetDataDestination(const CTxDestination &dest)
+CScript GetScriptForNullTokenDataDestination(const CTxDestination &dest)
 {
     CScript script;
 
-    boost::apply_visitor(CNullAssetScriptVisitor(&script), dest);
+    boost::apply_visitor(CNullTokenScriptVisitor(&script), dest);
     return script;
 }
 

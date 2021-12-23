@@ -70,7 +70,7 @@ protected:
     virtual void NewPoWValidBlock(const CBlockIndex *pindex, const std::shared_ptr<const CBlock>& block) {};
 
     virtual void BlockFound(const uint256 &hash) {};
-    virtual void NewAssetMessage(const CMessage &message) {};
+    virtual void NewTokenMessage(const CMessage &message) {};
 
 //    virtual void GetScriptForMining(std::shared_ptr<CReserveScript>&) {};
 
@@ -107,7 +107,7 @@ public:
     void BlockChecked(const CBlock&, const CValidationState&);
     void NewPoWValidBlock(const CBlockIndex *, const std::shared_ptr<const CBlock>&);
     void BlockFound(const uint256 &);
-    void NewAssetMessage(const CMessage&);
+    void NewTokenMessage(const CMessage&);
 //    void ScriptForMining(std::shared_ptr<CReserveScript>&);
 
 };

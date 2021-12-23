@@ -45,9 +45,9 @@
 #include "util.h"
 #include "utilmoneystr.h"
 #include "validationinterface.h"
-#include "assets/assets.h"
-#include "assets/assetdb.h"
-#include "assets/snapshotrequestdb.h"
+#include "tokens/tokens.h"
+#include "tokens/tokendb.h"
+#include "tokens/snapshotrequestdb.h"
 #ifdef ENABLE_WALLET
 #include "wallet/init.h"
 #include <wallet/wallet.h>
@@ -264,14 +264,14 @@ void PrepareShutdown()
         pblocktree = nullptr;
 
         /** YONA START */
-        delete passets;
-        passets = nullptr;
+        delete ptokens;
+        ptokens = nullptr;
 
-        delete passetsdb;
-        passetsdb = nullptr;
+        delete ptokensdb;
+        ptokensdb = nullptr;
 
-        delete passetsCache;
-        passetsCache = nullptr;
+        delete ptokensCache;
+        ptokensCache = nullptr;
 
         delete pMessagesCache;
         pMessagesCache = nullptr;
@@ -291,17 +291,17 @@ void PrepareShutdown()
         delete pmyrestricteddb;
         pmyrestricteddb = nullptr;
 
-        delete passetsVerifierCache;
-        passetsVerifierCache = nullptr;
+        delete ptokensVerifierCache;
+        ptokensVerifierCache = nullptr;
 
-        delete passetsQualifierCache;
-        passetsQualifierCache = nullptr;
+        delete ptokensQualifierCache;
+        ptokensQualifierCache = nullptr;
 
-        delete passetsRestrictionCache;
-        passetsRestrictionCache = nullptr;
+        delete ptokensRestrictionCache;
+        ptokensRestrictionCache = nullptr;
 
-        delete passetsGlobalRestrictionCache;
-        passetsGlobalRestrictionCache = nullptr;
+        delete ptokensGlobalRestrictionCache;
+        ptokensGlobalRestrictionCache = nullptr;
 
         delete prestricteddb;
         prestricteddb = nullptr;
@@ -312,8 +312,8 @@ void PrepareShutdown()
         delete pSnapshotRequestDb;
         pSnapshotRequestDb = nullptr;
 
-        delete pAssetSnapshotDb;
-        pAssetSnapshotDb = nullptr;
+        delete pTokenSnapshotDb;
+        pTokenSnapshotDb = nullptr;
 
         delete pDistributeSnapshotDb;
         pDistributeSnapshotDb = nullptr;
@@ -447,7 +447,7 @@ std::string HelpMessage(HelpMessageMode mode)
         strUsage += HelpMessageOpt("-dbbatchsize", strprintf("Maximum database write batch size in bytes (default: %u)", nDefaultDbBatchSize));
     }
     strUsage += HelpMessageOpt("-dbcache=<n>", strprintf(_("Set database cache size in megabytes (%d to %d, default: %d)"), nMinDbCache, nMaxDbCache, nDefaultDbCache));
-    strUsage += HelpMessageOpt("-disablemessaging", strprintf(_("Turn off the databasing the messages sent with assets (default: %u)"), false));
+    strUsage += HelpMessageOpt("-disablemessaging", strprintf(_("Turn off the databasing the messages sent with tokens (default: %u)"), false));
     if (showDebug)
         strUsage += HelpMessageOpt("-feefilter", strprintf("Tell other nodes to filter invs to us by our mempool min fee (default: %u)", DEFAULT_FEEFILTER));
     strUsage += HelpMessageOpt("-loadblock=<file>", _("Imports blocks from external blk000??.dat file on startup"));
@@ -478,7 +478,7 @@ std::string HelpMessage(HelpMessageMode mode)
     strUsage += HelpMessageOpt("-sysperms", _("Create new files with system default permissions, instead of umask 077 (only effective with disabled wallet functionality)"));
 #endif
     strUsage += HelpMessageOpt("-txindex", strprintf(_("Maintain a full transaction index, used by the getrawtransaction rpc call (default: %u)"), DEFAULT_TXINDEX));
-    strUsage += HelpMessageOpt("-assetindex", _("Keep an index of assets, used by the requestsnapshot rpc call. Requires a -reindex."));
+    strUsage += HelpMessageOpt("-tokenindex", _("Keep an index of tokens, used by the requestsnapshot rpc call. Requires a -reindex."));
 
     strUsage += HelpMessageOpt("-addressindex", strprintf(_("Maintain a full address index, used to query for the balance, txids and unspent outputs for addresses (default: %u)"), DEFAULT_ADDRESSINDEX));
     strUsage += HelpMessageOpt("-timestampindex", strprintf(_("Maintain a timestamp index for block hashes, used to query blocks hashes by a range of timestamps (default: %u)"), DEFAULT_TIMESTAMPINDEX));
@@ -534,7 +534,7 @@ std::string HelpMessage(HelpMessageMode mode)
     strUsage += HelpMessageOpt("-zmqpubhashtx=<address>", _("Enable publish hash transaction in <address>"));
     strUsage += HelpMessageOpt("-zmqpubrawblock=<address>", _("Enable publish raw block in <address>"));
     strUsage += HelpMessageOpt("-zmqpubrawtx=<address>", _("Enable publish raw transaction in <address>"));
-    strUsage += HelpMessageOpt("-zmqpubrawmessage=<address>", _("Enable publish raw asset messages in <address>"));
+    strUsage += HelpMessageOpt("-zmqpubrawmessage=<address>", _("Enable publish raw token messages in <address>"));
 #endif
 
     strUsage += HelpMessageGroup(_("Debugging/Testing options:"));
@@ -1542,75 +1542,75 @@ bool AppInitMain(boost::thread_group& threadGroup, CScheduler& scheduler)
 
                 /** YONA START */
                 {
-                    // Basic assets
-                    delete passets;
-                    delete passetsdb;
-                    delete passetsCache;
+                    // Basic tokens
+                    delete ptokens;
+                    delete ptokensdb;
+                    delete ptokensCache;
 
-                    // Messaging assets
+                    // Messaging tokens
                     delete pmessagedb;
                     delete pmessagechanneldb;
                     delete pMessagesCache;
                     delete pMessagesSeenAddressCache;
                     delete pMessageSubscribedChannelsCache;
 
-                    // My restricted assets
+                    // My restricted tokens
                     delete pmyrestricteddb;
 
-                    // Restricted assets
+                    // Restricted tokens
                     delete prestricteddb;
-                    delete passetsVerifierCache;
-                    delete passetsQualifierCache;
-                    delete passetsRestrictionCache;
-                    delete passetsGlobalRestrictionCache;
+                    delete ptokensVerifierCache;
+                    delete ptokensQualifierCache;
+                    delete ptokensRestrictionCache;
+                    delete ptokensGlobalRestrictionCache;
 
                     //  Rewards
                     delete pSnapshotRequestDb;
-                    delete pAssetSnapshotDb;
+                    delete pTokenSnapshotDb;
                     delete pDistributeSnapshotDb;
 
-                    // Basic assets
-                    passetsdb = new CAssetsDB(nBlockTreeDBCache, false, fReset);
-                    passets = new CAssetsCache();
-                    passetsCache = new CLRUCache<std::string, CDatabasedAssetData>(MAX_CACHE_ASSETS_SIZE);
+                    // Basic tokens
+                    ptokensdb = new CTokensDB(nBlockTreeDBCache, false, fReset);
+                    ptokens = new CTokensCache();
+                    ptokensCache = new CLRUCache<std::string, CDatabasedTokenData>(MAX_CACHE_TOKENS_SIZE);
 
-                    // Messaging assets
+                    // Messaging tokens
                     pMessagesCache = new CLRUCache<std::string, CMessage>(1000);
                     pMessageSubscribedChannelsCache = new CLRUCache<std::string, int>(1000);
                     pMessagesSeenAddressCache = new CLRUCache<std::string, int>(1000);
                     pmessagedb = new CMessageDB(nBlockTreeDBCache, false, false);
                     pmessagechanneldb = new CMessageChannelDB(nBlockTreeDBCache, false, false);
 
-                    // My restricted assets
+                    // My restricted tokens
                     pmyrestricteddb = new CMyRestrictedDB(nBlockTreeDBCache, false, false);
 
-                    // Restricted assets
+                    // Restricted tokens
                     prestricteddb = new CRestrictedDB(nBlockTreeDBCache, false, fReset);
-                    passetsVerifierCache = new CLRUCache<std::string, CNullAssetTxVerifierString>(
-                            MAX_CACHE_ASSETS_SIZE);
-                    passetsQualifierCache = new CLRUCache<std::string, int8_t>(MAX_CACHE_ASSETS_SIZE);
-                    passetsRestrictionCache = new CLRUCache<std::string, int8_t>(MAX_CACHE_ASSETS_SIZE);
-                    passetsGlobalRestrictionCache = new CLRUCache<std::string, int8_t>(MAX_CACHE_ASSETS_SIZE);
+                    ptokensVerifierCache = new CLRUCache<std::string, CNullTokenTxVerifierString>(
+                            MAX_CACHE_TOKENS_SIZE);
+                    ptokensQualifierCache = new CLRUCache<std::string, int8_t>(MAX_CACHE_TOKENS_SIZE);
+                    ptokensRestrictionCache = new CLRUCache<std::string, int8_t>(MAX_CACHE_TOKENS_SIZE);
+                    ptokensGlobalRestrictionCache = new CLRUCache<std::string, int8_t>(MAX_CACHE_TOKENS_SIZE);
 
                     // Rewards
                     pSnapshotRequestDb = new CSnapshotRequestDB(nBlockTreeDBCache, false, false);
-                    pAssetSnapshotDb = new CAssetSnapshotDB(nBlockTreeDBCache, false, false);
+                    pTokenSnapshotDb = new CTokenSnapshotDB(nBlockTreeDBCache, false, false);
                     pDistributeSnapshotDb = new CDistributeSnapshotRequestDB(nBlockTreeDBCache, false, false);
 
-                    // Read for fAssetIndex to make sure that we only load asset address balances if it if true
-                    pblocktree->ReadFlag("assetindex", fAssetIndex);
-                    // Need to load assets before we verify the database
-                    if (!passetsdb->LoadAssets()) {
-                        strLoadError = _("Failed to load Assets Database");
+                    // Read for fTokenIndex to make sure that we only load token address balances if it if true
+                    pblocktree->ReadFlag("tokenindex", fTokenIndex);
+                    // Need to load tokens before we verify the database
+                    if (!ptokensdb->LoadTokens()) {
+                        strLoadError = _("Failed to load Tokens Database");
                         break;
                     }
 
-                    if (!passetsdb->ReadReissuedMempoolState())
+                    if (!ptokensdb->ReadReissuedMempoolState())
                         LogPrintf(
                                 "Database failed to load last Reissued Mempool State. Will have to start from empty state");
 
-                    LogPrintf("Successfully loaded assets from database.\nCache of assets size: %d\n",
-                              passetsCache->Size());
+                    LogPrintf("Successfully loaded tokens from database.\nCache of tokens size: %d\n",
+                              ptokensCache->Size());
 
                     // Check for changed -disablemessaging state
                     if (gArgs.GetArg("-disablemessaging", false)) {
@@ -1949,7 +1949,7 @@ bool AppInitMain(boost::thread_group& threadGroup, CScheduler& scheduler)
     if (!fReindex && fLoaded && fMessaging && pmessagechanneldb && !gArgs.GetBoolArg("-disablewallet", false)) {
         bool found;
         if (!pmessagechanneldb->ReadFlag("init", found)) {
-            uiInterface.InitMessage(_("Init Message Channels - Scanning Asset Transactions"));
+            uiInterface.InitMessage(_("Init Message Channels - Scanning Token Transactions"));
             std::string strLoadError;
             if (!ScanForMessageChannels(strLoadError)) {
                 LogPrintf("%s : Failed to scan for message channels, %s\n", __func__, strLoadError);

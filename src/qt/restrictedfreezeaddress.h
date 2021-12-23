@@ -17,7 +17,7 @@ class WalletModel;
 class QStringListModel;
 class QSortFilterProxyModel;
 class QCompleter;
-class AssetFilterProxy;
+class TokenFilterProxy;
 
 
 namespace Ui {
@@ -47,7 +47,7 @@ public:
     void showWarning(QString string, bool failure = true);
     void hideWarning();
 
-    AssetFilterProxy *assetFilterProxy;
+    TokenFilterProxy *tokenFilterProxy;
     QCompleter* completer;
 
     void clear();

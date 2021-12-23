@@ -1116,7 +1116,7 @@ bool EvalScript(std::vector<std::vector<unsigned char> > &stack, const CScript &
                         break;
 
                         /** YONA START */
-                    case OP_YONA_ASSET:
+                    case OP_YONA_TOKEN:
                         break;
                         /** YONA END */
 
@@ -1603,7 +1603,7 @@ bool VerifyScript(const CScript &scriptSig, const CScript &scriptPubKey, const C
     }
 
     // Additional validation for spend-to-script-hash transactions:
-    if ((flags & SCRIPT_VERIFY_P2SH) && (scriptPubKey.IsPayToScriptHash() || scriptPubKey.IsP2SHAssetScript()))
+    if ((flags & SCRIPT_VERIFY_P2SH) && (scriptPubKey.IsPayToScriptHash() || scriptPubKey.IsP2SHTokenScript()))
     {
         // scriptSig must be literals-only or validation fails
         if (!scriptSig.IsPushOnly())

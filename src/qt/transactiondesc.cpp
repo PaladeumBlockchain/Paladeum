@@ -52,8 +52,8 @@ QString TransactionDesc::toHTML(CWallet *wallet, CWalletTx &wtx, TransactionReco
 {
     QString strHTML;
 
-    if (rec->assetName != "YONA") {
-        return toAssetHTML(wallet, wtx, rec, unit);
+    if (rec->tokenName != "YONA") {
+        return toTokenHTML(wallet, wtx, rec, unit);
     }
 
     LOCK2(cs_main, wallet->cs_wallet);
@@ -286,7 +286,7 @@ QString TransactionDesc::toHTML(CWallet *wallet, CWalletTx &wtx, TransactionReco
     return strHTML;
 }
 
-QString TransactionDesc::toAssetHTML(CWallet *wallet, CWalletTx &wtx, TransactionRecord *rec, int unit)
+QString TransactionDesc::toTokenHTML(CWallet *wallet, CWalletTx &wtx, TransactionRecord *rec, int unit)
 {
     QString strHTML;
 
@@ -294,21 +294,21 @@ QString TransactionDesc::toAssetHTML(CWallet *wallet, CWalletTx &wtx, Transactio
     strHTML.reserve(4000);
     strHTML += "<html><font face='verdana, arial, helvetica, sans-serif'>";
 
-    CNewAsset asset;
-    auto currentActiveAssetCache = GetCurrentAssetCache();
-    if (IsAssetNameAnOwner(rec->assetName))
+    CNewToken token;
+    auto currentActiveTokenCache = GetCurrentTokenCache();
+    if (IsTokenNameAnOwner(rec->tokenName))
         rec->units = OWNER_UNITS;
-    else if (currentActiveAssetCache && currentActiveAssetCache->GetAssetMetaDataIfExists(rec->assetName, asset))
-        rec->units = asset.units;
+    else if (currentActiveTokenCache && currentActiveTokenCache->GetTokenMetaDataIfExists(rec->tokenName, token))
+        rec->units = token.units;
     else
-        rec->units = MAX_ASSET_UNITS;
+        rec->units = MAX_TOKEN_UNITS;
 
     int64_t nTime = wtx.GetTxTime();
     CAmount nCredit = wtx.GetCredit(ISMINE_ALL);
     CAmount nDebit = wtx.GetDebit(ISMINE_ALL);
     CAmount nNet = nCredit - nDebit;
 
-    CAmount nAssetsRec = rec->credit;
+    CAmount nTokensRec = rec->credit;
 
     // Status
     strHTML += "<b>" + tr("Status") + ":</b> " + FormatTxStatus(wtx);
@@ -335,7 +335,7 @@ QString TransactionDesc::toAssetHTML(CWallet *wallet, CWalletTx &wtx, Transactio
     else
     {
         // Offline transaction
-        if (nAssetsRec > 0)
+        if (nTokensRec > 0)
         {
             // Credit
             CTxDestination address = DecodeDestination(rec->address);
@@ -373,14 +373,14 @@ QString TransactionDesc::toAssetHTML(CWallet *wallet, CWalletTx &wtx, Transactio
     //
     // Amount
     //
-    if (nAssetsRec > 0)
+    if (nTokensRec > 0)
     {
         //
         // Credit
         //
-        strHTML += "<b>" + tr("Credit") + ":</b> " + YonaUnits::formatWithCustomName(QString::fromStdString(rec->assetName), nAssetsRec, rec->units) + "<br>";
+        strHTML += "<b>" + tr("Credit") + ":</b> " + YonaUnits::formatWithCustomName(QString::fromStdString(rec->tokenName), nTokensRec, rec->units) + "<br>";
     } else {
-        strHTML += "<b>" + tr("Debit") + ":</b> " + YonaUnits::formatWithCustomName(QString::fromStdString(rec->assetName), nAssetsRec, rec->units, true) + "<br>";
+        strHTML += "<b>" + tr("Debit") + ":</b> " + YonaUnits::formatWithCustomName(QString::fromStdString(rec->tokenName), nTokensRec, rec->units, true) + "<br>";
     }
 
     strHTML += "<b>" + tr("Net YONA amount") + ":</b> " + YonaUnits::formatHtmlWithUnit(unit, nNet, true) + "<br>";
@@ -440,11 +440,11 @@ void TransactionDesc::CreateDebugString(QString& strHTML, CWallet *wallet, CWall
     strHTML += "<hr><br>" + tr("Debug information") + "<br><br>";
     for (const CTxIn& txin : wtx.tx->vin)
         if (wallet->IsMine(txin)) {
-            CAssetOutputEntry assetData;
-            CAmount debit = wallet->GetDebit(txin, ISMINE_ALL, assetData);
-            if (assetData.nAmount > 0) {
+            CTokenOutputEntry tokenData;
+            CAmount debit = wallet->GetDebit(txin, ISMINE_ALL, tokenData);
+            if (tokenData.nAmount > 0) {
                 strHTML += "<b>" + tr("Debit") + ":</b> " +
-                           YonaUnits::formatWithCustomName(QString::fromStdString(assetData.assetName), -assetData.nAmount) + "<br>";
+                           YonaUnits::formatWithCustomName(QString::fromStdString(tokenData.tokenName), -tokenData.nAmount) + "<br>";
             }
             strHTML += "<b>" + tr("Debit") + ":</b> " +
                        YonaUnits::formatHtmlWithUnit(unit, -debit) + "<br>";
@@ -452,11 +452,11 @@ void TransactionDesc::CreateDebugString(QString& strHTML, CWallet *wallet, CWall
 
     for (const CTxOut& txout : wtx.tx->vout)
         if (wallet->IsMine(txout)) {
-            if (txout.scriptPubKey.IsAssetScript()) {
-                CAssetOutputEntry assetData;
-                GetAssetData(txout.scriptPubKey, assetData);
+            if (txout.scriptPubKey.IsTokenScript()) {
+                CTokenOutputEntry tokenData;
+                GetTokenData(txout.scriptPubKey, tokenData);
                 strHTML += "<b>" + tr("Credit") + ":</b> " +
-                           YonaUnits::formatWithCustomName(QString::fromStdString(assetData.assetName), assetData.nAmount) + "<br>";
+                           YonaUnits::formatWithCustomName(QString::fromStdString(tokenData.tokenName), tokenData.nAmount) + "<br>";
             } else
                 strHTML += "<b>" + tr("Credit") + ":</b> " +
                            YonaUnits::formatHtmlWithUnit(unit, wallet->GetCredit(txout, ISMINE_ALL)) + "<br>";

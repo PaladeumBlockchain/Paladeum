@@ -2807,7 +2807,7 @@ CNode::CNode(NodeId idIn, ServiceFlags nLocalServicesIn, int nMyStartingHeightIn
     fPauseSend = false;
     nProcessQueueSize = 0;
 
-    fGetAssetData = false;
+    fGetTokenData = false;
 
 
     for (const std::string &msg : getAllNetMessageTypes())
