@@ -97,12 +97,12 @@ UniValue requestsnapshot(const JSONRPCRequest& request) {
     std::string token_name = request.params[0].get_str();
     int block_height = request.params[1].get_int();
 
-    TokenType ownershipTokenType;
+    KnownTokenType ownershipKnownTokenType;
 
-    if (!IsTokenNameValid(token_name, ownershipTokenType))
+    if (!IsTokenNameValid(token_name, ownershipKnownTokenType))
         throw JSONRPCError(RPC_INVALID_PARAMETER, std::string("Invalid token_name: Please use a valid token name"));
 
-    if (ownershipTokenType == TokenType::UNIQUE || ownershipTokenType == TokenType::OWNER || ownershipTokenType == TokenType::MSGCHANNEL)
+    if (ownershipKnownTokenType == KnownTokenType::UNIQUE || ownershipKnownTokenType == KnownTokenType::OWNER || ownershipKnownTokenType == KnownTokenType::MSGCHANNEL)
         throw JSONRPCError(RPC_INVALID_PARAMETER, std::string("Invalid token_name: OWNER, UNQIUE, MSGCHANNEL tokens are not allowed for this call"));
 
     auto currentActiveTokenCache = GetCurrentTokenCache();
@@ -360,13 +360,13 @@ UniValue distributereward(const JSONRPCRequest& request) {
             throw JSONRPCError(RPC_INVALID_PARAMETER, std::string("Invalid change address: Use a valid YONA address"));
     }
 
-    TokenType ownershipTokenType;
-    TokenType distributionTokenType;
+    KnownTokenType ownershipKnownTokenType;
+    KnownTokenType distributionKnownTokenType;
 
-    if (!IsTokenNameValid(token_name, ownershipTokenType))
+    if (!IsTokenNameValid(token_name, ownershipKnownTokenType))
         throw JSONRPCError(RPC_INVALID_PARAMETER, std::string("Invalid token_name: Please use a valid token name"));
 
-    if (ownershipTokenType == TokenType::UNIQUE || ownershipTokenType == TokenType::OWNER || ownershipTokenType == TokenType::MSGCHANNEL)
+    if (ownershipKnownTokenType == KnownTokenType::UNIQUE || ownershipKnownTokenType == KnownTokenType::OWNER || ownershipKnownTokenType == KnownTokenType::MSGCHANNEL)
         throw JSONRPCError(RPC_INVALID_PARAMETER, std::string("Invalid token_name: OWNER, UNQIUE, MSGCHANNEL tokens are not allowed for this call"));
 
     if (snapshot_height > chainActive.Height()) {
@@ -374,10 +374,10 @@ UniValue distributereward(const JSONRPCRequest& request) {
     }
 
     if (distribution_token_name != "YONA") {
-        if (!IsTokenNameValid(distribution_token_name, distributionTokenType))
+        if (!IsTokenNameValid(distribution_token_name, distributionKnownTokenType))
             throw JSONRPCError(RPC_INVALID_PARAMETER, std::string("Invalid distribution_token_name: Please use a valid token name"));
 
-        if (distributionTokenType == TokenType::UNIQUE || distributionTokenType == TokenType::OWNER || distributionTokenType == TokenType::MSGCHANNEL)
+        if (distributionKnownTokenType == KnownTokenType::UNIQUE || distributionKnownTokenType == KnownTokenType::OWNER || distributionKnownTokenType == KnownTokenType::MSGCHANNEL)
             throw JSONRPCError(RPC_INVALID_PARAMETER, std::string("Invalid distribution_token_name: OWNER, UNQIUE, MSGCHANNEL tokens are not allowed for this call"));
 
         std::pair<int, std::string> errorPair;

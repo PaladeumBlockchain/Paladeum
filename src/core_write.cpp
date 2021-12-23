@@ -242,13 +242,13 @@ void ScriptPubKeyToUniv(const CScript& scriptPubKey,
         CNullTokenTxVerifierString verifierData;
         std::string address;
         if (TokenNullDataFromScript(scriptPubKey, data, address)) {
-            TokenType type;
+            KnownTokenType type;
             IsTokenNameValid(data.token_name, type);
-            if (type == TokenType::QUALIFIER || type == TokenType::SUB_QUALIFIER) {
+            if (type == KnownTokenType::QUALIFIER || type == KnownTokenType::SUB_QUALIFIER) {
                 tokenInfo.pushKV("token_name", data.token_name);
                 tokenInfo.pushKV("qualifier_type", data.flag ? "adding qualifier" : "removing qualifier");
                 tokenInfo.pushKV("address", address);
-            } else if (type == TokenType::RESTRICTED) {
+            } else if (type == KnownTokenType::RESTRICTED) {
                 tokenInfo.pushKV("token_name", data.token_name);
                 tokenInfo.pushKV("restricted_type", data.flag ? "freezing address" : "unfreezing address");
                 tokenInfo.pushKV("address", address);

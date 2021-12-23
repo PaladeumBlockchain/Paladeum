@@ -5,12 +5,12 @@
 #include "tokentypes.h"
 #include "hash.h"
 
-int IntFromTokenType(TokenType type) {
+int IntFromKnownTokenType(KnownTokenType type) {
     return (int)type;
 }
 
-TokenType TokenTypeFromInt(int nType) {
-    return (TokenType)nType;
+KnownTokenType KnownTokenTypeFromInt(int nType) {
+    return (KnownTokenType)nType;
 }
 
 uint256 CTokenCacheQualifierAddress::GetHash() {

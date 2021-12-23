@@ -18,7 +18,7 @@
 
 class CTokensCache;
 
-enum class TokenType
+enum class KnownTokenType
 {
     ROOT = 0,
     SUB = 1,
@@ -48,8 +48,8 @@ enum class RestrictedType
     GLOBAL_FREEZE = 3
 };
 
-int IntFromTokenType(TokenType type);
-TokenType TokenTypeFromInt(int nType);
+int IntFromKnownTokenType(KnownTokenType type);
+KnownTokenType KnownTokenTypeFromInt(int nType);
 
 const char IPFS_SHA2_256 = 0x12;
 const char TXID_NOTIFIER = 0x54;

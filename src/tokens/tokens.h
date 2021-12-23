@@ -386,19 +386,19 @@ CAmount GetIssueQualifierTokenBurnAmount();
 CAmount GetIssueSubQualifierTokenBurnAmount();
 CAmount GetIssueRestrictedTokenBurnAmount();
 CAmount GetAddNullQualifierTagBurnAmount();
-CAmount GetBurnAmount(const TokenType type);
+CAmount GetBurnAmount(const KnownTokenType type);
 CAmount GetBurnAmount(const int nType);
 
 //! Functions to be used to get access to the burn address for a given token type issuance
-std::string GetBurnAddress(const TokenType type);
+std::string GetBurnAddress(const KnownTokenType type);
 std::string GetBurnAddress(const int nType);
 
-void GetTxOutTokenTypes(const std::vector<CTxOut>& vout, int& issues, int& reissues, int& transfers, int& owners);
+void GetTxOutKnownTokenTypes(const std::vector<CTxOut>& vout, int& issues, int& reissues, int& transfers, int& owners);
 
 //! Check is an token name is valid, and being able to return the token type if needed
 bool IsTokenNameValid(const std::string& name);
-bool IsTokenNameValid(const std::string& name, TokenType& tokenType);
-bool IsTokenNameValid(const std::string& name, TokenType& tokenType, std::string& error);
+bool IsTokenNameValid(const std::string& name, KnownTokenType& tokenType);
+bool IsTokenNameValid(const std::string& name, KnownTokenType& tokenType, std::string& error);
 
 //! Check if an unique tagname is valid
 bool IsUniqueTagValid(const std::string& tag);
@@ -430,7 +430,7 @@ std::string RestrictedNameToOwnerName(const std::string& name);
 std::string GetUniqueTokenName(const std::string& parent, const std::string& tag);
 
 //! Given a type, and an token name, return if that name is valid based on the type
-bool IsTypeCheckNameValid(const TokenType type, const std::string& name, std::string& error);
+bool IsTypeCheckNameValid(const KnownTokenType type, const std::string& name, std::string& error);
 
 //! These types of token tx, have specific metadata at certain indexes in the transaction.
 //! These functions pull data from the scripts at those indexes
@@ -455,8 +455,8 @@ bool TokenNullVerifierDataFromScript(const CScript& scriptPubKey, CNullTokenTxVe
 bool GlobalTokenNullDataFromScript(const CScript& scriptPubKey, CNullTokenTxData& tokenData);
 
 //! Check to make sure the script contains the burn transaction
-bool CheckIssueBurnTx(const CTxOut& txOut, const TokenType& type, const int numberIssued);
-bool CheckIssueBurnTx(const CTxOut& txOut, const TokenType& type);
+bool CheckIssueBurnTx(const CTxOut& txOut, const KnownTokenType& type, const int numberIssued);
+bool CheckIssueBurnTx(const CTxOut& txOut, const KnownTokenType& type);
 
 // TODO, maybe remove this function and input that check into the CheckIssueBurnTx.
 //! Check to make sure the script contains the reissue burn data

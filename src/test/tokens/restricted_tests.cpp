@@ -68,8 +68,8 @@ BOOST_FIXTURE_TEST_SUITE(restricted_tests, BasicTestingSetup)
         CTxOut yonaOut(1*COIN, yonaTransfer);
 
         // Create transaction and add burn to it
-        CScript burnScript = GetScriptForDestination(DecodeDestination(GetBurnAddress(TokenType::RESTRICTED)));
-        CTxOut burnOut(GetBurnAmount(TokenType::RESTRICTED), burnScript);
+        CScript burnScript = GetScriptForDestination(DecodeDestination(GetBurnAddress(KnownTokenType::RESTRICTED)));
+        CTxOut burnOut(GetBurnAmount(KnownTokenType::RESTRICTED), burnScript);
 
         // Add the parent transaction for sub qualifier tx
         CTokenTransfer parentTransfer("RESTRICTED_NAME!", OWNER_TOKEN_AMOUNT);

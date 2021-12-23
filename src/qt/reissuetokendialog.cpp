@@ -226,7 +226,7 @@ void ReissueTokenDialog::setModel(WalletModel *_model)
         else
             ui->confTargetSelector->setCurrentIndex(getIndexForConfTarget(settings.value("nConfTarget").toInt()));
 
-        ui->reissueCostLabel->setText(tr("Cost") + ": " + YonaUnits::formatWithUnit(model->getOptionsModel()->getDisplayUnit(), GetBurnAmount(TokenType::REISSUE)));
+        ui->reissueCostLabel->setText(tr("Cost") + ": " + YonaUnits::formatWithUnit(model->getOptionsModel()->getDisplayUnit(), GetBurnAmount(KnownTokenType::REISSUE)));
         ui->reissueCostLabel->setStyleSheet("font-weight: bold");
 
         // Setup the default values
@@ -1248,7 +1248,7 @@ void ReissueTokenDialog::coinControlUpdateLabels()
     CoinControlDialog::payAmounts.clear();
     CoinControlDialog::fSubtractFeeFromAmount = false;
 
-    CoinControlDialog::payAmounts.append(GetBurnAmount(TokenType::REISSUE));
+    CoinControlDialog::payAmounts.append(GetBurnAmount(KnownTokenType::REISSUE));
 
     if (CoinControlDialog::coinControl->HasSelected())
     {

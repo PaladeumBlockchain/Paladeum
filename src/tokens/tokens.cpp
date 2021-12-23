@@ -202,79 +202,79 @@ bool IsTokenNameASubQualifier(const std::string& name)
 }
 
 
-bool IsTokenNameValid(const std::string& name, TokenType& tokenType, std::string& error)
+bool IsTokenNameValid(const std::string& name, KnownTokenType& tokenType, std::string& error)
 {
     // Do a max length check first to stop the possibility of a stack exhaustion.
     // We check for a value that is larger than the max token name
     if (name.length() > 40)
         return false;
 
-    tokenType = TokenType::INVALID;
+    tokenType = KnownTokenType::INVALID;
     if (std::regex_match(name, UNIQUE_INDICATOR))
     {
-        bool ret = IsTypeCheckNameValid(TokenType::UNIQUE, name, error);
+        bool ret = IsTypeCheckNameValid(KnownTokenType::UNIQUE, name, error);
         if (ret)
-            tokenType = TokenType::UNIQUE;
+            tokenType = KnownTokenType::UNIQUE;
 
         return ret;
     }
     else if (std::regex_match(name, MSG_CHANNEL_INDICATOR))
     {
-        bool ret = IsTypeCheckNameValid(TokenType::MSGCHANNEL, name, error);
+        bool ret = IsTypeCheckNameValid(KnownTokenType::MSGCHANNEL, name, error);
         if (ret)
-            tokenType = TokenType::MSGCHANNEL;
+            tokenType = KnownTokenType::MSGCHANNEL;
 
         return ret;
     }
     else if (std::regex_match(name, OWNER_INDICATOR))
     {
-        bool ret = IsTypeCheckNameValid(TokenType::OWNER, name, error);
+        bool ret = IsTypeCheckNameValid(KnownTokenType::OWNER, name, error);
         if (ret)
-            tokenType = TokenType::OWNER;
+            tokenType = KnownTokenType::OWNER;
 
         return ret;
     }
     else if (std::regex_match(name, VOTE_INDICATOR))
     {
-        bool ret = IsTypeCheckNameValid(TokenType::VOTE, name, error);
+        bool ret = IsTypeCheckNameValid(KnownTokenType::VOTE, name, error);
         if (ret)
-            tokenType = TokenType::VOTE;
+            tokenType = KnownTokenType::VOTE;
 
         return ret;
     }
     else if (std::regex_match(name, QUALIFIER_INDICATOR))
     {
-        bool ret = IsTypeCheckNameValid(TokenType::QUALIFIER, name, error);
+        bool ret = IsTypeCheckNameValid(KnownTokenType::QUALIFIER, name, error);
         if (ret) {
             if (IsTokenNameASubQualifier(name))
-                tokenType = TokenType::SUB_QUALIFIER;
+                tokenType = KnownTokenType::SUB_QUALIFIER;
             else
-                tokenType = TokenType::QUALIFIER;
+                tokenType = KnownTokenType::QUALIFIER;
         }
 
         return ret;
     }
     else if (std::regex_match(name, SUB_QUALIFIER_INDICATOR))
     {
-        bool ret = IsTypeCheckNameValid(TokenType::SUB_QUALIFIER, name, error);
+        bool ret = IsTypeCheckNameValid(KnownTokenType::SUB_QUALIFIER, name, error);
         if (ret) {
             if (IsTokenNameASubQualifier(name))
-                tokenType = TokenType::SUB_QUALIFIER;
+                tokenType = KnownTokenType::SUB_QUALIFIER;
         }
 
         return ret;
     }
     else if (std::regex_match(name, RESTRICTED_INDICATOR))
     {
-        bool ret = IsTypeCheckNameValid(TokenType::RESTRICTED, name, error);
+        bool ret = IsTypeCheckNameValid(KnownTokenType::RESTRICTED, name, error);
         if (ret)
-            tokenType = TokenType::RESTRICTED;
+            tokenType = KnownTokenType::RESTRICTED;
 
         return ret;
     }
     else
     {
-        auto type = IsTokenNameASubtoken(name) ? TokenType::SUB : TokenType::ROOT;
+        auto type = IsTokenNameASubtoken(name) ? KnownTokenType::SUB : KnownTokenType::ROOT;
         bool ret = IsTypeCheckNameValid(type, name, error);
         if (ret)
             tokenType = type;
@@ -285,12 +285,12 @@ bool IsTokenNameValid(const std::string& name, TokenType& tokenType, std::string
 
 bool IsTokenNameValid(const std::string& name)
 {
-    TokenType _tokenType;
+    KnownTokenType _tokenType;
     std::string _error;
     return IsTokenNameValid(name, _tokenType, _error);
 }
 
-bool IsTokenNameValid(const std::string& name, TokenType& tokenType)
+bool IsTokenNameValid(const std::string& name, KnownTokenType& tokenType)
 {
     std::string _error;
     return IsTokenNameValid(name, tokenType, _error);
@@ -298,8 +298,8 @@ bool IsTokenNameValid(const std::string& name, TokenType& tokenType)
 
 bool IsTokenNameARoot(const std::string& name)
 {
-    TokenType type;
-    return IsTokenNameValid(name, type) && type == TokenType::ROOT;
+    KnownTokenType type;
+    return IsTokenNameValid(name, type) && type == KnownTokenType::ROOT;
 }
 
 bool IsTokenNameAnOwner(const std::string& name)
@@ -327,16 +327,16 @@ bool IsTokenNameAnMsgChannel(const std::string& name)
 }
 
 // TODO get the string translated below
-bool IsTypeCheckNameValid(const TokenType type, const std::string& name, std::string& error)
+bool IsTypeCheckNameValid(const KnownTokenType type, const std::string& name, std::string& error)
 {
-    if (type == TokenType::UNIQUE) {
+    if (type == KnownTokenType::UNIQUE) {
         if (name.size() > MAX_NAME_LENGTH) { error = "Name is greater than max length of " + std::to_string(MAX_NAME_LENGTH); return false; }
         std::vector<std::string> parts;
         boost::split(parts, name, boost::is_any_of(UNIQUE_TAG_DELIMITER));
         bool valid = IsNameValidBeforeTag(parts.front()) && IsUniqueTagValid(parts.back());
         if (!valid) { error = "Unique name contains invalid characters (Valid characters are: A-Z a-z 0-9 @ $ % & * ( ) [ ] { } _ . ? : -)";  return false; }
         return true;
-    } else if (type == TokenType::MSGCHANNEL) {
+    } else if (type == KnownTokenType::MSGCHANNEL) {
         if (name.size() > MAX_NAME_LENGTH) { error = "Name is greater than max length of " + std::to_string(MAX_NAME_LENGTH); return false; }
         std::vector<std::string> parts;
         boost::split(parts, name, boost::is_any_of(MSG_CHANNEL_TAG_DELIMITER));
@@ -344,24 +344,24 @@ bool IsTypeCheckNameValid(const TokenType type, const std::string& name, std::st
         if (parts.back().size() > MAX_CHANNEL_NAME_LENGTH) { error = "Channel name is greater than max length of " + std::to_string(MAX_CHANNEL_NAME_LENGTH); return false; }
         if (!valid) { error = "Message Channel name contains invalid characters (Valid characters are: A-Z 0-9 _ .) (special characters can't be the first or last characters)";  return false; }
         return true;
-    } else if (type == TokenType::OWNER) {
+    } else if (type == KnownTokenType::OWNER) {
         if (name.size() > MAX_NAME_LENGTH) { error = "Name is greater than max length of " + std::to_string(MAX_NAME_LENGTH); return false; }
         bool valid = IsNameValidBeforeTag(name.substr(0, name.size() - 1));
         if (!valid) { error = "Owner name contains invalid characters (Valid characters are: A-Z 0-9 _ .) (special characters can't be the first or last characters)";  return false; }
         return true;
-    } else if (type == TokenType::VOTE) {
+    } else if (type == KnownTokenType::VOTE) {
         if (name.size() > MAX_NAME_LENGTH) { error = "Name is greater than max length of " + std::to_string(MAX_NAME_LENGTH); return false; }
         std::vector<std::string> parts;
         boost::split(parts, name, boost::is_any_of(VOTE_TAG_DELIMITER));
         bool valid = IsNameValidBeforeTag(parts.front()) && IsVoteTagValid(parts.back());
         if (!valid) { error = "Vote name contains invalid characters (Valid characters are: A-Z 0-9 _ .) (special characters can't be the first or last characters)";  return false; }
         return true;
-    } else if (type == TokenType::QUALIFIER || type == TokenType::SUB_QUALIFIER) {
+    } else if (type == KnownTokenType::QUALIFIER || type == KnownTokenType::SUB_QUALIFIER) {
         if (name.size() > MAX_NAME_LENGTH) { error = "Name is greater than max length of " + std::to_string(MAX_NAME_LENGTH); return false; }
         bool valid = IsQualifierNameValidBeforeTag(name);
         if (!valid) { error = "Qualifier name contains invalid characters (Valid characters are: A-Z 0-9 _ .) (# must be the first character, _ . special characters can't be the first or last characters)";  return false; }
         return true;
-    } else if (type == TokenType::RESTRICTED) {
+    } else if (type == KnownTokenType::RESTRICTED) {
         if (name.size() > MAX_NAME_LENGTH) { error = "Name is greater than max length of " + std::to_string(MAX_NAME_LENGTH); return false; }
         bool valid = IsRestrictedNameValid(name);
         if (!valid) { error = "Restricted name contains invalid characters (Valid characters are: A-Z 0-9 _ .) ($ must be the first character, _ . special characters can't be the first or last characters)";  return false; }
@@ -390,26 +390,26 @@ std::string RestrictedNameToOwnerName(const std::string& name)
 
 std::string GetParentName(const std::string& name)
 {
-    TokenType type;
+    KnownTokenType type;
     if (!IsTokenNameValid(name, type))
         return "";
 
     auto index = std::string::npos;
-    if (type == TokenType::SUB) {
+    if (type == KnownTokenType::SUB) {
         index = name.find_last_of(SUB_NAME_DELIMITER);
-    } else if (type == TokenType::UNIQUE) {
+    } else if (type == KnownTokenType::UNIQUE) {
         index = name.find_last_of(UNIQUE_TAG_DELIMITER);
-    } else if (type == TokenType::MSGCHANNEL) {
+    } else if (type == KnownTokenType::MSGCHANNEL) {
         index = name.find_last_of(MSG_CHANNEL_TAG_DELIMITER);
-    } else if (type == TokenType::VOTE) {
+    } else if (type == KnownTokenType::VOTE) {
         index = name.find_last_of(VOTE_TAG_DELIMITER);
-    } else if (type == TokenType::ROOT) {
+    } else if (type == KnownTokenType::ROOT) {
         return name;
-    } else if (type == TokenType::QUALIFIER) {
+    } else if (type == KnownTokenType::QUALIFIER) {
         return name;
-    } else if (type == TokenType::SUB_QUALIFIER) {
+    } else if (type == KnownTokenType::SUB_QUALIFIER) {
         index = name.find_last_of(SUB_NAME_DELIMITER);
-    } else if (type == TokenType::RESTRICTED) {
+    } else if (type == KnownTokenType::RESTRICTED) {
         return name;
     }
 
@@ -425,12 +425,12 @@ std::string GetUniqueTokenName(const std::string& parent, const std::string& tag
 {
     std::string unique = parent + "#" + tag;
 
-    TokenType type;
+    KnownTokenType type;
     if (!IsTokenNameValid(unique, type)) {
         return "";
     }
 
-    if (type != TokenType::UNIQUE)
+    if (type != KnownTokenType::UNIQUE)
         return "";
 
     return unique;
@@ -1000,7 +1000,7 @@ bool CTransaction::VerifyNewUniqueToken(std::string& strError) const
     // check for burn outpoint (must account for each new token)
     bool fBurnOutpointFound = false;
     for (auto out : vout) {
-        if (CheckIssueBurnTx(out, TokenType::UNIQUE, tokenOutpointCount)) {
+        if (CheckIssueBurnTx(out, KnownTokenType::UNIQUE, tokenOutpointCount)) {
             fBurnOutpointFound = true;
             break;
         }
@@ -1034,7 +1034,7 @@ bool CTransaction::VerifyNewUniqueToken(std::string& strError) const
     int nOwners = 0;
     int nIssues = 0;
     int nReissues = 0;
-    GetTxOutTokenTypes(vout, nIssues, nReissues, nTransfers, nOwners);
+    GetTxOutKnownTokenTypes(vout, nIssues, nReissues, nTransfers, nOwners);
 
     if (nOwners > 0 || nReissues > 0 || nIssues != tokenOutpointCount) {
         strError = "bad-txns-failed-unique-token-formatting-check";
@@ -1072,7 +1072,7 @@ bool CTransaction::VerifyNewToken(std::string& strError) const {
         return error("%s : Failed to get new token from transaction: %s", __func__, this->GetHash().GetHex());
     }
 
-    TokenType tokenType;
+    KnownTokenType tokenType;
     IsTokenNameValid(token.strName, tokenType);
 
     std::string strOwnerName;
@@ -1100,7 +1100,7 @@ bool CTransaction::VerifyNewToken(std::string& strError) const {
         return false;
     }
 
-    if (tokenType == TokenType::SUB) {
+    if (tokenType == KnownTokenType::SUB) {
         std::string root = GetParentName(token.strName);
         bool fOwnerOutFound = false;
         for (auto out : this->vout) {
@@ -1125,7 +1125,7 @@ bool CTransaction::VerifyNewToken(std::string& strError) const {
     int nOwners = 0;
     int nIssues = 0;
     int nReissues = 0;
-    GetTxOutTokenTypes(vout, nIssues, nReissues, nTransfers, nOwners);
+    GetTxOutKnownTokenTypes(vout, nIssues, nReissues, nTransfers, nOwners);
 
     if (nOwners != 1 || nIssues != 1 || nReissues > 0) {
         strError = "bad-txns-failed-issue-token-formatting-check";
@@ -1171,13 +1171,13 @@ bool CTransaction::VerifyNewMsgChannelToken(std::string &strError) const
         return error("%s : Failed to get new msgchannel token from transaction: %s", __func__, this->GetHash().GetHex());
     }
 
-    TokenType tokenType;
+    KnownTokenType tokenType;
     IsTokenNameValid(token.strName, tokenType);
 
     // Check for the Burn CTxOut in one of the vouts ( This is needed because the change CTxOut is places in a random position in the CWalletTx
     bool fFoundIssueBurnTx = false;
     for (auto out : vout) {
-        if (CheckIssueBurnTx(out, TokenType::MSGCHANNEL)) {
+        if (CheckIssueBurnTx(out, KnownTokenType::MSGCHANNEL)) {
             fFoundIssueBurnTx = true;
             break;
         }
@@ -1212,7 +1212,7 @@ bool CTransaction::VerifyNewMsgChannelToken(std::string &strError) const
     int nOwners = 0;
     int nIssues = 0;
     int nReissues = 0;
-    GetTxOutTokenTypes(vout, nIssues, nReissues, nTransfers, nOwners);
+    GetTxOutKnownTokenTypes(vout, nIssues, nReissues, nTransfers, nOwners);
 
     if (nOwners != 0 || nIssues != 1 || nReissues > 0) {
         strError = "bad-txns-failed-issue-msgchannel-token-formatting-check";
@@ -1258,7 +1258,7 @@ bool CTransaction::VerifyNewQualfierToken(std::string &strError) const
         return error("%s : Failed to get new qualifier token from transaction: %s", __func__, this->GetHash().GetHex());
     }
 
-    TokenType tokenType;
+    KnownTokenType tokenType;
     IsTokenNameValid(token.strName, tokenType);
 
     // Check for the Burn CTxOut in one of the vouts ( This is needed because the change CTxOut is places in a random position in the CWalletTx
@@ -1275,7 +1275,7 @@ bool CTransaction::VerifyNewQualfierToken(std::string &strError) const
         return false;
     }
 
-    if (tokenType == TokenType::SUB_QUALIFIER) {
+    if (tokenType == KnownTokenType::SUB_QUALIFIER) {
         // Check that there is an token transfer with the parent name, qualifier use just the parent name, they don't use not parent + !
         bool fOwnerOutFound = false;
         std::string root = GetParentName(token.strName);
@@ -1301,7 +1301,7 @@ bool CTransaction::VerifyNewQualfierToken(std::string &strError) const
     int nOwners = 0;
     int nIssues = 0;
     int nReissues = 0;
-    GetTxOutTokenTypes(vout, nIssues, nReissues, nTransfers, nOwners);
+    GetTxOutKnownTokenTypes(vout, nIssues, nReissues, nTransfers, nOwners);
 
     if (nOwners != 0 || nIssues != 1 || nReissues > 0) {
         strError = "bad-txns-failed-issue-token-formatting-check";
@@ -1346,7 +1346,7 @@ bool CTransaction::VerifyNewRestrictedToken(std::string& strError) const {
         return error("%s : Failed to get new restricted token from transaction: %s", __func__, this->GetHash().GetHex());
     }
 
-    TokenType tokenType;
+    KnownTokenType tokenType;
     IsTokenNameValid(token.strName, tokenType);
 
     // Check for the Burn CTxOut in one of the vouts ( This is needed because the change CTxOut is places in a random position in the CWalletTx
@@ -1396,7 +1396,7 @@ bool CTransaction::VerifyNewRestrictedToken(std::string& strError) const {
     int nOwners = 0;
     int nIssues = 0;
     int nReissues = 0;
-    GetTxOutTokenTypes(vout, nIssues, nReissues, nTransfers, nOwners);
+    GetTxOutKnownTokenTypes(vout, nIssues, nReissues, nTransfers, nOwners);
 
     if (nOwners != 0 || nIssues != 1 || nReissues > 0) {
         strError = "bad-txns-failed-issue-token-formatting-check";
@@ -1475,14 +1475,14 @@ bool CTransaction::VerifyReissueToken(std::string& strError) const
     }
 
     // Reissuing a regular token checks the reissue_token_name + "!"
-    TokenType token_type = TokenType::INVALID;
+    KnownTokenType token_type = KnownTokenType::INVALID;
     IsTokenNameValid(reissue.strName, token_type);
 
     // This is going to be the token name that we need to verify that the owner token of was added to the transaction
     std::string token_name_to_check = reissue.strName;
 
     // If the token type is restricted, remove the $ from the name, so we can check for the correct owner token transfer
-    if (token_type == TokenType::RESTRICTED) {
+    if (token_type == KnownTokenType::RESTRICTED) {
         token_name_to_check = reissue.strName.substr(1, reissue.strName.size() -1);
     }
 
@@ -1523,7 +1523,7 @@ bool CTransaction::VerifyReissueToken(std::string& strError) const
     int nOwners = 0;
     int nIssues = 0;
     int nReissues = 0;
-    GetTxOutTokenTypes(vout, nIssues, nReissues, nTransfers, nOwners);
+    GetTxOutKnownTokenTypes(vout, nIssues, nReissues, nTransfers, nOwners);
 
     if (nOwners > 0 || nReissues != 1 || nIssues > 0) {
         strError = "bad-txns-failed-reissue-token-formatting-check";
@@ -1538,7 +1538,7 @@ bool CTransaction::CheckAddingTagBurnFee(const int& count) const
     // check for burn outpoint )
     bool fBurnOutpointFound = false;
     for (auto out : vout) {
-        if (CheckIssueBurnTx(out, TokenType::NULL_ADD_QUALIFIER, count)) {
+        if (CheckIssueBurnTx(out, KnownTokenType::NULL_ADD_QUALIFIER, count)) {
             fBurnOutpointFound = true;
             break;
         }
@@ -3064,9 +3064,9 @@ size_t CTokensCache::GetCacheSizeV2() const
     return size;
 }
 
-bool CheckIssueBurnTx(const CTxOut& txOut, const TokenType& type, const int numberIssued)
+bool CheckIssueBurnTx(const CTxOut& txOut, const KnownTokenType& type, const int numberIssued)
 {
-    if (type == TokenType::REISSUE || type == TokenType::VOTE || type == TokenType::OWNER || type == TokenType::INVALID)
+    if (type == KnownTokenType::REISSUE || type == KnownTokenType::VOTE || type == KnownTokenType::OWNER || type == KnownTokenType::INVALID)
         return false;
 
     CAmount burnAmount = 0;
@@ -3100,7 +3100,7 @@ bool CheckIssueBurnTx(const CTxOut& txOut, const TokenType& type, const int numb
     return true;
 }
 
-bool CheckIssueBurnTx(const CTxOut& txOut, const TokenType& type)
+bool CheckIssueBurnTx(const CTxOut& txOut, const KnownTokenType& type)
 {
     return CheckIssueBurnTx(txOut, type, 1);
 }
@@ -3196,11 +3196,11 @@ bool IsScriptNewUniqueToken(const CScript &scriptPubKey, int &nStartingIndex)
     if (!TokenFromScript(scriptPubKey, token, address))
         return false;
 
-    TokenType tokenType;
+    KnownTokenType tokenType;
     if (!IsTokenNameValid(token.strName, tokenType))
         return false;
 
-    return TokenType::UNIQUE == tokenType;
+    return KnownTokenType::UNIQUE == tokenType;
 }
 
 bool IsScriptNewMsgChannelToken(const CScript& scriptPubKey)
@@ -3222,11 +3222,11 @@ bool IsScriptNewMsgChannelToken(const CScript &scriptPubKey, int &nStartingIndex
     if (!TokenFromScript(scriptPubKey, token, address))
         return false;
 
-    TokenType tokenType;
+    KnownTokenType tokenType;
     if (!IsTokenNameValid(token.strName, tokenType))
         return false;
 
-    return TokenType::MSGCHANNEL == tokenType;
+    return KnownTokenType::MSGCHANNEL == tokenType;
 }
 
 bool IsScriptOwnerToken(const CScript& scriptPubKey)
@@ -3303,11 +3303,11 @@ bool IsScriptNewQualifierToken(const CScript &scriptPubKey, int &nStartingIndex)
     if (!TokenFromScript(scriptPubKey, token, address))
         return false;
 
-    TokenType tokenType;
+    KnownTokenType tokenType;
     if (!IsTokenNameValid(token.strName, tokenType))
         return false;
 
-    return TokenType::QUALIFIER == tokenType || TokenType::SUB_QUALIFIER == tokenType;
+    return KnownTokenType::QUALIFIER == tokenType || KnownTokenType::SUB_QUALIFIER == tokenType;
 }
 
 bool IsScriptNewRestrictedToken(const CScript& scriptPubKey)
@@ -3329,11 +3329,11 @@ bool IsScriptNewRestrictedToken(const CScript &scriptPubKey, int &nStartingIndex
     if (!TokenFromScript(scriptPubKey, token, address))
         return false;
 
-    TokenType tokenType;
+    KnownTokenType tokenType;
     if (!IsTokenNameValid(token.strName, tokenType))
         return false;
 
-    return TokenType::RESTRICTED == tokenType;
+    return KnownTokenType::RESTRICTED == tokenType;
 }
 
 
@@ -3663,33 +3663,33 @@ CAmount GetAddNullQualifierTagBurnAmount()
 
 CAmount GetBurnAmount(const int nType)
 {
-    return GetBurnAmount((TokenType(nType)));
+    return GetBurnAmount((KnownTokenType(nType)));
 }
 
-CAmount GetBurnAmount(const TokenType type)
+CAmount GetBurnAmount(const KnownTokenType type)
 {
     switch (type) {
-        case TokenType::ROOT:
+        case KnownTokenType::ROOT:
             return GetIssueTokenBurnAmount();
-        case TokenType::SUB:
+        case KnownTokenType::SUB:
             return GetIssueSubTokenBurnAmount();
-        case TokenType::MSGCHANNEL:
+        case KnownTokenType::MSGCHANNEL:
             return GetIssueMsgChannelTokenBurnAmount();
-        case TokenType::OWNER:
+        case KnownTokenType::OWNER:
             return 0;
-        case TokenType::UNIQUE:
+        case KnownTokenType::UNIQUE:
             return GetIssueUniqueTokenBurnAmount();
-        case TokenType::VOTE:
+        case KnownTokenType::VOTE:
             return 0;
-        case TokenType::REISSUE:
+        case KnownTokenType::REISSUE:
             return GetReissueTokenBurnAmount();
-        case TokenType::QUALIFIER:
+        case KnownTokenType::QUALIFIER:
             return GetIssueQualifierTokenBurnAmount();
-        case TokenType::SUB_QUALIFIER:
+        case KnownTokenType::SUB_QUALIFIER:
             return GetIssueSubQualifierTokenBurnAmount();
-        case TokenType::RESTRICTED:
+        case KnownTokenType::RESTRICTED:
             return GetIssueRestrictedTokenBurnAmount();
-        case TokenType::NULL_ADD_QUALIFIER:
+        case KnownTokenType::NULL_ADD_QUALIFIER:
             return GetAddNullQualifierTagBurnAmount();
         default:
             return 0;
@@ -3698,33 +3698,33 @@ CAmount GetBurnAmount(const TokenType type)
 
 std::string GetBurnAddress(const int nType)
 {
-    return GetBurnAddress((TokenType(nType)));
+    return GetBurnAddress((KnownTokenType(nType)));
 }
 
-std::string GetBurnAddress(const TokenType type)
+std::string GetBurnAddress(const KnownTokenType type)
 {
     switch (type) {
-        case TokenType::ROOT:
+        case KnownTokenType::ROOT:
             return GetParams().IssueTokenBurnAddress();
-        case TokenType::SUB:
+        case KnownTokenType::SUB:
             return GetParams().IssueSubTokenBurnAddress();
-        case TokenType::MSGCHANNEL:
+        case KnownTokenType::MSGCHANNEL:
             return GetParams().IssueMsgChannelTokenBurnAddress();
-        case TokenType::OWNER:
+        case KnownTokenType::OWNER:
             return "";
-        case TokenType::UNIQUE:
+        case KnownTokenType::UNIQUE:
             return GetParams().IssueUniqueTokenBurnAddress();
-        case TokenType::VOTE:
+        case KnownTokenType::VOTE:
             return "";
-        case TokenType::REISSUE:
+        case KnownTokenType::REISSUE:
             return GetParams().ReissueTokenBurnAddress();
-        case TokenType::QUALIFIER:
+        case KnownTokenType::QUALIFIER:
             return GetParams().IssueQualifierTokenBurnAddress();
-        case TokenType::SUB_QUALIFIER:
+        case KnownTokenType::SUB_QUALIFIER:
             return GetParams().IssueSubQualifierTokenBurnAddress();
-        case TokenType::RESTRICTED:
+        case KnownTokenType::RESTRICTED:
             return GetParams().IssueRestrictedTokenBurnAddress();
-        case TokenType::NULL_ADD_QUALIFIER:
+        case KnownTokenType::NULL_ADD_QUALIFIER:
             return GetParams().AddNullQualifierTagBurnAddress();
         default:
             return "";
@@ -3899,14 +3899,14 @@ bool CreateTokenTransaction(CWallet* pwallet, CCoinControl& coinControl, const s
         coinControl.destChange = DecodeDestination(change_address);
     }
 
-    TokenType tokenType;
+    KnownTokenType tokenType;
     std::string parentName;
     for (auto token : tokens) {
         if (!IsTokenNameValid(token.strName, tokenType)) {
             error = std::make_pair(RPC_INVALID_PARAMETER, "Token name not valid");
             return false;
         }
-        if (tokens.size() > 1 && tokenType != TokenType::UNIQUE) {
+        if (tokens.size() > 1 && tokenType != KnownTokenType::UNIQUE) {
             error = std::make_pair(RPC_INVALID_PARAMETER, "Only unique tokens can be issued in bulk.");
             return false;
         }
@@ -3948,7 +3948,7 @@ bool CreateTokenTransaction(CWallet* pwallet, CCoinControl& coinControl, const s
     vecSend.push_back(recipient);
 
     // If the token is a subtoken or unique token. We need to send the ownertoken change back to ourselfs
-    if (tokenType == TokenType::SUB || tokenType == TokenType::UNIQUE || tokenType == TokenType::MSGCHANNEL) {
+    if (tokenType == KnownTokenType::SUB || tokenType == KnownTokenType::UNIQUE || tokenType == KnownTokenType::MSGCHANNEL) {
         // Get the script for the destination address for the tokens
         CScript scriptTransferOwnerToken = GetScriptForDestination(DecodeDestination(change_address));
 
@@ -3959,7 +3959,7 @@ bool CreateTokenTransaction(CWallet* pwallet, CCoinControl& coinControl, const s
     }
 
     // If the token is a sub qualifier. We need to send the token parent change back to ourselfs
-    if (tokenType == TokenType::SUB_QUALIFIER) {
+    if (tokenType == KnownTokenType::SUB_QUALIFIER) {
         // Get the script for the destination address for the tokens
         CScript scriptTransferQualifierToken = GetScriptForDestination(DecodeDestination(change_address));
 
@@ -3970,7 +3970,7 @@ bool CreateTokenTransaction(CWallet* pwallet, CCoinControl& coinControl, const s
     }
 
     // Get the owner outpoints if this is a subtoken or unique token
-    if (tokenType == TokenType::SUB || tokenType == TokenType::UNIQUE || tokenType == TokenType::MSGCHANNEL) {
+    if (tokenType == KnownTokenType::SUB || tokenType == KnownTokenType::UNIQUE || tokenType == KnownTokenType::MSGCHANNEL) {
         // Verify that this wallet is the owner for the token, and get the owner token outpoint
         for (auto token : tokens) {
             if (!VerifyWalletHasToken(parentName + OWNER_TAG, error)) {
@@ -3980,7 +3980,7 @@ bool CreateTokenTransaction(CWallet* pwallet, CCoinControl& coinControl, const s
     }
 
     // Get the owner outpoints if this is a sub_qualifier token
-    if (tokenType == TokenType::SUB_QUALIFIER) {
+    if (tokenType == KnownTokenType::SUB_QUALIFIER) {
         // Verify that this wallet is the owner for the token, and get the owner token outpoint
         for (auto token : tokens) {
             if (!VerifyWalletHasToken(parentName, error)) {
@@ -3989,7 +3989,7 @@ bool CreateTokenTransaction(CWallet* pwallet, CCoinControl& coinControl, const s
         }
     }
 
-    if (tokenType == TokenType::RESTRICTED) {
+    if (tokenType == KnownTokenType::RESTRICTED) {
         // Restricted tokens require the ROOT! token to be sent with the issuance
         CScript scriptTransferOwnerToken = GetScriptForDestination(DecodeDestination(change_address));
 
@@ -4044,7 +4044,7 @@ bool CreateReissueTokenTransaction(CWallet* pwallet, CCoinControl& coinControl, 
     std::string change_address = EncodeDestination(coinControl.destChange);
 
     // Get the token type
-    TokenType token_type = TokenType::INVALID;
+    KnownTokenType token_type = KnownTokenType::INVALID;
     IsTokenNameValid(token_name, token_type);
 
     // Check that validitity of the address
@@ -4110,7 +4110,7 @@ bool CreateReissueTokenTransaction(CWallet* pwallet, CCoinControl& coinControl, 
     std::string stripped_token_name = token_name.substr(1, token_name.size() - 1);
 
     // If we are reissuing a restricted token, check to see if we have the root owner token $TOKEN check for TOKEN!
-    if (token_type == TokenType::RESTRICTED) {
+    if (token_type == KnownTokenType::RESTRICTED) {
         // Verify that this wallet is the owner for the token, and get the owner token outpoint
         if (!VerifyWalletHasToken(stripped_token_name + OWNER_TAG, error)) {
             return false;
@@ -4142,7 +4142,7 @@ bool CreateReissueTokenTransaction(CWallet* pwallet, CCoinControl& coinControl, 
     // Get the script for the destination address for the tokens
     CScript scriptTransferOwnerToken = GetScriptForDestination(DecodeDestination(change_address));
 
-    if (token_type == TokenType::RESTRICTED) {
+    if (token_type == KnownTokenType::RESTRICTED) {
         CTokenTransfer tokenTransfer(stripped_token_name + OWNER_TAG, OWNER_TOKEN_AMOUNT);
         tokenTransfer.ConstructTransaction(scriptTransferOwnerToken);
     } else {
@@ -4150,7 +4150,7 @@ bool CreateReissueTokenTransaction(CWallet* pwallet, CCoinControl& coinControl, 
         tokenTransfer.ConstructTransaction(scriptTransferOwnerToken);
     }
 
-    if (token_type == TokenType::RESTRICTED) {
+    if (token_type == KnownTokenType::RESTRICTED) {
         // If we are changing the verifier string, check to make sure the new address meets the new verifier string rules
         if (verifier_string) {
             if (reissueToken.nAmount > 0) {
@@ -4339,8 +4339,8 @@ bool CreateTransferTokenTransaction(CWallet* pwallet, const CCoinControl& coinCo
 
         // Add the burn recipient for adding tags to addresses
         if (nAddTagCount) {
-            CScript addTagBurnScript = GetScriptForDestination(DecodeDestination(GetBurnAddress(TokenType::NULL_ADD_QUALIFIER)));
-            CRecipient addTagBurnRecipient = {addTagBurnScript, GetBurnAmount(TokenType::NULL_ADD_QUALIFIER) * nAddTagCount, false};
+            CScript addTagBurnScript = GetScriptForDestination(DecodeDestination(GetBurnAddress(KnownTokenType::NULL_ADD_QUALIFIER)));
+            CRecipient addTagBurnRecipient = {addTagBurnScript, GetBurnAmount(KnownTokenType::NULL_ADD_QUALIFIER) * nAddTagCount, false};
             vecSend.push_back(addTagBurnRecipient);
         }
     }
@@ -4432,7 +4432,7 @@ bool CheckEncoded(const std::string& hash, std::string& strError) {
     return false;
 }
 
-void GetTxOutTokenTypes(const std::vector<CTxOut>& vout, int& issues, int& reissues, int& transfers, int& owners)
+void GetTxOutKnownTokenTypes(const std::vector<CTxOut>& vout, int& issues, int& reissues, int& transfers, int& owners)
 {
     for (auto out: vout) {
         int type;
@@ -4524,13 +4524,13 @@ CNullTokenTxData::CNullTokenTxData(const std::string &strTokenname, const int8_t
 
 bool CNullTokenTxData::IsValid(std::string &strError, CTokensCache &tokenCache, bool fForceCheckPrimaryTokenExists) const
 {
-    TokenType type;
+    KnownTokenType type;
     if (!IsTokenNameValid(token_name, type)) {
         strError = _("Token name is not valid");
         return false;
     }
 
-    if (type != TokenType::QUALIFIER && type != TokenType::SUB_QUALIFIER && type != TokenType::RESTRICTED) {
+    if (type != KnownTokenType::QUALIFIER && type != KnownTokenType::SUB_QUALIFIER && type != KnownTokenType::RESTRICTED) {
         strError = _("Token must be a qualifier, sub qualifier, or a restricted token");
         return false;
     }
@@ -5221,7 +5221,7 @@ bool ContextualCheckVerifierString(CTokensCache* cache, const std::string& verif
 bool ContextualCheckTransferToken(CTokensCache* tokenCache, const CTokenTransfer& transfer, const std::string& address, std::string& strError)
 {
     strError = "";
-    TokenType tokenType;
+    KnownTokenType tokenType;
     if (!IsTokenNameValid(transfer.strName, tokenType)) {
         strError = "Invalid parameter: token_name must only consist of valid characters and have a size between 3 and 30 characters. See help for more details.";
         return false;
@@ -5255,14 +5255,14 @@ bool ContextualCheckTransferToken(CTokensCache* tokenCache, const CTokenTransfer
     }
 
     // If the transfer is a message channel token. Check to make sure that it is UNIQUE_TOKEN_AMOUNT
-    if (tokenType == TokenType::MSGCHANNEL) {
+    if (tokenType == KnownTokenType::MSGCHANNEL) {
         if (!AreMessagesDeployed()) {
             strError = "bad-txns-transfer-msgchannel-before-messaging-is-active";
             return false;
         }
     }
 
-    if (tokenType == TokenType::RESTRICTED) {
+    if (tokenType == KnownTokenType::RESTRICTED) {
         if (!AreRestrictedTokensDeployed()) {
             strError = "bad-txns-transfer-restricted-before-it-is-active";
             return false;
@@ -5284,7 +5284,7 @@ bool ContextualCheckTransferToken(CTokensCache* tokenCache, const CTokenTransfer
     }
 
     // If the transfer is a qualifier channel token.
-    if (tokenType == TokenType::QUALIFIER || tokenType == TokenType::SUB_QUALIFIER) {
+    if (tokenType == KnownTokenType::QUALIFIER || tokenType == KnownTokenType::SUB_QUALIFIER) {
         if (!AreRestrictedTokensDeployed()) {
             strError = "bad-txns-transfer-qualifier-before-it-is-active";
             return false;
@@ -5297,13 +5297,13 @@ bool CheckNewToken(const CNewToken& token, std::string& strError)
 {
     strError = "";
 
-    TokenType tokenType;
+    KnownTokenType tokenType;
     if (!IsTokenNameValid(std::string(token.strName), tokenType)) {
         strError = _("Invalid parameter: token_name must only consist of valid characters and have a size between 3 and 30 characters. See help for more details.");
         return false;
     }
 
-    if (tokenType == TokenType::UNIQUE || tokenType == TokenType::MSGCHANNEL) {
+    if (tokenType == KnownTokenType::UNIQUE || tokenType == KnownTokenType::MSGCHANNEL) {
         if (token.units != UNIQUE_TOKEN_UNITS) {
             strError = _("Invalid parameter: units must be ") + std::to_string(UNIQUE_TOKEN_UNITS);
             return false;
@@ -5318,7 +5318,7 @@ bool CheckNewToken(const CNewToken& token, std::string& strError)
         }
     }
 
-    if (tokenType == TokenType::QUALIFIER || tokenType == TokenType::SUB_QUALIFIER) {
+    if (tokenType == KnownTokenType::QUALIFIER || tokenType == KnownTokenType::SUB_QUALIFIER) {
         if (token.units != QUALIFIER_TOKEN_UNITS) {
             strError = _("Invalid parameter: units must be ") + std::to_string(QUALIFIER_TOKEN_UNITS);
             return false;
@@ -5447,10 +5447,10 @@ bool CheckReissueToken(const CReissueToken& token, std::string& strError)
         return false;
     }
 
-    TokenType type;
+    KnownTokenType type;
     IsTokenNameValid(token.strName, type);
 
-    if (type == TokenType::RESTRICTED) {
+    if (type == KnownTokenType::RESTRICTED) {
         // TODO Add checks for restricted token if we can come up with any
     }
 

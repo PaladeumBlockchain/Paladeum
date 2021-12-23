@@ -273,7 +273,7 @@ bool CheckTransaction(const CTransaction& tx, CValidationState &state, bool fChe
                 setTokenTransferNames.insert(transfer.strName);
 
                 // Check token name validity and get type
-                TokenType tokenType;
+                KnownTokenType tokenType;
                 if (!IsTokenNameValid(transfer.strName, tokenType)) {
                     return state.DoS(100, false, REJECT_INVALID, "bad-txns-transfer-token-name-invalid");
                 }
@@ -285,18 +285,18 @@ bool CheckTransaction(const CTransaction& tx, CValidationState &state, bool fChe
                 }
 
                 // If the transfer is a unique token. Check to make sure that it is UNIQUE_TOKEN_AMOUNT
-                if (tokenType == TokenType::UNIQUE) {
+                if (tokenType == KnownTokenType::UNIQUE) {
                     if (transfer.nAmount != UNIQUE_TOKEN_AMOUNT)
                         return state.DoS(100, false, REJECT_INVALID, "bad-txns-transfer-unique-amount-was-not-1");
                 }
 
                 // If the transfer is a restricted channel token.
-                if (tokenType == TokenType::RESTRICTED) {
+                if (tokenType == KnownTokenType::RESTRICTED) {
                     // TODO add checks here if any
                 }
 
                 // If the transfer is a qualifier channel token.
-                if (tokenType == TokenType::QUALIFIER || tokenType == TokenType::SUB_QUALIFIER) {
+                if (tokenType == KnownTokenType::QUALIFIER || tokenType == KnownTokenType::SUB_QUALIFIER) {
                     if (transfer.nAmount < QUALIFIER_TOKEN_MIN_AMOUNT || transfer.nAmount > QUALIFIER_TOKEN_MAX_AMOUNT)
                         return state.DoS(100, false, REJECT_INVALID, "bad-txns-transfer-qualifier-amount-must be between 1 - 100");
                 }
@@ -430,11 +430,11 @@ bool CheckTransaction(const CTransaction& tx, CValidationState &state, bool fChe
             return state.DoS(100, false, REJECT_INVALID, strError);
 
         // Get the tokenType
-        TokenType type;
+        KnownTokenType type;
         IsTokenNameValid(reissue.strName, type);
 
         // If this is a reissuance of a restricted token, mark it as such, so we can check to make sure only valid verifier string tx are added to the chain
-        if (type == TokenType::RESTRICTED) {
+        if (type == KnownTokenType::RESTRICTED) {
             CNullTokenTxVerifierString new_verifier;
             bool fNotFound = false;
 
@@ -768,7 +768,7 @@ bool Consensus::CheckTxTokens(const CTransaction& tx, CValidationState& state, c
                 return state.DoS(100, false, REJECT_INVALID, "bad-txns-issue-serialzation-failed", false, "", tx.GetHash());
             }
 
-            TokenType tokenType;
+            KnownTokenType tokenType;
             IsTokenNameValid(token.strName, tokenType);
 
             if (!ContextualCheckNewToken(tokenCache, token, strError, fCheckMempool))

@@ -138,9 +138,9 @@ void AddCoins(CCoinsViewCache& cache, const CTransaction &tx, int nHeight, uint2
 
                 // Check to see if we are reissuing a restricted token
                 bool fFoundRestrictedToken = false;
-                TokenType type;
+                KnownTokenType type;
                 IsTokenNameValid(token.strName, type);
-                if (type == TokenType::RESTRICTED) {
+                if (type == KnownTokenType::RESTRICTED) {
                     fFoundRestrictedToken = true;
                 }
 
@@ -282,17 +282,17 @@ void AddCoins(CCoinsViewCache& cache, const CTransaction &tx, int nHeight, uint2
                         if (fMessaging && pMessageSubscribedChannelsCache) {
                             LOCK(cs_messaging);
                             if (vpwallets.size() && vpwallets[0]->IsMine(tx.vout[i]) == ISMINE_SPENDABLE) {
-                                TokenType aType;
+                                KnownTokenType aType;
                                 IsTokenNameValid(tokenTransfer.strName, aType);
 
-                                if (aType == TokenType::ROOT || aType == TokenType::SUB) {
+                                if (aType == KnownTokenType::ROOT || aType == KnownTokenType::SUB) {
                                     if (!IsChannelSubscribed(GetParentName(tokenTransfer.strName) + OWNER_TAG)) {
                                         if (!IsAddressSeen(address)) {
                                             AddChannel(GetParentName(tokenTransfer.strName) + OWNER_TAG);
                                             AddAddressSeen(address);
                                         }
                                     }
-                                } else if (aType == TokenType::OWNER || aType == TokenType::MSGCHANNEL) {
+                                } else if (aType == KnownTokenType::OWNER || aType == KnownTokenType::MSGCHANNEL) {
                                     AddChannel(tokenTransfer.strName);
                                     AddAddressSeen(address);
                                 }
@@ -305,18 +305,18 @@ void AddCoins(CCoinsViewCache& cache, const CTransaction &tx, int nHeight, uint2
                         if (fMessaging && pMessageSubscribedChannelsCache) {
                             LOCK(cs_messaging);
                             if (vpwallets.size()) {
-                                TokenType aType;
+                                KnownTokenType aType;
                                 IsTokenNameValid(tokenData.tokenName, aType);
                                 if (vpwallets[0]->IsMine(tx.vout[i]) == ISMINE_SPENDABLE) {
-                                    if (aType == TokenType::ROOT || aType == TokenType::SUB) {
+                                    if (aType == KnownTokenType::ROOT || aType == KnownTokenType::SUB) {
                                         AddChannel(tokenData.tokenName + OWNER_TAG);
                                         AddAddressSeen(EncodeDestination(tokenData.destination));
-                                    } else if (aType == TokenType::OWNER || aType == TokenType::MSGCHANNEL) {
+                                    } else if (aType == KnownTokenType::OWNER || aType == KnownTokenType::MSGCHANNEL) {
                                         AddChannel(tokenData.tokenName);
                                         AddAddressSeen(EncodeDestination(tokenData.destination));
                                     }
                                 } else {
-                                    if (aType == TokenType::MSGCHANNEL) {
+                                    if (aType == KnownTokenType::MSGCHANNEL) {
                                         if (IsChannelSubscribed(GetParentName(tokenData.tokenName) + OWNER_TAG)) {
                                             AddChannel(tokenData.tokenName);
                                         }
@@ -335,12 +335,12 @@ void AddCoins(CCoinsViewCache& cache, const CTransaction &tx, int nHeight, uint2
                         std::string address;
                         TokenNullDataFromScript(script, data, address);
 
-                        TokenType type;
+                        KnownTokenType type;
                         IsTokenNameValid(data.token_name, type);
 
-                        if (type == TokenType::RESTRICTED) {
+                        if (type == KnownTokenType::RESTRICTED) {
                             tokensCache->AddRestrictedAddress(data.token_name, address, data.flag ? RestrictedType::FREEZE_ADDRESS : RestrictedType::UNFREEZE_ADDRESS);
-                        } else if (type == TokenType::QUALIFIER || type == TokenType::SUB_QUALIFIER) {
+                        } else if (type == KnownTokenType::QUALIFIER || type == KnownTokenType::SUB_QUALIFIER) {
                             tokensCache->AddQualifierAddress(data.token_name, address, data.flag ? QualifierType::ADD_QUALIFIER : QualifierType::REMOVE_QUALIFIER);
                         }
                     } else if (script.IsNullGlobalRestrictionTokenTxDataScript()) {

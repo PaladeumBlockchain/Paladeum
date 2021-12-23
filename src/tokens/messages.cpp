@@ -223,14 +223,14 @@ bool ScanForMessageChannels(std::string& strError)
                         CTokenOutputEntry tokenData;
                         // Get the token data from the script
                         if (GetTokenData(out.scriptPubKey, tokenData)) {
-                            TokenType type;
+                            KnownTokenType type;
                             IsTokenNameValid(tokenData.tokenName, type);
 
                             if (tokenData.type == TX_TRANSFER_TOKEN) {
-                                if (type == TokenType::MSGCHANNEL || type == TokenType::OWNER) { // Subscribe to any channels or owner tokens you own
+                                if (type == KnownTokenType::MSGCHANNEL || type == KnownTokenType::OWNER) { // Subscribe to any channels or owner tokens you own
                                     AddChannel(tokenData.tokenName);
                                     AddAddressSeen(EncodeDestination(tokenData.destination));
-                                } else if (type == TokenType::ROOT || type == TokenType::SUB) { // Subscribe to any tokens you are sent, if they are sent to a new address
+                                } else if (type == KnownTokenType::ROOT || type == KnownTokenType::SUB) { // Subscribe to any tokens you are sent, if they are sent to a new address
                                     if (!IsChannelSubscribed(tokenData.tokenName + OWNER_TAG)) {
                                         if (!IsAddressSeen(EncodeDestination(tokenData.destination))) {
                                             AddChannel(tokenData.tokenName + OWNER_TAG);
@@ -239,10 +239,10 @@ bool ScanForMessageChannels(std::string& strError)
                                     }
                                 }
                             } else if (tokenData.type == TX_NEW_TOKEN || tokenData.type == TX_REISSUE_TOKEN) {
-                                if (fOwner || type == TokenType::MSGCHANNEL) {
+                                if (fOwner || type == KnownTokenType::MSGCHANNEL) {
                                     AddChannel(tokenData.tokenName);
                                     AddAddressSeen(EncodeDestination(tokenData.destination));
-                                } else if (type == TokenType::ROOT || type == TokenType::SUB || type == TokenType::RESTRICTED) {
+                                } else if (type == KnownTokenType::ROOT || type == KnownTokenType::SUB || type == KnownTokenType::RESTRICTED) {
                                     AddChannel(tokenData.tokenName + "!");
                                     AddAddressSeen(EncodeDestination(tokenData.destination));
                                 }

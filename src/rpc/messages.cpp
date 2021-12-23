@@ -197,20 +197,20 @@ UniValue subscribetochannel(const JSONRPCRequest& request) {
 
     std::string channel_name = request.params[0].get_str();
 
-    TokenType type;
+    KnownTokenType type;
     if (!IsTokenNameValid(channel_name, type))
         throw JSONRPCError(
                 RPC_INVALID_PARAMETER, "Channel Name is not valid.");
 
     // if the given token name is a root of sub token, subscribe to that tokens owner token
-    if (type == TokenType::ROOT || type == TokenType::SUB) {
+    if (type == KnownTokenType::ROOT || type == KnownTokenType::SUB) {
         channel_name += "!";
         if (!IsTokenNameValid(channel_name, type))
         throw JSONRPCError(
                 RPC_INVALID_PARAMETER, "Channel Name is not valid.");
     }
 
-    if (type != TokenType::OWNER && type != TokenType::MSGCHANNEL)
+    if (type != KnownTokenType::OWNER && type != KnownTokenType::MSGCHANNEL)
         throw JSONRPCError(
                 RPC_INVALID_PARAMETER, "Channel Name must be a owner token, or a message channel token e.g OWNER!, MSG_CHANNEL~123.");
 
@@ -247,13 +247,13 @@ UniValue unsubscribefromchannel(const JSONRPCRequest& request) {
 
     std::string channel_name = request.params[0].get_str();
 
-    TokenType type;
+    KnownTokenType type;
     if (!IsTokenNameValid(channel_name, type))
         throw JSONRPCError(
                 RPC_INVALID_PARAMETER, "Channel Name is not valid.");
 
     // if the given token name is a root of sub token, subscribe to that tokens owner token
-    if (type == TokenType::ROOT || type == TokenType::SUB) {
+    if (type == KnownTokenType::ROOT || type == KnownTokenType::SUB) {
         channel_name += "!";
 
         if (!IsTokenNameValid(channel_name, type))
@@ -261,7 +261,7 @@ UniValue unsubscribefromchannel(const JSONRPCRequest& request) {
                 RPC_INVALID_PARAMETER, "Channel Name is not valid.");
     }
 
-    if (type != TokenType::OWNER && type != TokenType::MSGCHANNEL)
+    if (type != KnownTokenType::OWNER && type != KnownTokenType::MSGCHANNEL)
         throw JSONRPCError(
                 RPC_INVALID_PARAMETER, "Channel Name must be a owner token, or a message channel token e.g OWNER!, MSG_CHANNEL~123.");
 
@@ -346,16 +346,16 @@ UniValue sendmessage(const JSONRPCRequest& request) {
 
     CheckIPFSTxidMessage(ipfs_hash, expire_time);
 
-    TokenType type;
+    KnownTokenType type;
     std::string strNameError;
     if (!IsTokenNameValid(token_name, type, strNameError))
         throw JSONRPCError(RPC_INVALID_PARAMETER, std::string("Invalid token_name: ") + strNameError);
 
-    if (type != TokenType::MSGCHANNEL && type != TokenType::OWNER && type != TokenType::ROOT && type != TokenType::SUB && type != TokenType::RESTRICTED) {
+    if (type != KnownTokenType::MSGCHANNEL && type != KnownTokenType::OWNER && type != KnownTokenType::ROOT && type != KnownTokenType::SUB && type != KnownTokenType::RESTRICTED) {
         throw JSONRPCError(RPC_INVALID_PARAMETER, std::string("Invalid token_name: Only message channels, root, sub, restricted, and owner tokens are allowed"));
     }
 
-    if (type == TokenType::ROOT || type == TokenType::SUB || type == TokenType::RESTRICTED)
+    if (type == KnownTokenType::ROOT || type == KnownTokenType::SUB || type == KnownTokenType::RESTRICTED)
         token_name += OWNER_TAG;
 
     std::pair<int, std::string> error;

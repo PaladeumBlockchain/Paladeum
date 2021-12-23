@@ -66,8 +66,8 @@ BOOST_FIXTURE_TEST_SUITE(qualifier_tests, BasicTestingSetup)
 
         // Create transaction and add burn to it
         CMutableTransaction mutableTransaction;
-        CScript burnScript = GetScriptForDestination(DecodeDestination(GetBurnAddress(TokenType::QUALIFIER)));
-        CTxOut burnOut(GetBurnAmount(TokenType::QUALIFIER), burnScript);
+        CScript burnScript = GetScriptForDestination(DecodeDestination(GetBurnAddress(KnownTokenType::QUALIFIER)));
+        CTxOut burnOut(GetBurnAmount(KnownTokenType::QUALIFIER), burnScript);
         mutableTransaction.vout.push_back(burnOut);
 
         // Create the new Qualifier Script
@@ -89,8 +89,8 @@ BOOST_FIXTURE_TEST_SUITE(qualifier_tests, BasicTestingSetup)
 
         // Create transaction and add burn to it
         CMutableTransaction mutableTransaction;
-        CScript burnScript = GetScriptForDestination(DecodeDestination(GetBurnAddress(TokenType::SUB_QUALIFIER)));
-        CTxOut burnOut(GetBurnAmount(TokenType::SUB_QUALIFIER), burnScript);
+        CScript burnScript = GetScriptForDestination(DecodeDestination(GetBurnAddress(KnownTokenType::SUB_QUALIFIER)));
+        CTxOut burnOut(GetBurnAmount(KnownTokenType::SUB_QUALIFIER), burnScript);
         mutableTransaction.vout.push_back(burnOut);
 
         // Add the parent transaction for sub qualifier tx

@@ -106,7 +106,7 @@ private Q_SLOTS:
     void onCreateTokenClicked();
     void onUnitChanged(int value);
     void onChangeAddressChanged(QString changeAddress);
-    void onTokenTypeActivated(int index);
+    void onKnownTokenTypeActivated(int index);
     void onTokenListActivated(int index);
     void onClearButtonClicked();
     void onVerifierStringChanged(QString verifier);

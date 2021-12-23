@@ -361,16 +361,16 @@ UniValue createrawtransaction(const JSONRPCRequest& request)
             "    Operation          Amount + Burn Address\n"
             "    transfer                 0\n"
             "    transferwithmessage      0\n"
-            "    issue                  " + i64tostr(GetBurnAmount(TokenType::ROOT) / COIN) + " to " + GetBurnAddress(TokenType::ROOT) + "\n"
-            "    issue (subtoken)       " + i64tostr(GetBurnAmount(TokenType::SUB) / COIN) + " to " + GetBurnAddress(TokenType::SUB) + "\n"
-            "    issue_unique             " + i64tostr(GetBurnAmount(TokenType::UNIQUE) / COIN) + " to " + GetBurnAddress(TokenType::UNIQUE) + "\n"
-            "    reissue                " + i64tostr(GetBurnAmount(TokenType::REISSUE) / COIN) + " to " + GetBurnAddress(TokenType::REISSUE) + "\n"
-            "    issue_restricted      " + i64tostr(GetBurnAmount(TokenType::RESTRICTED) / COIN) + " to " + GetBurnAddress(TokenType::RESTRICTED) + "\n"
-            "    reissue_restricted     " + i64tostr(GetBurnAmount(TokenType::REISSUE) / COIN) + " to " + GetBurnAddress(TokenType::REISSUE) + "\n"
-            "    issue_qualifier       " + i64tostr(GetBurnAmount(TokenType::QUALIFIER) / COIN) + " to " + GetBurnAddress(TokenType::QUALIFIER) + "\n"
-            "    issue_qualifier (sub)  " + i64tostr(GetBurnAmount(TokenType::SUB_QUALIFIER) / COIN) + " to " + GetBurnAddress(TokenType::SUB_QUALIFIER) + "\n"
-            "    tag_addresses          " + "0.1 to " + GetBurnAddress(TokenType::NULL_ADD_QUALIFIER) + " (per address)\n"
-            "    untag_addresses        " + "0.1 to " + GetBurnAddress(TokenType::NULL_ADD_QUALIFIER) + " (per address)\n"
+            "    issue                  " + i64tostr(GetBurnAmount(KnownTokenType::ROOT) / COIN) + " to " + GetBurnAddress(KnownTokenType::ROOT) + "\n"
+            "    issue (subtoken)       " + i64tostr(GetBurnAmount(KnownTokenType::SUB) / COIN) + " to " + GetBurnAddress(KnownTokenType::SUB) + "\n"
+            "    issue_unique             " + i64tostr(GetBurnAmount(KnownTokenType::UNIQUE) / COIN) + " to " + GetBurnAddress(KnownTokenType::UNIQUE) + "\n"
+            "    reissue                " + i64tostr(GetBurnAmount(KnownTokenType::REISSUE) / COIN) + " to " + GetBurnAddress(KnownTokenType::REISSUE) + "\n"
+            "    issue_restricted      " + i64tostr(GetBurnAmount(KnownTokenType::RESTRICTED) / COIN) + " to " + GetBurnAddress(KnownTokenType::RESTRICTED) + "\n"
+            "    reissue_restricted     " + i64tostr(GetBurnAmount(KnownTokenType::REISSUE) / COIN) + " to " + GetBurnAddress(KnownTokenType::REISSUE) + "\n"
+            "    issue_qualifier       " + i64tostr(GetBurnAmount(KnownTokenType::QUALIFIER) / COIN) + " to " + GetBurnAddress(KnownTokenType::QUALIFIER) + "\n"
+            "    issue_qualifier (sub)  " + i64tostr(GetBurnAmount(KnownTokenType::SUB_QUALIFIER) / COIN) + " to " + GetBurnAddress(KnownTokenType::SUB_QUALIFIER) + "\n"
+            "    tag_addresses          " + "0.1 to " + GetBurnAddress(KnownTokenType::NULL_ADD_QUALIFIER) + " (per address)\n"
+            "    untag_addresses        " + "0.1 to " + GetBurnAddress(KnownTokenType::NULL_ADD_QUALIFIER) + " (per address)\n"
             "    freeze_addresses         0\n"
             "    unfreeze_addresses       0\n"
             "    freeze_token             0\n"
@@ -758,9 +758,9 @@ UniValue createrawtransaction(const JSONRPCRequest& request)
                     // Construct the token transaction
                     token.ConstructTransaction(scriptPubKey);
 
-                    TokenType type;
+                    KnownTokenType type;
                     if (IsTokenNameValid(token.strName, type)) {
-                        if (type != TokenType::UNIQUE && type != TokenType::MSGCHANNEL) {
+                        if (type != KnownTokenType::UNIQUE && type != KnownTokenType::MSGCHANNEL) {
                             token.ConstructOwnerTransaction(ownerPubKey);
 
                             // Push the scriptPubKey into the vouts.

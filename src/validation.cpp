@@ -2128,18 +2128,18 @@ static DisconnectResult DisconnectBlock(const CBlock& block, const CBlockIndex* 
                                 return DISCONNECT_FAILED;
                             }
 
-                            TokenType type;
+                            KnownTokenType type;
                             IsTokenNameValid(data.token_name, type);
 
                             // Handle adding qualifiers to addresses
-                            if (type == TokenType::QUALIFIER || type == TokenType::SUB_QUALIFIER) {
+                            if (type == KnownTokenType::QUALIFIER || type == KnownTokenType::SUB_QUALIFIER) {
                                 if (!tokensCache->RemoveQualifierAddress(data.token_name, address, data.flag ? QualifierType::ADD_QUALIFIER : QualifierType::REMOVE_QUALIFIER)) {
                                     error("%s : Failed to remove qualifier from address, Qualifier : %s, Flag Removing : %d, Address : %s",
                                           __func__, data.token_name, data.flag, address);
                                     return DISCONNECT_FAILED;
                                 }
                             // Handle adding restrictions to addresses
-                            } else if (type == TokenType::RESTRICTED) {
+                            } else if (type == KnownTokenType::RESTRICTED) {
                                 if (!tokensCache->RemoveRestrictedAddress(data.token_name, address, data.flag ? RestrictedType::FREEZE_ADDRESS : RestrictedType::UNFREEZE_ADDRESS)) {
                                     error("%s : Failed to remove restriction from address, Restriction : %s, Flag Removing : %d, Address : %s",
                                           __func__, data.token_name, data.flag, address);

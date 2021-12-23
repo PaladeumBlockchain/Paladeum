@@ -1009,7 +1009,7 @@ public:
 
     /** YONA START */
     bool CreateTransactionWithTokens(const std::vector<CRecipient>& vecSend, CWalletTx& wtxNew, CReserveKey& reservekey, CAmount& nFeeRet, int& nChangePosInOut,
-                                   std::string& strFailReason, const CCoinControl& coin_control, const std::vector<CNewToken> tokens, const CTxDestination destination, const TokenType& tokenType, bool sign = true);
+                                   std::string& strFailReason, const CCoinControl& coin_control, const std::vector<CNewToken> tokens, const CTxDestination destination, const KnownTokenType& tokenType, bool sign = true);
 
     bool CreateTransactionWithTransferToken(const std::vector<CRecipient>& vecSend, CWalletTx& wtxNew, CReserveKey& reservekey, CAmount& nFeeRet, int& nChangePosInOut,
                                                      std::string& strFailReason, const CCoinControl& coin_control, bool sign = true);
@@ -1026,10 +1026,10 @@ public:
      * @note passing nChangePosInOut as -1 will result in setting a random position
      */
     bool CreateTransactionAll(const std::vector<CRecipient>& vecSend, CWalletTx& wtxNew, CReserveKey& reservekey, CAmount& nFeeRet, int& nChangePosInOut,
-                           std::string& strFailReason, const CCoinControl& coin_control, bool fNewToken, const CNewToken& token, const CTxDestination dest, bool fTransferToken, bool fReissueToken, const CReissueToken& reissueToken, const TokenType& tokenType, bool sign = true);
+                           std::string& strFailReason, const CCoinControl& coin_control, bool fNewToken, const CNewToken& token, const CTxDestination dest, bool fTransferToken, bool fReissueToken, const CReissueToken& reissueToken, const KnownTokenType& tokenType, bool sign = true);
 
     bool CreateTransactionAll(const std::vector<CRecipient>& vecSend, CWalletTx& wtxNew, CReserveKey& reservekey, CAmount& nFeeRet,
-                              int& nChangePosInOut, std::string& strFailReason, const CCoinControl& coin_control, bool fNewToken, const std::vector<CNewToken> tokens, const CTxDestination destination, bool fTransferToken, bool fReissueToken, const CReissueToken& reissueToken, const TokenType& tokenType, bool sign);
+                              int& nChangePosInOut, std::string& strFailReason, const CCoinControl& coin_control, bool fNewToken, const std::vector<CNewToken> tokens, const CTxDestination destination, bool fTransferToken, bool fReissueToken, const CReissueToken& reissueToken, const KnownTokenType& tokenType, bool sign);
 
     bool CreateNewChangeAddress(CReserveKey& reservekey, CKeyID& keyID, std::string& strFailReason);
 

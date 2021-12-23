@@ -74,21 +74,21 @@ std::string RestrictedActivationWarning()
     return AreRestrictedTokensDeployed() ? "" : "\nTHIS COMMAND IS NOT YET ACTIVE! Restricted tokens must be active\n\n";
 }
 
-std::string TokenTypeToString(TokenType& tokenType)
+std::string KnownTokenTypeToString(KnownTokenType& tokenType)
 {
     switch (tokenType)
     {
-        case TokenType::ROOT:               return "ROOT";
-        case TokenType::SUB:                return "SUB";
-        case TokenType::UNIQUE:             return "UNIQUE";
-        case TokenType::OWNER:              return "OWNER";
-        case TokenType::MSGCHANNEL:         return "MSGCHANNEL";
-        case TokenType::VOTE:               return "VOTE";
-        case TokenType::REISSUE:            return "REISSUE";
-        case TokenType::QUALIFIER:          return "QUALIFIER";
-        case TokenType::SUB_QUALIFIER:      return "SUB_QUALIFIER";
-        case TokenType::RESTRICTED:         return "RESTRICTED";
-        case TokenType::INVALID:            return "INVALID";
+        case KnownTokenType::ROOT:               return "ROOT";
+        case KnownTokenType::SUB:                return "SUB";
+        case KnownTokenType::UNIQUE:             return "UNIQUE";
+        case KnownTokenType::OWNER:              return "OWNER";
+        case KnownTokenType::MSGCHANNEL:         return "MSGCHANNEL";
+        case KnownTokenType::VOTE:               return "VOTE";
+        case KnownTokenType::REISSUE:            return "REISSUE";
+        case KnownTokenType::QUALIFIER:          return "QUALIFIER";
+        case KnownTokenType::SUB_QUALIFIER:      return "SUB_QUALIFIER";
+        case KnownTokenType::RESTRICTED:         return "RESTRICTED";
+        case KnownTokenType::INVALID:            return "INVALID";
         default:                            return "UNKNOWN";
     }
 }
@@ -139,14 +139,14 @@ UniValue UpdateAddressTag(const JSONRPCRequest &request, const int8_t &flag)
         tag_name = temp;
     }
 
-    TokenType tokenType;
+    KnownTokenType tokenType;
     std::string tokenError = "";
     if (!IsTokenNameValid(tag_name, tokenType, tokenError)) {
         throw JSONRPCError(RPC_INVALID_PARAMETER, std::string("Invalid token name: ") + tag_name + std::string("\nError: ") + tokenError);
     }
 
-    if (tokenType != TokenType::QUALIFIER && tokenType != TokenType::SUB_QUALIFIER) {
-        throw JSONRPCError(RPC_INVALID_PARAMETER, std::string("Unsupported token type: ") + TokenTypeToString(tokenType));
+    if (tokenType != KnownTokenType::QUALIFIER && tokenType != KnownTokenType::SUB_QUALIFIER) {
+        throw JSONRPCError(RPC_INVALID_PARAMETER, std::string("Unsupported token type: ") + KnownTokenTypeToString(tokenType));
     }
 
     std::string address = request.params[1].get_str();
@@ -239,14 +239,14 @@ UniValue UpdateAddressRestriction(const JSONRPCRequest &request, const int8_t &f
         restricted_name = temp;
     }
 
-    TokenType tokenType;
+    KnownTokenType tokenType;
     std::string tokenError = "";
     if (!IsTokenNameValid(restricted_name, tokenType, tokenError)) {
         throw JSONRPCError(RPC_INVALID_PARAMETER, std::string("Invalid token name: ") + restricted_name + std::string("\nError: ") + tokenError);
     }
 
-    if (tokenType != TokenType::RESTRICTED) {
-        throw JSONRPCError(RPC_INVALID_PARAMETER, std::string("Unsupported token type: ") + TokenTypeToString(tokenType));
+    if (tokenType != KnownTokenType::RESTRICTED) {
+        throw JSONRPCError(RPC_INVALID_PARAMETER, std::string("Unsupported token type: ") + KnownTokenTypeToString(tokenType));
     }
 
     std::string address = request.params[1].get_str();
@@ -334,14 +334,14 @@ UniValue UpdateGlobalRestrictedToken(const JSONRPCRequest &request, const int8_t
     // Check token name and infer tokenType
     std::string restricted_name = request.params[0].get_str();
 
-    TokenType tokenType;
+    KnownTokenType tokenType;
     std::string tokenError = "";
     if (!IsTokenNameValid(restricted_name, tokenType, tokenError)) {
         throw JSONRPCError(RPC_INVALID_PARAMETER, std::string("Invalid token name: ") + restricted_name + std::string("\nError: ") + tokenError);
     }
 
-    if (tokenType != TokenType::RESTRICTED) {
-        throw JSONRPCError(RPC_INVALID_PARAMETER, std::string("Unsupported token type: ") + TokenTypeToString(tokenType));
+    if (tokenType != KnownTokenType::RESTRICTED) {
+        throw JSONRPCError(RPC_INVALID_PARAMETER, std::string("Unsupported token type: ") + KnownTokenTypeToString(tokenType));
     }
 
     if (flag == 1 && mempool.mapGlobalFreezingTokenTransactions.count(restricted_name)){
@@ -462,25 +462,25 @@ UniValue issue(const JSONRPCRequest& request)
 
     // Check token name and infer tokenType
     std::string tokenName = request.params[0].get_str();
-    TokenType tokenType;
+    KnownTokenType tokenType;
     std::string tokenError = "";
     if (!IsTokenNameValid(tokenName, tokenType, tokenError)) {
         throw JSONRPCError(RPC_INVALID_PARAMETER, std::string("Invalid token name: ") + tokenName + std::string("\nError: ") + tokenError);
     }
 
     // Push the user to use the issue restrictd rpc call if they are trying to issue a restricted token
-    if (tokenType == TokenType::RESTRICTED) {
+    if (tokenType == KnownTokenType::RESTRICTED) {
         throw (JSONRPCError(RPC_INVALID_PARAMETER, std::string("Use the rpc call issuerestricted to issue a restricted token")));
     }
 
     // Push the user to use the issue restrictd rpc call if they are trying to issue a restricted token
-    if (tokenType == TokenType::QUALIFIER || tokenType == TokenType::SUB_QUALIFIER  ) {
+    if (tokenType == KnownTokenType::QUALIFIER || tokenType == KnownTokenType::SUB_QUALIFIER  ) {
         throw (JSONRPCError(RPC_INVALID_PARAMETER, std::string("Use the rpc call issuequalifiertoken to issue a qualifier token")));
     }
 
     // Check for unsupported token types
-    if (tokenType == TokenType::VOTE || tokenType == TokenType::REISSUE || tokenType == TokenType::OWNER || tokenType == TokenType::INVALID) {
-        throw JSONRPCError(RPC_INVALID_PARAMETER, std::string("Unsupported token type: ") + TokenTypeToString(tokenType));
+    if (tokenType == KnownTokenType::VOTE || tokenType == KnownTokenType::REISSUE || tokenType == KnownTokenType::OWNER || tokenType == KnownTokenType::INVALID) {
+        throw JSONRPCError(RPC_INVALID_PARAMETER, std::string("Unsupported token type: ") + KnownTokenTypeToString(tokenType));
     }
 
     CAmount nAmount = COIN;
@@ -532,7 +532,7 @@ UniValue issue(const JSONRPCRequest& request)
     if (request.params.size() > 4)
         units = request.params[4].get_int();
 
-    bool reissuable = tokenType != TokenType::UNIQUE && tokenType != TokenType::MSGCHANNEL && tokenType != TokenType::QUALIFIER && tokenType != TokenType::SUB_QUALIFIER;
+    bool reissuable = tokenType != KnownTokenType::UNIQUE && tokenType != KnownTokenType::MSGCHANNEL && tokenType != KnownTokenType::QUALIFIER && tokenType != KnownTokenType::SUB_QUALIFIER;
     if (request.params.size() > 5)
         reissuable = request.params[5].get_bool();
 
@@ -556,12 +556,12 @@ UniValue issue(const JSONRPCRequest& request)
         CheckIPFSTxidMessage(ipfs_hash, expireTime);
 
     // check for required unique token params
-    if ((tokenType == TokenType::UNIQUE || tokenType == TokenType::MSGCHANNEL) && (nAmount != COIN || units != 0 || reissuable)) {
+    if ((tokenType == KnownTokenType::UNIQUE || tokenType == KnownTokenType::MSGCHANNEL) && (nAmount != COIN || units != 0 || reissuable)) {
         throw JSONRPCError(RPC_INVALID_PARAMETER, std::string("Invalid parameters for issuing a unique token."));
     }
 
     // check for required unique token params
-    if ((tokenType == TokenType::QUALIFIER || tokenType == TokenType::SUB_QUALIFIER) && (nAmount < QUALIFIER_TOKEN_MIN_AMOUNT || nAmount > QUALIFIER_TOKEN_MAX_AMOUNT  || units != 0 || reissuable)) {
+    if ((tokenType == KnownTokenType::QUALIFIER || tokenType == KnownTokenType::SUB_QUALIFIER) && (nAmount < QUALIFIER_TOKEN_MIN_AMOUNT || nAmount > QUALIFIER_TOKEN_MAX_AMOUNT  || units != 0 || reissuable)) {
         throw JSONRPCError(RPC_INVALID_PARAMETER, std::string("Invalid parameters for issuing a qualifier token."));
     }
 
@@ -628,12 +628,12 @@ UniValue issueunique(const JSONRPCRequest& request)
 
 
     const std::string rootName = request.params[0].get_str();
-    TokenType tokenType;
+    KnownTokenType tokenType;
     std::string tokenError = "";
     if (!IsTokenNameValid(rootName, tokenType, tokenError)) {
         throw JSONRPCError(RPC_INVALID_PARAMETER, std::string("Invalid token name: ") + rootName  + std::string("\nError: ") + tokenError);
     }
-    if (tokenType != TokenType::ROOT && tokenType != TokenType::SUB) {
+    if (tokenType != KnownTokenType::ROOT && tokenType != KnownTokenType::SUB) {
         throw JSONRPCError(RPC_INVALID_PARAMETER, std::string("Root token must be a regular top-level or sub-token."));
     }
 
@@ -2752,14 +2752,14 @@ UniValue issuequalifiertoken(const JSONRPCRequest& request)
         tokenName = temp;
     }
 
-    TokenType tokenType;
+    KnownTokenType tokenType;
     std::string tokenError = "";
     if (!IsTokenNameValid(tokenName, tokenType, tokenError)) {
         throw JSONRPCError(RPC_INVALID_PARAMETER, std::string("Invalid token name: ") + tokenName + std::string("\nError: ") + tokenError);
     }
 
-    if (tokenType != TokenType::QUALIFIER && tokenType != TokenType::SUB_QUALIFIER) {
-        throw JSONRPCError(RPC_INVALID_PARAMETER, std::string("Unsupported token type: ") + TokenTypeToString(tokenType) +  " Please use a valid qualifier name" );
+    if (tokenType != KnownTokenType::QUALIFIER && tokenType != KnownTokenType::SUB_QUALIFIER) {
+        throw JSONRPCError(RPC_INVALID_PARAMETER, std::string("Unsupported token type: ") + KnownTokenTypeToString(tokenType) +  " Please use a valid qualifier name" );
     }
 
     CAmount nAmount = COIN;
@@ -2902,7 +2902,7 @@ UniValue issuerestrictedtoken(const JSONRPCRequest& request)
 
     // Check token name and infer tokenType
     std::string tokenName = request.params[0].get_str();
-    TokenType tokenType;
+    KnownTokenType tokenType;
     std::string tokenError = "";
 
     if (!IsTokenNameAnRestricted(tokenName))
@@ -2916,8 +2916,8 @@ UniValue issuerestrictedtoken(const JSONRPCRequest& request)
     }
 
     // Check for unsupported token types, only restricted tokens are allowed for this rpc call
-    if (tokenType != TokenType::RESTRICTED) {
-            throw JSONRPCError(RPC_INVALID_PARAMETER, std::string("Unsupported token type: ") + TokenTypeToString(tokenType));
+    if (tokenType != KnownTokenType::RESTRICTED) {
+            throw JSONRPCError(RPC_INVALID_PARAMETER, std::string("Unsupported token type: ") + KnownTokenTypeToString(tokenType));
     }
 
     // Get the remaining three required parameters
@@ -3049,7 +3049,7 @@ UniValue reissuerestrictedtoken(const JSONRPCRequest& request)
 
     // Check token name and infer tokenType
     std::string tokenName = request.params[0].get_str();
-    TokenType tokenType;
+    KnownTokenType tokenType;
     std::string tokenError = "";
 
     if (!IsTokenNameAnRestricted(tokenName))
@@ -3063,8 +3063,8 @@ UniValue reissuerestrictedtoken(const JSONRPCRequest& request)
     }
 
     // Check for unsupported token types, only restricted tokens are allowed for this rpc call
-    if (tokenType != TokenType::RESTRICTED) {
-        throw JSONRPCError(RPC_INVALID_PARAMETER, std::string("Unsupported token type: ") + TokenTypeToString(tokenType));
+    if (tokenType != KnownTokenType::RESTRICTED) {
+        throw JSONRPCError(RPC_INVALID_PARAMETER, std::string("Unsupported token type: ") + KnownTokenTypeToString(tokenType));
     }
 
     CAmount nAmount = AmountFromValue(request.params[1]);
