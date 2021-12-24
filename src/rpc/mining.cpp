@@ -27,6 +27,11 @@
 #include "validationinterface.h"
 #include "warnings.h"
 
+#include "wallet/coincontrol.h"
+#include "wallet/feebumper.h"
+#include "wallet/wallet.h"
+#include "wallet/walletdb.h"
+
 #include <memory>
 #include <stdint.h>
 
@@ -131,8 +136,7 @@ UniValue generateBlocks(std::shared_ptr<CReserveScript> coinbaseScript, int nGen
             LOCK(cs_main);
             IncrementExtraNonce(pblock, chainActive.Tip(), nExtraNonce);
         }
-        while (nMaxTries > 0 && pblock->nNonce < nInnerLoopCount && !CheckProofOfWork(pblock->GetHash(), pblock->nBits,
-                                                                                      GetParams().GetConsensus())) {
+        while (nMaxTries > 0 && pblock->nNonce < nInnerLoopCount && !CheckProofOfWork(pblock->GetHash(), pblock->nBits, GetParams().GetConsensus())) {
             ++pblock->nNonce;
             --nMaxTries;
         }
@@ -142,12 +146,12 @@ UniValue generateBlocks(std::shared_ptr<CReserveScript> coinbaseScript, int nGen
         if (pblock->nNonce == nInnerLoopCount) {
             continue;
         }
-
+        uint256 hash = pblock->GetHash();
         std::shared_ptr<const CBlock> shared_pblock = std::make_shared<const CBlock>(*pblock);
-        if (!ProcessNewBlock(GetParams(), shared_pblock, true, nullptr))
+        if (!ProcessNewBlock(GetParams(), shared_pblock, true, nullptr, shared_pblock->GetHash()))
             throw JSONRPCError(RPC_INTERNAL_ERROR, "ProcessNewBlock, block not accepted");
         ++nHeight;
-        blockHashes.push_back(pblock->GetHash().GetHex());
+        blockHashes.push_back(hash.GetHex());
 
         //mark script as important because it was used at least for one coinbase output if the script came from the wallet
         if (keepScript)
@@ -235,6 +239,53 @@ UniValue getmininginfo(const JSONRPCRequest& request)
     return obj;
 }
 
+static UniValue getstakinginfo(const JSONRPCRequest& request)
+{
+    if (request.fHelp || request.params.size() != 0)
+        throw std::runtime_error(
+            "getstakinginfo\n"
+            "Returns an object containing staking-related information.");
+
+    LOCK(cs_main);
+
+    uint64_t nWeight = 0;
+    uint64_t lastCoinStakeSearchInterval = 0;
+#ifdef ENABLE_WALLET
+    CWallet * const pwallet = GetWalletForJSONRPCRequest(request);
+    // CWallet* const pwallet = wallet.get();
+
+    if (pwallet)
+    {
+        nWeight = pwallet->GetStakeWeight();
+        lastCoinStakeSearchInterval = pwallet->m_last_coin_stake_search_interval;
+    }
+#endif
+
+    uint64_t nNetworkWeight = GetPoSKernelPS();
+    bool staking = lastCoinStakeSearchInterval && nWeight;
+    const Consensus::Params& consensusParams = GetParams().GetConsensus();
+    int64_t nTargetSpacing = consensusParams.nTargetSpacing;
+    uint64_t nExpectedTime = staking ? (nTargetSpacing * nNetworkWeight / nWeight) : 0;
+
+    UniValue obj(UniValue::VOBJ);
+
+    obj.pushKV("enabled", gArgs.GetBoolArg("-staking", DEFAULT_STAKE));
+    obj.pushKV("staking", staking);
+    obj.pushKV("errors", GetWarnings("statusbar"));
+
+    obj.pushKV("currentblocktx", (uint64_t)nLastBlockTx);
+    obj.pushKV("pooledtx", (uint64_t)mempool.size());
+
+    obj.pushKV("difficulty", GetDifficulty(GetLastBlockIndex(pindexBestHeader, true)));
+    obj.pushKV("search-interval", (int)lastCoinStakeSearchInterval);
+
+    obj.pushKV("weight", (uint64_t)nWeight);
+    obj.pushKV("netstakeweight", (uint64_t)nNetworkWeight);
+
+    obj.pushKV("expectedtime", nExpectedTime);
+
+    return obj;
+}
 
 // NOTE: Unlike wallet RPC (which use YONA values), mining RPCs follow GBT (BIP 22) in using satoshi amounts
 UniValue prioritisetransaction(const JSONRPCRequest& request)
@@ -455,6 +506,9 @@ UniValue getblocktemplate(const JSONRPCRequest& request)
     if (IsInitialBlockDownload() && !gArgs.GetBoolArg("-bypassdownload", false))
         throw JSONRPCError(RPC_CLIENT_IN_INITIAL_DOWNLOAD, "Yona is downloading blocks...");
 
+    if (chainActive.Tip()->nHeight > GetParams().GetConsensus().nLastPOWBlock)
+        throw JSONRPCError(RPC_MISC_ERROR, "No more PoW blocks");
+
     static unsigned int nTransactionsUpdatedLast;
 
     if (!lpval.isNull())
@@ -663,7 +717,7 @@ UniValue getblocktemplate(const JSONRPCRequest& request)
     result.push_back(Pair("coinbasevalue", (int64_t)pblock->vtx[0]->vout[0].nValue));
     result.push_back(Pair("longpollid", chainActive.Tip()->GetBlockHash().GetHex() + i64tostr(nTransactionsUpdatedLast)));
     result.push_back(Pair("target", hashTarget.GetHex()));
-    result.push_back(Pair("mintime", (int64_t)pindexPrev->GetMedianTimePast()+1));
+    result.push_back(Pair("mintime", (int64_t)pindexPrev->GetPastTimeLimit()+1));
     result.push_back(Pair("mutable", aMutable));
     result.push_back(Pair("noncerange", "00000000ffffffff"));
     int64_t nSigOpLimit = MAX_BLOCK_SIGOPS_COST;
@@ -767,9 +821,9 @@ UniValue submitblock(const JSONRPCRequest& request)
         }
     }
 
-    submitblock_StateCatcher sc(block.GetHash());
+    submitblock_StateCatcher sc(hash);
     RegisterValidationInterface(&sc);
-    bool fAccepted = ProcessNewBlock(GetParams(), blockptr, true, nullptr);
+    bool fAccepted = ProcessNewBlock(GetParams(), blockptr, true, nullptr, hash);
     UnregisterValidationInterface(&sc);
     if (fBlockPresent) {
         if (fAccepted && !sc.found) {
@@ -987,76 +1041,6 @@ UniValue estimaterawfee(const JSONRPCRequest& request)
     return result;
 }
 
-
-UniValue getgenerate(const JSONRPCRequest& request)
-{
-    if (request.fHelp || request.params.size() != 0)
-        throw std::runtime_error(
-            "getgenerate\n"
-            "\nReturn if the server is set to generate coins or not. The default is false.\n"
-            "It is set with the command line argument -gen (or " + std::string(YONA_CONF_FILENAME) + " setting gen)\n"
-            "It can also be set with the setgenerate call.\n"
-            "\nResult\n"
-            "true|false      (boolean) If the server is set to generate coins or not\n"
-            "\nExamples:\n"
-            + HelpExampleCli("getgenerate", "")
-            + HelpExampleRpc("getgenerate", "")
-        );
-
-    LOCK(cs_main);
-    return gArgs.GetBoolArg("-gen", DEFAULT_GENERATE);
-}
-
-UniValue setgenerate(const JSONRPCRequest& request)
-{
-    if (request.fHelp || request.params.size() < 1 || request.params.size() > 2)
-        throw std::runtime_error(
-            "setgenerate generate ( genproclimit )\n"
-            "\nSet 'generate' true or false to turn generation on or off.\n"
-            "Generation is limited to 'genproclimit' processors, -1 is unlimited.\n"
-            "See the getgenerate call for the current setting.\n"
-            "\nArguments:\n"
-            "1. generate         (boolean, required) Set to true to turn on generation, false to turn off.\n"
-            "2. genproclimit     (numeric, optional) Set the processor limit for when generation is on. Can be -1 for unlimited.\n"
-            "\nExamples:\n"
-            "\nSet the generation on with a limit of one processor\n"
-            + HelpExampleCli("setgenerate", "true 1") +
-            "\nCheck the setting\n"
-            + HelpExampleCli("getgenerate", "") +
-            "\nTurn off generation\n"
-            + HelpExampleCli("setgenerate", "false") +
-            "\nUsing json rpc\n"
-            + HelpExampleRpc("setgenerate", "true, 1")
-        );
-
-    if (GetParams().MineBlocksOnDemand())
-        throw JSONRPCError(RPC_METHOD_NOT_FOUND, "Use the generate method instead of setgenerate on this network");
-
-
-    bool fGenerate = true;
-    if (request.params.size() > 0)
-        fGenerate = request.params[0].get_bool();
-
-    int nGenProcLimit = gArgs.GetArg("-genproclimit", DEFAULT_GENERATE_THREADS);
-    if (request.params.size() > 1)
-    {
-        nGenProcLimit = request.params[1].get_int();
-        if (nGenProcLimit == 0)
-            fGenerate = false;
-    }
-
-    gArgs.SoftSetArg("-gen", (fGenerate ? "1" : "0"));
-    gArgs.SoftSetArg("-genproclimit", itostr(nGenProcLimit));
-    //mapArgs["-gen"] = (fGenerate ? "1" : "0");
-    //mapArgs ["-genproclimit"] = itostr(nGenProcLimit);
-    int numCores = GenerateYonas(fGenerate, nGenProcLimit, GetParams());
-
-    nGenProcLimit = nGenProcLimit >= 0 ? nGenProcLimit : numCores;
-    std::string msg = std::to_string(nGenProcLimit) + " of " + std::to_string(numCores);
-    return msg;
-}
-
-
 static const CRPCCommand commands[] =
 { //  category              name                      actor (function)         argNames
   //  --------------------- ------------------------  -----------------------  ----------
@@ -1065,10 +1049,7 @@ static const CRPCCommand commands[] =
     { "mining",             "prioritisetransaction",  &prioritisetransaction,  {"txid","dummy","fee_delta"} },
     { "mining",             "getblocktemplate",       &getblocktemplate,       {"template_request"} },
     { "mining",             "submitblock",            &submitblock,            {"hexdata","dummy"} },
-
-    /* Coin generation */
-    { "generating",         "getgenerate",            &getgenerate,            {}  },
-    { "generating",         "setgenerate",            &setgenerate,            {"generate", "genproclimit"}  },
+    { "mining",             "getstakinginfo",         &getstakinginfo,         {} },
 
     { "generating",         "generatetoaddress",      &generatetoaddress,      {"nblocks","address","maxtries"} },
 

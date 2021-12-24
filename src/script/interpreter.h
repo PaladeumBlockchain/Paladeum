@@ -14,6 +14,8 @@
 #include <stdint.h>
 #include <string>
 
+typedef std::vector<unsigned char> valtype;
+
 class CPubKey;
 
 class CScript;
@@ -110,6 +112,10 @@ enum
     // Public keys in segregated witness scripts must be compressed
     //
             SCRIPT_VERIFY_WITNESS_PUBKEYTYPE = (1U << 15),
+
+    // Evaluating a pubkey that is not (0x04 + 64 bytes) or (0x02 or 0x03 + 32 bytes) by checksig causes script failure.
+    // (softfork safe)
+    SCRIPT_VERIFY_DERKEY = (1U << 16),
 };
 
 bool CheckSignatureEncoding(const std::vector<unsigned char> &vchSig, unsigned int flags, ScriptError *serror);
@@ -182,6 +188,10 @@ private:
 public:
     MutableTransactionSignatureChecker(const CMutableTransaction *txToIn, unsigned int nInIn, const CAmount &amountIn) : TransactionSignatureChecker(&txTo, nInIn, amountIn), txTo(*txToIn) {}
 };
+
+bool IsCompressedOrUncompressedPubKey(const std::vector<unsigned char> &vchPubKey);
+bool IsLowDERSignature(const std::vector<unsigned char> &vchSig, ScriptError* serror, bool haveHashType = true);
+bool IsDERSignature(const std::vector<unsigned char> &vchSig, ScriptError* serror, bool haveHashType = true);
 
 bool EvalScript(std::vector<std::vector<unsigned char> > &stack, const CScript &script, unsigned int flags, const BaseSignatureChecker &checker, SigVersion sigversion, ScriptError *error = nullptr);
 

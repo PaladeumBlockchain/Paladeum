@@ -161,7 +161,11 @@ enum BlockStatus: uint32_t {
     BLOCK_FAILED_CHILD       =   64, //!< descends from failed block
     BLOCK_FAILED_MASK        =   BLOCK_FAILED_VALID | BLOCK_FAILED_CHILD,
 
-    BLOCK_OPT_WITNESS       =   128, //!< block data in blk*.data was received with a witness-enforcing client
+    BLOCK_PROOF_OF_STAKE     =   128, //! is proof-of-stake block
+    BLOCK_STAKE_ENTROPY      =   256,
+    BLOCK_STAKE_MODIFIER     =   512,
+
+    BLOCK_OPT_WITNESS        =   1024, //!< block data in blk*.data was received with a witness-enforcing client
 };
 
 /** The block chain is a tree shaped structure starting with the
@@ -208,6 +212,9 @@ public:
     //! Verification status of this block. See enum BlockStatus
     uint32_t nStatus;
 
+    //! hash modifier of proof-of-stake
+    uint256 nStakeModifier;
+
     //! block header
     int32_t nVersion;
     uint256 hashMerkleRoot;
@@ -234,6 +241,7 @@ public:
         nTx = 0;
         nChainTx = 0;
         nStatus = 0;
+        nStakeModifier = uint256();
         nSequenceId = 0;
         nTimeMax = 0;
 
@@ -324,6 +332,26 @@ public:
         return pbegin[(pend - pbegin)/2];
     }
 
+    int64_t GetPastTimeLimit() const
+    {
+        return GetBlockTime();
+    }
+
+    bool IsProofOfWork() const
+    {
+        return !IsProofOfStake();
+    }
+
+    bool IsProofOfStake() const
+    {
+        return (nStatus & BLOCK_PROOF_OF_STAKE);
+    }
+
+    void SetProofOfStake()
+    {
+        nStatus |= BLOCK_PROOF_OF_STAKE;
+    }
+
     std::string ToString() const
     {
         return strprintf("CBlockIndex(pprev=%p, nHeight=%d, merkle=%s, hashBlock=%s)",
@@ -375,13 +403,16 @@ class CDiskBlockIndex : public CBlockIndex
 {
 public:
     uint256 hashPrev;
+    uint256 nHashBlock;
 
     CDiskBlockIndex() {
         hashPrev = uint256();
+        nHashBlock = uint256();
     }
 
     explicit CDiskBlockIndex(const CBlockIndex* pindex) : CBlockIndex(*pindex) {
         hashPrev = (pprev ? pprev->GetBlockHash() : uint256());
+        nHashBlock = *pindex->phashBlock;
     }
 
     ADD_SERIALIZE_METHODS;
@@ -394,6 +425,8 @@ public:
 
         READWRITE(VARINT(nHeight));
         READWRITE(VARINT(nStatus));
+        READWRITE(nStakeModifier);
+        READWRITE(nHashBlock);
         READWRITE(VARINT(nTx));
         if (nStatus & (BLOCK_HAVE_DATA | BLOCK_HAVE_UNDO))
             READWRITE(VARINT(nFile));
@@ -413,15 +446,7 @@ public:
 
     uint256 GetBlockHash() const
     {
-        CBlockHeader block;
-        block.nVersion        = nVersion;
-        block.hashPrevBlock   = hashPrev;
-        block.hashMerkleRoot  = hashMerkleRoot;
-        block.nTime           = nTime;
-        block.nBits           = nBits;
-        block.nNonce          = nNonce;
-        block.nHeight         = nHeight;
-        return block.GetHash();
+        return nHashBlock;
     }
 
 
@@ -495,5 +520,7 @@ public:
     /** Find the earliest block with timestamp equal or greater than the given. */
     CBlockIndex* FindEarliestAtLeast(int64_t nTime) const;
 };
+
+const CBlockIndex* GetLastBlockIndex(const CBlockIndex* pindex, bool fProofOfStake);
 
 #endif // YONA_CHAIN_H

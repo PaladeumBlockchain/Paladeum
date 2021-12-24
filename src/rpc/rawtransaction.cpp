@@ -36,6 +36,7 @@
 
 #include <univalue.h>
 #include <tinyformat.h>
+#include <timedata.h>
 
 void TxToJSON(const CTransaction& tx, const uint256 hashBlock, UniValue& entry, bool expanded = false)
 {
@@ -604,6 +605,7 @@ UniValue createrawtransaction(const JSONRPCRequest& request)
     UniValue sendTo = request.params[1].get_obj();
 
     CMutableTransaction rawTx;
+    rawTx.nTime = GetAdjustedTime();
 
     if (!request.params[2].isNull()) {
         int64_t nLockTime = request.params[2].get_int64();

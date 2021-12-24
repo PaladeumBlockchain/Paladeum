@@ -484,10 +484,8 @@ bool CBlockTreeDB::LoadBlockIndexGuts(const Consensus::Params& consensusParams, 
                 pindexNew->nNonce         = diskindex.nNonce;
                 pindexNew->nStatus        = diskindex.nStatus;
                 pindexNew->nTx            = diskindex.nTx;
+                pindexNew->nStakeModifier = diskindex.nStakeModifier;
                 pindexNew->nHeight        = diskindex.nHeight;
-
-                if (!CheckProofOfWork(pindexNew->GetBlockHash(), pindexNew->nBits, consensusParams))
-                    return error("%s: CheckProofOfWork failed: %s", __func__, pindexNew->ToString());
 
                 pcursor->Next();
             } else {
@@ -510,14 +508,20 @@ public:
     //! whether transaction is a coinbase
     bool fCoinBase;
 
+    //! whether transaction is a coinstake
+    bool fCoinStake;
+
     //! unspent transaction outputs; spent outputs are .IsNull(); spent outputs at the end of the array are dropped
     std::vector<CTxOut> vout;
 
     //! at which height this transaction was included in the active block chain
     int nHeight;
 
+    //! time of the CTransaction
+    unsigned int nTime;
+
     //! empty constructor
-    CCoins() : fCoinBase(false), vout(0), nHeight(0) { }
+    CCoins() : fCoinBase(false), fCoinStake(false), vout(0), nHeight(0), nTime(0) { }
 
     template<typename Stream>
     void Unserialize(Stream &s) {
@@ -528,10 +532,11 @@ public:
         // header code
         ::Unserialize(s, VARINT(nCode));
         fCoinBase = nCode & 1;
+        fCoinStake = nCode & 8;
         std::vector<bool> vAvail(2, false);
         vAvail[0] = (nCode & 2) != 0;
         vAvail[1] = (nCode & 4) != 0;
-        unsigned int nMaskCode = (nCode / 8) + ((nCode & 6) != 0 ? 0 : 1);
+        unsigned int nMaskCode = (nCode / 16) + ((nCode & 6) != 0 ? 0 : 1);
         // spentness bitmask
         while (nMaskCode > 0) {
             unsigned char chAvail = 0;
@@ -551,6 +556,8 @@ public:
         }
         // coinbase height
         ::Unserialize(s, VARINT(nHeight));
+        // time
+        ::Unserialize(s, nTime);
     }
 };
 
@@ -599,7 +606,7 @@ bool CCoinsViewDB::Upgrade() {
             COutPoint outpoint(key.second, 0);
             for (size_t i = 0; i < old_coins.vout.size(); ++i) {
                 if (!old_coins.vout[i].IsNull() && !old_coins.vout[i].scriptPubKey.IsUnspendable()) {
-                    Coin newcoin(std::move(old_coins.vout[i]), old_coins.nHeight, old_coins.fCoinBase);
+                    Coin newcoin(std::move(old_coins.vout[i]), old_coins.nHeight, old_coins.fCoinBase, old_coins.fCoinStake, old_coins.nTime);
                     outpoint.n = i;
                     CoinEntry entry(&outpoint);
                     batch.Write(entry, newcoin);

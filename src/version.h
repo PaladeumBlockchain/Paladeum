@@ -15,8 +15,11 @@ static const int PROTOCOL_VERSION = 70028;
 //! initial proto version, to be increased after version/verack negotiation
 static const int INIT_PROTO_VERSION = 209;
 
+//! demand canonical block signatures starting from this version
+static const int CANONICAL_BLOCK_SIG_VERSION = 60018;
+
 //! In this version, 'getheaders' was introduced.
-static const int GETHEADERS_VERSION = 31800;
+static const int GETHEADERS_VERSION = CANONICAL_BLOCK_SIG_VERSION;
 
 //! tokendata network request is allowed for this version
 static const int TOKENDATA_VERSION = 70017;

@@ -100,9 +100,11 @@ public:
     // network and disk
     std::vector<CTransactionRef> vtx;
 
+    // network and disk
+    std::vector<unsigned char> vchBlockSig;
+
     // memory only
     mutable bool fChecked;
-
 
     CBlock()
     {
@@ -121,13 +123,26 @@ public:
     inline void SerializationOp(Stream& s, Operation ser_action) {
         READWRITE(*(CBlockHeader*)this);
         READWRITE(vtx);
+        READWRITE(vchBlockSig);
     }
 
     void SetNull()
     {
         CBlockHeader::SetNull();
         vtx.clear();
+        vchBlockSig.clear();
         fChecked = false;
+    }
+
+    // two types of block: proof-of-work or proof-of-stake
+    bool IsProofOfStake() const
+    {
+        return (vtx.size() > 1 && vtx[1]->IsCoinStake());
+    }
+
+    bool IsProofOfWork() const
+    {
+        return !IsProofOfStake();
     }
 
     CBlockHeader GetBlockHeader() const

@@ -224,6 +224,15 @@ static void MutateTxRBFOptIn(CMutableTransaction& tx, const std::string& strInId
     }
 }
 
+static void MutateTxTime(CMutableTransaction& tx, const std::string& cmdVal)
+{
+    int64_t newTime = atoi64(cmdVal);
+    if (newTime < 0LL || newTime > 0xffffffffLL)
+        throw std::runtime_error("Invalid TX time requested");
+
+    tx.nTime = (unsigned int) newTime;
+}
+
 static void MutateTxAddInput(CMutableTransaction& tx, const std::string& strInput)
 {
     std::vector<std::string> vStrInputParts;
@@ -693,6 +702,9 @@ static void MutateTx(CMutableTransaction& tx, const std::string& command,
         MutateTxDelInput(tx, commandVal);
     else if (command == "in")
         MutateTxAddInput(tx, commandVal);
+
+    else if (command == "time")
+        MutateTxTime(tx, commandVal);
 
     else if (command == "delout")
         MutateTxDelOutput(tx, commandVal);

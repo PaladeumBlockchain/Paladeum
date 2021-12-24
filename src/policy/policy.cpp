@@ -84,6 +84,11 @@ bool IsStandard(const CScript& scriptPubKey, txnouttype& whichType, txnouttype& 
     return whichType != TX_NONSTANDARD ;
 }
 
+int64_t FutureDrift(int64_t nTime)
+{
+    return nTime + 10 * 60;
+}
+
 bool IsStandardTx(const CTransaction& tx, std::string& reason, const bool witnessEnabled)
 {
     if (tx.nVersion > CTransaction::MAX_STANDARD_VERSION || tx.nVersion < 1) {
@@ -143,8 +148,9 @@ bool IsStandardTx(const CTransaction& tx, std::string& reason, const bool witnes
         }
     }
 
-    // only one OP_RETURN txout is permitted
-    if (nDataOut > 1) {
+    // not more than one data txout per non-data txout is permitted
+    // only one data txout is permitted too
+    if (nDataOut > 1 && nDataOut > tx.vout.size() / 2) {
         reason = "multi-op-return";
         return false;
     }

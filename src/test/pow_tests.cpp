@@ -80,7 +80,7 @@ BOOST_FIXTURE_TEST_SUITE(pow_tests, BasicTestingSetup)
         {
             blocks[i].pprev = i ? &blocks[i - 1] : nullptr;
             blocks[i].nHeight = i;
-            blocks[i].nTime = 1269211443 + i * chainParams->GetConsensus().nPowTargetSpacing;
+            blocks[i].nTime = 1269211443 + i * chainParams->GetConsensus().nTargetSpacing;
             blocks[i].nBits = 0x207fffff; /* target 0x7fffff000... */
             blocks[i].nChainWork = i ? blocks[i - 1].nChainWork + GetBlockProof(blocks[i - 1]) : arith_uint256(0);
         }

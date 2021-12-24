@@ -137,6 +137,7 @@ YONA_CORE_H = \
   policy/fees.h \
   policy/policy.h \
   policy/rbf.h \
+  pos.h \
   pow.h \
   protocol.h \
   random.h \
@@ -232,6 +233,7 @@ libyona_server_a_SOURCES = \
   policy/fees.cpp \
   policy/policy.cpp \
   policy/rbf.cpp \
+  pos.cpp \
   pow.cpp \
   rest.cpp \
   rpc/tokens.cpp \
