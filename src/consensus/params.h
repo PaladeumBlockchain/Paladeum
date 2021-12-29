@@ -43,7 +43,6 @@ struct BIP9Deployment {
  */
 struct Params {
     uint256 hashGenesisBlock;
-    int nSubsidyHalvingInterval;
     /** Block height and hash at which BIP34 becomes active */
     bool nBIP34Enabled;
     bool nBIP65Enabled;
@@ -65,9 +64,8 @@ struct Params {
     uint256 powLimit;
     uint256 posLimit;
     int nLastPOWBlock;
-    bool fPowAllowMinDifficultyBlocks;
-    bool fPowNoRetargeting;
-    bool fPosNoRetargeting;
+    bool fDiffNoRetargeting;
+    bool fDiffAllowMinDifficultyBlocks;
     int64_t nTargetSpacing;
     int64_t nTargetTimespan;
     int64_t DifficultyAdjustmentInterval() const { return nTargetTimespan / nTargetSpacing; }

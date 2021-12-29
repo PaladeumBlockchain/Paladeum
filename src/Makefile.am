@@ -304,7 +304,10 @@ crypto_libyona_crypto_a_SOURCES = \
   crypto/sha256.cpp \
   crypto/sha256.h \
   crypto/sha512.h \
-  crypto/sha512.cpp
+  crypto/sha512.cpp \
+  crypto/sph_types.h \
+  crypto/blake2b.c \
+  crypto/blake2b.h
 
 if USE_ASM
 crypto_libyona_crypto_a_SOURCES += crypto/sha256_sse4.cpp

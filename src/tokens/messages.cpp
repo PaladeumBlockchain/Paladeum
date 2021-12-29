@@ -198,7 +198,7 @@ bool ScanForMessageChannels(std::string& strError)
         return false;
     }
 
-    CBlockIndex* blockIndex = chainActive[GetParams().GetTokenActivationHeight()];
+    CBlockIndex* blockIndex = chainActive[0];
 
     while (blockIndex) {
         CBlock block;

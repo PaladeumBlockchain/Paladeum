@@ -30,7 +30,7 @@ void BlockNetwork::SetNetwork(const std::string& net)
 
 uint256 CBlockHeader::GetHash() const
 {
-    return SerializeHash(*this);
+    return blake2b(BEGIN(nVersion), END(nNonce));
 }
 
 std::string CBlockHeader::ToString() const
@@ -59,36 +59,3 @@ std::string CBlock::ToString() const
     }
     return s.str();
 }
-
-/// Used to test algo switching between X16R and X16RV2
-
-//uint256 CBlockHeader::TestTiger() const
-//{
-//    return HashTestTiger(BEGIN(nVersion), END(nNonce), hashPrevBlock);
-//}
-//
-//uint256 CBlockHeader::TestSha512() const
-//{
-//    return HashTestSha512(BEGIN(nVersion), END(nNonce), hashPrevBlock);
-//}
-//
-//uint256 CBlockHeader::TestGost512() const
-//{
-//    return HashTestGost512(BEGIN(nVersion), END(nNonce), hashPrevBlock);
-//}
-
-//CBlock block = GetParams().GenesisBlock();
-//int64_t nStart = GetTimeMillis();
-//LogPrintf("Starting Tiger %dms\n", nStart);
-//block.TestTiger();
-//LogPrintf("Tiger Finished %dms\n", GetTimeMillis() - nStart);
-//
-//nStart = GetTimeMillis();
-//LogPrintf("Starting Sha512 %dms\n", nStart);
-//block.TestSha512();
-//LogPrintf("Sha512 Finished %dms\n", GetTimeMillis() - nStart);
-//
-//nStart = GetTimeMillis();
-//LogPrintf("Starting Gost512 %dms\n", nStart);
-//block.TestGost512();
-//LogPrintf("Gost512 Finished %dms\n", GetTimeMillis() - nStart);

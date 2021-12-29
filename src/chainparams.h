@@ -133,15 +133,9 @@ public:
         return false;
     }
 
-    unsigned int DGWActivationBlock() const { return nDGWActivationBlock; }
-    unsigned int MessagingActivationBlock() const { return nMessagingActivationBlock; }
-    unsigned int RestrictedActivationBlock() const { return nRestrictedActivationBlock; }
-
     int MaxReorganizationDepth() const { return nMaxReorganizationDepth; }
     int MinReorganizationPeers() const { return nMinReorganizationPeers; }
     int MinReorganizationAge() const { return nMinReorganizationAge; }
-
-    int GetTokenActivationHeight() const { return nTokenActivationHeight; }
     /** YONA End **/
 
 protected:
@@ -190,15 +184,9 @@ protected:
     // Global Burn Address
     std::string strGlobalBurnAddress;
 
-    unsigned int nDGWActivationBlock;
-    unsigned int nMessagingActivationBlock;
-    unsigned int nRestrictedActivationBlock;
-
     int nMaxReorganizationDepth;
     int nMinReorganizationPeers;
     int nMinReorganizationAge;
-
-    int nTokenActivationHeight;
     /** YONA End **/
 };
 
