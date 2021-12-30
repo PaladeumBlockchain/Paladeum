@@ -122,6 +122,7 @@ std::string CTransaction::ToString() const
     str += strprintf("CTransaction(hash=%s, ver=%d, nTime=%u, vin.size=%u, vout.size=%u, nLockTime=%u)\n",
         GetHash().ToString().substr(0,10),
         nVersion,
+        nTime,
         vin.size(),
         vout.size(),
         nLockTime);
