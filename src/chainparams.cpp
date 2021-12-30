@@ -72,12 +72,6 @@ static CBlock CreateGenesisBlock(const char* pszTimestamp, const CScript& genesi
  * Build the genesis block. Note that the output of its generation
  * transaction cannot be spent since it did not originally exist in the
  * database.
- *
- * CBlock(hash=000000000019d6, ver=1, hashPrevBlock=00000000000000, hashMerkleRoot=4a5e1e, nTime=1231006505, nBits=1d00ffff, nNonce=2083236893, vtx=1)
- *   CTransaction(hash=4a5e1e, ver=1, vin.size=1, vout.size=1, nLockTime=0)
- *     CTxIn(COutPoint(000000, -1), coinbase 04ffff001d0104455468652054696d65732030332f4a616e2f32303039204368616e63656c6c6f72206f6e206272696e6b206f66207365636f6e64206261696c6f757420666f722062616e6b73)
- *     CTxOut(nValue=50.00000000, scriptPubKey=0x5F1DF16B2B704C8A578D0B)
- *   vMerkleTree: 4a5e1e
  */
 static CBlock CreateGenesisBlock(const char* pszTimestamp, uint32_t nTime, uint32_t nNonce, uint32_t nBits, int32_t nVersion, const CAmount& genesisReward)
 {
@@ -230,31 +224,31 @@ public:
         nAddNullQualifierTagBurnAmount = 1 * COIN;
 
         // Burn Addresses
-        strIssueTokenBurnAddress = "RXissueTokenXXXXXXXXXXXXXXXXXhhZGt";
-        strReissueTokenBurnAddress = "RXReissueTokenXXXXXXXXXXXXXXVEFAWu";
-        strIssueSubTokenBurnAddress = "RXissueSubTokenXXXXXXXXXXXXXWcwhwL";
-        strIssueUniqueTokenBurnAddress = "RXissueUniqueTokenXXXXXXXXXXWEAe58";
-        strIssueMsgChannelTokenBurnAddress = "RXissueMsgChanneLTokenXXXXXXSjHvAY";
-        strIssueQualifierTokenBurnAddress = "RXissueQuaLifierXXXXXXXXXXXXUgEDbC";
-        strIssueSubQualifierTokenBurnAddress = "RXissueSubQuaLifierXXXXXXXXXVTzvv5";
-        strIssueRestrictedTokenBurnAddress = "RXissueRestrictedXXXXXXXXXXXXzJZ1q";
-        strAddNullQualifierTagBurnAddress = "RXaddTagBurnXXXXXXXXXXXXXXXXZQm5ya";
+        strIssueTokenBurnAddress = "YmvWrhCZBVZ69NbrMZB4qycs4h3Zho7zrW";
+        strReissueTokenBurnAddress = "YmvWrhCZBVZ69NbrMZB4qycs4h3Zho7zrW";
+        strIssueSubTokenBurnAddress = "YmvWrhCZBVZ69NbrMZB4qycs4h3Zho7zrW";
+        strIssueUniqueTokenBurnAddress = "YmvWrhCZBVZ69NbrMZB4qycs4h3Zho7zrW";
+        strIssueMsgChannelTokenBurnAddress = "YmvWrhCZBVZ69NbrMZB4qycs4h3Zho7zrW";
+        strIssueQualifierTokenBurnAddress = "YmvWrhCZBVZ69NbrMZB4qycs4h3Zho7zrW";
+        strIssueSubQualifierTokenBurnAddress = "YmvWrhCZBVZ69NbrMZB4qycs4h3Zho7zrW";
+        strIssueRestrictedTokenBurnAddress = "YmvWrhCZBVZ69NbrMZB4qycs4h3Zho7zrW";
+        strAddNullQualifierTagBurnAddress = "YmvWrhCZBVZ69NbrMZB4qycs4h3Zho7zrW";
 
-        //Global Burn Address
-        strGlobalBurnAddress = "RXBurnXXXXXXXXXXXXXXXXXXXXXXWUo9FV";
+        // Global Burn Address
+        strGlobalBurnAddress = "YmvWrhCZBVZ69NbrMZB4qycs4h3Zho7zrW";
+
+        nMaxReorganizationDepth = 180; // 180 at 20 seconds block timespan is +/- 60 minutes.
+        nMinReorganizationPeers = 4;
+        nMinReorganizationAge = 60 * 60 * 12; // 12 hours
 
         // BIP44 cointype
         nExtCoinType = 1;
-
-        nMaxReorganizationDepth = 60; // 60 at 1 minute block timespan is +/- 60 minutes.
-        nMinReorganizationPeers = 4;
-        nMinReorganizationAge = 60 * 60 * 12; // 12 hours
         /** YONA End **/
     }
 };
 
 /**
- * Testnet (v7)
+ * Testnet
  */
 class CTestNetParams : public CChainParams {
 public:
@@ -349,20 +343,20 @@ public:
         nAddNullQualifierTagBurnAmount = .1 * COIN;
 
         // Burn Addresses
-        strIssueTokenBurnAddress = "n1issueTokenXXXXXXXXXXXXXXXXWdnemQ";
-        strReissueTokenBurnAddress = "n1ReissueTokenXXXXXXXXXXXXXXWG9NLd";
-        strIssueSubTokenBurnAddress = "n1issueSubTokenXXXXXXXXXXXXXbNiH6v";
-        strIssueUniqueTokenBurnAddress = "n1issueUniqueTokenXXXXXXXXXXS4695i";
-        strIssueMsgChannelTokenBurnAddress = "n1issueMsgChanneLTokenXXXXXXT2PBdD";
-        strIssueQualifierTokenBurnAddress = "n1issueQuaLifierXXXXXXXXXXXXUysLTj";
-        strIssueSubQualifierTokenBurnAddress = "n1issueSubQuaLifierXXXXXXXXXYffPLh";
-        strIssueRestrictedTokenBurnAddress = "n1issueRestrictedXXXXXXXXXXXXZVT9V";
-        strAddNullQualifierTagBurnAddress = "n1addTagBurnXXXXXXXXXXXXXXXXX5oLMH";
+        strIssueTokenBurnAddress = "YmvWrhCZBVZ69NbrMZB4qycs4h3Zho7zrW";
+        strReissueTokenBurnAddress = "YmvWrhCZBVZ69NbrMZB4qycs4h3Zho7zrW";
+        strIssueSubTokenBurnAddress = "YmvWrhCZBVZ69NbrMZB4qycs4h3Zho7zrW";
+        strIssueUniqueTokenBurnAddress = "YmvWrhCZBVZ69NbrMZB4qycs4h3Zho7zrW";
+        strIssueMsgChannelTokenBurnAddress = "YmvWrhCZBVZ69NbrMZB4qycs4h3Zho7zrW";
+        strIssueQualifierTokenBurnAddress = "YmvWrhCZBVZ69NbrMZB4qycs4h3Zho7zrW";
+        strIssueSubQualifierTokenBurnAddress = "YmvWrhCZBVZ69NbrMZB4qycs4h3Zho7zrW";
+        strIssueRestrictedTokenBurnAddress = "YmvWrhCZBVZ69NbrMZB4qycs4h3Zho7zrW";
+        strAddNullQualifierTagBurnAddress = "YmvWrhCZBVZ69NbrMZB4qycs4h3Zho7zrW";
 
         // Global Burn Address
-        strGlobalBurnAddress = "n1BurnXXXXXXXXXXXXXXXXXXXXXXU1qejP";
+        strGlobalBurnAddress = "YmvWrhCZBVZ69NbrMZB4qycs4h3Zho7zrW";
 
-        nMaxReorganizationDepth = 60; // 60 at 1 minute block timespan is +/- 60 minutes.
+        nMaxReorganizationDepth = 180; // 180 at 20 seconds block timespan is +/- 60 minutes.
         nMinReorganizationPeers = 4;
         nMinReorganizationAge = 60 * 60 * 12; // 12 hours
         /** YONA End **/
