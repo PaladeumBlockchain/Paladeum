@@ -5866,67 +5866,15 @@ double GuessVerificationProgress(const ChainTxData& data, CBlockIndex *pindex) {
 
 /** YONA START */
 
-// Only used by test framework
-void SetEnforcedValues(bool value) {
-    fEnforcedValuesIsActive = value;
-}
-
-void SetEnforcedCoinbase(bool value)
-{
-    fCheckCoinbaseTokensIsActive = value;
-}
-
-bool AreEnforcedValuesDeployed()
-{
-    return true;
-}
-
-bool AreCoinbaseCheckTokensDeployed()
-{
-    return true;
-}
-
-bool AreTokensDeployed()
-{
-
-    return true;
-}
-
-bool IsRip5Active()
-{
+bool AreTokensDeployed() {
     return true;
 }
 
 bool AreMessagesDeployed() {
-
-    return true;
-}
-
-bool AreTransferScriptsSizeDeployed() {
-
     return true;
 }
 
 bool AreRestrictedTokensDeployed() {
-
-    return IsRip5Active();
-}
-
-bool IsDGWActive(unsigned int nBlockNumber) {
-    return true;
-}
-
-bool IsMessagingActive(unsigned int nBlockNumber) {
-    return true;
-}
-
-bool IsRestrictedActive(unsigned int nBlockNumber)
-{
-    return true;
-}
-
-bool AreP2SHTokensAllowed()
-{
     return true;
 }
 

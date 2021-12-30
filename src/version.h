@@ -24,16 +24,10 @@ static const int GETHEADERS_VERSION = CANONICAL_BLOCK_SIG_VERSION;
 //! tokendata network request is allowed for this version
 static const int TOKENDATA_VERSION = 70017;
 
-//! gettokendata reutrn asstnotfound, and tokendata doesn't have blockhash in the data
-static const int X16RV2_VERSION = 70025;
-
-//! gettokendata reutrn asstnotfound, and tokendata doesn't have blockhash in the data
-static const int KAWPOW_VERSION = 70027;
-
 //! disconnect from peers older than this proto version
 //!!! Anytime this value is changed please also update the "MY_VERSION" value to match in the
 //!!! ./test/functional/test_framework/mininode.py file. Not doing so will cause verack to fail!
-static const int MIN_PEER_PROTO_VERSION = X16RV2_VERSION;
+static const int MIN_PEER_PROTO_VERSION = TOKENDATA_VERSION;
 
 //! nTime field added to CAddress, starting with this version;
 //! if possible, avoid requesting addresses nodes older than this
@@ -60,7 +54,7 @@ static const int INVALID_CB_NO_BAN_VERSION = 70015;
 //! gettokendata reutrn asstnotfound, and tokendata doesn't have blockhash in the data
 static const int TOKENDATA_VERSION_UPDATED = 70020;
 
-//! In this version, 'rip5 (messaging and restricted tokens)' was introduced
+//! In this version messaging and restricted tokens was introduced
 static const int MESSAGING_RESTRICTED_TOKENS_VERSION = 70026;
 
 

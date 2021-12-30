@@ -90,20 +90,10 @@ CTransaction::CTransaction() : vin(), vout(), nVersion(CTransaction::CURRENT_VER
 CTransaction::CTransaction(const CMutableTransaction &tx) : vin(tx.vin), vout(tx.vout), nVersion(tx.nVersion), nLockTime(tx.nLockTime), nTime(tx.nTime), hash(ComputeHash()) {}
 CTransaction::CTransaction(CMutableTransaction &&tx) : vin(std::move(tx.vin)), vout(std::move(tx.vout)), nVersion(tx.nVersion), nLockTime(tx.nLockTime), nTime(tx.nTime), hash(ComputeHash()) {}
 
-CAmount CTransaction::GetValueOut(const bool fAreEnforcedValues) const
+CAmount CTransaction::GetValueOut() const
 {
     CAmount nValueOut = 0;
-    for (const auto& tx_out : vout) {
-
-        // Stop doing this check after Enforced Values BIP goes active
-        if (!fAreEnforcedValues) {
-            // Because we don't want to deal with tokens messing up this calculation
-            // If this is an token tx, we should move onto the next output in the transaction
-            // This will also help with processing speed of transaction that contain a large amounts of token outputs in a transaction
-            if (tx_out.scriptPubKey.IsTokenScript())
-                continue;
-        }
-        
+    for (const auto& tx_out : vout) { 
         nValueOut += tx_out.nValue;
         if (!MoneyRange(tx_out.nValue) || !MoneyRange(nValueOut))
             throw std::runtime_error(std::string(__func__) + ": value out of range");

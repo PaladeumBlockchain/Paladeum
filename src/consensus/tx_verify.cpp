@@ -310,15 +310,10 @@ bool CheckTransaction(const CTransaction& tx, CValidationState &state, bool fChe
                 if (txout.nValue != 0)
                     return state.DoS(100, false, REJECT_INVALID, "bad-txns-token-issued-amount-isn't-zero");
             } else if (nType == TX_REISSUE_TOKEN) {
-                // Specific check and error message to go with to make sure the amount is 0
-                if (AreEnforcedValuesDeployed()) {
-                    // We only want to not accept these txes when checking them from CheckBlock.
-                    // We don't want to change the behavior when reading transactions from the database
-                    // when AreEnforcedValuesDeployed return true
-                    if (fBlockCheck) {
-                        if (txout.nValue != 0) {
-                            return state.DoS(0, false, REJECT_INVALID, "bad-txns-token-reissued-amount-isn't-zero");
-                        }
+                // We only want to not accept these txes when checking them from CheckBlock.
+                if (fBlockCheck) {
+                    if (txout.nValue != 0) {
+                        return state.DoS(0, false, REJECT_INVALID, "bad-txns-token-reissued-amount-isn't-zero");
                     }
                 }
 
@@ -380,12 +375,10 @@ bool CheckTransaction(const CTransaction& tx, CValidationState &state, bool fChe
         if (tx.vin[0].scriptSig.size() < 2 || tx.vin[0].scriptSig.size() > 100)
             return state.DoS(100, false, REJECT_INVALID, "bad-cb-length");
 
-        if (AreCoinbaseCheckTokensDeployed()) {
-            for (auto vout : tx.vout) {
-                if (vout.scriptPubKey.IsTokenScript() || vout.scriptPubKey.IsNullToken()) {
-                    return state.DoS(0, error("%s: coinbase contains token transaction", __func__),
-                                     REJECT_INVALID, "bad-txns-coinbase-contains-token-txes");
-                }
+        for (auto vout : tx.vout) {
+            if (vout.scriptPubKey.IsTokenScript() || vout.scriptPubKey.IsNullToken()) {
+                return state.DoS(0, error("%s: coinbase contains token transaction", __func__),
+                                 REJECT_INVALID, "bad-txns-coinbase-contains-token-txes");
             }
         }
     }
@@ -595,7 +588,7 @@ bool Consensus::CheckTxInputs(const CTransaction& tx, CValidationState& state, c
         }
     }
 
-    const CAmount value_out = tx.GetValueOut(AreEnforcedValuesDeployed());
+    const CAmount value_out = tx.GetValueOut();
     CAmount txfee_aux = 0;
 
     if (!tx.IsCoinStake()) {
@@ -674,11 +667,6 @@ bool Consensus::CheckTxTokens(const CTransaction& tx, CValidationState& state, c
         bool fIsOwner = false;
         if (txout.scriptPubKey.IsTokenScript(nType, nScriptType, fIsOwner))
             fIsToken = true;
-
-        if (fIsToken && nScriptType == TX_SCRIPTHASH) {
-            if (!AreP2SHTokensAllowed())
-                return state.DoS(0, false, REJECT_INVALID, "bad-txns-p2sh-tokens-not-active");
-        }
 
         if (tokenCache) {
             if (fIsToken && !AreTokensDeployed())

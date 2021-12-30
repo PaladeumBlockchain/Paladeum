@@ -600,25 +600,6 @@ bool AreMessagesDeployed();
 
 bool AreRestrictedTokensDeployed();
 
-bool AreEnforcedValuesDeployed();
-
-bool AreCoinbaseCheckTokensDeployed();
-
-bool AreP2SHTokensAllowed();
-
-// Only used by test framework
-void SetEnforcedValues(bool value);
-void SetEnforcedCoinbase(bool value);
-
-bool IsRip5Active();
-
-
-bool AreTransferScriptsSizeDeployed();
-
-bool IsDGWActive(unsigned int nBlockNumber);
-bool IsMessagingActive(unsigned int nBlockNumber);
-bool IsRestrictedActive(unsigned int nBlockNumber);
-
 CTokensCache* GetCurrentTokenCache();
 /** YONA END */
 

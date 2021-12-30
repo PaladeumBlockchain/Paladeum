@@ -347,7 +347,7 @@ public:
     uint256 GetWitnessHash() const;
 
     // Return sum of txouts.
-    CAmount GetValueOut(const bool fAreEnforcedValues = true) const;
+    CAmount GetValueOut() const;
     // GetValueIn() is a method on CCoinsViewCache, because
     // inputs must be known to compute value in.
 

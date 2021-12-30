@@ -674,15 +674,7 @@ bool TransferTokenFromScript(const CScript& scriptPubKey, CTokenTransfer& tokenT
 
     std::vector<unsigned char> vchTransferToken;
 
-    if (AreTransferScriptsSizeDeployed()) {
-        // Before kawpow activation we used the hardcoded 31 to find the data
-        // This created a bug where large transfers scripts would fail to serialize.
-        // This fixes that issue (https://github.com/YonaProject/Yonacoin/issues/752)
-        // TODO, after the kawpow fork goes active, we should be able to remove this if/else statement and just use this line.
-        vchTransferToken.insert(vchTransferToken.end(), scriptPubKey.begin() + nStartingIndex, scriptPubKey.end());
-    } else {
-        vchTransferToken.insert(vchTransferToken.end(), scriptPubKey.begin() + 31, scriptPubKey.end());
-    }
+    vchTransferToken.insert(vchTransferToken.end(), scriptPubKey.begin() + nStartingIndex, scriptPubKey.end());
 
     CDataStream ssToken(vchTransferToken, SER_NETWORK, PROTOCOL_VERSION);
 
