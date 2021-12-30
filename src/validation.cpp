@@ -5865,7 +5865,6 @@ double GuessVerificationProgress(const ChainTxData& data, CBlockIndex *pindex) {
 }
 
 /** YONA START */
-
 bool AreTokensDeployed() {
     return true;
 }
