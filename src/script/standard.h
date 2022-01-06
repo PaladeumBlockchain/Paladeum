@@ -78,6 +78,7 @@ enum txnouttype
     TX_TRANSFER_TOKEN = 10,
     TX_RESTRICTED_TOKEN_DATA = 11, //!< unspendable OP_YONA_TOKEN script that carries data
     /** YONA END */
+    TX_CLTV = 12
 };
 
 class CNoDestination {

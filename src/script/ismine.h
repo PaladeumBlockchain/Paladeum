@@ -8,6 +8,7 @@
 #define YONA_SCRIPT_ISMINE_H
 
 #include "script/standard.h"
+#include "chain.h"
 
 #include <stdint.h>
 
@@ -34,9 +35,12 @@ typedef uint8_t isminefilter;
  * different SIGVERSION may have different network rules. Currently the only use of isInvalid is indicate uncompressed
  * keys in SIGVERSION_WITNESS_V0 script, but could also be used in similar cases in the future
  */
-isminetype IsMine(const CKeyStore& keystore, const CScript& scriptPubKey, bool& isInvalid, SigVersion = SIGVERSION_BASE);
-isminetype IsMine(const CKeyStore& keystore, const CScript& scriptPubKey, SigVersion = SIGVERSION_BASE);
-isminetype IsMine(const CKeyStore& keystore, const CTxDestination& dest, bool& isInvalid, SigVersion = SIGVERSION_BASE);
-isminetype IsMine(const CKeyStore& keystore, const CTxDestination& dest, SigVersion = SIGVERSION_BASE);
+isminetype IsMine(const CKeyStore& keystore, const CScript& scriptPubKey, CBlockIndex* bestBlock, bool& isInvalid, SigVersion = SIGVERSION_BASE);
+isminetype IsMine(const CKeyStore& keystore, const CScript& scriptPubKey, CBlockIndex* bestBlock, SigVersion = SIGVERSION_BASE);
+isminetype IsMine(const CKeyStore& keystore, const CTxDestination& dest, CBlockIndex* bestBlock, bool& isInvalid, SigVersion = SIGVERSION_BASE);
+isminetype IsMine(const CKeyStore& keystore, const CTxDestination& dest, CBlockIndex* bestBlock, SigVersion = SIGVERSION_BASE);
+
+bool IsTimeLock(const CKeyStore &keystore, const CScript& scriptPubKey, CScriptNum& nLockTime);
+bool IsTimeLock(const CScript& scriptPubKey, CScriptNum& nLockTime);
 
 #endif // YONA_SCRIPT_ISMINE_H

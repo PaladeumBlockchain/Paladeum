@@ -169,7 +169,7 @@ bool CBloomFilter::IsRelevantAndUpdate(const CTransaction& tx)
                     txnouttype scriptType;
                     std::vector<std::vector<unsigned char> > vSolutions;
                     if (Solver(txout.scriptPubKey, type, scriptType, vSolutions) &&
-                            (type == TX_PUBKEY || type == TX_MULTISIG))
+                            (type == TX_PUBKEY || type == TX_MULTISIG || type == TX_CLTV))
                         insert(COutPoint(hash, i));
                 }
                 break;

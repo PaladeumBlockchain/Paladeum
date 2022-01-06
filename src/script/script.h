@@ -192,6 +192,7 @@ enum opcodetype
 
 
     // template matching params
+    OP_BIGINTEGER = 0xf0,
     OP_SMALLINTEGER = 0xfa,
     OP_PUBKEYS = 0xfb,
     OP_PUBKEYHASH = 0xfd,
@@ -330,6 +331,11 @@ public:
     std::vector<unsigned char> getvch() const
     {
         return serialize(m_value);
+    }
+
+    int64_t getint64() const
+    {
+        return m_value;
     }
 
     static std::vector<unsigned char> serialize(const int64_t& value)

@@ -28,6 +28,7 @@ const char* GetTxnOutputType(txnouttype t)
     switch (t)
     {
     case TX_NONSTANDARD: return "nonstandard";
+    case TX_CLTV: return "cltv";
     case TX_PUBKEY: return "pubkey";
     case TX_PUBKEYHASH: return "pubkeyhash";
     case TX_SCRIPTHASH: return "scripthash";
@@ -60,6 +61,9 @@ bool Solver(const CScript& scriptPubKey, txnouttype& typeRet, txnouttype& script
 
         // Sender provides N pubkeys, receivers provides M signatures
         mTemplates.insert(std::make_pair(TX_MULTISIG, CScript() << OP_SMALLINTEGER << OP_PUBKEYS << OP_SMALLINTEGER << OP_CHECKMULTISIG));
+
+        // Time locked transaction OP_CHECKLOCKTIMEVERIFY
+        mTemplates.insert(std::make_pair(TX_CLTV, CScript() << OP_BIGINTEGER << OP_CHECKLOCKTIMEVERIFY << OP_DROP << OP_DUP << OP_HASH160 << OP_PUBKEYHASH << OP_EQUALVERIFY << OP_CHECKSIG));
     }
 
     vSolutionsRet.clear();
@@ -207,6 +211,14 @@ bool Solver(const CScript& scriptPubKey, txnouttype& typeRet, txnouttype& script
                 else
                     break;
             }
+            else if (opcode2 == OP_BIGINTEGER)
+            {
+                try {
+                    vSolutionsRet.push_back(vch1);
+                } catch (scriptnum_error&) {
+                    break;
+                }
+            }
             else if (opcode1 != opcode2 || vch1 != vch2)
             {
                 // Others must match exactly
@@ -261,7 +273,12 @@ bool ExtractDestination(const CScript& scriptPubKey, CTxDestination& addressRet)
             return true;
         }
     }
-     /** YONA END */
+    /** YONA END */
+    else if (whichType == TX_CLTV)
+    {
+        addressRet = CKeyID(uint160(vSolutions[1]));
+        return true;
+    }
     // Multisig txns have more than one address...
     return false;
 }

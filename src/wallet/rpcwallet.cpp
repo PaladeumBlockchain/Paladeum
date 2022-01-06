@@ -336,7 +336,7 @@ UniValue setaccount(const JSONRPCRequest& request)
         strAccount = AccountFromValue(request.params[1]);
 
     // Only add the account if the address is yours.
-    if (IsMine(*pwallet, dest)) {
+    if (IsMine(*pwallet, dest, chainActive.Tip())) {
         // Detect when changing the account of an address that is the 'unused current key' of another account:
         if (pwallet->mapAddressBook.count(dest)) {
             std::string strOldAccount = pwallet->mapAddressBook[dest].name;
@@ -826,7 +826,7 @@ UniValue getreceivedbyaddress(const JSONRPCRequest& request)
         throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, "Invalid Yona address");
     }
     CScript scriptPubKey = GetScriptForDestination(dest);
-    if (!IsMine(*pwallet, scriptPubKey)) {
+    if (!IsMine(*pwallet, scriptPubKey, chainActive.Tip())) {
         return ValueFromAmount(0);
     }
 
@@ -901,7 +901,7 @@ UniValue getreceivedbyaccount(const JSONRPCRequest& request)
         for (const CTxOut& txout : wtx.tx->vout)
         {
             CTxDestination address;
-            if (ExtractDestination(txout.scriptPubKey, address) && IsMine(*pwallet, address) && setAddress.count(address)) {
+            if (ExtractDestination(txout.scriptPubKey, address) && IsMine(*pwallet, address, chainActive.Tip()) && setAddress.count(address)) {
                 if (wtx.GetDepthInMainChain() >= nMinDepth)
                     nAmount += txout.nValue;
             }
@@ -1480,7 +1480,7 @@ UniValue ListReceived(CWallet * const pwallet, const UniValue& params, bool fByA
             if (!ExtractDestination(txout.scriptPubKey, address))
                 continue;
 
-            isminefilter mine = IsMine(*pwallet, address);
+            isminefilter mine = IsMine(*pwallet, address, chainActive.Tip());
             if(!(mine & filter))
                 continue;
 
@@ -1687,7 +1687,7 @@ void ListTransactions(CWallet* const pwallet, const CWalletTx& wtx, const std::s
         for (const COutputEntry& s : listSent)
         {
             UniValue entry(UniValue::VOBJ);
-            if (involvesWatchonly || (::IsMine(*pwallet, s.destination) & ISMINE_WATCH_ONLY)) {
+            if (involvesWatchonly || (::IsMine(*pwallet, s.destination, chainActive.Tip()) & ISMINE_WATCH_ONLY)) {
                 entry.push_back(Pair("involvesWatchonly", true));
             }
             entry.push_back(Pair("account", strSentAccount));
@@ -1718,7 +1718,7 @@ void ListTransactions(CWallet* const pwallet, const CWalletTx& wtx, const std::s
             if (fAllAccounts || (account == strAccount))
             {
                 UniValue entry(UniValue::VOBJ);
-                if (involvesWatchonly || (::IsMine(*pwallet, r.destination) & ISMINE_WATCH_ONLY)) {
+                if (involvesWatchonly || (::IsMine(*pwallet, r.destination, chainActive.Tip()) & ISMINE_WATCH_ONLY)) {
                     entry.push_back(Pair("involvesWatchonly", true));
                 }
                 entry.push_back(Pair("account", account));
@@ -1754,7 +1754,7 @@ void ListTransactions(CWallet* const pwallet, const CWalletTx& wtx, const std::s
             for (const CTokenOutputEntry &data : listTokensReceived){
                 UniValue entry(UniValue::VOBJ);
 
-                if (involvesWatchonly || (::IsMine(*pwallet, data.destination) & ISMINE_WATCH_ONLY)) {
+                if (involvesWatchonly || (::IsMine(*pwallet, data.destination, chainActive.Tip()) & ISMINE_WATCH_ONLY)) {
                     entry.push_back(Pair("involvesWatchonly", true));
                 }
 
@@ -1778,7 +1778,7 @@ void ListTransactions(CWallet* const pwallet, const CWalletTx& wtx, const std::s
             for (const CTokenOutputEntry &data : listTokensSent) {
                 UniValue entry(UniValue::VOBJ);
 
-                if (involvesWatchonly || (::IsMine(*pwallet, data.destination) & ISMINE_WATCH_ONLY)) {
+                if (involvesWatchonly || (::IsMine(*pwallet, data.destination, chainActive.Tip()) & ISMINE_WATCH_ONLY)) {
                     entry.push_back(Pair("involvesWatchonly", true));
                 }
 
@@ -1999,7 +1999,7 @@ UniValue listaccounts(const JSONRPCRequest& request)
 
     std::map<std::string, CAmount> mapAccountBalances;
     for (const std::pair<CTxDestination, CAddressBookData>& entry : pwallet->mapAddressBook) {
-        if (IsMine(*pwallet, entry.first) & includeWatchonly) {  // This address belongs to me
+        if (IsMine(*pwallet, entry.first, chainActive.Tip()) & includeWatchonly) {  // This address belongs to me
             mapAccountBalances[entry.second.name] = 0;
         }
     }

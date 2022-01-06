@@ -5091,7 +5091,7 @@ bool ContextualCheckNullTokenTxOut(const CTxOut& txout, CTokensCache* tokenCache
 
 #ifdef ENABLE_WALLET
     if (myNullTokenData && vpwallets.size()) {
-        if (IsMine(*vpwallets[0], DecodeDestination(address)) & ISMINE_ALL) {
+        if (IsMine(*vpwallets[0], DecodeDestination(address), chainActive.Tip()) & ISMINE_ALL) {
             myNullTokenData->emplace_back(std::make_pair(address, data));
         }
     }
