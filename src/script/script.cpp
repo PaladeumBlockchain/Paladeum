@@ -220,6 +220,30 @@ bool CScript::IsPayToPublicKeyHash() const
 	    (*this)[24] == OP_CHECKSIG);
 }
 
+bool CScript::IsPayToPublicKeyHashLocked() const
+{
+    // Extra-fast test for pay-to-pubkey-hash locked CScripts:
+    if (this->size() >= 28) {
+        int nOffset = (*this)[0];
+
+        if (this->size() == 28)
+            nOffset = 0;
+
+        if (this->size() < nOffset + 28)
+            return false;
+
+        return ((*this)[nOffset + 1] == OP_CHECKLOCKTIMEVERIFY &&
+            (*this)[nOffset + 2] == OP_DROP &&
+            (*this)[nOffset + 3] == OP_DUP &&
+            (*this)[nOffset + 4] == OP_HASH160 &&
+            (*this)[nOffset + 5] == 0x14 &&
+            (*this)[nOffset + 26] == OP_EQUALVERIFY &&
+            (*this)[nOffset + 27] == OP_CHECKSIG);
+    }
+
+    return false;
+}
+
 bool CScript::IsPayToScriptHash() const
 {
     // Extra-fast test for pay-to-script-hash CScripts:

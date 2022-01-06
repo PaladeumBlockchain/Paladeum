@@ -60,7 +60,7 @@ QList<TransactionRecord> TransactionRecord::decomposeTransaction(const CWallet *
                 sub.idx = i; // vout index
                 sub.credit = txout.nValue;
                 sub.involvesWatchAddress = mine & ISMINE_WATCH_ONLY;
-                if (ExtractDestination(txout.scriptPubKey, address) && IsMine(*wallet, address))
+                if (ExtractDestination(txout.scriptPubKey, address) && wallet->IsMineDest(address))
                 {
                     // Received by Yona Address
                     sub.type = TransactionRecord::RecvWithAddress;

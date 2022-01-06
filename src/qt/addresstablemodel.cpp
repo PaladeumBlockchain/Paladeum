@@ -84,7 +84,7 @@ public:
             for (const std::pair<CTxDestination, CAddressBookData>& item : wallet->mapAddressBook)
             {
                 const CTxDestination& address = item.first;
-                bool fMine = IsMine(*wallet, address);
+                bool fMine = wallet->IsMineDest(address);
                 AddressTableEntry::Type addressType = translateTransactionType(
                         QString::fromStdString(item.second.purpose), fMine);
                 const std::string& strName = item.second.name;

@@ -665,6 +665,7 @@ public:
     unsigned int GetSigOpCount(const CScript& scriptSig) const;
 
     bool IsPayToPublicKeyHash() const;
+    bool IsPayToPublicKeyHashLocked() const;
 
     bool IsPayToScriptHash() const;
     bool IsPayToWitnessScriptHash() const;

@@ -355,6 +355,7 @@ public:
     mutable bool fImmatureCreditCached;
     mutable bool fImmatureStakeCreditCached;
     mutable bool fAvailableCreditCached;
+    mutable bool fLockedCreditCached;
     mutable bool fWatchDebitCached;
     mutable bool fWatchCreditCached;
     mutable bool fImmatureWatchCreditCached;
@@ -365,6 +366,7 @@ public:
     mutable CAmount nImmatureCreditCached;
     mutable CAmount nImmatureStakeCreditCached;
     mutable CAmount nAvailableCreditCached;
+    mutable CAmount nLockedCreditCached;
     mutable CAmount nWatchDebitCached;
     mutable CAmount nWatchCreditCached;
     mutable CAmount nImmatureWatchCreditCached;
@@ -396,6 +398,7 @@ public:
         fImmatureCreditCached = false;
         fImmatureStakeCreditCached = false;
         fAvailableCreditCached = false;
+        fLockedCreditCached = false;
         fImmatureCreditCached = false;
         fWatchDebitCached = false;
         fWatchCreditCached = false;
@@ -407,6 +410,7 @@ public:
         nImmatureCreditCached = 0;
         nImmatureStakeCreditCached = 0;
         nAvailableCreditCached = 0;
+        nLockedCreditCached = 0;
         nWatchDebitCached = 0;
         nWatchCreditCached = 0;
         nAvailableWatchCreditCached = 0;
@@ -463,6 +467,7 @@ public:
     {
         fCreditCached = false;
         fAvailableCreditCached = false;
+        fLockedCreditCached = false;
         fImmatureCreditCached = false;
         fWatchDebitCached = false;
         fWatchCreditCached = false;
@@ -484,6 +489,7 @@ public:
     CAmount GetImmatureCredit(bool fUseCache=true) const;
     CAmount GetImmatureStakeCredit(bool fUseCache=true) const;
     CAmount GetAvailableCredit(bool fUseCache=true) const;
+    CAmount GetLockedCredit(bool fUseCache=true) const;
     CAmount GetImmatureWatchOnlyCredit(const bool& fUseCache=true) const;
     CAmount GetAvailableWatchOnlyCredit(const bool& fUseCache=true) const;
     CAmount GetChange() const;
@@ -1029,6 +1035,7 @@ public:
     CAmount GetLegacyBalance(const isminefilter& filter, int minDepth, const std::string* account) const;
     CAmount GetAvailableBalance(const CCoinControl* coinControl = nullptr) const;
     CAmount GetWatchOnlyStake() const;
+    CAmount GetLockedBalance() const;
     CAmount GetStake() const;
 
     /**
