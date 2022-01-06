@@ -309,8 +309,8 @@ public:
     const std::vector<CTxIn> vin;
     const std::vector<CTxOut> vout;
     const int32_t nVersion;
-    const uint32_t nLockTime;
     const uint32_t nTime;
+    const uint32_t nLockTime;
 
 private:
     /** Memory only. */
@@ -420,8 +420,8 @@ struct CMutableTransaction
     std::vector<CTxIn> vin;
     std::vector<CTxOut> vout;
     int32_t nVersion;
-    uint32_t nLockTime;
     uint32_t nTime;
+    uint32_t nLockTime;
 
     CMutableTransaction();
     CMutableTransaction(const CTransaction& tx);
