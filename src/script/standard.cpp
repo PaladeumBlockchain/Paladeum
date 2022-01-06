@@ -363,11 +363,19 @@ namespace
     };
 } // namespace
 
-CScript GetScriptForDestination(const CTxDestination& dest)
+CScript GetScriptForDestination(const CTxDestination& dest, const int64_t timeLock)
 {
     CScript script;
+    CScript scriptDest;
+    boost::apply_visitor(CScriptVisitor(&scriptDest), dest);
 
-    boost::apply_visitor(CScriptVisitor(&script), dest);
+    if (timeLock > 255) {
+        CScript cltvScript = CScript() << timeLock << OP_CHECKLOCKTIMEVERIFY << OP_DROP;
+        script = cltvScript + scriptDest;
+    } else {
+        script = scriptDest;
+    }
+
     return script;
 }
 
