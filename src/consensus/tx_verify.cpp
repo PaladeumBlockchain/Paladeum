@@ -612,7 +612,7 @@ bool Consensus::CheckTxInputs(const CTransaction& tx, CValidationState& state, c
 }
 
 //! Check to make sure that the inputs and outputs CAmount match exactly.
-bool Consensus::CheckTxTokens(const CTransaction& tx, CValidationState& state, const CCoinsViewCache& inputs, CTokensCache* tokenCache, bool fCheckMempool, std::vector<std::pair<std::string, uint256> >& vPairReissueTokens, const bool fRunningUnitTests, std::set<CMessage>* setMessages, int64_t nBlocktime,   std::vector<std::pair<std::string, CNullTokenTxData>>* myNullTokenData)
+bool Consensus::CheckTxTokens(const CTransaction& tx, CValidationState& state, const CCoinsViewCache& inputs, int nSpendHeight, int64_t nSpendTime, CTokensCache* tokenCache, bool fCheckMempool, std::vector<std::pair<std::string, uint256> >& vPairReissueTokens, const bool fRunningUnitTests, std::set<CMessage>* setMessages, int64_t nBlocktime,   std::vector<std::pair<std::string, CNullTokenTxData>>* myNullTokenData)
 {
     // are the actual inputs available?
     if (!inputs.HaveInputs(tx)) {
@@ -649,6 +649,12 @@ bool Consensus::CheckTxTokens(const CTransaction& tx, CValidationState& state, c
                 if (tokenCache->CheckForAddressRestriction(data.tokenName, EncodeDestination(data.destination), true)) {
                     return state.DoS(100, false, REJECT_INVALID, "bad-txns-restricted-token-transfer-from-frozen-address", false, "", tx.GetHash());
                 }
+            }
+
+            if ((int64_t)data.nTimeLock > ((int64_t)data.nTimeLock < LOCKTIME_THRESHOLD ? (int64_t)nSpendHeight : nSpendTime)) {
+                std::string errorMsg = strprintf("Tried to spend token before %d", data.nTimeLock);
+                return state.DoS(100, false,
+                    REJECT_INVALID, "bad-txns-premature-spend-timelock" + errorMsg);
             }
         }
     }

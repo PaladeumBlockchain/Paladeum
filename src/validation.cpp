@@ -667,7 +667,7 @@ static bool AcceptToMemoryPoolWorker(const CChainParams& chainparams, CTxMemPool
         }
 
         if (AreTokensDeployed()) {
-            if (!Consensus::CheckTxTokens(tx, state, view, GetCurrentTokenCache(), true, vReissueTokens))
+            if (!Consensus::CheckTxTokens(tx, state, view, GetSpendHeight(view), GetSpendTime(view), GetCurrentTokenCache(), true, vReissueTokens))
                 return error("%s: Consensus::CheckTxTokens: %s, %s", __func__, tx.GetHash().ToString(),
                              FormatStateMessage(state));
         }
@@ -1561,6 +1561,12 @@ int GetSpendHeight(const CCoinsViewCache& inputs)
     return pindexPrev->nHeight + 1;
 }
 
+int GetSpendTime(const CCoinsViewCache& inputs)
+{
+    LOCK(cs_main);
+    CBlockIndex* pindexPrev = mapBlockIndex.find(inputs.GetBestBlock())->second;
+    return pindexPrev->nTime;
+}
 
 static CuckooCache::cache<uint256, SignatureCacheHasher> scriptExecutionCache;
 static uint256 scriptExecutionCacheNonce(GetRandHash());
@@ -2552,7 +2558,7 @@ static bool ConnectBlock(const CBlock& block, CValidationState& state, CBlockInd
 
             if (AreTokensDeployed()) {
                 std::vector<std::pair<std::string, uint256>> vReissueTokens;
-                if (!Consensus::CheckTxTokens(tx, state, view, tokensCache, false, vReissueTokens, false, &setMessages, block.nTime, &myNullTokenData)) {
+                if (!Consensus::CheckTxTokens(tx, state, view, pindex->nHeight, pindex->nTime, tokensCache, false, vReissueTokens, false, &setMessages, block.nTime, &myNullTokenData)) {
                     state.SetFailedTransaction(tx.GetHash());
                     return error("%s: Consensus::CheckTxTokens: %s, %s", __func__, tx.GetHash().ToString(),
                                  FormatStateMessage(state));

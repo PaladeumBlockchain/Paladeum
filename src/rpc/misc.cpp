@@ -885,7 +885,8 @@ UniValue getaddressutxos(const JSONRPCRequest& request)
         std::string tokenNameOut = "YONA";
         if (tokenName != "YONA") {
             CAmount _amount;
-            if (!GetTokenInfoFromScript(it->second.script, tokenNameOut, _amount)) {
+            uint32_t nTimeLock;
+            if (!GetTokenInfoFromScript(it->second.script, tokenNameOut, _amount, nTimeLock)) {
                 throw JSONRPCError(RPC_INTERNAL_ERROR, "Couldn't decode token script");
             }
         }

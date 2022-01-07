@@ -373,7 +373,7 @@ UniValue sendmessage(const JSONRPCRequest& request) {
     ExtractDestination(mapTokenCoins.at(token_name)[0].tx->tx->vout[mapTokenCoins.at(token_name)[0].i].scriptPubKey, dest);
     std::string address = EncodeDestination(dest);
 
-    vTransfers.emplace_back(std::make_pair(CTokenTransfer(token_name, OWNER_TOKEN_AMOUNT, DecodeTokenData(ipfs_hash), expire_time), address));
+    vTransfers.emplace_back(std::make_pair(CTokenTransfer(token_name, OWNER_TOKEN_AMOUNT, 0, DecodeTokenData(ipfs_hash), expire_time), address));
     CReserveKey reservekey(pwallet);
     CWalletTx transaction;
     CAmount nRequiredFee;

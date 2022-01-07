@@ -513,8 +513,8 @@ bool IsNewOwnerTxValid(const CTransaction& tx, const std::string& tokenName, con
 void GetAllAdministrativeTokens(CWallet *pwallet, std::vector<std::string> &names, int nMinConf = 1);
 void GetAllMyTokens(CWallet* pwallet, std::vector<std::string>& names, int nMinConf = 1, bool fIncludeAdministrator = false, bool fOnlyAdministrator = false);
 
-bool GetTokenInfoFromCoin(const Coin& coin, std::string& strName, CAmount& nAmount);
-bool GetTokenInfoFromScript(const CScript& scriptPubKey, std::string& strName, CAmount& nAmount);
+bool GetTokenInfoFromCoin(const Coin& coin, std::string& strName, CAmount& nAmount, uint32_t& nTimeLock);
+bool GetTokenInfoFromScript(const CScript& scriptPubKey, std::string& strName, CAmount& nAmount, uint32_t& nTokenLockTime);
 
 bool GetTokenData(const CScript& script, CTokenOutputEntry& data);
 

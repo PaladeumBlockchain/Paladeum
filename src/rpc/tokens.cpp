@@ -198,7 +198,7 @@ UniValue UpdateAddressTag(const JSONRPCRequest &request, const int8_t &flag)
     std::vector< std::pair<CTokenTransfer, std::string> >vTransfers;
 
     // Always transfer 1 of the qualifier tokens to the change address
-    vTransfers.emplace_back(std::make_pair(CTokenTransfer(tag_name, 1 * COIN, token_data), change_address));
+    vTransfers.emplace_back(std::make_pair(CTokenTransfer(tag_name, 1 * COIN, 0, token_data), change_address));
 
     // Add the token data with the flag to remove or add the tag 1 = Add, 0 = Remove
     std::vector< std::pair<CNullTokenTxData, std::string> > vecTokenData;
@@ -297,7 +297,7 @@ UniValue UpdateAddressRestriction(const JSONRPCRequest &request, const int8_t &f
 
     // Always transfer 1 of the restricted tokens to the change address
     // Use the ROOT owner token to make this change occur. if $TOKEN -> Use TOKEN!
-    vTransfers.emplace_back(std::make_pair(CTokenTransfer(restricted_name.substr(1, restricted_name.size()) + OWNER_TAG, 1 * COIN, token_data), change_address));
+    vTransfers.emplace_back(std::make_pair(CTokenTransfer(restricted_name.substr(1, restricted_name.size()) + OWNER_TAG, 1 * COIN, 0, token_data), change_address));
 
     // Add the token data with the flag to remove or add the tag 1 = Freeze, 0 = Unfreeze
     std::vector< std::pair<CNullTokenTxData, std::string> > vecTokenData;
@@ -394,7 +394,7 @@ UniValue UpdateGlobalRestrictedToken(const JSONRPCRequest &request, const int8_t
 
     // Always transfer 1 of the restricted tokens to the change address
     // Use the ROOT owner token to make this change occur. if $TOKEN -> Use TOKEN!
-    vTransfers.emplace_back(std::make_pair(CTokenTransfer(restricted_name.substr(1, restricted_name.size()) + OWNER_TAG, 1 * COIN, token_data), change_address));
+    vTransfers.emplace_back(std::make_pair(CTokenTransfer(restricted_name.substr(1, restricted_name.size()) + OWNER_TAG, 1 * COIN, 0, token_data), change_address));
 
     // Add the global token data, 1 = Freeze all transfers, 0 = Allow transfers
     std::vector<CNullTokenTxData> vecGlobalTokenData;
@@ -1145,9 +1145,9 @@ UniValue listaddressesbytoken(const JSONRPCRequest &request)
 
 UniValue transfer(const JSONRPCRequest& request)
 {
-    if (request.fHelp || !AreTokensDeployed() || request.params.size() < 3 || request.params.size() > 7)
+    if (request.fHelp || !AreTokensDeployed() || request.params.size() < 3 || request.params.size() > 8)
         throw std::runtime_error(
-                "transfer \"token_name\" qty \"to_address\" \"message\" expire_time \"change_address\" \"token_change_address\"\n"
+                "transfer \"token_name\" qty \"to_address\" timelock \"message\" expire_time \"change_address\" \"token_change_address\"\n"
                 + TokenActivationWarning() +
                 "\nTransfers a quantity of an owned token to a given address"
 
@@ -1155,10 +1155,11 @@ UniValue transfer(const JSONRPCRequest& request)
                 "1. \"token_name\"               (string, required) name of token\n"
                 "2. \"qty\"                      (numeric, required) number of tokens you want to send to the address\n"
                 "3. \"to_address\"               (string, required) address to send the token to\n"
-                "4. \"message\"                  (string, optional) Once RIP5 is voted in ipfs hash or txid hash to send along with the transfer\n"
-                "5. \"expire_time\"              (numeric, optional) UTC timestamp of when the message expires\n"
-                "6. \"change_address\"       (string, optional, default = \"\") the transactions YONA change will be sent to this address\n"
-                "7. \"token_change_address\"     (string, optional, default = \"\") the transactions Token change will be sent to this address\n"
+                "4. \"timelock\"                 (integer, optional, default=0) Timelock for token UTXOs, could be height or timestamp\n"
+                "5. \"message\"                  (string, optional) Once RIP5 is voted in ipfs hash or txid hash to send along with the transfer\n"
+                "6. \"expire_time\"              (numeric, optional) UTC timestamp of when the message expires\n"
+                "7. \"change_address\"       (string, optional, default = \"\") the transactions YONA change will be sent to this address\n"
+                "8. \"token_change_address\"     (string, optional, default = \"\") the transactions Token change will be sent to this address\n"
 
                 "\nResult:\n"
                 "txid"
@@ -1167,8 +1168,8 @@ UniValue transfer(const JSONRPCRequest& request)
                 "]\n"
 
                 "\nExamples:\n"
-                + HelpExampleCli("transfer", "\"TOKEN_NAME\" 20 \"address\" \"\" \"QmTqu3Lk3gmTsQVtjU7rYYM37EAW4xNmbuEAp2Mjr4AV7E\" 15863654")
-                + HelpExampleCli("transfer", "\"TOKEN_NAME\" 20 \"address\" \"\" \"QmTqu3Lk3gmTsQVtjU7rYYM37EAW4xNmbuEAp2Mjr4AV7E\" 15863654")
+                + HelpExampleCli("transfer", "\"TOKEN_NAME\" 20 \"address\" 10 \"\" \"QmTqu3Lk3gmTsQVtjU7rYYM37EAW4xNmbuEAp2Mjr4AV7E\" 15863654")
+                + HelpExampleCli("transfer", "\"TOKEN_NAME\" 20 \"address\" 10 \"\" \"QmTqu3Lk3gmTsQVtjU7rYYM37EAW4xNmbuEAp2Mjr4AV7E\" 15863654")
         );
 
     CWallet * const pwallet = GetWalletForJSONRPCRequest(request);
@@ -1189,6 +1190,12 @@ UniValue transfer(const JSONRPCRequest& request)
     CAmount nAmount = AmountFromValue(request.params[1]);
 
     std::string to_address = request.params[2].get_str();
+
+    // Time lock
+    int timeLock = 0;
+    if (!request.params[3].isNull())
+        timeLock = request.params[3].get_int();
+
     CTxDestination to_dest = DecodeDestination(to_address);
     if (!IsValidDestination(to_dest)) {
         throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, std::string("Invalid Yona address: ") + to_address);
@@ -1196,22 +1203,22 @@ UniValue transfer(const JSONRPCRequest& request)
 
     bool fMessageCheck = false;
     std::string message = "";
-    if (request.params.size() > 3) {
-        message = request.params[3].get_str();
+    if (request.params.size() > 4) {
+        message = request.params[4].get_str();
         if (!message.empty())
             fMessageCheck = true;
     }
 
     int64_t expireTime = 0;
     if (!message.empty()) {
-        if (request.params.size() > 4) {
-            expireTime = request.params[4].get_int64();
+        if (request.params.size() > 5) {
+            expireTime = request.params[5].get_int64();
         }
     }
 
     if (!message.empty() || expireTime > 0) {
         if (!AreMessagesDeployed()) {
-            throw JSONRPCError(RPC_INVALID_PARAMS, std::string("Unable to send messages until Messaging RIP5 is enabled"));
+            throw JSONRPCError(RPC_INVALID_PARAMS, std::string("Unable to send messages"));
         }
     }
 
@@ -1219,13 +1226,13 @@ UniValue transfer(const JSONRPCRequest& request)
         CheckIPFSTxidMessage(message, expireTime);
 
     std::string yona_change_address = "";
-    if (request.params.size() > 5) {
-        yona_change_address = request.params[5].get_str();
+    if (request.params.size() > 6) {
+        yona_change_address = request.params[6].get_str();
     }
 
     std::string token_change_address = "";
-    if (request.params.size() > 6) {
-        token_change_address = request.params[6].get_str();
+    if (request.params.size() > 7) {
+        token_change_address = request.params[7].get_str();
     }
 
     CTxDestination yona_change_dest = DecodeDestination(yona_change_address);
@@ -1239,7 +1246,7 @@ UniValue transfer(const JSONRPCRequest& request)
     std::pair<int, std::string> error;
     std::vector< std::pair<CTokenTransfer, std::string> >vTransfers;
 
-    CTokenTransfer transfer(token_name, nAmount, DecodeTokenData(message), expireTime);
+    CTokenTransfer transfer(token_name, nAmount, timeLock, DecodeTokenData(message), expireTime);
 
     vTransfers.emplace_back(std::make_pair(transfer, to_address));
     CReserveKey reservekey(pwallet);
@@ -1270,9 +1277,9 @@ UniValue transfer(const JSONRPCRequest& request)
 
 UniValue transferfromaddresses(const JSONRPCRequest& request)
 {
-    if (request.fHelp || !AreTokensDeployed() || request.params.size() < 4 || request.params.size() > 8)
+    if (request.fHelp || !AreTokensDeployed() || request.params.size() < 4 || request.params.size() > 9)
         throw std::runtime_error(
-            "transferfromaddresses \"token_name\" [\"from_addresses\"] qty \"to_address\" \"message\" expire_time \"yona_change_address\" \"token_change_address\"\n"
+            "transferfromaddresses \"token_name\" [\"from_addresses\"] qty \"to_address\" timelock \"message\" expire_time \"yona_change_address\" \"token_change_address\"\n"
             + TokenActivationWarning() +
             "\nTransfer a quantity of an owned token in specific address(es) to a given address"
 
@@ -1281,10 +1288,11 @@ UniValue transferfromaddresses(const JSONRPCRequest& request)
             "2. \"from_addresses\"           (array, required) list of from addresses to send from\n"
             "3. \"qty\"                      (numeric, required) number of tokens you want to send to the address\n"
             "4. \"to_address\"               (string, required) address to send the token to\n"
-            "5. \"message\"                  (string, optional) Once RIP5 is voted in ipfs hash or txid hash to send along with the transfer\n"
-            "6. \"expire_time\"              (numeric, optional) UTC timestamp of when the message expires\n"
-            "7. \"yona_change_address\"       (string, optional, default = \"\") the transactions YONA change will be sent to this address\n"
-            "8. \"token_change_address\"     (string, optional, default = \"\") the transactions Token change will be sent to this address\n"
+            "5. \"timelock\"                 (integer, optional, default=0) Timelock for token UTXOs, could be height or timestamp\n"
+            "6. \"message\"                  (string, optional) Once RIP5 is voted in ipfs hash or txid hash to send along with the transfer\n"
+            "7. \"expire_time\"              (numeric, optional) UTC timestamp of when the message expires\n"
+            "8. \"yona_change_address\"       (string, optional, default = \"\") the transactions YONA change will be sent to this address\n"
+            "9. \"token_change_address\"     (string, optional, default = \"\") the transactions Token change will be sent to this address\n"
 
             "\nResult:\n"
             "txid"
@@ -1293,8 +1301,8 @@ UniValue transferfromaddresses(const JSONRPCRequest& request)
                 "]\n"
 
             "\nExamples:\n"
-            + HelpExampleCli("transferfromaddresses", "\"TOKEN_NAME\" \'[\"fromaddress1\", \"fromaddress2\"]\' 20 \"to_address\" \"QmTqu3Lk3gmTsQVtjU7rYYM37EAW4xNmbuEAp2Mjr4AV7E\" 154652365")
-            + HelpExampleRpc("transferfromaddresses", "\"TOKEN_NAME\" \'[\"fromaddress1\", \"fromaddress2\"]\' 20 \"to_address\" \"QmTqu3Lk3gmTsQVtjU7rYYM37EAW4xNmbuEAp2Mjr4AV7E\" 154652365")
+            + HelpExampleCli("transferfromaddresses", "\"TOKEN_NAME\" \'[\"fromaddress1\", \"fromaddress2\"]\' 20 \"to_address\" 1000 \"QmTqu3Lk3gmTsQVtjU7rYYM37EAW4xNmbuEAp2Mjr4AV7E\" 154652365")
+            + HelpExampleRpc("transferfromaddresses", "\"TOKEN_NAME\" \'[\"fromaddress1\", \"fromaddress2\"]\' 20 \"to_address\" 1000 \"QmTqu3Lk3gmTsQVtjU7rYYM37EAW4xNmbuEAp2Mjr4AV7E\" 154652365")
             );
 
     CWallet * const pwallet = GetWalletForJSONRPCRequest(request);
@@ -1331,18 +1339,23 @@ UniValue transferfromaddresses(const JSONRPCRequest& request)
 
     std::string address = request.params[3].get_str();
 
+    // Time lock
+    int timeLock = 0;
+    if (!request.params[4].isNull())
+        timeLock = request.params[4].get_int();
+
     bool fMessageCheck = false;
     std::string message = "";
-    if (request.params.size() > 4) {
-        message = request.params[4].get_str();
+    if (request.params.size() > 5) {
+        message = request.params[5].get_str();
         if (!message.empty())
             fMessageCheck = true;
     }
 
     int64_t expireTime = 0;
     if (!message.empty()) {
-        if (request.params.size() > 5) {
-            expireTime = request.params[5].get_int64();
+        if (request.params.size() > 6) {
+            expireTime = request.params[6].get_int64();
         }
     }
 
@@ -1350,13 +1363,13 @@ UniValue transferfromaddresses(const JSONRPCRequest& request)
         CheckIPFSTxidMessage(message, expireTime);
 
     std::string yona_change_address = "";
-    if (request.params.size() > 6) {
-        yona_change_address = request.params[6].get_str();
+    if (request.params.size() > 7) {
+        yona_change_address = request.params[7].get_str();
     }
 
     std::string token_change_address = "";
-    if (request.params.size() > 7) {
-        token_change_address = request.params[7].get_str();
+    if (request.params.size() > 8) {
+        token_change_address = request.params[8].get_str();
     }
 
     CTxDestination yona_change_dest = DecodeDestination(yona_change_address);
@@ -1370,7 +1383,7 @@ UniValue transferfromaddresses(const JSONRPCRequest& request)
     std::pair<int, std::string> error;
     std::vector< std::pair<CTokenTransfer, std::string> >vTransfers;
 
-    vTransfers.emplace_back(std::make_pair(CTokenTransfer(token_name, nAmount, DecodeTokenData(message), expireTime), address));
+    vTransfers.emplace_back(std::make_pair(CTokenTransfer(token_name, nAmount, timeLock, DecodeTokenData(message), expireTime), address));
     CReserveKey reservekey(pwallet);
     CWalletTx transaction;
     CAmount nRequiredFee;
@@ -1423,9 +1436,9 @@ UniValue transferfromaddresses(const JSONRPCRequest& request)
 
 UniValue transferfromaddress(const JSONRPCRequest& request)
 {
-    if (request.fHelp || !AreTokensDeployed() || request.params.size() < 4 || request.params.size() > 8)
+    if (request.fHelp || !AreTokensDeployed() || request.params.size() < 4 || request.params.size() > 9)
         throw std::runtime_error(
-                "transferfromaddress \"token_name\" \"from_address\" qty \"to_address\" \"message\" expire_time \"yona_change_address\" \"token_change_address\"\n"
+                "transferfromaddress \"token_name\" \"from_address\" qty \"to_address\" timelock \"message\" expire_time \"yona_change_address\" \"token_change_address\"\n"
                 + TokenActivationWarning() +
                 "\nTransfer a quantity of an owned token in a specific address to a given address"
 
@@ -1434,10 +1447,11 @@ UniValue transferfromaddress(const JSONRPCRequest& request)
                 "2. \"from_address\"             (string, required) address that the token will be transferred from\n"
                 "3. \"qty\"                      (numeric, required) number of tokens you want to send to the address\n"
                 "4. \"to_address\"               (string, required) address to send the token to\n"
-                "5. \"message\"                  (string, optional) Once RIP5 is voted in ipfs hash or txid hash to send along with the transfer\n"
-                "6. \"expire_time\"              (numeric, optional) UTC timestamp of when the message expires\n"
-                "7. \"yona_change_address\"       (string, optional, default = \"\") the transaction YONA change will be sent to this address\n"
-                "8. \"token_change_address\"     (string, optional, default = \"\") the transaction Token change will be sent to this address\n"
+                "5. \"timelock\"                 (integer, optional, default=0) Timelock for token UTXOs, could be height or timestamp\n"
+                "6. \"message\"                  (string, optional) Once RIP5 is voted in ipfs hash or txid hash to send along with the transfer\n"
+                "7. \"expire_time\"              (numeric, optional) UTC timestamp of when the message expires\n"
+                "8. \"yona_change_address\"      (string, optional, default = \"\") the transaction YONA change will be sent to this address\n"
+                "9. \"token_change_address\"     (string, optional, default = \"\") the transaction Token change will be sent to this address\n"
 
                 "\nResult:\n"
                 "txid"
@@ -1446,8 +1460,8 @@ UniValue transferfromaddress(const JSONRPCRequest& request)
                 "]\n"
 
                 "\nExamples:\n"
-                + HelpExampleCli("transferfromaddress", "\"TOKEN_NAME\" \"fromaddress\" 20 \"address\" \"QmTqu3Lk3gmTsQVtjU7rYYM37EAW4xNmbuEAp2Mjr4AV7E\", 156545652")
-                + HelpExampleRpc("transferfromaddress", "\"TOKEN_NAME\" \"fromaddress\" 20 \"address\" \"QmTqu3Lk3gmTsQVtjU7rYYM37EAW4xNmbuEAp2Mjr4AV7E\", 156545652")
+                + HelpExampleCli("transferfromaddress", "\"TOKEN_NAME\" \"fromaddress\" 20 \"address\" 1000 \"QmTqu3Lk3gmTsQVtjU7rYYM37EAW4xNmbuEAp2Mjr4AV7E\", 156545652")
+                + HelpExampleRpc("transferfromaddress", "\"TOKEN_NAME\" \"fromaddress\" 20 \"address\" 1000 \"QmTqu3Lk3gmTsQVtjU7rYYM37EAW4xNmbuEAp2Mjr4AV7E\", 156545652")
         );
 
     CWallet * const pwallet = GetWalletForJSONRPCRequest(request);
@@ -1473,20 +1487,23 @@ UniValue transferfromaddress(const JSONRPCRequest& request)
 
     std::string address = request.params[3].get_str();
 
+    // Time lock
+    int timeLock = 0;
+    if (!request.params[4].isNull())
+        timeLock = request.params[4].get_int();
 
     bool fMessageCheck = false;
     std::string message = "";
-    if (request.params.size() > 4) {
-
-        message = request.params[4].get_str();
+    if (request.params.size() > 5) {
+        message = request.params[5].get_str();
         if (!message.empty())
             fMessageCheck = true;
     }
 
     int64_t expireTime = 0;
     if (!message.empty()) {
-        if (request.params.size() > 5) {
-            expireTime = request.params[5].get_int64();
+        if (request.params.size() > 6) {
+            expireTime = request.params[6].get_int64();
         }
     }
 
@@ -1494,13 +1511,13 @@ UniValue transferfromaddress(const JSONRPCRequest& request)
         CheckIPFSTxidMessage(message, expireTime);
 
     std::string yona_change_address = "";
-    if (request.params.size() > 6) {
-        yona_change_address = request.params[6].get_str();
+    if (request.params.size() > 7) {
+        yona_change_address = request.params[7].get_str();
     }
 
     std::string token_change_address = "";
-    if (request.params.size() > 7) {
-        token_change_address = request.params[7].get_str();
+    if (request.params.size() > 8) {
+        token_change_address = request.params[8].get_str();
     }
 
     CTxDestination yona_change_dest = DecodeDestination(yona_change_address);
@@ -1515,7 +1532,7 @@ UniValue transferfromaddress(const JSONRPCRequest& request)
     std::pair<int, std::string> error;
     std::vector< std::pair<CTokenTransfer, std::string> >vTransfers;
 
-    vTransfers.emplace_back(std::make_pair(CTokenTransfer(token_name, nAmount, DecodeTokenData(message), expireTime), address));
+    vTransfers.emplace_back(std::make_pair(CTokenTransfer(token_name, nAmount, timeLock, DecodeTokenData(message), expireTime), address));
     CReserveKey reservekey(pwallet);
     CWalletTx transaction;
     CAmount nRequiredFee;
@@ -3235,7 +3252,7 @@ UniValue transferqualifier(const JSONRPCRequest& request)
     std::pair<int, std::string> error;
     std::vector< std::pair<CTokenTransfer, std::string> >vTransfers;
 
-    CTokenTransfer transfer(token_name, nAmount, DecodeTokenData(message), expireTime);
+    CTokenTransfer transfer(token_name, nAmount, 0, DecodeTokenData(message), expireTime);
 
     vTransfers.emplace_back(std::make_pair(transfer, to_address));
     CReserveKey reservekey(pwallet);
@@ -3419,9 +3436,9 @@ static const CRPCCommand commands[] =
     { "tokens",   "gettokendata",               &gettokendata,               {"token_name"}},
     { "tokens",   "listaddressesbytoken",       &listaddressesbytoken,       {"token_name", "onlytotal", "count", "start"}},
 #ifdef ENABLE_WALLET
-    { "tokens",   "transferfromaddress",        &transferfromaddress,        {"token_name", "from_address", "qty", "to_address", "message", "expire_time", "yona_change_address", "token_change_address"}},
-    { "tokens",   "transferfromaddresses",      &transferfromaddresses,      {"token_name", "from_addresses", "qty", "to_address", "message", "expire_time", "yona_change_address", "token_change_address"}},
-    { "tokens",   "transfer",                   &transfer,                   {"token_name", "qty", "to_address", "message", "expire_time", "change_address", "token_change_address"}},
+    { "tokens",   "transferfromaddress",        &transferfromaddress,        {"token_name", "from_address", "qty", "to_address", "timelock", "message", "expire_time", "yona_change_address", "token_change_address"}},
+    { "tokens",   "transferfromaddresses",      &transferfromaddresses,      {"token_name", "from_addresses", "qty", "to_address", "timelock", "message", "expire_time", "yona_change_address", "token_change_address"}},
+    { "tokens",   "transfer",                   &transfer,                   {"token_name", "qty", "to_address", "timelock", "message", "expire_time", "change_address", "token_change_address"}},
     { "tokens",   "reissue",                    &reissue,                    {"token_name", "qty", "to_address", "change_address", "reissuable", "new_units", "new_ipfs"}},
     { "tokens",   "sweep",                      &sweep,                      {"privkey", "token_name"}},
 #endif

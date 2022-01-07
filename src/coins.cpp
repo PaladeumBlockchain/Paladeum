@@ -271,7 +271,7 @@ void AddCoins(CCoinsViewCache& cache, const CTransaction &tx, int nHeight, uint2
                     // We want to make sure it is added to the token addresses database if (fTokenIndex == true)
                     if (tokenData.type == TX_TRANSFER_TOKEN && tokenData.nAmount > 0) {
                         // Create the objects needed from the tokenData
-                        CTokenTransfer tokenTransfer(tokenData.tokenName, tokenData.nAmount, tokenData.message, tokenData.expireTime);
+                        CTokenTransfer tokenTransfer(tokenData.tokenName, tokenData.nAmount, tokenData.nTimeLock, tokenData.message, tokenData.expireTime);
                         std::string address = EncodeDestination(tokenData.destination);
 
                         // Add the transfer token data to the token cache

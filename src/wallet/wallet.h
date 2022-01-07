@@ -205,6 +205,7 @@ struct CTokenOutputEntry
     txnouttype scriptType;
     std::string tokenName;
     CTxDestination destination;
+    uint32_t nTimeLock;
     CAmount nAmount;
     std::string message;
     int64_t expireTime;

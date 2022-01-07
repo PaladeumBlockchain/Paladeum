@@ -190,6 +190,7 @@ class CTokenTransfer
 public:
     std::string strName;
     CAmount nAmount;
+    uint32_t nTimeLock;
     std::string message;
     int64_t nExpireTime;
 
@@ -202,6 +203,7 @@ public:
     {
         nAmount = 0;
         strName = "";
+        nTimeLock = 0;
         message = "";
         nExpireTime = 0;
     }
@@ -213,6 +215,7 @@ public:
     {
         READWRITE(strName);
         READWRITE(nAmount);
+        READWRITE(nTimeLock);
         bool validIPFS = ReadWriteTokenHash(s, ser_action, message);
         if (validIPFS) {
             if (ser_action.ForRead()) {
@@ -228,7 +231,7 @@ public:
 
     }
 
-    CTokenTransfer(const std::string& strTokenName, const CAmount& nAmount, const std::string& message = "", const int64_t& nExpireTime = 0);
+    CTokenTransfer(const std::string& strTokenName, const CAmount& nAmount, const uint32_t& nTimeLock, const std::string& message = "", const int64_t& nExpireTime = 0);
     bool IsValid(std::string& strError) const;
     void ConstructTransaction(CScript& script) const;
     bool ContextualCheckAgainstVerifyString(CTokensCache *tokenCache, const std::string& address, std::string& strError) const;

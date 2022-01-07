@@ -3975,7 +3975,7 @@ bool CWallet::CreateTransactionAll(const std::vector<CRecipient>& vecSend, CWall
                                                 fFoundValueChangeAddress = true;
 
                                                 CScript scriptTokenChange = GetScriptForDestination(outputData.destination);
-                                                CTokenTransfer tokenTransfer(tokenChange.first, tokenChange.second);
+                                                CTokenTransfer tokenTransfer(tokenChange.first, tokenChange.second, 0);
 
                                                 tokenTransfer.ConstructTransaction(scriptTokenChange);
                                                 CTxOut newTokenTxOut(0, scriptTokenChange);
@@ -3988,7 +3988,7 @@ bool CWallet::CreateTransactionAll(const std::vector<CRecipient>& vecSend, CWall
                                 } else  {
                                     fFoundValueChangeAddress = true;
                                     CScript scriptTokenChange = tokenScriptChange;
-                                    CTokenTransfer tokenTransfer(tokenChange.first, tokenChange.second);
+                                    CTokenTransfer tokenTransfer(tokenChange.first, tokenChange.second, 0);
 
                                     tokenTransfer.ConstructTransaction(scriptTokenChange);
                                     CTxOut newTokenTxOut(0, scriptTokenChange);
@@ -4001,7 +4001,7 @@ bool CWallet::CreateTransactionAll(const std::vector<CRecipient>& vecSend, CWall
                                 }
                             } else {
                                 CScript scriptTokenChange = tokenScriptChange;
-                                CTokenTransfer tokenTransfer(tokenChange.first, tokenChange.second);
+                                CTokenTransfer tokenTransfer(tokenChange.first, tokenChange.second, 0);
 
                                 tokenTransfer.ConstructTransaction(scriptTokenChange);
                                 CTxOut newTokenTxOut(0, scriptTokenChange);

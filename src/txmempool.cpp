@@ -984,7 +984,7 @@ void CTxMemPool::removeForBlock(const std::vector<CTransactionRef>& vtx, unsigne
                     if (i != mapTx.end()) {
                         CValidationState state;
                         std::vector<std::pair<std::string, uint256>> vReissueTokens;
-                        if (!setAlreadyRemoving.count(hash) && !Consensus::CheckTxTokens(i->GetTx(), state, pcoinsTip, ptokens, false, vReissueTokens)) {
+                        if (!setAlreadyRemoving.count(hash) && !Consensus::CheckTxTokens(i->GetTx(), state, pcoinsTip, 0, 0, ptokens, false, vReissueTokens)) {
                             entries.push_back(&*i);
                             trans.emplace_back(i->GetTx());
                             setAlreadyRemoving.insert(hash);
@@ -1070,14 +1070,14 @@ void CTxMemPool::clear()
     _clear();
 }
 
-static void CheckInputsAndUpdateCoins(const CTransaction& tx, CCoinsViewCache& mempoolDuplicate, const int64_t spendheight) {
+static void CheckInputsAndUpdateCoins(const CTransaction& tx, CCoinsViewCache& mempoolDuplicate, const int64_t spendheight, const int64_t spendtime) {
     CValidationState state;
     CAmount txfee = 0;
     bool fCheckResult = tx.IsCoinBase() || Consensus::CheckTxInputs(tx, state, mempoolDuplicate, spendheight, txfee);
     /** TOKEN START */
     if (AreTokensDeployed()) {
         std::vector<std::pair<std::string, uint256>> vReissueTokens;
-        bool fCheckTokens = Consensus::CheckTxTokens(tx, state, mempoolDuplicate, ptokens, false, vReissueTokens);
+        bool fCheckTokens = Consensus::CheckTxTokens(tx, state, mempoolDuplicate, spendheight, spendtime, ptokens, false, vReissueTokens);
         assert(fCheckResult && fCheckTokens);
     } else
         assert(fCheckResult);
@@ -1100,6 +1100,7 @@ void CTxMemPool::check(const CCoinsViewCache *pcoins) const
 
     CCoinsViewCache mempoolDuplicate(const_cast<CCoinsViewCache*>(pcoins));
     const int64_t spendheight = GetSpendHeight(mempoolDuplicate);
+    const int64_t spendtime = GetSpendTime(mempoolDuplicate);
 
     LOCK(cs);
     std::list<const CTxMemPoolEntry*> waitingOnDependants;
@@ -1178,7 +1179,7 @@ void CTxMemPool::check(const CCoinsViewCache *pcoins) const
         if (fDependsWait)
             waitingOnDependants.push_back(&(*it));
         else {
-            CheckInputsAndUpdateCoins(tx, mempoolDuplicate, spendheight);
+            CheckInputsAndUpdateCoins(tx, mempoolDuplicate, spendheight, spendtime);
         }
     }
     unsigned int stepsSinceLastRemove = 0;
@@ -1191,7 +1192,7 @@ void CTxMemPool::check(const CCoinsViewCache *pcoins) const
             stepsSinceLastRemove++;
             assert(stepsSinceLastRemove < waitingOnDependants.size());
         } else {
-            CheckInputsAndUpdateCoins(entry->GetTx(), mempoolDuplicate, spendheight);
+            CheckInputsAndUpdateCoins(entry->GetTx(), mempoolDuplicate, spendheight, spendtime);
             stepsSinceLastRemove = 0;
         }
     }

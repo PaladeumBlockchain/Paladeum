@@ -806,7 +806,7 @@ UniValue createrawtransaction(const JSONRPCRequest& request)
 
                     // Create the scripts for the change of the ownership token
                     CScript scriptTransferOwnerToken = GetScriptForDestination(destination);
-                    CTokenTransfer tokenTransfer(root_name.get_str() + OWNER_TAG, OWNER_TOKEN_AMOUNT);
+                    CTokenTransfer tokenTransfer(root_name.get_str() + OWNER_TAG, OWNER_TOKEN_AMOUNT, 0);
                     tokenTransfer.ConstructTransaction(scriptTransferOwnerToken);
 
                     // Create the CTxOut for the owner token
@@ -914,7 +914,7 @@ UniValue createrawtransaction(const JSONRPCRequest& request)
                     else
                         owner_token_transfer_script = GetScriptForDestination(destination);
 
-                    CTokenTransfer transfer_owner(token_name.get_str() + OWNER_TAG, OWNER_TOKEN_AMOUNT);
+                    CTokenTransfer transfer_owner(token_name.get_str() + OWNER_TAG, OWNER_TOKEN_AMOUNT, 0);
                     transfer_owner.ConstructTransaction(owner_token_transfer_script);
 
                     // Create the scripts for the reissued tokens
@@ -950,7 +950,8 @@ UniValue createrawtransaction(const JSONRPCRequest& request)
                         CAmount nAmount = AmountFromValue(token_quantity);
 
                         // Create a new transfer
-                        CTokenTransfer transfer(token_name, nAmount);
+                        // ToDo: Pass timelock here
+                        CTokenTransfer transfer(token_name, nAmount, 0);
 
                         // Verify
                         std::string strError = "";
@@ -1003,7 +1004,8 @@ UniValue createrawtransaction(const JSONRPCRequest& request)
                         CAmount nAmount = AmountFromValue(token_quantity);
 
                         // Create a new transfer
-                        CTokenTransfer transfer(token_name, nAmount, DecodeTokenData(message.get_str()),
+                        // ToDo: Pass timelock here
+                        CTokenTransfer transfer(token_name, nAmount, 0, DecodeTokenData(message.get_str()),
                                                 expire_time.get_int64());
 
                         // Verify
@@ -1106,7 +1108,7 @@ UniValue createrawtransaction(const JSONRPCRequest& request)
                     else
                         owner_token_transfer_script = GetScriptForDestination(destination);
 
-                    CTokenTransfer transfer_owner(strTokenName.substr(1, strTokenName.size()) + OWNER_TAG, OWNER_TOKEN_AMOUNT);
+                    CTokenTransfer transfer_owner(strTokenName.substr(1, strTokenName.size()) + OWNER_TAG, OWNER_TOKEN_AMOUNT, 0);
                     transfer_owner.ConstructTransaction(owner_token_transfer_script);
 
                     // Construct the verifier string script
@@ -1227,7 +1229,7 @@ UniValue createrawtransaction(const JSONRPCRequest& request)
                     else
                         owner_token_transfer_script = GetScriptForDestination(destination);
 
-                    CTokenTransfer transfer_owner(RestrictedNameToOwnerName(token_name.get_str()), OWNER_TOKEN_AMOUNT);
+                    CTokenTransfer transfer_owner(RestrictedNameToOwnerName(token_name.get_str()), OWNER_TOKEN_AMOUNT, 0);
                     transfer_owner.ConstructTransaction(owner_token_transfer_script);
 
                     // Create the scripts for the reissued tokens
@@ -1338,7 +1340,7 @@ UniValue createrawtransaction(const JSONRPCRequest& request)
                         else
                             root_token_transfer_script = GetScriptForDestination(destination);
 
-                        CTokenTransfer transfer_root(GetParentName(strTokenName), changeQty);
+                        CTokenTransfer transfer_root(GetParentName(strTokenName), changeQty, 0);
                         transfer_root.ConstructTransaction(root_token_transfer_script);
                     }
 
@@ -1385,7 +1387,7 @@ UniValue createrawtransaction(const JSONRPCRequest& request)
 
                     // change
                     CScript change_script = GetScriptForDestination(destination);
-                    CTokenTransfer transfer_change(strQualifier, changeQty);
+                    CTokenTransfer transfer_change(strQualifier, changeQty, 0);
                     transfer_change.ConstructTransaction(change_script);
                     CTxOut out_change(0, change_script);
                     rawTx.vout.push_back(out_change);
@@ -1422,7 +1424,7 @@ UniValue createrawtransaction(const JSONRPCRequest& request)
 
                     // owner change
                     CScript change_script = GetScriptForDestination(destination);
-                    CTokenTransfer transfer_change(RestrictedNameToOwnerName(strTokenName), OWNER_TOKEN_AMOUNT);
+                    CTokenTransfer transfer_change(RestrictedNameToOwnerName(strTokenName), OWNER_TOKEN_AMOUNT, 0);
                     transfer_change.ConstructTransaction(change_script);
                     CTxOut out_change(0, change_script);
                     rawTx.vout.push_back(out_change);
@@ -1451,7 +1453,7 @@ UniValue createrawtransaction(const JSONRPCRequest& request)
 
                     // owner change
                     CScript change_script = GetScriptForDestination(destination);
-                    CTokenTransfer transfer_change(RestrictedNameToOwnerName(strTokenName), OWNER_TOKEN_AMOUNT);
+                    CTokenTransfer transfer_change(RestrictedNameToOwnerName(strTokenName), OWNER_TOKEN_AMOUNT, 0);
                     transfer_change.ConstructTransaction(change_script);
                     CTxOut out_change(0, change_script);
                     rawTx.vout.push_back(out_change);

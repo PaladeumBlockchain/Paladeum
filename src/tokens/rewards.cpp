@@ -346,8 +346,9 @@ bool BuildTransaction(
         for (int i = start; i < (int)p_pendingPayments.size() && i < stop; i++) {
             expectedCount++;
 
+            // ToDo: Add timelock here?
             vDestinations.emplace_back(std::make_pair(
-                    CTokenTransfer(p_rewardSnapshot.strDistributionToken, p_pendingPayments[i].amount, DecodeTokenData(""), 0), p_pendingPayments[i].address));
+                    CTokenTransfer(p_rewardSnapshot.strDistributionToken, p_pendingPayments[i].amount, 0, DecodeTokenData(""), 0), p_pendingPayments[i].address));
 
             nTotalTokenAmount += p_pendingPayments[i].amount;
             actualCount++;

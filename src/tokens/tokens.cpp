@@ -1540,11 +1540,12 @@ bool CTransaction::CheckAddingTagBurnFee(const int& count) const
    return fBurnOutpointFound;
 }
 
-CTokenTransfer::CTokenTransfer(const std::string& strTokenName, const CAmount& nAmount, const std::string& message, const int64_t& nExpireTime)
+CTokenTransfer::CTokenTransfer(const std::string& strTokenName, const CAmount& nAmount, const uint32_t& nTimeLock, const std::string& message, const int64_t& nExpireTime)
 {
     SetNull();
     this->strName = strTokenName;
     this->nAmount = nAmount;
+    this->nTimeLock = nTimeLock;
     this->message = message;
     if (!message.empty()) {
         if (nExpireTime) {
@@ -3483,7 +3484,7 @@ bool CTokensCache::GetTokenMetaDataIfExists(const std::string &name, CNewToken &
     return false;
 }
 
-bool GetTokenInfoFromScript(const CScript& scriptPubKey, std::string& strName, CAmount& nAmount)
+bool GetTokenInfoFromScript(const CScript& scriptPubKey, std::string& strName, CAmount& nAmount, uint32_t& nTimeLock)
 {
     CTokenOutputEntry data;
     if(!GetTokenData(scriptPubKey, data))
@@ -3491,13 +3492,14 @@ bool GetTokenInfoFromScript(const CScript& scriptPubKey, std::string& strName, C
 
     strName = data.tokenName;
     nAmount = data.nAmount;
+    nTimeLock = data.nTimeLock;
 
     return true;
 }
 
-bool GetTokenInfoFromCoin(const Coin& coin, std::string& strName, CAmount& nAmount)
+bool GetTokenInfoFromCoin(const Coin& coin, std::string& strName, CAmount& nAmount, uint32_t& nTimeLock)
 {
-    return GetTokenInfoFromScript(coin.out.scriptPubKey, strName, nAmount);
+    return GetTokenInfoFromScript(coin.out.scriptPubKey, strName, nAmount, nTimeLock);
 }
 
 bool GetTokenData(const CScript& script, CTokenOutputEntry& data)
@@ -3520,6 +3522,8 @@ bool GetTokenData(const CScript& script, CTokenOutputEntry& data)
     // Get the New Token or Transfer Token from the scriptPubKey
     if (type == TX_NEW_TOKEN && !fIsOwner) {
         CNewToken token;
+        data.nTimeLock = 0;
+
         if (TokenFromScript(script, token, address)) {
             data.type = TX_NEW_TOKEN;
             data.nAmount = token.nAmount;
@@ -3549,6 +3553,7 @@ bool GetTokenData(const CScript& script, CTokenOutputEntry& data)
             data.nAmount = transfer.nAmount;
             data.destination = DecodeDestination(address);
             data.tokenName = transfer.strName;
+            data.nTimeLock = transfer.nTimeLock;
             data.message = transfer.message;
             data.expireTime = transfer.nExpireTime;
             return true;
@@ -3556,6 +3561,8 @@ bool GetTokenData(const CScript& script, CTokenOutputEntry& data)
             LogPrintf("Failed to get transfer from script\n");
         }
     } else if (type == TX_NEW_TOKEN && fIsOwner) {
+        data.nTimeLock = 0;
+
         if (OwnerTokenFromScript(script, tokenName, address)) {
             data.type = TX_NEW_TOKEN;
             data.nAmount = OWNER_TOKEN_AMOUNT;
@@ -3565,6 +3572,8 @@ bool GetTokenData(const CScript& script, CTokenOutputEntry& data)
         }
     } else if (type == TX_REISSUE_TOKEN) {
         CReissueToken reissue;
+        data.nTimeLock = 0;
+
         if (ReissueTokenFromScript(script, reissue, address)) {
             data.type = TX_REISSUE_TOKEN;
             data.nAmount = reissue.nAmount;
@@ -3945,7 +3954,7 @@ bool CreateTokenTransaction(CWallet* pwallet, CCoinControl& coinControl, const s
         // Get the script for the destination address for the tokens
         CScript scriptTransferOwnerToken = GetScriptForDestination(DecodeDestination(change_address));
 
-        CTokenTransfer tokenTransfer(parentName + OWNER_TAG, OWNER_TOKEN_AMOUNT);
+        CTokenTransfer tokenTransfer(parentName + OWNER_TAG, OWNER_TOKEN_AMOUNT, 0);
         tokenTransfer.ConstructTransaction(scriptTransferOwnerToken);
         CRecipient rec = {scriptTransferOwnerToken, 0, fSubtractFeeFromAmount};
         vecSend.push_back(rec);
@@ -3956,7 +3965,7 @@ bool CreateTokenTransaction(CWallet* pwallet, CCoinControl& coinControl, const s
         // Get the script for the destination address for the tokens
         CScript scriptTransferQualifierToken = GetScriptForDestination(DecodeDestination(change_address));
 
-        CTokenTransfer tokenTransfer(parentName, OWNER_TOKEN_AMOUNT);
+        CTokenTransfer tokenTransfer(parentName, OWNER_TOKEN_AMOUNT, 0);
         tokenTransfer.ConstructTransaction(scriptTransferQualifierToken);
         CRecipient rec = {scriptTransferQualifierToken, 0, fSubtractFeeFromAmount};
         vecSend.push_back(rec);
@@ -3994,7 +4003,7 @@ bool CreateTokenTransaction(CWallet* pwallet, CCoinControl& coinControl, const s
             return false;
         }
 
-        CTokenTransfer tokenTransfer(strStripped + OWNER_TAG, OWNER_TOKEN_AMOUNT);
+        CTokenTransfer tokenTransfer(strStripped + OWNER_TAG, OWNER_TOKEN_AMOUNT, 0);
         tokenTransfer.ConstructTransaction(scriptTransferOwnerToken);
 
         CRecipient ownerRec = {scriptTransferOwnerToken, 0, fSubtractFeeFromAmount};
@@ -4136,10 +4145,10 @@ bool CreateReissueTokenTransaction(CWallet* pwallet, CCoinControl& coinControl, 
     CScript scriptTransferOwnerToken = GetScriptForDestination(DecodeDestination(change_address));
 
     if (token_type == KnownTokenType::RESTRICTED) {
-        CTokenTransfer tokenTransfer(stripped_token_name + OWNER_TAG, OWNER_TOKEN_AMOUNT);
+        CTokenTransfer tokenTransfer(stripped_token_name + OWNER_TAG, OWNER_TOKEN_AMOUNT, 0);
         tokenTransfer.ConstructTransaction(scriptTransferOwnerToken);
     } else {
-        CTokenTransfer tokenTransfer(token_name + OWNER_TAG, OWNER_TOKEN_AMOUNT);
+        CTokenTransfer tokenTransfer(token_name + OWNER_TAG, OWNER_TOKEN_AMOUNT, 0);
         tokenTransfer.ConstructTransaction(scriptTransferOwnerToken);
     }
 
@@ -4237,6 +4246,7 @@ bool CreateTransferTokenTransaction(CWallet* pwallet, const CCoinControl& coinCo
         std::string token_name = transfer.first.strName;
         std::string message = transfer.first.message;
         CAmount nAmount = transfer.first.nAmount;
+        uint32_t nTimeLock = transfer.first.nTimeLock;
         int64_t expireTime = transfer.first.nExpireTime;
 
         if (!IsValidDestinationString(address)) {
@@ -4296,7 +4306,7 @@ bool CreateTransferTokenTransaction(CWallet* pwallet, const CCoinControl& coinCo
         CScript scriptPubKey = GetScriptForDestination(DecodeDestination(address));
 
         // Update the scriptPubKey with the transfer token information
-        CTokenTransfer tokenTransfer(token_name, nAmount, message, expireTime);
+        CTokenTransfer tokenTransfer(token_name, nAmount, nTimeLock, message, expireTime);
         tokenTransfer.ConstructTransaction(scriptPubKey);
 
         CRecipient recipient = {scriptPubKey, 0, fSubtractFeeFromAmount};
