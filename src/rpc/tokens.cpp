@@ -1025,6 +1025,7 @@ UniValue listmytokens(const JSONRPCRequest &request)
                 const CWalletTx* wtx = out.tx;
                 CTxOut txOut = wtx->tx->vout[out.i];
                 std::string strAddress;
+                int nTimeLock = 0;
                 if (CheckIssueDataTx(txOut)) {
                     CNewToken token;
                     if (!TokenFromScript(txOut.scriptPubKey, token, strAddress))
@@ -1042,6 +1043,7 @@ UniValue listmytokens(const JSONRPCRequest &request)
                     if (!TransferTokenFromScript(txOut.scriptPubKey, token, strAddress))
                         throw JSONRPCError(RPC_INTERNAL_ERROR, "Couldn't get token from script.");
                     txAmount = token.nAmount;
+                    nTimeLock = token.nTimeLock;
                 }
                 else if (CheckOwnerDataTx(txOut)) {
                     std::string tokenName;
@@ -1050,8 +1052,9 @@ UniValue listmytokens(const JSONRPCRequest &request)
                     txAmount = OWNER_TOKEN_AMOUNT;
                 }
                 tempOut.push_back(Pair("amount", UnitValueFromAmount(txAmount, bal->first)));
-                //
-                //
+                if (nTimeLock > 0) {
+                    tempOut.push_back(Pair("timelock", (int)nTimeLock));
+                }
 
                 outpoints.push_back(tempOut);
             }
@@ -1068,6 +1071,181 @@ UniValue listmytokens(const JSONRPCRequest &request)
 }
 
 #endif
+
+UniValue listmylockedtokens(const JSONRPCRequest &request)
+{
+    if (request.fHelp || !AreTokensDeployed() || request.params.size() > 4)
+        throw std::runtime_error(
+                "listmylockedtokens \"( token )\" ( verbose ) ( count ) ( start )\n"
+                + TokenActivationWarning() +
+                "\nReturns a list of all locked token that are owned by this wallet\n"
+
+                "\nArguments:\n"
+                "1. \"token\"                    (string, optional, default=\"*\") filters results -- must be an token name or a partial token name followed by '*' ('*' matches all trailing characters)\n"
+                "2. \"verbose\"                  (boolean, optional, default=false) when false results only contain balances -- when true results include outpoints\n"
+                "3. \"count\"                    (integer, optional, default=ALL) truncates results to include only the first _count_ tokens found\n"
+                "4. \"start\"                    (integer, optional, default=0) results skip over the first _start_ tokens found (if negative it skips back from the end)\n"
+
+                "\nResult (verbose=false):\n"
+                "{\n"
+                "  (token_name): balance,\n"
+                "  ...\n"
+                "}\n"
+
+                "\nResult (verbose=true):\n"
+                "{\n"
+                "  (token_name):\n"
+                "    {\n"
+                "      \"balance\": balance,\n"
+                "      \"outpoints\":\n"
+                "        [\n"
+                "          {\n"
+                "            \"txid\": txid,\n"
+                "            \"vout\": vout,\n"
+                "            \"amount\": amount\n"
+                "          }\n"
+                "          {...}, {...}\n"
+                "        ]\n"
+                "    }\n"
+                "}\n"
+                "{...}, {...}\n"
+
+                "\nExamples:\n"
+                + HelpExampleRpc("listmylockedtokens", "")
+                + HelpExampleCli("listmylockedtokens", "TOKEN")
+                + HelpExampleCli("listmylockedtokens", "\"TOKEN*\" true 10 20")
+        );
+
+    CWallet * const pwallet = GetWalletForJSONRPCRequest(request);
+    if (!EnsureWalletIsAvailable(pwallet, request.fHelp)) {
+        return NullUniValue;
+    }
+
+    ObserveSafeMode();
+    LOCK2(cs_main, pwallet->cs_wallet);
+
+    std::string filter = "*";
+    if (request.params.size() > 0)
+        filter = request.params[0].get_str();
+
+    if (filter == "")
+        filter = "*";
+
+    bool verbose = false;
+    if (request.params.size() > 1)
+        verbose = request.params[1].get_bool();
+
+    size_t count = INT_MAX;
+    if (request.params.size() > 2) {
+        if (request.params[2].get_int() < 1)
+            throw JSONRPCError(RPC_INVALID_PARAMETER, "count must be greater than 1.");
+        count = request.params[2].get_int();
+    }
+
+    long start = 0;
+    if (request.params.size() > 3) {
+        start = request.params[3].get_int();
+    }
+
+    // retrieve balances
+    std::map<std::string, CAmount> balances;
+    std::map<std::string, std::vector<COutput> > outputs;
+    if (filter == "*") {
+        if (!GetAllMyLockedTokenBalances(outputs, balances))
+            throw JSONRPCError(RPC_INTERNAL_ERROR, "Couldn't get token balances. For all tokens");
+    }
+    else if (filter.back() == '*') {
+        std::vector<std::string> tokenNames;
+        filter.pop_back();
+        if (!GetAllMyLockedTokenBalances(outputs, balances, filter))
+            throw JSONRPCError(RPC_INTERNAL_ERROR, "Couldn't get token balances. For all tokens");
+    }
+    else {
+        if (!IsTokenNameValid(filter))
+            throw JSONRPCError(RPC_INVALID_PARAMETER, "Invalid token name.");
+        if (!GetAllMyLockedTokenBalances(outputs, balances, filter))
+            throw JSONRPCError(RPC_INTERNAL_ERROR, "Couldn't get token balances. For all tokens");
+    }
+
+    // pagination setup
+    auto bal = balances.begin();
+    if (start >= 0) {
+        safe_advance(bal, balances.end(), (size_t)start);
+    } else {
+        safe_advance(bal, balances.end(), balances.size() + start);
+    }
+
+    auto end = bal;
+    safe_advance(end, balances.end(), count);
+
+    // generate output
+    UniValue result(UniValue::VOBJ);
+    if (verbose) {
+        for (; bal != end && bal != balances.end(); bal++) {
+            UniValue token(UniValue::VOBJ);
+            token.pushKV("balance", UnitValueFromAmount(bal->second, bal->first));
+
+            UniValue outpoints(UniValue::VARR);
+            for (auto const& out : outputs.at(bal->first)) {
+                UniValue tempOut(UniValue::VOBJ);
+                tempOut.pushKV("txid", out.tx->GetHash().GetHex());
+                tempOut.pushKV("vout", (int)out.i);
+
+                //
+                // get amount for this outpoint
+                CAmount txAmount = 0;
+                auto it = pwallet->mapWallet.find(out.tx->GetHash());
+                if (it == pwallet->mapWallet.end()) {
+                    throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, "Invalid or non-wallet transaction id");
+                }
+                const CWalletTx* wtx = out.tx;
+                CTxOut txOut = wtx->tx->vout[out.i];
+                std::string strAddress;
+                int nTimeLock = 0;
+                if (CheckIssueDataTx(txOut)) {
+                    CNewToken token;
+                    if (!TokenFromScript(txOut.scriptPubKey, token, strAddress))
+                        throw JSONRPCError(RPC_INTERNAL_ERROR, "Couldn't get token from script.");
+                    txAmount = token.nAmount;
+                }
+                else if (CheckReissueDataTx(txOut)) {
+                    CReissueToken token;
+                    if (!ReissueTokenFromScript(txOut.scriptPubKey, token, strAddress))
+                        throw JSONRPCError(RPC_INTERNAL_ERROR, "Couldn't get token from script.");
+                    txAmount = token.nAmount;
+                }
+                else if (CheckTransferOwnerTx(txOut)) {
+                    CTokenTransfer token;
+                    if (!TransferTokenFromScript(txOut.scriptPubKey, token, strAddress))
+                        throw JSONRPCError(RPC_INTERNAL_ERROR, "Couldn't get token from script.");
+                    txAmount = token.nAmount;
+                    nTimeLock = token.nTimeLock;
+                }
+                else if (CheckOwnerDataTx(txOut)) {
+                    std::string tokenName;
+                    if (!OwnerTokenFromScript(txOut.scriptPubKey, tokenName, strAddress))
+                        throw JSONRPCError(RPC_INTERNAL_ERROR, "Couldn't get token from script.");
+                    txAmount = OWNER_TOKEN_AMOUNT;
+                }
+                tempOut.pushKV("amount", UnitValueFromAmount(txAmount, bal->first));
+                tempOut.pushKV("satoshis", txAmount);
+                if (nTimeLock > 0) {
+                    tempOut.pushKV("timelock", (int)nTimeLock);
+                }
+
+                outpoints.push_back(tempOut);
+            }
+            token.pushKV("outpoints", outpoints);
+            result.pushKV(bal->first, token);
+        }
+    }
+    else {
+        for (; bal != end && bal != balances.end(); bal++) {
+            result.pushKV(bal->first, UnitValueFromAmount(bal->second, bal->first));
+        }
+    }
+    return result;
+}
 
 UniValue listaddressesbytoken(const JSONRPCRequest &request)
 {
@@ -3431,6 +3609,7 @@ static const CRPCCommand commands[] =
     { "tokens",   "issue",                      &issue,                      {"token_name","qty","to_address","change_address","units","reissuable","has_ipfs","ipfs_hash"} },
     { "tokens",   "issueunique",                &issueunique,                {"root_name", "token_tags", "ipfs_hashes", "to_address", "change_address"}},
     { "tokens",   "listmytokens",               &listmytokens,               {"token", "verbose", "count", "start", "confs"}},
+    { "tokens",   "listmylockedtokens",         &listmylockedtokens,         {"token", "verbose", "count", "start"}},
 #endif
     { "tokens",   "listtokenbalancesbyaddress", &listtokenbalancesbyaddress, {"address", "onlytotal", "count", "start"} },
     { "tokens",   "gettokendata",               &gettokendata,               {"token_name"}},

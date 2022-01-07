@@ -530,6 +530,7 @@ std::string EncodeIPFS(std::string decoded);
 #ifdef ENABLE_WALLET
 
 bool GetAllMyTokenBalances(std::map<std::string, std::vector<COutput> >& outputs, std::map<std::string, CAmount>& amounts, const int confirmations = 0, const std::string& prefix = "");
+bool GetAllMyLockedTokenBalances(std::map<std::string, std::vector<COutput> >& outputs, std::map<std::string, CAmount>& amounts, const std::string& prefix = "");
 bool GetMyTokenBalance(const std::string& name, CAmount& balance, const int& confirmations);
 
 //! Creates new token issuance transaction

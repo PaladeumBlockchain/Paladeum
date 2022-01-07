@@ -2459,6 +2459,19 @@ void CWallet::AvailableTokens(std::map<std::string, std::vector<COutput> > &mapT
     AvailableCoinsAll(vCoins, mapTokenCoins, false, true, fOnlySafe, coinControl, nMinimumAmount, nMaximumAmount, nMinimumSumAmount, nMaximumCount, nMinDepth, nMaxDepth);
 }
 
+void CWallet::LockedTokens(std::map<std::string, std::vector<COutput> > &mapTokenCoins, bool fOnlySafe,
+                              const CCoinControl *coinControl, const CAmount &nMinimumAmount,
+                              const CAmount &nMaximumAmount, const CAmount &nMinimumSumAmount,
+                              const uint64_t &nMaximumCount, const int &nMinDepth, const int &nMaxDepth) const
+{
+    if (!AreTokensDeployed())
+        return;
+
+    std::vector<COutput> vCoins;
+
+    AvailableCoinsAll(vCoins, mapTokenCoins, false, true, fOnlySafe, coinControl, nMinimumAmount, nMaximumAmount, nMinimumSumAmount, nMaximumCount, nMinDepth, nMaxDepth, true);
+}
+
 void CWallet::AvailableCoinsWithTokens(std::vector<COutput> &vCoins, std::map<std::string, std::vector<COutput> > &mapTokenCoins,
                               bool fOnlySafe, const CCoinControl *coinControl, const CAmount &nMinimumAmount,
                               const CAmount &nMaximumAmount, const CAmount &nMinimumSumAmount,
@@ -2467,7 +2480,7 @@ void CWallet::AvailableCoinsWithTokens(std::vector<COutput> &vCoins, std::map<st
     AvailableCoinsAll(vCoins, mapTokenCoins, true, AreTokensDeployed(), fOnlySafe, coinControl, nMinimumAmount, nMaximumAmount, nMinimumSumAmount, nMaximumCount, nMinDepth, nMaxDepth);
 }
 
-void CWallet::AvailableCoinsAll(std::vector<COutput>& vCoins, std::map<std::string, std::vector<COutput> >& mapTokenCoins, bool fGetYONA, bool fGetTokens, bool fOnlySafe, const CCoinControl *coinControl, const CAmount& nMinimumAmount, const CAmount& nMaximumAmount, const CAmount& nMinimumSumAmount, const uint64_t& nMaximumCount, const int& nMinDepth, const int& nMaxDepth) const {
+void CWallet::AvailableCoinsAll(std::vector<COutput>& vCoins, std::map<std::string, std::vector<COutput> >& mapTokenCoins, bool fGetYONA, bool fGetTokens, bool fOnlySafe, const CCoinControl *coinControl, const CAmount& nMinimumAmount, const CAmount& nMaximumAmount, const CAmount& nMinimumSumAmount, const uint64_t& nMaximumCount, const int& nMinDepth, const int& nMaxDepth, bool fLockedTokens) const {
     vCoins.clear();
 
     {
@@ -2576,10 +2589,13 @@ void CWallet::AvailableCoinsAll(std::vector<COutput>& vCoins, std::map<std::stri
 
                 // Looking for Token Tx OutPoints Only
                 if (fGetTokens && AreTokensDeployed() && isTokenScript) {
-
                     CTokenOutputEntry output_data;
                     if (!GetTokenData(pcoin->tx->vout[i].scriptPubKey, output_data))
                         continue;
+
+                    if ((int64_t)output_data.nTimeLock > ((int64_t)output_data.nTimeLock < LOCKTIME_THRESHOLD ? (int64_t)chainActive.Height() : GetTime()) == !fLockedTokens) {
+                        continue;
+                    }
 
                     address = EncodeDestination(output_data.destination);
 

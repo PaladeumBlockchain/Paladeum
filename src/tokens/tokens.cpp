@@ -3843,6 +3843,32 @@ std::string EncodeTokenData(std::string decoded)
     return "";
 }
 
+//! sets _balances_ with the total quantity of each owned locked token
+bool GetAllMyLockedTokenBalances(std::map<std::string, std::vector<COutput> >& outputs, std::map<std::string, CAmount>& amounts, const std::string& prefix) {
+
+    // Return false if no wallet was found to compute asset balances
+    if (!vpwallets.size())
+        return false;
+
+    // Get the map of assetnames to outputs
+    vpwallets[0]->LockedTokens(outputs, true, nullptr, 1, MAX_MONEY, MAX_MONEY);
+
+    // Loop through all pairs of Token Name -> vector<COutput>
+    for (const auto& pair : outputs) {
+        if (prefix.empty() || pair.first.find(prefix) == 0) { // Check for prefix
+            CAmount balance = 0;
+            for (auto txout : pair.second) { // Compute balance of asset by summing all Available Outputs
+                CTokenOutputEntry data;
+                if (GetTokenData(txout.tx->tx->vout[txout.i].scriptPubKey, data))
+                    balance += data.nAmount;
+            }
+            amounts.insert(std::make_pair(pair.first, balance));
+        }
+    }
+
+    return true;
+}
+
 // 46 char base58 --> 34 char KAW compatible
 std::string DecodeIPFS(std::string encoded)
 {
