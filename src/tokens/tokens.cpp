@@ -524,10 +524,10 @@ void CNewToken::ConstructTransaction(CScript& script) const
     ssToken << *this;
 
     std::vector<unsigned char> vchMessage;
-    vchMessage.push_back(YONA_R); // r
-    vchMessage.push_back(YONA_V); // v
-    vchMessage.push_back(YONA_N); // n
-    vchMessage.push_back(YONA_Q); // q
+    vchMessage.push_back(TOKEN_Y); // y
+    vchMessage.push_back(TOKEN_N); // n
+    vchMessage.push_back(TOKEN_A); // a
+    vchMessage.push_back(TOKEN_Q); // q
 
     vchMessage.insert(vchMessage.end(), ssToken.begin(), ssToken.end());
     script << OP_YONA_TOKEN << ToByteVector(vchMessage) << OP_DROP;
@@ -539,10 +539,10 @@ void CNewToken::ConstructOwnerTransaction(CScript& script) const
     ssOwner << std::string(this->strName + OWNER_TAG);
 
     std::vector<unsigned char> vchMessage;
-    vchMessage.push_back(YONA_R); // r
-    vchMessage.push_back(YONA_V); // v
-    vchMessage.push_back(YONA_N); // n
-    vchMessage.push_back(YONA_O); // o
+    vchMessage.push_back(TOKEN_Y); // y
+    vchMessage.push_back(TOKEN_N); // n
+    vchMessage.push_back(TOKEN_A); // a
+    vchMessage.push_back(TOKEN_O); // o
 
     vchMessage.insert(vchMessage.end(), ssOwner.begin(), ssOwner.end());
     script << OP_YONA_TOKEN << ToByteVector(vchMessage) << OP_DROP;
@@ -1613,10 +1613,10 @@ void CTokenTransfer::ConstructTransaction(CScript& script) const
     ssTransfer << *this;
 
     std::vector<unsigned char> vchMessage;
-    vchMessage.push_back(YONA_R); // r
-    vchMessage.push_back(YONA_V); // v
-    vchMessage.push_back(YONA_N); // n
-    vchMessage.push_back(YONA_T); // t
+    vchMessage.push_back(TOKEN_Y); // y
+    vchMessage.push_back(TOKEN_N); // n
+    vchMessage.push_back(TOKEN_A); // a
+    vchMessage.push_back(TOKEN_T); // t
 
     vchMessage.insert(vchMessage.end(), ssTransfer.begin(), ssTransfer.end());
     script << OP_YONA_TOKEN << ToByteVector(vchMessage) << OP_DROP;
@@ -1639,10 +1639,10 @@ void CReissueToken::ConstructTransaction(CScript& script) const
     ssReissue << *this;
 
     std::vector<unsigned char> vchMessage;
-    vchMessage.push_back(YONA_R); // r
-    vchMessage.push_back(YONA_V); // v
-    vchMessage.push_back(YONA_N); // n
-    vchMessage.push_back(YONA_R); // r
+    vchMessage.push_back(TOKEN_Y); // y
+    vchMessage.push_back(TOKEN_N); // n
+    vchMessage.push_back(TOKEN_A); // a
+    vchMessage.push_back(TOKEN_R); // r
 
     vchMessage.insert(vchMessage.end(), ssReissue.begin(), ssReissue.end());
     script << OP_YONA_TOKEN << ToByteVector(vchMessage) << OP_DROP;

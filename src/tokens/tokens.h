@@ -17,12 +17,13 @@
 #include <unordered_map>
 #include <list>
 
-#define YONA_R 114
-#define YONA_V 118
-#define YONA_N 110
-#define YONA_Q 113
-#define YONA_T 116
-#define YONA_O 111
+#define TOKEN_Y 121
+#define TOKEN_N 110
+#define TOKEN_A 97
+#define TOKEN_Q 113
+#define TOKEN_T 116
+#define TOKEN_O 111
+#define TOKEN_R 114
 
 #define DEFAULT_UNITS 0
 #define DEFAULT_REISSUABLE 1

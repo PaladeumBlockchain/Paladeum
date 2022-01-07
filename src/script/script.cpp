@@ -295,28 +295,28 @@ bool CScript::IsTokenScript(int& nType, int& nScriptType, bool& fIsOwner, int& n
         // OP_YONA_TOKEN is always in the 23 index of the P2SH script if it exists
         if (nScriptType == TX_SCRIPTHASH && (*this)[23] == OP_YONA_TOKEN) {
             // We have a potential token interacting with a P2SH
-            index = SearchForYONA(*this, 25);
+            index = SearchForYNA(*this, 25);
 
         }
         else if ((*this)[25] == OP_YONA_TOKEN) { // OP_YONA_TOKEN is always in the 25 index of the P2PKH script if it exists
             // We have a potential token interacting with a P2PKH
-            index = SearchForYONA(*this, 27);
+            index = SearchForYNA(*this, 27);
         }
 
         if (index > 0) {
             nStartingIndex = index + 1; // Set the index where the token data begins. Use to serialize the token data into token objects
-            if ((*this)[index] == YONA_T) { // Transfer first anticipating more transfers than other tokens operations
+            if ((*this)[index] == TOKEN_T) { // Transfer first anticipating more transfers than other tokens operations
                 nType = TX_TRANSFER_TOKEN;
                 return true;
-            } else if ((*this)[index] == YONA_Q && this->size() > 39) {
+            } else if ((*this)[index] == TOKEN_Q && this->size() > 39) {
                 nType = TX_NEW_TOKEN;
                 fIsOwner = false;
                 return true;
-            } else if ((*this)[index] == YONA_O) {
+            } else if ((*this)[index] == TOKEN_O) {
                 nType = TX_NEW_TOKEN;
                 fIsOwner = true;
                 return true;
-            } else if ((*this)[index] == YONA_R) {
+            } else if ((*this)[index] == TOKEN_R) {
                 nType = TX_REISSUE_TOKEN;
                 return true;
             }
@@ -651,20 +651,20 @@ bool AmountFromReissueScript(const CScript& scriptPubKey, CAmount& nAmount)
     return true;
 }
 
-int SearchForYONA(const CScript& script, const int startingValue) {
+int SearchForYNA(const CScript& script, const int startingValue) {
 
     // Initialize the start value
     int index = -1;
 
-    // Search for YONA at the two places in the script it can be depending on the size of the script
-    if (script[startingValue] == YONA_R) { // Check to see if YONA starts at the starting value ( this->size() < 105)
-        if (script[startingValue + 1] == YONA_V)
-            if (script[startingValue + 2] == YONA_N)
+    // Search for YNA at the two places in the script it can be depending on the size of the script
+    if (script[startingValue] == TOKEN_Y) { // Check to see if YNA starts at the starting value ( this->size() < 105)
+        if (script[startingValue + 1] == TOKEN_N)
+            if (script[startingValue + 2] == TOKEN_A)
                 index = startingValue + 3;
     } else {
-        if (script[startingValue + 1] == YONA_R) // Check to see if YONA starts at starting value + 1 ( this->size() >= 105)
-            if (script[startingValue + 2] == YONA_V)
-                if (script[startingValue + 3] == YONA_N)
+        if (script[startingValue + 1] == TOKEN_Y) // Check to see if YNA starts at starting value + 1 ( this->size() >= 105)
+            if (script[startingValue + 2] == TOKEN_N)
+                if (script[startingValue + 3] == TOKEN_A)
                     index = startingValue + 4;
     }
 

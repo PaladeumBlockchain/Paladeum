@@ -750,6 +750,6 @@ bool ScriptNewToken(const CScript& scriptPubKey, int& nStartingIndex);
 bool ScriptTransferToken(const CScript& scriptPubKey, int& nStartingIndex);
 bool ScriptReissueToken(const CScript& scriptPubKey, int& nStartingIndex);
 
-int SearchForYONA(const CScript& script, const int startingValue);
+int SearchForYNA(const CScript& script, const int startingValue);
 
 #endif // YONA_SCRIPT_SCRIPT_H
