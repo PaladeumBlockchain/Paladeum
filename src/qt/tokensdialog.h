@@ -108,10 +108,10 @@ private Q_SLOTS:
 
     void customFeeFeatureChanged(bool);
 
-    /** YONA START */
+    /** TOKEN START */
     void tokenControlUpdateSendCoinsDialog();
     void focusToken(const QModelIndex& index);
-    /** YONA END */
+    /** TOKEN END */
 
     Q_SIGNALS:
             // Fired when a message should be reported to the user

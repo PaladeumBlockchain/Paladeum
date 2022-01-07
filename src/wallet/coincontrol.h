@@ -37,10 +37,10 @@ public:
     //! Fee estimation mode to control arguments to estimateSmartFee
     FeeEstimateMode m_fee_mode;
 
-    /** YONA START */
+    /** TOKEN START */
     //! Name of the token that is selected, used when sending tokens with coincontrol
     std::string strTokenSelected;
-    /** YONA END */
+    /** TOKEN END */
 
     CCoinControl()
     {

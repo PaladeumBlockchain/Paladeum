@@ -1788,7 +1788,7 @@ void CWalletTx::GetAmounts(std::list<COutputEntry>& listReceived,
                 listReceived.push_back(output);
         }
 
-        /** YONA START */
+        /** TOKEN START */
         if (AreTokensDeployed()) {
             if (txout.scriptPubKey.IsTokenScript()) {
                 CTokenOutputEntry tokenoutput;
@@ -1803,7 +1803,7 @@ void CWalletTx::GetAmounts(std::list<COutputEntry>& listReceived,
                     tokensReceived.emplace_back(tokenoutput);
             }
         }
-        /** YONA END */
+        /** TOKEN END */
     }
 
 }
@@ -2475,7 +2475,7 @@ void CWallet::AvailableCoinsAll(std::vector<COutput>& vCoins, std::map<std::stri
 
         CAmount nTotal = 0;
 
-        /** YONA START */
+        /** TOKEN START */
         bool fYONALimitHit = false;
         // A set of the hashes that have already been used
         std::set<uint256> usedMempoolHashes;
@@ -2649,11 +2649,11 @@ void CWallet::AvailableCoinsAll(std::vector<COutput>& vCoins, std::map<std::stri
                 }
             }
         }
-        /** YONA END */
+        /** TOKEN END */
     }
 }
 
-/** YONA START */
+/** TOKEN START */
 
 std::map<CTxDestination, std::vector<COutput>> CWallet::ListTokens() const
 {
@@ -2705,7 +2705,7 @@ std::map<CTxDestination, std::vector<COutput>> CWallet::ListTokens() const
     return result;
 }
 
-/** YONA END */
+/** TOKEN END */
 
 void CWallet::AvailableCoinsForStaking(std::vector<COutput>& vCoins) const
 {
@@ -3333,7 +3333,7 @@ bool CWallet::SelectCoins(const std::vector<COutput>& vAvailableCoins, const CAm
     return res;
 }
 
-/** YONA START */
+/** TOKEN START */
 bool CWallet::CreateNewChangeAddress(CReserveKey& reservekey, CKeyID& keyID, std::string& strFailReason)
 {
     // Called with coin control doesn't have a change_address
@@ -3564,7 +3564,7 @@ bool CWallet::SelectTokens(const std::map<std::string, std::vector<COutput> >& m
     return true;
 }
 
-/** YONA END */
+/** TOKEN END */
 
 bool CWallet::SignTransaction(CMutableTransaction &tx)
 {
@@ -3699,7 +3699,7 @@ bool CWallet::CreateTransactionAll(const std::vector<CRecipient>& vecSend, CWall
                                    bool fTransferToken, bool fReissueToken, const CReissueToken& reissueToken,
                                    const KnownTokenType& tokenType, bool sign)
 {
-    /** YONA START */
+    /** TOKEN START */
     if (!AreTokensDeployed() && (fTransferToken || fNewToken || fReissueToken))
         return false;
 
@@ -3711,7 +3711,7 @@ bool CWallet::CreateTransactionAll(const std::vector<CRecipient>& vecSend, CWall
 
     if (fReissueToken && (reissueToken.IsNull() || !IsValidDestination(destination)))
         return error("%s : Tried reissuing an token and the reissue data was null or the destination was invalid", __func__);
-    /** YONA END */
+    /** TOKEN END */
 
     CAmount nValue = 0;
     std::map<std::string, CAmount> mapTokenValue;
@@ -3719,7 +3719,7 @@ bool CWallet::CreateTransactionAll(const std::vector<CRecipient>& vecSend, CWall
     unsigned int nSubtractFeeFromAmount = 0;
     for (const auto& recipient : vecSend)
     {
-        /** YONA START */
+        /** TOKEN START */
         if (fTransferToken || fReissueToken || tokenType == KnownTokenType::SUB || tokenType == KnownTokenType::UNIQUE || tokenType == KnownTokenType::MSGCHANNEL || tokenType == KnownTokenType::SUB_QUALIFIER || tokenType == KnownTokenType::RESTRICTED) {
             CTokenTransfer tokenTransfer;
             std::string address;
@@ -3735,7 +3735,7 @@ bool CWallet::CreateTransactionAll(const std::vector<CRecipient>& vecSend, CWall
                 mapTokenValue[tokenTransfer.strName] += tokenTransfer.nAmount;
             }
         }
-        /** YONA END */
+        /** TOKEN END */
 
         if (nValue < 0 || recipient.nAmount < 0)
         {
@@ -3798,14 +3798,14 @@ bool CWallet::CreateTransactionAll(const std::vector<CRecipient>& vecSend, CWall
         std::set<CInputCoin> setTokens;
         LOCK2(cs_main, cs_wallet);
         {
-            /** YONA START */
+            /** TOKEN START */
             std::vector<COutput> vAvailableCoins;
             std::map<std::string, std::vector<COutput> > mapTokenCoins;
             if (fTransferToken || fReissueToken || tokenType == KnownTokenType::SUB || tokenType == KnownTokenType::UNIQUE || tokenType == KnownTokenType::MSGCHANNEL || tokenType == KnownTokenType::SUB_QUALIFIER || tokenType == KnownTokenType::RESTRICTED)
                 AvailableCoinsWithTokens(vAvailableCoins, mapTokenCoins, true, &coin_control);
             else
                 AvailableCoins(vAvailableCoins, true, &coin_control);
-            /** YONA END */
+            /** TOKEN END */
             // Create change script that will be used if we need change
             // TODO: pass in scriptChange instead of reservekey so
             // change transaction isn't always pay-to-yona-address
@@ -3825,13 +3825,13 @@ bool CWallet::CreateTransactionAll(const std::vector<CRecipient>& vecSend, CWall
                 scriptChange = GetScriptForDestination(keyID);
             }
 
-            /** YONA START */
+            /** TOKEN START */
             if (!boost::get<CNoDestination>(&coin_control.tokenDestChange)) {
                 tokenScriptChange = GetScriptForDestination(coin_control.tokenDestChange);
             } else {
                 tokenScriptChange = scriptChange;
             }
-            /** YONA END */
+            /** TOKEN END */
 
             CTxOut change_prototype_txout(0, scriptChange);
             size_t change_prototype_size = GetSerializeSize(change_prototype_txout, SER_DISK, 0);
@@ -3861,14 +3861,14 @@ bool CWallet::CreateTransactionAll(const std::vector<CRecipient>& vecSend, CWall
                 {
                     CTxOut txout(recipient.nAmount, recipient.scriptPubKey);
 
-                    /** YONA START */
+                    /** TOKEN START */
                     // Check to see if you need to make an token data outpoint OP_YONA_TOKEN data
                     if (recipient.scriptPubKey.IsNullTokenTxDataScript()) {
                         assert(txout.nValue == 0);
                         txNew.vout.push_back(txout);
                         continue;
                     }
-                    /** YONA END */
+                    /** TOKEN END */
 
                     if (recipient.fSubtractFeeFromAmount)
                     {
@@ -3882,7 +3882,7 @@ bool CWallet::CreateTransactionAll(const std::vector<CRecipient>& vecSend, CWall
                         }
                     }
 
-                    if (IsDust(txout, ::dustRelayFee) && !IsScriptTransferToken(recipient.scriptPubKey)) /** YONA START */ /** YONA END */
+                    if (IsDust(txout, ::dustRelayFee) && !IsScriptTransferToken(recipient.scriptPubKey)) /** TOKEN START */ /** TOKEN END */
                     {
                         if (recipient.fSubtractFeeFromAmount && nFeeRet > 0)
                         {
@@ -3910,7 +3910,7 @@ bool CWallet::CreateTransactionAll(const std::vector<CRecipient>& vecSend, CWall
                         return false;
                     }
 
-                    /** YONA START */
+                    /** TOKEN START */
                     if (AreTokensDeployed()) {
                         setTokens.clear();
                         mapTokensIn.clear();
@@ -3919,12 +3919,12 @@ bool CWallet::CreateTransactionAll(const std::vector<CRecipient>& vecSend, CWall
                             return false;
                         }
                     }
-                    /** YONA END */
+                    /** TOKEN END */
                 }
 
                 const CAmount nChange = nValueIn - nValueToSelect;
 
-                /** YONA START */
+                /** TOKEN START */
                 if (AreTokensDeployed()) {
                     // Add the change for the tokens
                     std::map<std::string, CAmount> mapTokenChange;
@@ -4011,7 +4011,7 @@ bool CWallet::CreateTransactionAll(const std::vector<CRecipient>& vecSend, CWall
                         }
                     }
                 }
-                /** YONA END */
+                /** TOKEN END */
 
                 if (nChange > 0)
                 {
@@ -4045,7 +4045,7 @@ bool CWallet::CreateTransactionAll(const std::vector<CRecipient>& vecSend, CWall
                     nChangePosInOut = -1;
                 }
 
-                /** YONA START */
+                /** TOKEN START */
                 if (AreTokensDeployed()) {
                     if (fNewToken) {
                         for (auto token : tokens) {
@@ -4074,7 +4074,7 @@ bool CWallet::CreateTransactionAll(const std::vector<CRecipient>& vecSend, CWall
                         txNew.vout.push_back(reissueTxOut);
                     }
                 }
-                /** YONA END */
+                /** TOKEN END */
 
                 // Fill vin
                 //
@@ -4101,13 +4101,13 @@ bool CWallet::CreateTransactionAll(const std::vector<CRecipient>& vecSend, CWall
                     }
                 }
 
-                /** YONA START */
+                /** TOKEN START */
                 if (AreTokensDeployed()) {
                     for (const auto &token : setTokens)
                         txNew.vin.push_back(CTxIn(token.outpoint, CScript(),
                                                   nSequence));
                 }
-                /** YONA END */
+                /** TOKEN END */
 
                 // Add the new token inputs into the tempSet so the dummysigntx will add the correct amount of sigsß
                 std::set<CInputCoin> tempSet = setCoins;
@@ -4219,7 +4219,7 @@ bool CWallet::CreateTransactionAll(const std::vector<CRecipient>& vecSend, CWall
 
                 nIn++;
             }
-            /** YONA START */
+            /** TOKEN START */
             if (AreTokensDeployed()) {
                 for (const auto &token : setTokens) {
                     const CScript &scriptPubKey = token.txout.scriptPubKey;
@@ -4237,7 +4237,7 @@ bool CWallet::CreateTransactionAll(const std::vector<CRecipient>& vecSend, CWall
                     nIn++;
                 }
             }
-            /** YONA END */
+            /** TOKEN END */
         }
 
         // Embed the constructed transaction data in wtxNew.

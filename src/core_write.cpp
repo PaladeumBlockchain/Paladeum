@@ -175,7 +175,7 @@ void ScriptPubKeyToUniv(const CScript& scriptPubKey,
     out.pushKV("reqSigs", nRequired);
     out.pushKV("type", GetTxnOutputType(type));
 
-    /** YONA START */
+    /** TOKEN START */
     if (type == TX_NEW_TOKEN || type == TX_TRANSFER_TOKEN || type == TX_REISSUE_TOKEN) {
         UniValue tokenInfo(UniValue::VOBJ);
 
@@ -263,7 +263,7 @@ void ScriptPubKeyToUniv(const CScript& scriptPubKey,
 
         out.pushKV("token_data", tokenInfo);
     }
-     /** YONA END */
+     /** TOKEN END */
 
     UniValue a(UniValue::VARR);
     for (const CTxDestination& addr : addresses) {

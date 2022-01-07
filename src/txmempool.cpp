@@ -447,7 +447,7 @@ void CTxMemPool::addAddressIndex(const CTxMemPoolEntry &entry, const CCoinsViewC
             mapAddress.insert(std::make_pair(key, delta));
             inserted.push_back(key);
         } else {
-            /** YONA START */
+            /** TOKEN START */
             if (AreTokensDeployed()) {
                 uint160 hashBytes;
                 std::string tokenName;
@@ -467,7 +467,7 @@ void CTxMemPool::addAddressIndex(const CTxMemPoolEntry &entry, const CCoinsViewC
                     }
                 }
             }
-            /** YONA END */
+            /** TOKEN END */
         }
     }
 
@@ -491,7 +491,7 @@ void CTxMemPool::addAddressIndex(const CTxMemPoolEntry &entry, const CCoinsViewC
             mapAddress.insert(std::make_pair(key, CMempoolAddressDelta(entry.GetTime(), out.nValue)));
             inserted.push_back(key);
         } else {
-            /** YONA START */
+            /** TOKEN START */
             if (AreTokensDeployed()) {
                 uint160 hashBytes;
                 std::string tokenName;
@@ -509,7 +509,7 @@ void CTxMemPool::addAddressIndex(const CTxMemPoolEntry &entry, const CCoinsViewC
                     }
                 }
             }
-            /** YONA END */
+            /** TOKEN END */
         }
     }
 
@@ -656,7 +656,7 @@ void CTxMemPool::removeUnchecked(txiter it, MemPoolRemovalReason reason)
     removeAddressIndex(hash);
     removeSpentIndex(hash);
 
-    /** YONA START */
+    /** TOKEN START */
     // If the transaction being removed from the mempool is locking other reissues. Free them
     if (mapReissuedTx.count(hash)) {
         if (mapReissuedTokens.count(mapReissuedTx.at(hash))) {
@@ -737,7 +737,7 @@ void CTxMemPool::removeUnchecked(txiter it, MemPoolRemovalReason reason)
             }
         }
     }
-    /** YONA END */
+    /** TOKEN END */
 }
 
 // Calculates descendants of entry that are not already in setDescendants, and adds to
@@ -883,7 +883,7 @@ void CTxMemPool::removeForBlock(const std::vector<CTransactionRef>& vtx, unsigne
             entries.push_back(&*i);
     }
 
-    /** YONA START */
+    /** TOKEN START */
     // Get the newly added tokens, and make sure they are in the entries
     std::vector<CTransaction> trans;
     for (auto it : connectedBlockData.newTokensToAdd) {
@@ -994,7 +994,7 @@ void CTxMemPool::removeForBlock(const std::vector<CTransactionRef>& vtx, unsigne
             }
         }
     }
-    /** YONA END */
+    /** TOKEN END */
 
     // Before the txs in the new block have been removed from the mempool, update policy estimates
     if (minerPolicyEstimator) {minerPolicyEstimator->processBlock(nBlockHeight, entries);}
@@ -1010,7 +1010,7 @@ void CTxMemPool::removeForBlock(const std::vector<CTransactionRef>& vtx, unsigne
         ClearPrioritisation(tx->GetHash());
     }
 
-    /** YONA START */
+    /** TOKEN START */
     // Remove newly added token issue transactions from the mempool if they haven't been removed already
     for (auto tx : trans)
     {
@@ -1023,7 +1023,7 @@ void CTxMemPool::removeForBlock(const std::vector<CTransactionRef>& vtx, unsigne
         removeConflicts(tx);
         ClearPrioritisation(tx.GetHash());
     }
-    /** YONA END */
+    /** TOKEN END */
 
     lastRollingFeeUpdate = GetTime();
     blockSinceLastRollingFeeBump = true;
@@ -1074,14 +1074,14 @@ static void CheckInputsAndUpdateCoins(const CTransaction& tx, CCoinsViewCache& m
     CValidationState state;
     CAmount txfee = 0;
     bool fCheckResult = tx.IsCoinBase() || Consensus::CheckTxInputs(tx, state, mempoolDuplicate, spendheight, txfee);
-    /** YONA START */
+    /** TOKEN START */
     if (AreTokensDeployed()) {
         std::vector<std::pair<std::string, uint256>> vReissueTokens;
         bool fCheckTokens = Consensus::CheckTxTokens(tx, state, mempoolDuplicate, ptokens, false, vReissueTokens);
         assert(fCheckResult && fCheckTokens);
     } else
         assert(fCheckResult);
-    /** YONA END */
+    /** TOKEN END */
     UpdateCoins(tx, mempoolDuplicate, 1000000);
 }
 

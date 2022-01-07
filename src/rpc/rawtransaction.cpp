@@ -1613,7 +1613,7 @@ UniValue decodescript(const JSONRPCRequest& request)
         r.push_back(Pair("p2sh", EncodeDestination(CScriptID(script))));
     }
 
-    /** YONA START */
+    /** TOKEN START */
     if (type.isStr() && type.get_str() == TOKEN_TRANSFER_STRING) {
         if (!AreTokensDeployed())
             throw JSONRPCError(RPC_DESERIALIZATION_ERROR, "Tokens are not active");
@@ -1685,7 +1685,7 @@ UniValue decodescript(const JSONRPCRequest& request)
     } else {
 
     }
-    /** YONA END */
+    /** TOKEN END */
 
     return r;
 }

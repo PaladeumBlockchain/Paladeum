@@ -267,10 +267,10 @@ public:
     void getOutputs(const std::vector<COutPoint>& vOutpoints, std::vector<COutput>& vOutputs);
     bool isSpent(const COutPoint& outpoint) const;
     void listCoins(std::map<QString, std::vector<COutput> >& mapCoins) const;
-    /** YONA START */
+    /** TOKEN START */
     // Map of token name to map of address to CTxOut
     void listTokens(std::map<QString, std::map<QString, std::vector<COutput> > >& mapCoins) const;
-    /** YONA END */
+    /** TOKEN END */
     bool isLockedCoin(uint256 hash, unsigned int n) const;
     void lockCoin(COutPoint& output);
     void unlockCoin(COutPoint& output);

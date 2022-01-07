@@ -94,10 +94,10 @@ private:
     QString strThirdPartyTxUrls;
     QString strIpfsUrl;
     bool fCoinControlFeatures;
-    /** YONA START*/
+    /** TOKEN START*/
     bool fCustomFeeFeatures;
     bool fDarkModeEnabled;
-    /** YONA END*/
+    /** TOKEN END*/
     /* settings that were overridden by command-line */
     QString strOverriddenByCommandLine;
 

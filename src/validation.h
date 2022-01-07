@@ -510,7 +510,7 @@ extern CCoinsViewCache *pcoinsTip;
 /** Global variable that points to the active block tree (protected by cs_main) */
 extern CBlockTreeDB *pblocktree;
 
-/** YONA START */
+/** TOKEN START */
 
 /** Global variable that point to the active tokens database (protected by cs_main) */
 extern CTokensDB *ptokensdb;
@@ -562,7 +562,7 @@ extern CTokenSnapshotDB *pTokenSnapshotDb;
 
 extern CDistributeSnapshotRequestDB *pDistributeSnapshotDb;
 
-/** YONA END */
+/** TOKEN END */
 
 /**
  * Return the spend height, which is one more than the inputs.GetBestBlock().
@@ -595,7 +595,7 @@ bool DumpMempool();
 /** Load the mempool from disk. */
 bool LoadMempool();
 
-/** YONA START */
+/** TOKEN START */
 bool AreTokensDeployed();
 
 bool AreMessagesDeployed();
@@ -603,6 +603,6 @@ bool AreMessagesDeployed();
 bool AreRestrictedTokensDeployed();
 
 CTokensCache* GetCurrentTokenCache();
-/** YONA END */
+/** TOKEN END */
 
 #endif // YONA_VALIDATION_H

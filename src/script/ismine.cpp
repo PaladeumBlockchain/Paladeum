@@ -171,7 +171,7 @@ isminetype IsMine(const CKeyStore &keystore, const CScript& scriptPubKey, CBlock
                 return ISMINE_NO;
             }
         }
-        /** YONA START */
+        /** TOKEN START */
         case TX_NEW_TOKEN:
         case TX_TRANSFER_TOKEN:
         case TX_REISSUE_TOKEN: {
@@ -200,7 +200,7 @@ isminetype IsMine(const CKeyStore &keystore, const CScript& scriptPubKey, CBlock
             }
             break;
         }
-            /** YONA END*/
+            /** TOKEN END*/
     }
 
     if (keystore.HaveWatchOnly(scriptPubKey)) {

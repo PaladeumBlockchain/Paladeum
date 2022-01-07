@@ -96,14 +96,14 @@ public Q_SLOTS:
     /** Pass on signal over requested out-of-sync-warning information */
     void outOfSyncWarningClicked();
 
-    /** YONA START */
+    /** TOKEN START */
 
     /** Switch to tokens page */
     void gotoTokensPage();
     void gotoCreateTokensPage();
     void gotoManageTokensPage();
     void gotoRestrictedTokensPage();
-    /** YONA END */
+    /** TOKEN END */
 };
 
 #endif // YONA_QT_WALLETFRAME_H

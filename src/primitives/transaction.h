@@ -352,7 +352,7 @@ public:
     // GetValueIn() is a method on CCoinsViewCache, because
     // inputs must be known to compute value in.
 
-    /** YONA START */
+    /** TOKEN START */
     bool IsNewToken() const;
     bool VerifyNewToken(std::string& strError) const;
     bool IsNewUniqueToken() const;
@@ -371,7 +371,7 @@ public:
     bool GetVerifierStringFromTx(CNullTokenTxVerifierString& verifier, std::string& strError) const;
     bool GetVerifierStringFromTx(CNullTokenTxVerifierString& verifier, std::string& strError, bool& fNotFound) const;
 
-    /** YONA END */
+    /** TOKEN END */
 
     /**
      * Get the total transaction size in bytes, including witness data.

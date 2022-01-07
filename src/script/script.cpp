@@ -145,9 +145,9 @@ const char* GetOpName(opcodetype opcode)
     case OP_NOP9                   : return "OP_NOP9";
     case OP_NOP10                  : return "OP_NOP10";
 
-    /** YONA START */
+    /** TOKEN START */
     case OP_YONA_TOKEN              : return "OP_YONA_TOKEN";
-    /** YONA END */
+    /** TOKEN END */
 
     case OP_INVALIDOPCODE          : return "OP_INVALIDOPCODE";
 
@@ -253,7 +253,7 @@ bool CScript::IsPayToScriptHash() const
             (*this)[22] == OP_EQUAL);
 }
 
-/** YONA START */
+/** TOKEN START */
 bool CScript::IsTokenScript() const
 {
     int nType = 0;
@@ -407,7 +407,7 @@ bool CScript::IsNullTokenVerifierTxDataScript() const
             (*this)[1] == OP_RESERVED &&
             (*this)[2] != OP_RESERVED);
 }
-/** YONA END */
+/** TOKEN END */
 
 bool CScript::IsPayToWitnessScriptHash() const
 {

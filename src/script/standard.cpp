@@ -38,11 +38,11 @@ const char* GetTxnOutputType(txnouttype t)
     case TX_WITNESS_V0_KEYHASH: return "witness_v0_keyhash";
     case TX_WITNESS_V0_SCRIPTHASH: return "witness_v0_scripthash";
 
-    /** YONA START */
+    /** TOKEN START */
     case TX_NEW_TOKEN: return TOKEN_NEW_STRING;
     case TX_TRANSFER_TOKEN: return TOKEN_TRANSFER_STRING;
     case TX_REISSUE_TOKEN: return TOKEN_REISSUE_STRING;
-    /** YONA END */
+    /** TOKEN END */
     }
     return nullptr;
 }
@@ -77,7 +77,7 @@ bool Solver(const CScript& scriptPubKey, txnouttype& typeRet, txnouttype& script
         vSolutionsRet.push_back(hashBytes);
         return true;
     }
-    /** YONA START */
+    /** TOKEN START */
     int nType = 0;
     int nScriptType = 0;
     bool fIsOwner = false;
@@ -96,7 +96,7 @@ bool Solver(const CScript& scriptPubKey, txnouttype& typeRet, txnouttype& script
         }
         return false;
     }
-    /** YONA END */
+    /** TOKEN END */
 
     int witnessversion;
     std::vector<unsigned char> witnessprogram;
@@ -259,7 +259,7 @@ bool ExtractDestination(const CScript& scriptPubKey, CTxDestination& addressRet)
     {
         addressRet = CScriptID(uint160(vSolutions[0]));
         return true;
-    /** YONA START */
+    /** TOKEN START */
     } else if (whichType == TX_NEW_TOKEN || whichType == TX_REISSUE_TOKEN || whichType == TX_TRANSFER_TOKEN) {
         if (scriptType == TX_SCRIPTHASH) {
             addressRet = CScriptID(uint160(vSolutions[0]));
@@ -273,7 +273,7 @@ bool ExtractDestination(const CScript& scriptPubKey, CTxDestination& addressRet)
             return true;
         }
     }
-    /** YONA END */
+    /** TOKEN END */
     else if (whichType == TX_CLTV)
     {
         addressRet = CKeyID(uint160(vSolutions[1]));

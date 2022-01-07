@@ -1128,10 +1128,10 @@ bool EvalScript(std::vector<std::vector<unsigned char> > &stack, const CScript &
                     }
                         break;
 
-                        /** YONA START */
+                        /** TOKEN START */
                     case OP_YONA_TOKEN:
                         break;
-                        /** YONA END */
+                        /** TOKEN END */
 
 
                     default:

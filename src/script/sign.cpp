@@ -83,7 +83,7 @@ static bool SignStep(const BaseSignatureCreator& creator, const CScript& scriptP
         return false;
     case TX_RESTRICTED_TOKEN_DATA:
         return false;
-    /** YONA START */
+    /** TOKEN START */
     case TX_NEW_TOKEN:
     case TX_TRANSFER_TOKEN:
     case TX_REISSUE_TOKEN: {
@@ -106,7 +106,7 @@ static bool SignStep(const BaseSignatureCreator& creator, const CScript& scriptP
         }
     }
 
-    /** YONA END */
+    /** TOKEN END */
     case TX_PUBKEY:
         keyID = CPubKey(vSolutions[0]).GetID();
         return Sign1(keyID, creator, scriptPubKey, ret, sigversion);

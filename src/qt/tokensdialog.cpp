@@ -122,11 +122,11 @@ TokensDialog::TokensDialog(const PlatformStyle *_platformStyle, QWidget *parent)
     ui->checkBoxMinimumFee->setChecked(settings.value("fPayOnlyMinFee").toBool());
     minimizeFeeSection(settings.value("fFeeSectionMinimized").toBool());
 
-    /** YONA START */
+    /** TOKEN START */
     setupTokenControlFrame(platformStyle);
     setupScrollView(platformStyle);
     setupFeeControl(platformStyle);
-    /** YONA END */
+    /** TOKEN END */
 }
 
 void TokensDialog::setClientModel(ClientModel *_clientModel)
@@ -1000,7 +1000,7 @@ void TokensDialog::tokenControlUpdateLabels()
     }
 }
 
-/** YONA START */
+/** TOKEN START */
 void TokensDialog::tokenControlUpdateSendCoinsDialog()
 {
     for(int i = 0; i < ui->entries->count(); ++i)
@@ -1065,4 +1065,4 @@ void TokensDialog::handleFirstSelection()
         entry->refreshTokenList();
     }
 }
-/** YONA END */
+/** TOKEN END */

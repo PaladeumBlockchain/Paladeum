@@ -76,12 +76,12 @@ private:
     const PlatformStyle *platformStyle;
 
 
-    /** YONA START */
+    /** TOKEN START */
     TokensDialog *tokensPage;
     CreateTokenDialog *createTokensPage;
     ReissueTokenDialog *manageTokensPage;
     RestrictedTokensDialog *restrictedTokensPage;
-    /** YONA END */
+    /** TOKEN END */
 
 public Q_SLOTS:
     /** Switch to overview (home) page */
@@ -130,7 +130,7 @@ public Q_SLOTS:
     void requestedSyncWarningInfo();
 
 
-    /** YONA START */
+    /** TOKEN START */
     /** Switch to tokens page */
 
     void gotoTokensPage();
@@ -138,7 +138,7 @@ public Q_SLOTS:
     void gotoManageTokensPage();
     void gotoRestrictedTokensPage();
 
-    /** YONA END */
+    /** TOKEN END */
 
 Q_SIGNALS:
     /** Signal that we want to show the main window */

@@ -77,7 +77,7 @@ static const std::regex QUALIFIER_INDICATOR("^[#][A-Z0-9._]{3,}$"); // Starts wi
 static const std::regex SUB_QUALIFIER_INDICATOR("^#[A-Z0-9._]+\\/#[A-Z0-9._]+$"); // Starts with #
 static const std::regex RESTRICTED_INDICATOR("^[\\$][A-Z0-9._]{3,}$"); // Starts with $
 
-static const std::regex YONA_NAMES("^YONA$|^YONA$|^YONACOIN$|^#YONA$|^#YONA$|^#YONACOIN$");
+static const std::regex YONA_NAMES("^YONA$|^YONA$|^YONACOIN$");
 
 bool IsRootNameValid(const std::string& name)
 {
