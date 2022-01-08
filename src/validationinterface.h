@@ -53,8 +53,6 @@ protected:
     virtual void BlockDisconnected(const std::shared_ptr<const CBlock> &block) {}
     /** Notifies listeners of the new active block chain on-disk. */
     virtual void SetBestChain(const CBlockLocator &locator) {}
-    /** Notifies listeners about an inventory item being seen on the network. */
-    virtual void Inventory(const uint256 &hash) {}
     /** Tells listeners to broadcast their data. */
     virtual void ResendWalletTransactions(int64_t nBestBlockTime, CConnman* connman) {}
     /**
@@ -71,8 +69,6 @@ protected:
 
     virtual void BlockFound(const uint256 &hash) {};
     virtual void NewTokenMessage(const CMessage &message) {};
-
-//    virtual void GetScriptForMining(std::shared_ptr<CReserveScript>&) {};
 
     friend void ::RegisterValidationInterface(CValidationInterface*);
     friend void ::UnregisterValidationInterface(CValidationInterface*);
@@ -102,13 +98,11 @@ public:
     void BlockConnected(const std::shared_ptr<const CBlock> &, const CBlockIndex *pindex, const std::vector<CTransactionRef> &);
     void BlockDisconnected(const std::shared_ptr<const CBlock> &);
     void SetBestChain(const CBlockLocator &);
-    void Inventory(const uint256 &);
     void Broadcast(int64_t nBestBlockTime, CConnman* connman);
     void BlockChecked(const CBlock&, const CValidationState&);
     void NewPoWValidBlock(const CBlockIndex *, const std::shared_ptr<const CBlock>&);
     void BlockFound(const uint256 &);
     void NewTokenMessage(const CMessage&);
-//    void ScriptForMining(std::shared_ptr<CReserveScript>&);
 
 };
 
