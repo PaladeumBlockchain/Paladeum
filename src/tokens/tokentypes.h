@@ -32,7 +32,8 @@ enum class KnownTokenType
     REISSUE = 8,
     OWNER = 9,
     NULL_ADD_QUALIFIER = 10,
-    INVALID = 11
+    USERNAME = 11,
+    INVALID = 12
 };
 
 enum class QualifierType

@@ -51,6 +51,7 @@ static const std::regex SUB_NAME_CHARACTERS("^[A-Z0-9._]+$");
 static const std::regex UNIQUE_TAG_CHARACTERS("^[-A-Za-z0-9@$%&*()[\\]{}_.?:]+$");
 static const std::regex MSG_CHANNEL_TAG_CHARACTERS("^[A-Za-z0-9_]+$");
 static const std::regex VOTE_TAG_CHARACTERS("^[A-Z0-9._]+$");
+static const std::regex USERNAME_CHARACTERS("^@[A-Z0-9._]{4,}$");
 
 // Restricted tokens
 static const std::regex QUALIFIER_NAME_CHARACTERS("#[A-Z0-9._]{3,}$");
@@ -72,6 +73,7 @@ static const std::regex UNIQUE_INDICATOR(R"(^[^^~#!]+#[^~#!\/]+$)");
 static const std::regex MSG_CHANNEL_INDICATOR(R"(^[^^~#!]+~[^~#!\/]+$)");
 static const std::regex OWNER_INDICATOR(R"(^[^^~#!]+!$)");
 static const std::regex VOTE_INDICATOR(R"(^[^^~#!]+\^[^~#!\/]+$)");
+static const std::regex USERNAME_INDICATOR(R"(^@[A-Z0-9._]{4,}$)");
 
 static const std::regex QUALIFIER_INDICATOR("^[#][A-Z0-9._]{3,}$"); // Starts with #
 static const std::regex SUB_QUALIFIER_INDICATOR("^#[A-Z0-9._]+\\/#[A-Z0-9._]+$"); // Starts with #
@@ -138,6 +140,11 @@ bool IsMsgChannelTagValid(const std::string &tag)
         && !std::regex_match(tag, DOUBLE_PUNCTUATION)
         && !std::regex_match(tag, LEADING_PUNCTUATION)
         && !std::regex_match(tag, TRAILING_PUNCTUATION);
+}
+
+bool IsUsernameValid(const std::string& username)
+{
+    return std::regex_match(username, USERNAME_CHARACTERS);
 }
 
 bool IsNameValidBeforeTag(const std::string& name)
@@ -273,6 +280,14 @@ bool IsTokenNameValid(const std::string& name, KnownTokenType& tokenType, std::s
 
         return ret;
     }
+    else if (std::regex_match(name, USERNAME_INDICATOR))
+    {
+        bool ret = IsTypeCheckNameValid(KnownTokenType::USERNAME, name, error);
+        if (ret)
+            tokenType = KnownTokenType::USERNAME;
+
+        return ret;
+    }
     else
     {
         auto type = IsTokenNameASubtoken(name) ? KnownTokenType::SUB : KnownTokenType::ROOT;
@@ -366,6 +381,19 @@ bool IsTypeCheckNameValid(const KnownTokenType type, const std::string& name, st
         if (name.size() > MAX_NAME_LENGTH) { error = "Name is greater than max length of " + std::to_string(MAX_NAME_LENGTH); return false; }
         bool valid = IsRestrictedNameValid(name);
         if (!valid) { error = "Restricted name contains invalid characters (Valid characters are: A-Z 0-9 _ .) ($ must be the first character, _ . special characters can't be the first or last characters)";  return false; }
+        return true;
+    } else if (type == KnownTokenType::USERNAME) {
+        if (name.size() > MAX_NAME_LENGTH) {
+            error = "Name is greater than max length of " + std::to_string(MAX_NAME_LENGTH);
+            return false;
+        }
+
+        bool valid = IsUsernameValid(name);
+        if (!valid) {
+            error = "Username contains invalid characters (Valid characters are: A-Z 0-9 _ .) (special characters can't be the first or last characters)";
+            return false;
+        }
+
         return true;
     } else {
         if (name.size() > MAX_NAME_LENGTH - 1) { error = "Name is greater than max length of " + std::to_string(MAX_NAME_LENGTH - 1); return false; }  //Tokens and sub-tokens need to leave one extra char for OWNER indicator
@@ -611,6 +639,18 @@ bool UniqueTokenFromTransaction(const CTransaction& tx, CNewToken& token, std::s
 {
     // Check to see if the transaction is an new token issue tx
     if (!tx.IsNewUniqueToken())
+        return false;
+
+    // Get the scriptPubKey from the last tx in vout
+    CScript scriptPubKey = tx.vout[tx.vout.size() - 1].scriptPubKey;
+
+    return TokenFromScript(scriptPubKey, token, strAddress);
+}
+
+bool UsernameFromTransaction(const CTransaction& tx, CNewToken& token, std::string& strAddress)
+{
+    // Check to see if the transaction is an new token issue tx
+    if (!tx.IsNewUsername())
         return false;
 
     // Get the scriptPubKey from the last tx in vout
@@ -926,6 +966,72 @@ bool CTransaction::IsNewToken() const
     // Don't overlap with IsNewUniqueToken()
     CScript script = vout[vout.size() - 1].scriptPubKey;
     if (IsScriptNewUniqueToken(script)|| IsScriptNewRestrictedToken(script))
+        return false;
+
+    return true;
+}
+
+bool CTransaction::VerifyNewUsername(std::string& strError) const
+{
+    // Issuing an username must contain at least 2 CTxOut(Yona Burn Tx, Any Number of other Outputs ..., New Token Tx)
+    if (vout.size() < 2) {
+        strError  = "bad-txns-issue-vout-size-to-small";
+        return false;
+    }
+
+    // Check for the tokens data CTxOut. This will always be the last output in the transaction
+    if (!CheckIssueDataTx(vout[vout.size() - 1])) {
+        strError  = "bad-txns-issue-data-not-found";
+        return false;
+    }
+
+    // Get the token type
+    CNewToken token;
+    std::string address;
+    if (!TokenFromScript(vout[vout.size() - 1].scriptPubKey, token, address)) {
+        strError = "bad-txns-issue-serialzation-failed";
+        return error("%s : Failed to get new token from transaction: %s", __func__, this->GetHash().GetHex());
+    }
+
+    KnownTokenType tokenType;
+    IsTokenNameValid(token.strName, tokenType);
+
+    // Check for the Burn CTxOut in one of the vouts ( This is needed because the change CTxOut is places in a random position in the CWalletTx
+    bool fFoundIssueBurnTx = false;
+    for (auto out : vout) {
+        if (CheckIssueBurnTx(out, tokenType)) {
+            fFoundIssueBurnTx = true;
+            break;
+        }
+    }
+
+    if (!fFoundIssueBurnTx) {
+        strError = "bad-txns-issue-burn-not-found";
+        return false;
+    }
+
+    // Loop through all of the vouts and make sure only the expected token creations are taking place
+    int nTransfers = 0;
+    int nOwners = 0;
+    int nIssues = 0;
+    int nReissues = 0;
+    GetTxOutKnownTokenTypes(vout, nIssues, nReissues, nTransfers, nOwners);
+
+    if (nOwners > 0 || nReissues > 0) {
+        strError = "bad-txns-failed-issue-token-formatting-check";
+        return false;
+    }
+
+    return true;
+}
+
+bool CTransaction::IsNewUsername() const
+{
+    // Check trailing outpoint for issue data with unique token name
+    if (!CheckIssueDataTx(vout[vout.size() - 1]))
+        return false;
+
+    if (!IsScriptNewUsername(vout[vout.size() - 1].scriptPubKey))
         return false;
 
     return true;
@@ -3223,6 +3329,32 @@ bool IsScriptNewMsgChannelToken(const CScript &scriptPubKey, int &nStartingIndex
     return KnownTokenType::MSGCHANNEL == tokenType;
 }
 
+bool IsScriptNewUsername(const CScript& scriptPubKey)
+{
+    int index = 0;
+    return IsScriptNewUsername(scriptPubKey, index);
+}
+
+bool IsScriptNewUsername(const CScript& scriptPubKey, int& nStartingIndex)
+{
+    int nType = 0;
+    int nScriptType = 0;
+    bool fIsOwner = false;
+    if (!scriptPubKey.IsTokenScript(nType, nScriptType, fIsOwner, nStartingIndex))
+        return false;
+
+    CNewToken token;
+    std::string address;
+    if (!TokenFromScript(scriptPubKey, token, address))
+        return false;
+
+    KnownTokenType tokenType;
+    if (!IsTokenNameValid(token.strName, tokenType))
+        return false;
+
+    return KnownTokenType::USERNAME == tokenType;
+}
+
 bool IsScriptOwnerToken(const CScript& scriptPubKey)
 {
 
@@ -3638,6 +3770,11 @@ CAmount GetIssueUniqueTokenBurnAmount()
     return GetParams().IssueUniqueTokenBurnAmount();
 }
 
+CAmount GetIssueUsernameTokenBurnAmount()
+{
+    return GetParams().IssueUsernameTokenBurnAmount();
+}
+
 CAmount GetIssueMsgChannelTokenBurnAmount()
 {
     return GetParams().IssueMsgChannelTokenBurnAmount();
@@ -3716,6 +3853,8 @@ std::string GetBurnAddress(const KnownTokenType type)
             return "";
         case KnownTokenType::UNIQUE:
             return GetParams().IssueUniqueTokenBurnAddress();
+        case KnownTokenType::USERNAME:
+            return GetParams().IssueUsernameTokenBurnAddress();
         case KnownTokenType::VOTE:
             return "";
         case KnownTokenType::REISSUE:
@@ -5332,7 +5471,7 @@ bool CheckNewToken(const CNewToken& token, std::string& strError)
         return false;
     }
 
-    if (tokenType == KnownTokenType::UNIQUE || tokenType == KnownTokenType::MSGCHANNEL) {
+    if (tokenType == KnownTokenType::UNIQUE|| tokenType == KnownTokenType::USERNAME || tokenType == KnownTokenType::MSGCHANNEL) {
         if (token.units != UNIQUE_TOKEN_UNITS) {
             strError = _("Invalid parameter: units must be ") + std::to_string(UNIQUE_TOKEN_UNITS);
             return false;

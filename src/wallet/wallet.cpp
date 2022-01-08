@@ -4066,7 +4066,7 @@ bool CWallet::CreateTransactionAll(const std::vector<CRecipient>& vecSend, CWall
                     if (fNewToken) {
                         for (auto token : tokens) {
                             // Create the owner token output for non-unique tokens
-                            if (tokenType != KnownTokenType::UNIQUE && tokenType != KnownTokenType::MSGCHANNEL && tokenType != KnownTokenType::QUALIFIER && tokenType != KnownTokenType::SUB_QUALIFIER && tokenType != KnownTokenType::RESTRICTED) {
+                            if (tokenType != KnownTokenType::UNIQUE && tokenType != KnownTokenType::USERNAME && tokenType != KnownTokenType::MSGCHANNEL && tokenType != KnownTokenType::QUALIFIER && tokenType != KnownTokenType::SUB_QUALIFIER && tokenType != KnownTokenType::RESTRICTED) {
                                 CScript ownerScript = GetScriptForDestination(destination);
                                 token.ConstructOwnerTransaction(ownerScript);
                                 CTxOut ownerTxOut(0, ownerScript);

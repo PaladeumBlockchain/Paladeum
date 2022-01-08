@@ -85,6 +85,7 @@ std::string KnownTokenTypeToString(KnownTokenType& tokenType)
         case KnownTokenType::MSGCHANNEL:         return "MSGCHANNEL";
         case KnownTokenType::VOTE:               return "VOTE";
         case KnownTokenType::REISSUE:            return "REISSUE";
+        case KnownTokenType::USERNAME:           return "USERNAME";
         case KnownTokenType::QUALIFIER:          return "QUALIFIER";
         case KnownTokenType::SUB_QUALIFIER:      return "SUB_QUALIFIER";
         case KnownTokenType::RESTRICTED:         return "RESTRICTED";
@@ -532,7 +533,7 @@ UniValue issue(const JSONRPCRequest& request)
     if (request.params.size() > 4)
         units = request.params[4].get_int();
 
-    bool reissuable = tokenType != KnownTokenType::UNIQUE && tokenType != KnownTokenType::MSGCHANNEL && tokenType != KnownTokenType::QUALIFIER && tokenType != KnownTokenType::SUB_QUALIFIER;
+    bool reissuable = tokenType != KnownTokenType::UNIQUE && tokenType != KnownTokenType::USERNAME && tokenType != KnownTokenType::MSGCHANNEL && tokenType != KnownTokenType::QUALIFIER && tokenType != KnownTokenType::SUB_QUALIFIER;
     if (request.params.size() > 5)
         reissuable = request.params[5].get_bool();
 
@@ -556,7 +557,7 @@ UniValue issue(const JSONRPCRequest& request)
         CheckIPFSTxidMessage(ipfs_hash, expireTime);
 
     // check for required unique token params
-    if ((tokenType == KnownTokenType::UNIQUE || tokenType == KnownTokenType::MSGCHANNEL) && (nAmount != COIN || units != 0 || reissuable)) {
+    if ((tokenType == KnownTokenType::UNIQUE || tokenType == KnownTokenType::USERNAME || tokenType == KnownTokenType::MSGCHANNEL) && (nAmount != COIN || units != 0 || reissuable)) {
         throw JSONRPCError(RPC_INVALID_PARAMETER, std::string("Invalid parameters for issuing a unique token."));
     }
 
@@ -724,6 +725,102 @@ UniValue issueunique(const JSONRPCRequest& request)
 
     // Create the Transaction
     if (!CreateTokenTransaction(pwallet, crtl, tokens, address, error, transaction, reservekey, nRequiredFee))
+        throw JSONRPCError(error.first, error.second);
+
+    // Send the Transaction to the network
+    std::string txid;
+    if (!SendTokenTransaction(pwallet, transaction, reservekey, error, txid))
+        throw JSONRPCError(error.first, error.second);
+
+    UniValue result(UniValue::VARR);
+    result.push_back(txid);
+    return result;
+}
+
+UniValue registerusername(const JSONRPCRequest& request)
+{
+    if (request.fHelp || !AreTokensDeployed() || request.params.size() < 1 || request.params.size() > 8)
+        throw std::runtime_error(
+            "registerusername \"username\" \"( to_address )\""
+
+            "\nArguments:\n"
+            "1. \"username\"              (string, required) a unique username\n"
+            "2. \"to_address\"            (string), optional, default=\"\"), address token will be sent to, if it is empty, address will be generated for you\n"
+
+            "\nResult:\n"
+            "\"txid\"                     (string) The transaction id\n"
+
+            "\nExamples:\n"
+            + HelpExampleCli("registerusername", "\"@USERNAME\"")
+            + HelpExampleCli("registerusername", "\"@USERNAME\" \"myaddress\"")
+        );
+
+    CWallet * const pwallet = GetWalletForJSONRPCRequest(request);
+    if (!EnsureWalletIsAvailable(pwallet, request.fHelp)) {
+        return NullUniValue;
+    }
+
+    ObserveSafeMode();
+    LOCK2(cs_main, pwallet->cs_wallet);
+
+    EnsureWalletIsUnlocked(pwallet);
+
+    // Check token name and infer tokenType
+    std::string tokenName = request.params[0].get_str();
+    KnownTokenType tokenType;
+    std::string tokenError = "";
+    if (!IsTokenNameValid(tokenName, tokenType, tokenError)) {
+        throw JSONRPCError(RPC_INVALID_PARAMETER, std::string("Invalid token name: ") + tokenName + std::string("\nError: ") + tokenError);
+    }
+
+    // Check tokenType supported
+    if (tokenType != KnownTokenType::USERNAME) {
+        throw JSONRPCError(RPC_INVALID_PARAMETER, std::string("Usename is invalid"));
+    }
+
+    std::string address = "";
+    if (request.params.size() > 1)
+        address = request.params[1].get_str();
+
+    if (!address.empty()) {
+        CTxDestination destination = DecodeDestination(address);
+        if (!IsValidDestination(destination)) {
+            throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, std::string("Invalid Yona address: ") + address);
+        }
+    } else {
+        // Create a new address
+        std::string strAccount;
+
+        if (!pwallet->IsLocked()) {
+            pwallet->TopUpKeyPool();
+        }
+
+        // Generate a new key that is added to wallet
+        CPubKey newKey;
+        if (!pwallet->GetKeyFromPool(newKey)) {
+            throw JSONRPCError(RPC_WALLET_KEYPOOL_RAN_OUT, "Error: Keypool ran out, please call keypoolrefill first");
+        }
+        CKeyID keyID = newKey.GetID();
+
+        pwallet->SetAddressBook(keyID, strAccount, "receive");
+
+        address = EncodeDestination(keyID);
+    }
+
+    CNewToken token(tokenName, COIN, 0, 0, 0, "");
+
+    CReserveKey reservekey(pwallet);
+    CWalletTx transaction;
+    CAmount nRequiredFee;
+    std::pair<int, std::string> error;
+
+    std::string changeAddress = "";
+
+    CCoinControl crtl;
+    crtl.destChange = DecodeDestination(changeAddress);
+
+    // Create the Transaction
+    if (!CreateTokenTransaction(pwallet, crtl, token, address, error, transaction, reservekey, nRequiredFee))
         throw JSONRPCError(error.first, error.second);
 
     // Send the Transaction to the network
@@ -1369,6 +1466,13 @@ UniValue transfer(const JSONRPCRequest& request)
 
     std::string to_address = request.params[2].get_str();
 
+    if (IsUsernameValid(to_address)) {
+        to_address = ptokensdb->UsernameAddress(to_address);
+        if (to_address == "") {
+            throw JSONRPCError(RPC_INVALID_PARAMETER, "You specified invalid username.");
+        }
+    }
+
     // Time lock
     int timeLock = 0;
     if (!request.params[3].isNull())
@@ -1506,6 +1610,14 @@ UniValue transferfromaddresses(const JSONRPCRequest& request)
     // Add the given array of addresses into the set of destinations
     for (int i = 0; i < (int) from_addresses.size(); i++) {
         std::string address = from_addresses[i].get_str();
+
+        if (IsUsernameValid(address)) {
+            address = ptokensdb->UsernameAddress(address);
+            if (address == "") {
+                throw JSONRPCError(RPC_INVALID_PARAMETER, "You specified invalid username.");
+            }
+        }
+
         CTxDestination dest = DecodeDestination(address);
         if (!IsValidDestination(dest))
             throw JSONRPCError(RPC_INVALID_PARAMETER, std::string("From addresses must be valid addresses. Invalid address: ") + address);
@@ -2397,6 +2509,29 @@ UniValue getcacheinfo(const JSONRPCRequest& request)
     info.push_back(Pair("dirty cache V2 (est)",  (int)currentActiveTokenCache->GetCacheSizeV2()));
 
     result.push_back(info);
+    return result;
+}
+
+UniValue getusernameaddress(const JSONRPCRequest& request)
+{
+    if (request.fHelp || !AreTokensDeployed() || request.params.size() != 1)
+        throw std::runtime_error(
+                "getusernameaddress @USERNAME\n"
+                + TokenActivationWarning() +
+
+                "\nExample:\n"
+                + HelpExampleCli("getusernameaddress", "@USERNAME")
+        );
+
+    std::string address = ptokensdb->UsernameAddress(request.params[0].get_str());
+    if (address == "") {
+        throw JSONRPCError(RPC_INVALID_PARAMETER, "You specified invalid username.");
+    }
+
+    UniValue result(UniValue::VOBJ);
+
+    result.pushKV("address", address);
+
     return result;
 }
 
@@ -3608,6 +3743,8 @@ static const CRPCCommand commands[] =
 #ifdef ENABLE_WALLET
     { "tokens",   "issue",                      &issue,                      {"token_name","qty","to_address","change_address","units","reissuable","has_ipfs","ipfs_hash"} },
     { "tokens",   "issueunique",                &issueunique,                {"root_name", "token_tags", "ipfs_hashes", "to_address", "change_address"}},
+    { "tokens",   "registerusername",           &registerusername,           {"username","to_address"} },
+    { "tokens",   "getusernameaddress",         &getusernameaddress,         {"username"} },
     { "tokens",   "listmytokens",               &listmytokens,               {"token", "verbose", "count", "start", "confs"}},
     { "tokens",   "listmylockedtokens",         &listmylockedtokens,         {"token", "verbose", "count", "start"}},
 #endif

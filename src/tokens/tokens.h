@@ -408,6 +408,9 @@ bool IsUniqueTagValid(const std::string& tag);
 //! Check if an token is an owner
 bool IsTokenNameAnOwner(const std::string& name);
 
+//! Check if an token is an username
+bool IsUsernameValid(const std::string& username);
+
 //! Check if an token is a restricted token
 bool IsTokenNameAnRestricted(const std::string& name);
 
@@ -440,6 +443,7 @@ bool TokenFromTransaction(const CTransaction& tx, CNewToken& token, std::string&
 bool OwnerFromTransaction(const CTransaction& tx, std::string& ownerName, std::string& strAddress);
 bool ReissueTokenFromTransaction(const CTransaction& tx, CReissueToken& reissue, std::string& strAddress);
 bool UniqueTokenFromTransaction(const CTransaction& tx, CNewToken& token, std::string& strAddress);
+bool UsernameFromTransaction(const CTransaction& tx, CNewToken& token, std::string& strAddress);
 bool MsgChannelTokenFromTransaction(const CTransaction& tx, CNewToken& token, std::string& strAddress);
 bool QualifierTokenFromTransaction(const CTransaction& tx, CNewToken& token, std::string& strAddress);
 bool RestrictedTokenFromTransaction(const CTransaction& tx, CNewToken& token, std::string& strAddress);
@@ -483,6 +487,10 @@ bool IsScriptNewToken(const CScript& scriptPubKey, int& nStartingIndex);
 //! Check script and see if it matches the unquie issuance template
 bool IsScriptNewUniqueToken(const CScript& scriptPubKey);
 bool IsScriptNewUniqueToken(const CScript &scriptPubKey, int &nStartingIndex);
+
+//! Check script and see if it matches the username issuance template
+bool IsScriptNewUsername(const CScript& scriptPubKey, int& nStartingIndex);
+bool IsScriptNewUsername(const CScript& scriptPubKey);
 
 //! Check script and see if it matches the owner issuance template
 bool IsScriptOwnerToken(const CScript& scriptPubKey);

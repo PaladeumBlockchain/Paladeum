@@ -95,6 +95,7 @@ public:
     const CAmount& ReissueTokenBurnAmount() const { return nReissueTokenBurnAmount; }
     const CAmount& IssueSubTokenBurnAmount() const { return nIssueSubTokenBurnAmount; }
     const CAmount& IssueUniqueTokenBurnAmount() const { return nIssueUniqueTokenBurnAmount; }
+    const CAmount& IssueUsernameTokenBurnAmount() const { return nIssueUsernameTokenBurnAmount; }
     const CAmount& IssueMsgChannelTokenBurnAmount() const { return nIssueMsgChannelTokenBurnAmount; }
     const CAmount& IssueQualifierTokenBurnAmount() const { return nIssueQualifierTokenBurnAmount; }
     const CAmount& IssueSubQualifierTokenBurnAmount() const { return nIssueSubQualifierTokenBurnAmount; }
@@ -105,6 +106,7 @@ public:
     const std::string& ReissueTokenBurnAddress() const { return strReissueTokenBurnAddress; }
     const std::string& IssueSubTokenBurnAddress() const { return strIssueSubTokenBurnAddress; }
     const std::string& IssueUniqueTokenBurnAddress() const { return strIssueUniqueTokenBurnAddress; }
+    const std::string& IssueUsernameTokenBurnAddress() const { return strIssueUsernameTokenBurnAddress; }
     const std::string& IssueMsgChannelTokenBurnAddress() const { return strIssueMsgChannelTokenBurnAddress; }
     const std::string& IssueQualifierTokenBurnAddress() const { return strIssueQualifierTokenBurnAddress; }
     const std::string& IssueSubQualifierTokenBurnAddress() const { return strIssueSubQualifierTokenBurnAddress; }
@@ -120,6 +122,7 @@ public:
             || p_address == strReissueTokenBurnAddress
             || p_address == strIssueSubTokenBurnAddress
             || p_address == strIssueUniqueTokenBurnAddress
+            || p_address == strIssueUsernameTokenBurnAddress
             || p_address == strIssueMsgChannelTokenBurnAddress
             || p_address == strIssueQualifierTokenBurnAddress
             || p_address == strIssueSubQualifierTokenBurnAddress
@@ -164,6 +167,7 @@ protected:
     CAmount nReissueTokenBurnAmount;
     CAmount nIssueSubTokenBurnAmount;
     CAmount nIssueUniqueTokenBurnAmount;
+    CAmount nIssueUsernameTokenBurnAmount;
     CAmount nIssueMsgChannelTokenBurnAmount;
     CAmount nIssueQualifierTokenBurnAmount;
     CAmount nIssueSubQualifierTokenBurnAmount;
@@ -175,6 +179,7 @@ protected:
     std::string strReissueTokenBurnAddress;
     std::string strIssueSubTokenBurnAddress;
     std::string strIssueUniqueTokenBurnAddress;
+    std::string strIssueUsernameTokenBurnAddress;
     std::string strIssueMsgChannelTokenBurnAddress;
     std::string strIssueQualifierTokenBurnAddress;
     std::string strIssueSubQualifierTokenBurnAddress;

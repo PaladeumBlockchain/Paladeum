@@ -20,6 +20,8 @@
 
 #include "rpcwallet.h"
 
+#include <tokens/tokens.h>
+
 #include <fstream>
 #include <stdint.h>
 
@@ -574,8 +576,16 @@ UniValue dumpprivkey(const JSONRPCRequest& request)
 
     EnsureWalletIsUnlocked(pwallet);
 
-    std::string strAddress = request.params[0].get_str();
-    CTxDestination dest = DecodeDestination(strAddress);
+    std::string address = request.params[0].get_str();
+
+    if (IsUsernameValid(address)) {
+        address = ptokensdb->UsernameAddress(address);
+        if (address == "") {
+            throw JSONRPCError(RPC_INVALID_PARAMETER, "You specified invalid username.");
+        }
+    }
+
+    CTxDestination dest = DecodeDestination(address);
     if (!IsValidDestination(dest)) {
         throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, "Invalid Yona address");
     }
@@ -585,7 +595,7 @@ UniValue dumpprivkey(const JSONRPCRequest& request)
     }
     CKey vchSecret;
     if (!pwallet->GetKey(*keyID, vchSecret)) {
-        throw JSONRPCError(RPC_WALLET_ERROR, "Private key for address " + strAddress + " is not known");
+        throw JSONRPCError(RPC_WALLET_ERROR, "Private key for address " + address + " is not known");
     }
     return CYonaSecret(vchSecret).ToString();
 }

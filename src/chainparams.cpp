@@ -217,6 +217,7 @@ public:
         nReissueTokenBurnAmount = 1 * COIN;
         nIssueSubTokenBurnAmount = 1 * COIN;
         nIssueUniqueTokenBurnAmount = 1 * COIN;
+        nIssueUsernameTokenBurnAmount = 1 * COIN;
         nIssueMsgChannelTokenBurnAmount = 1 * COIN;
         nIssueQualifierTokenBurnAmount = 1 * COIN;
         nIssueSubQualifierTokenBurnAmount = 1 * COIN;
@@ -228,6 +229,7 @@ public:
         strReissueTokenBurnAddress = "YmvWrhCZBVZ69NbrMZB4qycs4h3Zho7zrW";
         strIssueSubTokenBurnAddress = "YmvWrhCZBVZ69NbrMZB4qycs4h3Zho7zrW";
         strIssueUniqueTokenBurnAddress = "YmvWrhCZBVZ69NbrMZB4qycs4h3Zho7zrW";
+        strIssueUsernameTokenBurnAddress = "YmvWrhCZBVZ69NbrMZB4qycs4h3Zho7zrW";
         strIssueMsgChannelTokenBurnAddress = "YmvWrhCZBVZ69NbrMZB4qycs4h3Zho7zrW";
         strIssueQualifierTokenBurnAddress = "YmvWrhCZBVZ69NbrMZB4qycs4h3Zho7zrW";
         strIssueSubQualifierTokenBurnAddress = "YmvWrhCZBVZ69NbrMZB4qycs4h3Zho7zrW";
@@ -336,6 +338,7 @@ public:
         nReissueTokenBurnAmount = 100 * COIN;
         nIssueSubTokenBurnAmount = 100 * COIN;
         nIssueUniqueTokenBurnAmount = 5 * COIN;
+        nIssueUsernameTokenBurnAmount = 5 * COIN;
         nIssueMsgChannelTokenBurnAmount = 100 * COIN;
         nIssueQualifierTokenBurnAmount = 1000 * COIN;
         nIssueSubQualifierTokenBurnAmount = 100 * COIN;
@@ -347,6 +350,7 @@ public:
         strReissueTokenBurnAddress = "YmvWrhCZBVZ69NbrMZB4qycs4h3Zho7zrW";
         strIssueSubTokenBurnAddress = "YmvWrhCZBVZ69NbrMZB4qycs4h3Zho7zrW";
         strIssueUniqueTokenBurnAddress = "YmvWrhCZBVZ69NbrMZB4qycs4h3Zho7zrW";
+        strIssueUsernameTokenBurnAddress = "YmvWrhCZBVZ69NbrMZB4qycs4h3Zho7zrW";
         strIssueMsgChannelTokenBurnAddress = "YmvWrhCZBVZ69NbrMZB4qycs4h3Zho7zrW";
         strIssueQualifierTokenBurnAddress = "YmvWrhCZBVZ69NbrMZB4qycs4h3Zho7zrW";
         strIssueSubQualifierTokenBurnAddress = "YmvWrhCZBVZ69NbrMZB4qycs4h3Zho7zrW";
@@ -447,6 +451,7 @@ public:
         nReissueTokenBurnAmount = 100 * COIN;
         nIssueSubTokenBurnAmount = 100 * COIN;
         nIssueUniqueTokenBurnAmount = 5 * COIN;
+        nIssueUsernameTokenBurnAmount = 5 * COIN;
         nIssueMsgChannelTokenBurnAmount = 100 * COIN;
         nIssueQualifierTokenBurnAmount = 1000 * COIN;
         nIssueSubQualifierTokenBurnAmount = 100 * COIN;
@@ -458,6 +463,7 @@ public:
         strReissueTokenBurnAddress = "YmvWrhCZBVZ69NbrMZB4qycs4h3Zho7zrW";
         strIssueSubTokenBurnAddress = "YmvWrhCZBVZ69NbrMZB4qycs4h3Zho7zrW";
         strIssueUniqueTokenBurnAddress = "YmvWrhCZBVZ69NbrMZB4qycs4h3Zho7zrW";
+        strIssueUsernameTokenBurnAddress = "YmvWrhCZBVZ69NbrMZB4qycs4h3Zho7zrW";
         strIssueMsgChannelTokenBurnAddress = "YmvWrhCZBVZ69NbrMZB4qycs4h3Zho7zrW";
         strIssueQualifierTokenBurnAddress = "YmvWrhCZBVZ69NbrMZB4qycs4h3Zho7zrW";
         strIssueSubQualifierTokenBurnAddress = "YmvWrhCZBVZ69NbrMZB4qycs4h3Zho7zrW";

@@ -506,7 +506,16 @@ UniValue sendtoaddress(const JSONRPCRequest& request)
     ObserveSafeMode();
     LOCK2(cs_main, pwallet->cs_wallet);
 
-    CTxDestination dest = DecodeDestination(request.params[0].get_str());
+    std::string address = request.params[0].get_str();
+
+    if (IsUsernameValid(address)) {
+        address = ptokensdb->UsernameAddress(address);
+        if (address == "") {
+            throw JSONRPCError(RPC_INVALID_PARAMETER, "You specified invalid username.");
+        }
+    }
+
+    CTxDestination dest = DecodeDestination(address);
     if (!IsValidDestination(dest)) {
         throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, "Invalid address");
     }
@@ -821,7 +830,16 @@ UniValue getreceivedbyaddress(const JSONRPCRequest& request)
     LOCK2(cs_main, pwallet->cs_wallet);
 
     // Yona address
-    CTxDestination dest = DecodeDestination(request.params[0].get_str());
+    std::string address = request.params[0].get_str();
+
+    if (IsUsernameValid(address)) {
+        address = ptokensdb->UsernameAddress(address);
+        if (address == "") {
+            throw JSONRPCError(RPC_INVALID_PARAMETER, "You specified invalid username.");
+        }
+    }
+
+    CTxDestination dest = DecodeDestination(address);
     if (!IsValidDestination(dest)) {
         throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, "Invalid Yona address");
     }
@@ -1225,19 +1243,28 @@ UniValue sendmany(const JSONRPCRequest& request)
 
     CAmount totalAmount = 0;
     std::vector<std::string> keys = sendTo.getKeys();
-    for (const std::string& name_ : keys) {
-        CTxDestination dest = DecodeDestination(name_);
+    for (const std::string& receiver : keys) {
+        std::string address = receiver;
+
+        if (IsUsernameValid(address)) {
+            address = ptokensdb->UsernameAddress(address);
+            if (address == "") {
+                throw JSONRPCError(RPC_INVALID_PARAMETER, "You specified invalid username.");
+            }
+        }
+
+        CTxDestination dest = DecodeDestination(address);
         if (!IsValidDestination(dest)) {
-            throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, std::string("Invalid Yona address: ") + name_);
+            throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, std::string("Invalid Yona address: ") + address);
         }
 
         if (destinations.count(dest)) {
-            throw JSONRPCError(RPC_INVALID_PARAMETER, std::string("Invalid parameter, duplicated address: ") + name_);
+            throw JSONRPCError(RPC_INVALID_PARAMETER, std::string("Invalid parameter, duplicated address: ") + address);
         }
         destinations.insert(dest);
 
         CScript scriptPubKey = GetScriptForDestination(dest);
-        CAmount nAmount = AmountFromValue(sendTo[name_]);
+        CAmount nAmount = AmountFromValue(sendTo[address]);
         if (nAmount <= 0)
             throw JSONRPCError(RPC_TYPE_ERROR, "Invalid amount for send");
         totalAmount += nAmount;
@@ -1245,7 +1272,7 @@ UniValue sendmany(const JSONRPCRequest& request)
         bool fSubtractFeeFromAmount = false;
         for (unsigned int idx = 0; idx < subtractFeeFromAmount.size(); idx++) {
             const UniValue& addr = subtractFeeFromAmount[idx];
-            if (addr.get_str() == name_)
+            if (addr.get_str() == address)
                 fSubtractFeeFromAmount = true;
         }
 
@@ -2998,7 +3025,17 @@ UniValue listunspent(const JSONRPCRequest& request)
         UniValue inputs = request.params[2].get_array();
         for (unsigned int idx = 0; idx < inputs.size(); idx++) {
             const UniValue& input = inputs[idx];
-            CTxDestination dest = DecodeDestination(input.get_str());
+            
+            std::string address = input.get_str();
+
+            if (IsUsernameValid(address)) {
+                address = ptokensdb->UsernameAddress(address);
+                if (address == "") {
+                    throw JSONRPCError(RPC_INVALID_PARAMETER, "You specified invalid username.");
+                }
+            }
+
+            CTxDestination dest = DecodeDestination(address);
             if (!IsValidDestination(dest)) {
                 throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, std::string("Invalid Yona address: ") + input.get_str());
             }
@@ -3076,6 +3113,179 @@ UniValue listunspent(const JSONRPCRequest& request)
         entry.push_back(Pair("solvable", out.fSolvable));
         entry.push_back(Pair("safe", out.fSafe));
         results.push_back(entry);
+    }
+
+    return results;
+}
+
+UniValue listunspenttoken(const JSONRPCRequest& request)
+{
+    CWallet * const pwallet = GetWalletForJSONRPCRequest(request);
+    if (!EnsureWalletIsAvailable(pwallet, request.fHelp)) {
+        return NullUniValue;
+    }
+
+    if (request.fHelp || (request.params.size() < 1 && request.params.size() > 6))
+        throw std::runtime_error(
+            "listunspenttoken ( token_name minconf maxconf  [\"addresses\",...] [include_unsafe] [query_options])\n"
+            "\nReturns array of unspent transaction outputs\n"
+            "with between minconf and maxconf (inclusive) confirmations.\n"
+            "Optionally filter to only include txouts paid to specified addresses.\n"
+            "\nArguments:\n"
+            "1. name             (string) Name of the token\n"
+            "2. minconf          (numeric, optional, default=1) The minimum confirmations to filter\n"
+            "3. maxconf          (numeric, optional, default=9999999) The maximum confirmations to filter\n"
+            "4. \"addresses\"      (string) A json array of aokchain addresses to filter\n"
+            "    [\n"
+            "      \"address\"     (string) aokchain address\n"
+            "      ,...\n"
+            "    ]\n"
+            "5. include_unsafe (bool, optional, default=true) Include outputs that are not safe to spend\n"
+            "                  See description of \"safe\" attribute below.\n"
+            "6. query_options    (json, optional) JSON with query options\n"
+            "    {\n"
+            "      \"minimumAmount\"    (numeric or string, default=0) Minimum value of each UTXO in " + CURRENCY_UNIT + "\n"
+            "      \"maximumAmount\"    (numeric or string, default=unlimited) Maximum value of each UTXO in " + CURRENCY_UNIT + "\n"
+            "      \"maximumCount\"     (numeric or string, default=unlimited) Maximum number of UTXOs\n"
+            "      \"minimumSumAmount\" (numeric or string, default=unlimited) Minimum sum value of all UTXOs in " + CURRENCY_UNIT + "\n"
+            "    }\n"
+            "\nResult\n"
+            "[                   (array of json object)\n"
+            "  {\n"
+            "    \"txid\" : \"txid\",          (string) the transaction id \n"
+            "    \"vout\" : n,               (numeric) the vout value\n"
+            "    \"address\" : \"address\",    (string) the aokchain address\n"
+            "    \"label\" : \"label\",        (string) The associated label, or \"\" for the default label\n"
+            "    \"account\" : \"account\",    (string) DEPRECATED. Backwards compatible alias for label.\n"
+            "    \"scriptPubKey\" : \"key\",   (string) the script key\n"
+            "    \"amount\" : x.xxx,         (numeric) the transaction output amount in " + CURRENCY_UNIT + "\n"
+            "    \"confirmations\" : n,      (numeric) The number of confirmations\n"
+            "    \"redeemScript\" : n        (string) The redeemScript if scriptPubKey is P2SH\n"
+            "    \"spendable\" : xxx,        (bool) Whether we have the private keys to spend this output\n"
+            "    \"solvable\" : xxx,         (bool) Whether we know how to spend this output, ignoring the lack of keys\n"
+            "    \"safe\" : xxx              (bool) Whether this output is considered safe to spend. Unconfirmed transactions\n"
+            "                              from outside keys and unconfirmed replacement transactions are considered unsafe\n"
+            "                              and are not eligible for spending by fundrawtransaction and sendtoaddress.\n"
+            "  }\n"
+            "  ,...\n"
+            "]\n"
+
+            "\nExamples\n"
+            + HelpExampleCli("listunspenttoken", "")
+            + HelpExampleCli("listunspenttoken", "EXAMPLE 6 9999999 \"[\\\"1PGFqEzfmQch1gKD3ra4k18PNj3tTUUSqg\\\",\\\"1LtvqCaApEdUGFkpKMM4MstjcaL4dKg8SP\\\"]\"")
+            + HelpExampleRpc("listunspenttoken", "EXAMPLE 6, 9999999 \"[\\\"1PGFqEzfmQch1gKD3ra4k18PNj3tTUUSqg\\\",\\\"1LtvqCaApEdUGFkpKMM4MstjcaL4dKg8SP\\\"]\"")
+            + HelpExampleCli("listunspenttoken", "EXAMPLE 6 9999999 '[]' true '{ \"minimumAmount\": 0.005 }'")
+            + HelpExampleRpc("listunspenttoken", "EXAMPLE 6, 9999999, [] , true, { \"minimumAmount\": 0.005 } ")
+        );
+
+    ObserveSafeMode();
+
+    std::string tokenName = request.params[0].get_str();
+
+    int nMinDepth = 1;
+    if (!request.params[1].isNull()) {
+        RPCTypeCheckArgument(request.params[1], UniValue::VNUM);
+        nMinDepth = request.params[1].get_int();
+    }
+
+    int nMaxDepth = 9999999;
+    if (!request.params[2].isNull()) {
+        RPCTypeCheckArgument(request.params[2], UniValue::VNUM);
+        nMaxDepth = request.params[2].get_int();
+    }
+
+    std::set<std::string> destinations;
+    if (!request.params[3].isNull()) {
+        RPCTypeCheckArgument(request.params[3], UniValue::VARR);
+        UniValue inputs = request.params[3].get_array();
+        for (unsigned int idx = 0; idx < inputs.size(); idx++) {
+            const UniValue& input = inputs[idx];
+            
+            std::string address = input.get_str();
+
+            if (IsUsernameValid(address)) {
+                address = ptokensdb->UsernameAddress(address);
+                if (address == "") {
+                    throw JSONRPCError(RPC_INVALID_PARAMETER, "You specified invalid username.");
+                }
+            }
+
+            CTxDestination dest = DecodeDestination(address);
+            if (!IsValidDestination(dest)) {
+                throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, std::string("Invalid AokChain address: ") + input.get_str());
+            }
+
+            if (!destinations.insert(input.get_str()).second) {
+                throw JSONRPCError(RPC_INVALID_PARAMETER, std::string("Invalid parameter, duplicated address: ") + input.get_str());
+            }
+        }
+    }
+
+    bool include_unsafe = true;
+    if (!request.params[4].isNull()) {
+        RPCTypeCheckArgument(request.params[4], UniValue::VBOOL);
+        include_unsafe = request.params[4].get_bool();
+    }
+
+    CAmount nMinimumAmount = 0;
+    CAmount nMaximumAmount = MAX_MONEY;
+    CAmount nMinimumSumAmount = MAX_MONEY;
+    uint64_t nMaximumCount = 0;
+
+    if (!request.params[5].isNull()) {
+        const UniValue& options = request.params[5].get_obj();
+
+        if (options.exists("minimumAmount"))
+            nMinimumAmount = AmountFromValue(options["minimumAmount"]);
+
+        if (options.exists("maximumAmount"))
+            nMaximumAmount = AmountFromValue(options["maximumAmount"]);
+
+        if (options.exists("minimumSumAmount"))
+            nMinimumSumAmount = AmountFromValue(options["minimumSumAmount"]);
+
+        if (options.exists("maximumCount"))
+            nMaximumCount = options["maximumCount"].get_int64();
+    }
+
+    UniValue results(UniValue::VARR);
+    std::map<std::string, std::vector<COutput> > mapTokens;
+    LOCK2(cs_main, pwallet->cs_wallet);
+
+    pwallet->AvailableTokens(mapTokens, !include_unsafe, nullptr, nMinimumAmount, nMaximumAmount, nMinimumSumAmount, nMaximumCount, nMinDepth, nMaxDepth);
+    for (auto token : mapTokens) {
+        if (token.first == tokenName) {
+            for (const COutput& out : token.second) {
+                const CScript& scriptPubKey = out.tx->tx->vout[out.i].scriptPubKey;
+                std::string address;
+                CNewToken tokenData;
+                CTokenTransfer tokenTransfer;
+                TransferTokenFromScript(scriptPubKey, tokenTransfer, address);
+
+                auto currentActiveTokenCache = GetCurrentTokenCache();
+                if (!currentActiveTokenCache)
+                    throw JSONRPCError(RPC_INTERNAL_ERROR, "Token cache isn't available.");
+
+                currentActiveTokenCache->GetTokenMetaDataIfExists(tokenTransfer.strName, tokenData);
+
+                if (destinations.size() && !destinations.count(address))
+                    continue;
+
+                UniValue entry(UniValue::VOBJ);
+                entry.pushKV("token", tokenName);
+                entry.pushKV("txid", out.tx->GetHash().GetHex());
+                entry.pushKV("vout", out.i);
+                entry.pushKV("address", address);
+                entry.pushKV("scriptPubKey", HexStr(scriptPubKey.begin(), scriptPubKey.end()));
+                entry.pushKV("amount", ValueFromAmount(tokenTransfer.nAmount, tokenData.units));
+                entry.pushKV("satoshis", tokenTransfer.nAmount);
+                entry.pushKV("confirmations", out.nDepth);
+                entry.pushKV("spendable", out.fSpendable);
+                entry.pushKV("solvable", out.fSolvable);
+                entry.pushKV("safe", out.fSafe);
+                results.push_back(entry);
+            }
+        }
     }
 
     return results;
@@ -3578,6 +3788,7 @@ static const CRPCCommand commands[] =
     { "wallet",             "listsinceblock",           &listsinceblock,           {"blockhash","target_confirmations","include_watchonly","include_removed"} },
     { "wallet",             "listtransactions",         &listtransactions,         {"account","count","skip","include_watchonly"} },
     { "wallet",             "listunspent",              &listunspent,              {"minconf","maxconf","addresses","include_unsafe","query_options"} },
+    { "wallet",             "listunspenttoken",         &listunspenttoken,         {"token_name", "minconf","maxconf","addresses","include_unsafe","query_options"} },
     { "wallet",             "listwallets",              &listwallets,              {} },
     { "wallet",             "lockunspent",              &lockunspent,              {"unlock","transactions"} },
     { "wallet",             "move",                     &movecmd,                  {"fromaccount","toaccount","amount","minconf","comment"} },

@@ -762,7 +762,7 @@ UniValue createrawtransaction(const JSONRPCRequest& request)
 
                     KnownTokenType type;
                     if (IsTokenNameValid(token.strName, type)) {
-                        if (type != KnownTokenType::UNIQUE && type != KnownTokenType::MSGCHANNEL) {
+                        if (type != KnownTokenType::UNIQUE && type != KnownTokenType::USERNAME && type != KnownTokenType::MSGCHANNEL) {
                             token.ConstructOwnerTransaction(ownerPubKey);
 
                             // Push the scriptPubKey into the vouts.

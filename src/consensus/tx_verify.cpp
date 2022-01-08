@@ -286,7 +286,7 @@ bool CheckTransaction(const CTransaction& tx, CValidationState &state, bool fChe
                 }
 
                 // If the transfer is a unique token. Check to make sure that it is UNIQUE_TOKEN_AMOUNT
-                if (tokenType == KnownTokenType::UNIQUE) {
+                if (tokenType == KnownTokenType::UNIQUE || tokenType == KnownTokenType::USERNAME) {
                     if (transfer.nAmount != UNIQUE_TOKEN_AMOUNT)
                         return state.DoS(100, false, REJECT_INVALID, "bad-txns-transfer-unique-amount-was-not-1");
                 }
@@ -516,8 +516,22 @@ bool CheckTransaction(const CTransaction& tx, CValidationState &state, bool fChe
 
         // Mark that this transaction has a restricted token issuance, for checks later with the verifier string tx
         fContainsNewRestrictedToken = true;
-    }
-    else {
+    } else if (tx.IsNewUsername()) {
+        /** Verify the username tokens data */
+        std::string strError = "";
+        if (!tx.VerifyNewUsername(strError)) {
+            return state.DoS(100, false, REJECT_INVALID, strError);
+        }
+
+        CNewToken token;
+        std::string strAddress;
+        if (!UsernameFromTransaction(tx, token, strAddress))
+            return state.DoS(100, false, REJECT_INVALID, "bad-txns-issue-username-from-transaction");
+
+        if (!CheckNewToken(token, strError))
+            return state.DoS(100, false, REJECT_INVALID, "bad-txns-issue-username" + strError);
+
+    } else {
         // Fail if transaction contains any non-transfer token scripts and hasn't conformed to one of the
         // above transaction types.  Also fail if it contains OP_YONA_TOKEN opcode but wasn't a valid script.
         for (auto out : tx.vout) {
