@@ -205,8 +205,8 @@ struct CTokenOutputEntry
     txnouttype scriptType;
     std::string tokenName;
     CTxDestination destination;
+    CAmount nAmount = 0;
     uint32_t nTimeLock;
-    CAmount nAmount;
     std::string message;
     int64_t expireTime;
     int vout;
@@ -1131,6 +1131,7 @@ public:
     /** should probably be renamed to IsRelevantToMe */
     bool IsFromMe(const CTransaction& tx) const;
     CAmount GetDebit(const CTransaction& tx, const isminefilter& filter) const;
+    CAmount HasMyTokens(const CTransaction& tx) const;
     /** Returns whether all of the inputs match the filter */
     bool IsAllFromMe(const CTransaction& tx, const isminefilter& filter) const;
     CAmount GetCredit(const CTransaction& tx, const isminefilter& filter) const;
