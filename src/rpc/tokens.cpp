@@ -1149,6 +1149,7 @@ UniValue listmytokens(const JSONRPCRequest &request)
                     txAmount = OWNER_TOKEN_AMOUNT;
                 }
                 tempOut.push_back(Pair("amount", UnitValueFromAmount(txAmount, bal->first)));
+                tempOut.pushKV("satoshis", txAmount);
                 if (nTimeLock > 0) {
                     tempOut.push_back(Pair("timelock", (int)nTimeLock));
                 }

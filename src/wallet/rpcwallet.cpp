@@ -1555,6 +1555,7 @@ UniValue ListReceived(CWallet * const pwallet, const UniValue& params, bool fByA
             obj.push_back(Pair("address",       EncodeDestination(dest)));
             obj.push_back(Pair("account",       strAccount));
             obj.push_back(Pair("amount",        ValueFromAmount(nAmount)));
+            obj.push_back(Pair("satoshis",      nAmount));
             obj.push_back(Pair("confirmations", (nConf == std::numeric_limits<int>::max() ? 0 : nConf)));
             if (!fByAccounts)
                 obj.push_back(Pair("label", strAccount));
@@ -1582,6 +1583,7 @@ UniValue ListReceived(CWallet * const pwallet, const UniValue& params, bool fByA
                 obj.push_back(Pair("involvesWatchonly", true));
             obj.push_back(Pair("account",       (*it).first));
             obj.push_back(Pair("amount",        ValueFromAmount(nAmount)));
+            obj.push_back(Pair("satoshis",      nAmount));
             obj.push_back(Pair("confirmations", (nConf == std::numeric_limits<int>::max() ? 0 : nConf)));
             ret.push_back(obj);
         }
@@ -1721,6 +1723,7 @@ void ListTransactions(CWallet* const pwallet, const CWalletTx& wtx, const std::s
             MaybePushAddress(entry, s.destination);
             entry.push_back(Pair("category", "send"));
             entry.push_back(Pair("amount", ValueFromAmount(-s.amount)));
+            entry.push_back(Pair("satoshis", -s.amount));
             if (pwallet->mapAddressBook.count(s.destination)) {
                 entry.push_back(Pair("label", pwallet->mapAddressBook[s.destination].name));
             }
@@ -1764,6 +1767,7 @@ void ListTransactions(CWallet* const pwallet, const CWalletTx& wtx, const std::s
                     entry.push_back(Pair("category", "receive"));
                 }
                 entry.push_back(Pair("amount", ValueFromAmount(r.amount)));
+                entry.push_back(Pair("satoshis", r.amount));
                 if (pwallet->mapAddressBook.count(r.destination)) {
                     entry.push_back(Pair("label", account));
                 }
@@ -1788,6 +1792,7 @@ void ListTransactions(CWallet* const pwallet, const CWalletTx& wtx, const std::s
                 entry.push_back(Pair("token_type", GetTxnOutputType(data.type)));
                 entry.push_back(Pair("token_name", data.tokenName));
                 entry.push_back(Pair("amount", ValueFromAmount(data.nAmount)));
+                entry.push_back(Pair("satoshis", data.nAmount));
                 entry.push_back(Pair("message", EncodeTokenData(data.message)));
                 if (!data.message.empty() && data.expireTime > 0)
                     entry.push_back(Pair("message_expires", DateTimeStrFormat("%Y-%m-%d %H:%M:%S", data.expireTime)));
@@ -1812,6 +1817,7 @@ void ListTransactions(CWallet* const pwallet, const CWalletTx& wtx, const std::s
                 entry.push_back(Pair("token_type", GetTxnOutputType(data.type)));
                 entry.push_back(Pair("token_name", data.tokenName));
                 entry.push_back(Pair("amount", ValueFromAmount(data.nAmount)));
+                entry.push_back(Pair("satoshis", data.nAmount));
                 entry.push_back(Pair("message", EncodeTokenData(data.message)));
                 if (!data.message.empty() && data.expireTime > 0)
                     entry.push_back(Pair("message_expires", DateTimeStrFormat("%Y-%m-%d %H:%M:%S", data.expireTime)));
@@ -1846,6 +1852,7 @@ void AcentryToJSON(const CAccountingEntry& acentry, const std::string& strAccoun
         entry.push_back(Pair("category", "move"));
         entry.push_back(Pair("time", acentry.nTime));
         entry.push_back(Pair("amount", ValueFromAmount(acentry.nCreditDebit)));
+        entry.push_back(Pair("satoshis", acentry.nCreditDebit));
         entry.push_back(Pair("otheraccount", acentry.strOtherAccount));
         entry.push_back(Pair("comment", acentry.strComment));
         ret.push_back(entry);
@@ -2296,6 +2303,7 @@ UniValue gettransaction(const JSONRPCRequest& request)
     CAmount nFee = (wtx.IsFromMe(filter) ? wtx.tx->GetValueOut() - nDebit : 0);
 
     entry.push_back(Pair("amount", ValueFromAmount(nNet - nFee)));
+    entry.push_back(Pair("satoshis", nNet - nFee));
     if (wtx.IsFromMe(filter))
         entry.push_back(Pair("fee", ValueFromAmount(nFee)));
 
@@ -3108,6 +3116,7 @@ UniValue listunspent(const JSONRPCRequest& request)
 
         entry.push_back(Pair("scriptPubKey", HexStr(scriptPubKey.begin(), scriptPubKey.end())));
         entry.push_back(Pair("amount", ValueFromAmount(out.tx->tx->vout[out.i].nValue)));
+        entry.push_back(Pair("satoshis", out.tx->tx->vout[out.i].nValue));
         entry.push_back(Pair("confirmations", out.nDepth));
         entry.push_back(Pair("spendable", out.fSpendable));
         entry.push_back(Pair("solvable", out.fSolvable));
