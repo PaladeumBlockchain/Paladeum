@@ -51,6 +51,7 @@ public:
     // Info: As we don't need to process addresses in here when using
     // payment requests, we can abuse it for displaying an address list.
     // Todo: This is a hack, should be replaced with a cleaner solution!
+    QString username;
     QString address;
     QString label;
     CAmount amount;
@@ -71,6 +72,7 @@ public:
 
     template <typename Stream, typename Operation>
     inline void SerializationOp(Stream& s, Operation ser_action) {
+        std::string sUsername = username.toStdString();
         std::string sAddress = address.toStdString();
         std::string sLabel = label.toStdString();
         std::string sMessage = message.toStdString();
@@ -80,6 +82,7 @@ public:
         std::string sAuthenticatedMerchant = authenticatedMerchant.toStdString();
 
         READWRITE(this->nVersion);
+        READWRITE(sUsername);
         READWRITE(sAddress);
         READWRITE(sLabel);
         READWRITE(amount);
@@ -89,6 +92,7 @@ public:
 
         if (ser_action.ForRead())
         {
+            username = QString::fromStdString(sUsername);
             address = QString::fromStdString(sAddress);
             label = QString::fromStdString(sLabel);
             message = QString::fromStdString(sMessage);
@@ -113,6 +117,7 @@ public:
     // Todo: This is a hack, should be replaced with a cleaner solution!
 
     QString tokenName;
+    QString username;
     QString address;
     QString label;
     CAmount amount;
@@ -132,6 +137,7 @@ public:
 
     template <typename Stream, typename Operation>
     inline void SerializationOp(Stream& s, Operation ser_action) {
+        std::string sUsername = username.toStdString();
         std::string sAddress = address.toStdString();
         std::string sLabel = label.toStdString();
         std::string sMessage = message.toStdString();
@@ -143,6 +149,7 @@ public:
 
         READWRITE(this->nVersion);
         READWRITE(sTokenName);
+        READWRITE(sUsername);
         READWRITE(sAddress);
         READWRITE(sLabel);
         READWRITE(amount);
@@ -154,6 +161,7 @@ public:
         if (ser_action.ForRead())
         {
             tokenName = QString::fromStdString(sTokenName);
+            username = QString::fromStdString(sUsername);
             address = QString::fromStdString(sAddress);
             label = QString::fromStdString(sLabel);
             message = QString::fromStdString(sMessage);
@@ -178,6 +186,7 @@ public:
         OK,
         InvalidAmount,
         InvalidAddress,
+        InvalidUsername,
         AmountExceedsBalance,
         AmountWithFeeExceedsBalance,
         DuplicateAddress,

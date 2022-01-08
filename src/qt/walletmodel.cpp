@@ -17,6 +17,8 @@
 #include "tokentablemodel.h"
 #include "myrestrictedtokentablemodel.h"
 
+#include <tokens/tokens.h>
+
 #include "base58.h"
 #include "chain.h"
 #include "keystore.h"
@@ -258,6 +260,10 @@ WalletModel::SendCoinsReturn WalletModel::prepareTransaction(WalletModelTransact
         {   // User-entered yona address / amount:
             if(!validateAddress(rcp.address))
             {
+                if (ptokensdb->UsernameAddress(rcp.address.toStdString()) == "") {
+                    return InvalidUsername;
+                }
+
                 return InvalidAddress;
             }
             if(rcp.amount <= 0)

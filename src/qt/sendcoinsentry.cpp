@@ -6,6 +6,8 @@
 #include "sendcoinsentry.h"
 #include "ui_sendcoinsentry.h"
 
+#include <tokens/tokens.h>
+
 #include "addressbookpage.h"
 #include "addresstablemodel.h"
 #include "guiutil.h"
@@ -14,6 +16,7 @@
 #include "walletmodel.h"
 #include "guiconstants.h"
 #include "darkstyle.h"
+#include "validation.h"
 
 #include <QGraphicsDropShadowEffect>
 #include <QApplication>
@@ -155,7 +158,7 @@ bool SendCoinsEntry::validate()
     if (recipient.paymentRequest.IsInitialized())
         return retval;
 
-    if (!model->validateAddress(ui->payTo->text()))
+    if (!model->validateAddress(ui->payTo->text()) && !IsUsernameValid(ui->payTo->text().toStdString()))
     {
         ui->payTo->setValid(false);
         retval = false;
@@ -189,7 +192,14 @@ SendCoinsRecipient SendCoinsEntry::getValue()
         return recipient;
 
     // Normal payment
-    recipient.address = ui->payTo->text();
+    if (IsUsernameValid(ui->payTo->text().toStdString()))
+    {
+        recipient.username = ui->payTo->text();
+        recipient.address = QString::fromStdString(ptokensdb->UsernameAddress(ui->payTo->text().toStdString()));
+    } else {
+        recipient.address = ui->payTo->text();
+    }
+
     recipient.label = ui->addAsLabel->text();
     recipient.amount = ui->payAmount->value();
     recipient.message = ui->messageTextLabel->text();

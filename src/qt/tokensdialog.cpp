@@ -369,6 +369,17 @@ void TokensDialog::on_sendButton_clicked()
     std::vector< std::pair<CTokenTransfer, std::string> >vTransfers;
 
     for (auto recipient : recipients) {
+        std::string recipientAddress = recipient.address.toStdString();
+
+        if (recipientAddress == "") {
+            QPair<QString, CClientUIInterface::MessageBoxFlags> msgParams;
+            msgParams.second = CClientUIInterface::MSG_WARNING;
+            msgParams.first = tr("There is no address associated with username you specified. Please recheck.");
+
+            Q_EMIT message(tr("Send Coins"), msgParams.first, msgParams.second);
+            return;
+        }
+
         vTransfers.emplace_back(std::make_pair(CTokenTransfer(recipient.tokenName.toStdString(), recipient.amount, recipient.timeLock, DecodeTokenData(recipient.message.toStdString()), 0), recipient.address.toStdString()));
     }
 
@@ -432,6 +443,10 @@ void TokensDialog::on_sendButton_clicked()
             recipientElement = tr("%1 to %2").arg(amount, address);
         }
 
+        if (rcp.username.length() > 0) {
+            recipientElement.append(QString(" (%1)").arg(rcp.username));
+        }
+
         if (rcp.timeLock > 0) {
             recipientElement.append(QString(" with lock time %1").arg(rcp.timeLock));
         }
@@ -453,13 +468,6 @@ void TokensDialog::on_sendButton_clicked()
         // append transaction size
         questionString.append(" (" + QString::number((double)GetVirtualTransactionSize(tx) / 1000) + " kB)");
     }
-
-//    if (ui->optInRBF->isChecked())
-//    {
-//        questionString.append("<hr /><span>");
-//        questionString.append(tr("This transaction signals replaceability (optin-RBF)."));
-//        questionString.append("</span>");
-//    }
 
     SendConfirmationDialog confirmationDialog(tr("Confirm send tokens"),
                                               questionString.arg(formatted.join("<br />")), SEND_CONFIRM_DELAY, this);
@@ -681,6 +689,9 @@ void TokensDialog::processSendCoinsReturn(const WalletModel::SendCoinsReturn &se
     {
         case WalletModel::InvalidAddress:
             msgParams.first = tr("The recipient address is not valid. Please recheck.");
+            break;
+        case WalletModel::InvalidUsername:
+            msgParams.first = tr("There is no address associated with username you specified. Please recheck.");
             break;
         case WalletModel::InvalidAmount:
             msgParams.first = tr("The amount to pay must be larger than 0.");

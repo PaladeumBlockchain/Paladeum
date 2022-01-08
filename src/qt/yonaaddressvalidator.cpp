@@ -7,6 +7,8 @@
 
 #include "base58.h"
 
+#include <tokens/tokens.h>
+
 /* Base58 characters are:
      "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz"
 
@@ -67,8 +69,8 @@ QValidator::State YonaAddressEntryValidator::validate(QString &input, int &pos) 
 
         if (((ch >= '0' && ch<='9') ||
             (ch >= 'a' && ch<='z') ||
-            (ch >= 'A' && ch<='Z')) &&
-            ch != 'l' && ch != 'I' && ch != '0' && ch != 'O')
+            (ch >= 'A' && ch<='Z') ||
+            (ch=='@')))
         {
             // Alphanumeric and not a 'forbidden' character
         }
@@ -90,7 +92,7 @@ QValidator::State YonaAddressCheckValidator::validate(QString &input, int &pos) 
 {
     Q_UNUSED(pos);
     // Validate the passed Yona address
-    if (IsValidDestinationString(input.toStdString())) {
+    if (IsUsernameValid(input.toStdString()) || IsValidDestinationString(input.toStdString())) {
         return QValidator::Acceptable;
     }
 
