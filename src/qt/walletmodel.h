@@ -116,6 +116,7 @@ public:
     QString address;
     QString label;
     CAmount amount;
+    uint32_t timeLock;
     // If from a payment request, this is used for storing the memo
     QString message;
 
@@ -145,6 +146,7 @@ public:
         READWRITE(sAddress);
         READWRITE(sLabel);
         READWRITE(amount);
+        READWRITE(timeLock);
         READWRITE(sMessage);
         READWRITE(sPaymentRequest);
         READWRITE(sAuthenticatedMerchant);
@@ -202,6 +204,8 @@ public:
     CAmount getBalance(const CCoinControl *coinControl = nullptr) const;
     CAmount getUnconfirmedBalance() const;
     CAmount getImmatureBalance() const;
+    CAmount getStake() const;
+    CAmount getWatchStake() const;
     bool haveWatchOnly() const;
     CAmount getWatchBalance() const;
     CAmount getWatchUnconfirmedBalance() const;

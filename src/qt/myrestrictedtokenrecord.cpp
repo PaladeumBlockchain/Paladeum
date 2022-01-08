@@ -47,7 +47,7 @@ QList<MyRestrictedTokenRecord> MyRestrictedTokenRecord::decomposeTransaction(con
             if (!TokenNullDataFromScript(txout.scriptPubKey, data, address)) {
                 continue;
             }
-            mine = IsMine(*wallet, DecodeDestination(address));
+            mine = wallet->IsMineDest(DecodeDestination(address));
             if (mine & ISMINE_ALL) {
                 MyRestrictedTokenRecord sub(hash, nTime);
                 sub.involvesWatchAddress = mine & ISMINE_SPENDABLE ? false : true;

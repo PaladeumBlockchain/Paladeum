@@ -302,6 +302,10 @@ SendTokensRecipient SendTokensEntry::getValue()
     recipient.tokenName = ui->tokenSelectionBox->currentText();
     recipient.address = ui->payTo->text();
     recipient.label = ui->addAsLabel->text();
+
+    // ToDo: parse real timelock here
+    recipient.timeLock = 0;
+
     recipient.amount = ui->payTokenAmount->value();
     recipient.message = ui->memoBox->text();
 

@@ -144,7 +144,6 @@ ReissueTokenDialog::ReissueTokenDialog(const PlatformStyle *_platformStyle, QWid
     ui->comboBox->setCompleter(completer);
     adjustSize();
 
-
     ui->addressText->installEventFilter(this);
     ui->lineEditVerifierString->installEventFilter(this);
 }

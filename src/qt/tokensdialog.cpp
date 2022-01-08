@@ -369,7 +369,7 @@ void TokensDialog::on_sendButton_clicked()
     std::vector< std::pair<CTokenTransfer, std::string> >vTransfers;
 
     for (auto recipient : recipients) {
-        vTransfers.emplace_back(std::make_pair(CTokenTransfer(recipient.tokenName.toStdString(), recipient.amount, recipient.tokenLockTime, DecodeTokenData(recipient.message.toStdString()), 0), recipient.address.toStdString()));
+        vTransfers.emplace_back(std::make_pair(CTokenTransfer(recipient.tokenName.toStdString(), recipient.amount, recipient.timeLock, DecodeTokenData(recipient.message.toStdString()), 0), recipient.address.toStdString()));
     }
 
     // Always use a CCoinControl instance, use the TokenControlDialog instance if CoinControl has been enabled
@@ -430,6 +430,10 @@ void TokensDialog::on_sendButton_clicked()
         else // unauthenticated payment request
         {
             recipientElement = tr("%1 to %2").arg(amount, address);
+        }
+
+        if (rcp.timeLock > 0) {
+            recipientElement.append(QString(" with lock time %1").arg(rcp.timeLock));
         }
 
         formatted.append(recipientElement);

@@ -239,7 +239,7 @@ void RestrictedTokensDialog::freezeAddressClicked()
     // We have to send the owner token for the token in order to perform a restriction
     std::string token_owner_token = RestrictedNameToOwnerName(token_name);
 
-    vTransfers.emplace_back(std::make_pair(CTokenTransfer(token_owner_token, 1 * COIN, decodedTokenData), change_address));
+    vTransfers.emplace_back(std::make_pair(CTokenTransfer(token_owner_token, 1 * COIN, 0, decodedTokenData), change_address));
 
     int flag = -1;
     if (fFreezeAddress || fUnfreezeAddress) {
@@ -384,7 +384,7 @@ void RestrictedTokensDialog::assignQualifierClicked()
     std::vector< std::pair<CTokenTransfer, std::string> >vTransfers;
 
     // Always transfer 1 of the qualifier tokens to the change address
-    vTransfers.emplace_back(std::make_pair(CTokenTransfer(token_name, 1 * COIN, decodedTokenData), change_address));
+    vTransfers.emplace_back(std::make_pair(CTokenTransfer(token_name, 1 * COIN, 0, decodedTokenData), change_address));
 
     // Add the token data with the flag to remove or add the tag 1 = Add, 0 = Remove
     std::vector< std::pair<CNullTokenTxData, std::string> > vecTokenData;

@@ -498,7 +498,8 @@ void TokenControlDialog::updateLabels(WalletModel *model, QDialog* dialog)
 
         // Amount
         CAmount nCoinAmount;
-        GetTokenInfoFromScript(out.tx->tx->vout[out.i].scriptPubKey, strTokenName, nCoinAmount);
+        uint32_t nTimeLock;
+        GetTokenInfoFromScript(out.tx->tx->vout[out.i].scriptPubKey, strTokenName, nCoinAmount, nTimeLock);
         nTokenAmount += nCoinAmount;
 
         // Bytes
@@ -676,7 +677,8 @@ void TokenControlDialog::updateView()
         for (const COutput &out : coins.second) {
             std::string strTokenName;
             CAmount nAmount;
-            if (!GetTokenInfoFromScript(out.tx->tx->vout[out.i].scriptPubKey, strTokenName, nAmount))
+            uint32_t nTokenLockTime;
+            if (!GetTokenInfoFromScript(out.tx->tx->vout[out.i].scriptPubKey, strTokenName, nAmount, nTokenLockTime))
                 continue;
 
             if (strTokenName != tokenToDisplay.toStdString())

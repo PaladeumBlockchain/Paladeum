@@ -99,7 +99,7 @@ public:
                         sub.type = std::get<2>(item) ? MyRestrictedTokenRecord::Type::Tagged : MyRestrictedTokenRecord::Type::UnTagged;
                     else if (IsTokenNameAnRestricted(sub.tokenName))
                         sub.type = std::get<2>(item) ? MyRestrictedTokenRecord::Type::Frozen : MyRestrictedTokenRecord::Type::UnFrozen;
-                    sub.involvesWatchAddress = IsMine(*this->wallet, DecodeDestination(sub.address)) & ISMINE_WATCH_ONLY;
+                    sub.involvesWatchAddress = this->wallet->IsMineDest(DecodeDestination(sub.address)) & ISMINE_WATCH_ONLY;
                     vectTokenData.push_back(qMakePair(QString::fromStdString(std::get<0>(item)), QString::fromStdString(std::get<1>(item))));
                     cacheMyTokenData[qMakePair(QString::fromStdString(std::get<0>(item)), QString::fromStdString(std::get<1>(item)))] = sub;
                 }
@@ -126,7 +126,7 @@ public:
             cacheMyTokenData[pair] = rec;
         } else {
             rec.involvesWatchAddress =
-                    IsMine(*this->wallet, DecodeDestination(address.toStdString())) & ISMINE_WATCH_ONLY ? true : false;
+                    wallet->IsMineDest(DecodeDestination(address.toStdString())) & ISMINE_WATCH_ONLY ? true : false;
             parent->beginInsertRows(QModelIndex(), 0, 0);
             cacheMyTokenData[pair] = rec;
             vectTokenData.push_front(pair);

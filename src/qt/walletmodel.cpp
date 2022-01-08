@@ -84,6 +84,16 @@ CAmount WalletModel::getBalance(const CCoinControl *coinControl) const
     return wallet->GetBalance();
 }
 
+CAmount WalletModel::getStake() const
+{
+    return wallet->GetStake();
+}
+
+CAmount WalletModel::getWatchStake() const
+{
+    return wallet->GetWatchOnlyStake();
+}
+
 CAmount WalletModel::getUnconfirmedBalance() const
 {
     return wallet->GetUnconfirmedBalance();
@@ -645,7 +655,7 @@ bool WalletModel::getPubKey(const CKeyID &address, CPubKey& vchPubKeyOut) const
 
 bool WalletModel::IsSpendable(const CTxDestination& dest) const
 {
-    return IsMine(*wallet, dest) & ISMINE_SPENDABLE;
+    return wallet->IsMineDest(dest) & ISMINE_SPENDABLE;
 }
 
 bool WalletModel::getPrivKey(const CKeyID &address, CKey& vchPrivKeyOut) const
@@ -699,7 +709,8 @@ void WalletModel::listTokens(std::map<QString, std::map<QString, std::vector<COu
             auto out = coin.tx->tx->vout[coin.i];
             std::string strTokenName;
             CAmount nAmount;
-            if (!GetTokenInfoFromScript(out.scriptPubKey, strTokenName, nAmount))
+            uint32_t nTimeLock;
+            if (!GetTokenInfoFromScript(out.scriptPubKey, strTokenName, nAmount, nTimeLock))
                 continue;
 
             if (nAmount == 0)
