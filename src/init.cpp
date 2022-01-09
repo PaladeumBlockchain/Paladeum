@@ -261,7 +261,7 @@ void PrepareShutdown()
         delete pblocktree;
         pblocktree = nullptr;
 
-        /** TOKEN START */
+        /** TOKENS START */
         delete ptokens;
         ptokens = nullptr;
 
@@ -316,7 +316,7 @@ void PrepareShutdown()
         delete pDistributeSnapshotDb;
         pDistributeSnapshotDb = nullptr;
 
-        /** TOKEN END */
+        /** TOKENS END */
     }
 #ifdef ENABLE_WALLET
     StopWallets();
@@ -1536,7 +1536,7 @@ bool AppInitMain(boost::thread_group& threadGroup, CScheduler& scheduler)
                 delete pblocktree;
                 pblocktree = new CBlockTreeDB(nBlockTreeDBCache, false, fReset, dbMaxFileSize);
 
-                /** TOKEN START */
+                /** TOKENS START */
                 {
                     // Basic tokens
                     delete ptokens;
@@ -1616,7 +1616,7 @@ bool AppInitMain(boost::thread_group& threadGroup, CScheduler& scheduler)
                         LogPrintf("Messaging is enabled\n");
                     }
                 }
-                /** TOKEN END */
+                /** TOKENS END */
 
                 if (fReset) {
                     pblocktree->WriteReindexing(true);

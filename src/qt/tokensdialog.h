@@ -108,10 +108,10 @@ private Q_SLOTS:
 
     void customFeeFeatureChanged(bool);
 
-    /** TOKEN START */
+    /** TOKENS START */
     void tokenControlUpdateSendCoinsDialog();
     void focusToken(const QModelIndex& index);
-    /** TOKEN END */
+    /** TOKENS END */
 
     Q_SIGNALS:
             // Fired when a message should be reported to the user

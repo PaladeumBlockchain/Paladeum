@@ -76,12 +76,12 @@ WalletView::WalletView(const PlatformStyle *_platformStyle, QWidget *parent):
     addWidget(receiveCoinsPage);
     addWidget(sendCoinsPage);
 
-    /** TOKEN START */
+    /** TOKENS START */
     addWidget(tokensPage);
     addWidget(createTokensPage);
     addWidget(manageTokensPage);
     addWidget(restrictedTokensPage);
-    /** TOKEN END */
+    /** TOKENS END */
 
     // Clicking on a transaction on the overview pre-selects the transaction on the transaction history page
     connect(overviewPage, SIGNAL(transactionClicked(QModelIndex)), transactionView, SLOT(focusTransaction(QModelIndex)));
@@ -98,7 +98,7 @@ WalletView::WalletView(const PlatformStyle *_platformStyle, QWidget *parent):
     // Pass through messages from transactionView
     connect(transactionView, SIGNAL(message(QString,QString,unsigned int)), this, SIGNAL(message(QString,QString,unsigned int)));
 
-    /** TOKEN START */
+    /** TOKENS START */
     connect(tokensPage, SIGNAL(message(QString,QString,unsigned int)), this, SIGNAL(message(QString,QString,unsigned int)));
     connect(createTokensPage, SIGNAL(message(QString,QString,unsigned int)), this, SIGNAL(message(QString,QString,unsigned int)));
     connect(manageTokensPage, SIGNAL(message(QString,QString,unsigned int)), this, SIGNAL(message(QString,QString,unsigned int)));
@@ -170,7 +170,7 @@ void WalletView::setWalletModel(WalletModel *_walletModel)
     usedReceivingAddressesPage->setModel(_walletModel ? _walletModel->getAddressTableModel() : nullptr);
     usedSendingAddressesPage->setModel(_walletModel ? _walletModel->getAddressTableModel() : nullptr);
 
-    /** TOKEN START */
+    /** TOKENS START */
     tokensPage->setModel(_walletModel);
     createTokensPage->setModel(_walletModel);
     manageTokensPage->setModel(_walletModel);
@@ -210,7 +210,7 @@ void WalletView::processNewTransaction(const QModelIndex& parent, int start, int
     if (!ttm || ttm->processingQueuedTransactions())
         return;
 
-    /** TOKEN START */
+    /** TOKENS START */
     // With the addition of token transactions, there can be multiple transaction that need notifications
     // so we need to loop through all new transaction that were added to the transaction table and display
     // notifications for each individual transaction
@@ -227,7 +227,7 @@ void WalletView::processNewTransaction(const QModelIndex& parent, int start, int
         Q_EMIT incomingTransaction(date, walletModel->getOptionsModel()->getDisplayUnit(), amount, type, address, label,
                                    tokenName);
     }
-    /** TOKEN END */
+    /** TOKENS END */
 
     /** Everytime we get an new transaction. We should check to see if tokens are enabled or not */
     overviewPage->showTokens();
@@ -424,7 +424,7 @@ void WalletView::requestedSyncWarningInfo()
 }
 
 bool fFirstVisit = true;
-/** TOKEN START */
+/** TOKENS START */
 void WalletView::gotoTokensPage()
 {
     if (fFirstVisit){
@@ -449,4 +449,4 @@ void WalletView::gotoRestrictedTokensPage()
 {
     setCurrentWidget(restrictedTokensPage);
 }
-/** TOKEN END */
+/** TOKENS END */

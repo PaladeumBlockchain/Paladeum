@@ -454,7 +454,7 @@ void CTxMemPool::addAddressIndex(const CTxMemPoolEntry &entry, const CCoinsViewC
             mapAddress.insert(std::make_pair(key, delta));
             inserted.push_back(key);
         } else {
-            /** TOKEN START */
+            /** TOKENS START */
             if (AreTokensDeployed()) {
                 uint160 hashBytes;
                 std::string tokenName;
@@ -476,7 +476,7 @@ void CTxMemPool::addAddressIndex(const CTxMemPoolEntry &entry, const CCoinsViewC
                     }
                 }
             }
-            /** TOKEN END */
+            /** TOKENS END */
         }
     }
 
@@ -507,7 +507,7 @@ void CTxMemPool::addAddressIndex(const CTxMemPoolEntry &entry, const CCoinsViewC
             mapAddress.insert(std::make_pair(key, CMempoolAddressDelta(entry.GetTime(), out.nValue)));
             inserted.push_back(key);
         } else {
-            /** TOKEN START */
+            /** TOKENS START */
             if (AreTokensDeployed()) {
                 uint160 hashBytes;
                 std::string tokenName;
@@ -527,7 +527,7 @@ void CTxMemPool::addAddressIndex(const CTxMemPoolEntry &entry, const CCoinsViewC
                     }
                 }
             }
-            /** TOKEN END */
+            /** TOKENS END */
         }
     }
 
@@ -678,7 +678,7 @@ void CTxMemPool::removeUnchecked(txiter it, MemPoolRemovalReason reason)
     removeAddressIndex(hash);
     removeSpentIndex(hash);
 
-    /** TOKEN START */
+    /** TOKENS START */
     // If the transaction being removed from the mempool is locking other reissues. Free them
     if (mapReissuedTx.count(hash)) {
         if (mapReissuedTokens.count(mapReissuedTx.at(hash))) {
@@ -759,7 +759,7 @@ void CTxMemPool::removeUnchecked(txiter it, MemPoolRemovalReason reason)
             }
         }
     }
-    /** TOKEN END */
+    /** TOKENS END */
 }
 
 // Calculates descendants of entry that are not already in setDescendants, and adds to
@@ -905,7 +905,7 @@ void CTxMemPool::removeForBlock(const std::vector<CTransactionRef>& vtx, unsigne
             entries.push_back(&*i);
     }
 
-    /** TOKEN START */
+    /** TOKENS START */
     // Get the newly added tokens, and make sure they are in the entries
     std::vector<CTransaction> trans;
     for (auto it : connectedBlockData.newTokensToAdd) {
@@ -1016,7 +1016,7 @@ void CTxMemPool::removeForBlock(const std::vector<CTransactionRef>& vtx, unsigne
             }
         }
     }
-    /** TOKEN END */
+    /** TOKENS END */
 
     // Before the txs in the new block have been removed from the mempool, update policy estimates
     if (minerPolicyEstimator) {minerPolicyEstimator->processBlock(nBlockHeight, entries);}
@@ -1032,7 +1032,7 @@ void CTxMemPool::removeForBlock(const std::vector<CTransactionRef>& vtx, unsigne
         ClearPrioritisation(tx->GetHash());
     }
 
-    /** TOKEN START */
+    /** TOKENS START */
     // Remove newly added token issue transactions from the mempool if they haven't been removed already
     for (auto tx : trans)
     {
@@ -1045,7 +1045,7 @@ void CTxMemPool::removeForBlock(const std::vector<CTransactionRef>& vtx, unsigne
         removeConflicts(tx);
         ClearPrioritisation(tx.GetHash());
     }
-    /** TOKEN END */
+    /** TOKENS END */
 
     lastRollingFeeUpdate = GetTime();
     blockSinceLastRollingFeeBump = true;
@@ -1096,14 +1096,14 @@ static void CheckInputsAndUpdateCoins(const CTransaction& tx, CCoinsViewCache& m
     CValidationState state;
     CAmount txfee = 0;
     bool fCheckResult = tx.IsCoinBase() || Consensus::CheckTxInputs(tx, state, mempoolDuplicate, spendheight, txfee);
-    /** TOKEN START */
+    /** TOKENS START */
     if (AreTokensDeployed()) {
         std::vector<std::pair<std::string, uint256>> vReissueTokens;
         bool fCheckTokens = Consensus::CheckTxTokens(tx, state, mempoolDuplicate, spendheight, spendtime, ptokens, false, vReissueTokens);
         assert(fCheckResult && fCheckTokens);
     } else
         assert(fCheckResult);
-    /** TOKEN END */
+    /** TOKENS END */
     UpdateCoins(tx, mempoolDuplicate, 1000000);
 }
 

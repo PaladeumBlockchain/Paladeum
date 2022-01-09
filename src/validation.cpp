@@ -524,7 +524,7 @@ static bool AcceptToMemoryPoolWorker(const CChainParams& chainparams, CTxMemPool
     const CTransaction& tx = *ptx;
     const uint256 hash = tx.GetHash();
 
-    /** TOKEN START */
+    /** TOKENS START */
     std::vector<std::pair<std::string, uint256>> vReissueTokens;
     AssertLockHeld(cs_main);
     if (pfMissingInputs)
@@ -658,7 +658,7 @@ static bool AcceptToMemoryPoolWorker(const CChainParams& chainparams, CTxMemPool
             return error("%s: Consensus::CheckTxInputs: %s, %s", __func__, tx.GetHash().ToString(), FormatStateMessage(state));
         }
 
-        /** TOKEN START */
+        /** TOKENS START */
         if (!AreTokensDeployed()) {
             for (auto out : tx.vout) {
                 if (out.scriptPubKey.IsTokenScript())
@@ -671,7 +671,7 @@ static bool AcceptToMemoryPoolWorker(const CChainParams& chainparams, CTxMemPool
                 return error("%s: Consensus::CheckTxTokens: %s, %s", __func__, tx.GetHash().ToString(),
                              FormatStateMessage(state));
         }
-        /** TOKEN END */
+        /** TOKENS END */
 
         // Check for non-standard pay-to-script-hash in inputs
         if (fRequireStandard && !AreInputsStandard(tx, view))
@@ -1534,12 +1534,12 @@ void UpdateCoins(const CTransaction& tx, CCoinsViewCache& inputs, CTxUndo &txund
         txundo.vprevout.reserve(tx.vin.size());
         for (const CTxIn &txin : tx.vin) {
             txundo.vprevout.emplace_back();
-            bool is_spent = inputs.SpendCoin(txin.prevout, &txundo.vprevout.back(), tokenCache); /** TOKEN START */ /* Pass tokenCache into function */ /** TOKEN END */
+            bool is_spent = inputs.SpendCoin(txin.prevout, &txundo.vprevout.back(), tokenCache); /** TOKENS START */ /* Pass tokenCache into function */ /** TOKENS END */
             assert(is_spent);
         }
     }
     // add outputs
-    AddCoins(inputs, tx, nHeight, blockHash, false, tokenCache, undoTokenData); /** TOKEN START */ /* Pass tokenCache into function */ /** TOKEN END */
+    AddCoins(inputs, tx, nHeight, blockHash, false, tokenCache, undoTokenData); /** TOKENS START */ /* Pass tokenCache into function */ /** TOKENS END */
 }
 
 void UpdateCoins(const CTransaction& tx, CCoinsViewCache& inputs, int nHeight)
@@ -1772,7 +1772,7 @@ int ApplyTxInUndo(Coin&& undo, CCoinsViewCache& view, const COutPoint& out, CTok
 {
     bool fClean = true;
 
-    /** TOKEN START */
+    /** TOKENS START */
     // This is needed because undo, is going to be cleared and moved when AddCoin is called. We need this for undo tokens
     Coin tempCoin;
     bool fIsToken = false;
@@ -1780,7 +1780,7 @@ int ApplyTxInUndo(Coin&& undo, CCoinsViewCache& view, const COutPoint& out, CTok
         fIsToken = true;
         tempCoin = undo;
     }
-    /** TOKEN END */
+    /** TOKENS END */
 
     if (view.HaveCoin(out)) fClean = false; // overwriting transaction output
 
@@ -1804,14 +1804,14 @@ int ApplyTxInUndo(Coin&& undo, CCoinsViewCache& view, const COutPoint& out, CTok
     // it is an overwrite.
     view.AddCoin(out, std::move(undo), !fClean);
 
-    /** TOKEN START */
+    /** TOKENS START */
     if (AreTokensDeployed()) {
         if (tokenCache && fIsToken) {
             if (!tokenCache->UndoTokenCoin(tempCoin, out))
                 fClean = false;
         }
     }
-    /** TOKEN END */
+    /** TOKENS END */
 
     return fClean ? DISCONNECT_OK : DISCONNECT_UNCLEAN;
 }
@@ -1897,7 +1897,7 @@ static DisconnectResult DisconnectBlock(const CBlock& block, const CBlockIndex* 
                     addressIndex.push_back(std::make_pair(CAddressIndexKey(1, hashBytes, pindex->nHeight, i, hash, k, false), out.nValue));
                     addressUnspentIndex.push_back(std::make_pair(CAddressUnspentKey(1, hashBytes, hash, k), CAddressUnspentValue()));
                 } else {
-                    /** TOKEN START */
+                    /** TOKENS START */
                     if (AreTokensDeployed()) {
                         std::string tokenName;
                         CAmount tokenAmount;
@@ -1927,7 +1927,7 @@ static DisconnectResult DisconnectBlock(const CBlock& block, const CBlockIndex* 
                             continue;
                         }
                     }
-                    /** TOKEN END */
+                    /** TOKENS END */
                 }
             }
         }
@@ -1939,19 +1939,19 @@ static DisconnectResult DisconnectBlock(const CBlock& block, const CBlockIndex* 
             if (!tx.vout[o].scriptPubKey.IsUnspendable()) {
                 COutPoint out(hash, o);
                 Coin coin;
-                bool is_spent = view.SpendCoin(out, &coin, &tempCache); /** TOKEN START */ /* Pass tokensCache into the SpendCoin function */ /** TOKEN END */
+                bool is_spent = view.SpendCoin(out, &coin, &tempCache); /** TOKENS START */ /* Pass tokensCache into the SpendCoin function */ /** TOKENS END */
                 if (!is_spent || tx.vout[o] != coin.out || pindex->nHeight != coin.nHeight || is_coinbase != coin.fCoinBase) {
                     fClean = false; // transaction output mismatch
                 }
 
-                /** TOKEN START */
+                /** TOKENS START */
                 if (AreTokensDeployed()) {
                     if (tokensCache) {
                         if (IsScriptTransferToken(tx.vout[o].scriptPubKey))
                             vTokenTxIndex.emplace_back(o);
                     }
                 }
-                /** TOKEN START */
+                /** TOKENS START */
             } else {
                 if(AreRestrictedTokensDeployed()) {
                     if (tokensCache) {
@@ -1967,7 +1967,7 @@ static DisconnectResult DisconnectBlock(const CBlock& block, const CBlockIndex* 
             }
         }
 
-        /** TOKEN START */
+        /** TOKENS START */
         if (AreTokensDeployed()) {
             if (tokensCache) {
                 if (tx.IsNewToken()) {
@@ -2184,7 +2184,7 @@ static DisconnectResult DisconnectBlock(const CBlock& block, const CBlockIndex* 
                 }
             }
         }
-        /** TOKEN END */
+        /** TOKENS END */
 
         // restore inputs
         if (i > 0) { // not coinbases
@@ -2196,7 +2196,7 @@ static DisconnectResult DisconnectBlock(const CBlock& block, const CBlockIndex* 
             for (unsigned int j = tx.vin.size(); j-- > 0;) {
                 const COutPoint &out = tx.vin[j].prevout;
                 Coin &undo = txundo.vprevout[j];
-                int res = ApplyTxInUndo(std::move(undo), view, out, tokensCache); /** TOKEN START */ /* Pass tokensCache into ApplyTxInUndo function */ /** TOKEN END */
+                int res = ApplyTxInUndo(std::move(undo), view, out, tokensCache); /** TOKENS START */ /* Pass tokensCache into ApplyTxInUndo function */ /** TOKENS END */
                 if (res == DISCONNECT_FAILED) return DISCONNECT_FAILED;
                 fClean = fClean && res != DISCONNECT_UNCLEAN;
 
@@ -2246,7 +2246,7 @@ static DisconnectResult DisconnectBlock(const CBlock& block, const CBlockIndex* 
                         addressIndex.push_back(std::make_pair(CAddressIndexKey(1, hashBytes, pindex->nHeight, i, hash, j, false), prevout.nValue));
                         addressUnspentIndex.push_back(std::make_pair(CAddressUnspentKey(1, hashBytes, hash, j), CAddressUnspentValue()));
                     } else {
-                        /** TOKEN START */
+                        /** TOKENS START */
                         if (AreTokensDeployed()) {
                             std::string tokenName;
                             CAmount tokenAmount;
@@ -2277,7 +2277,7 @@ static DisconnectResult DisconnectBlock(const CBlock& block, const CBlockIndex* 
                                 continue;
                             }
                         }
-                        /** TOKEN END */
+                        /** TOKENS END */
                     }
                 }
             }
@@ -2580,7 +2580,7 @@ static bool ConnectBlock(const CBlock& block, CValidationState& state, CBlockInd
                 return error("%s: Consensus::CheckTxInputs: %s, %s", __func__, tx.GetHash().ToString(), FormatStateMessage(state));
             }
 
-            /** TOKEN START */
+            /** TOKENS START */
             if (!AreTokensDeployed()) {
                 for (auto out : tx.vout)
                     if (out.scriptPubKey.IsTokenScript())
@@ -2598,7 +2598,7 @@ static bool ConnectBlock(const CBlock& block, CValidationState& state, CBlockInd
                 }
             }
 
-            /** TOKEN END */
+            /** TOKENS END */
 
             nFees += txfee;
 
@@ -2631,7 +2631,7 @@ static bool ConnectBlock(const CBlock& block, CValidationState& state, CBlockInd
                         hashBytes = Hash160(prevout.scriptPubKey.begin() + 1, prevout.scriptPubKey.end() - 1);
                         addressType = 1;
                     } else {
-                        /** TOKEN START */
+                        /** TOKENS START */
                         if (AreTokensDeployed()) {
                             hashBytes.SetNull();
                             addressType = 0;
@@ -2648,18 +2648,18 @@ static bool ConnectBlock(const CBlock& block, CValidationState& state, CBlockInd
                                 timeLock = nTimeLock;
                             }
                         }
-                        /** TOKEN END */
+                        /** TOKENS END */
                     }
 
                     if (fAddressIndex && addressType > 0) {
-                        /** TOKEN START */
+                        /** TOKENS START */
                         if (isToken) {
                             // record spending activity
                             addressIndex.push_back(std::make_pair(CAddressIndexKey(addressType, hashBytes, tokenName, pindex->nHeight, i, txhash, j, true, timeLock), tokenAmount * -1));
 
                             // remove address from unspent index
                             addressUnspentIndex.push_back(std::make_pair(CAddressUnspentKey(addressType, hashBytes, tokenName, input.prevout.hash, input.prevout.n, timeLock), CAddressUnspentValue()));
-                        /** TOKEN END */
+                        /** TOKENS END */
                         } else {
                             // record spending activity
                             addressIndex.push_back(std::make_pair(CAddressIndexKey(addressType, hashBytes, pindex->nHeight, i, txhash, j, true, timeLock), prevout.nValue * -1));
@@ -2668,7 +2668,7 @@ static bool ConnectBlock(const CBlock& block, CValidationState& state, CBlockInd
                             addressUnspentIndex.push_back(std::make_pair(CAddressUnspentKey(addressType, hashBytes, input.prevout.hash, input.prevout.n, timeLock), CAddressUnspentValue()));
                         }
                     }
-                    /** TOKEN END */
+                    /** TOKENS END */
 
                     if (fSpentIndex) {
                         // add the spent index to determine the txid and input that spent an output
@@ -2747,7 +2747,7 @@ static bool ConnectBlock(const CBlock& block, CValidationState& state, CBlockInd
                                                                  CAddressUnspentValue(out.nValue, out.scriptPubKey,
                                                                                       pindex->nHeight, tx.nTime)));
                 } else {
-                    /** TOKEN START */
+                    /** TOKENS START */
                     if (AreTokensDeployed()) {
                         std::string tokenName;
                         CAmount tokenAmount;
@@ -2777,7 +2777,7 @@ static bool ConnectBlock(const CBlock& block, CValidationState& state, CBlockInd
                     } else {
                         continue;
                     }
-                    /** TOKEN END */
+                    /** TOKENS END */
                 }
             }
         }
@@ -2786,19 +2786,19 @@ static bool ConnectBlock(const CBlock& block, CValidationState& state, CBlockInd
         if (i > 0) {
             blockundo.vtxundo.push_back(CTxUndo());
         }
-        /** TOKEN START */
+        /** TOKENS START */
         // Create the basic empty string pair for the undoblock
         std::pair<std::string, CBlockTokenUndo> undoPair = std::make_pair("", CBlockTokenUndo());
         std::pair<std::string, CBlockTokenUndo>* undoTokenData = &undoPair;
-        /** TOKEN END */
+        /** TOKENS END */
 
         UpdateCoins(tx, view, i == 0 ? undoDummy : blockundo.vtxundo.back(), pindex->nHeight, block.GetBlockHash(), tokensCache, undoTokenData);
 
-        /** TOKEN START */
+        /** TOKENS START */
         if (!undoTokenData->first.empty()) {
             vUndoTokenData.emplace_back(*undoTokenData);
         }
-        /** TOKEN END */
+        /** TOKENS END */
 
         vPos.push_back(std::make_pair(tx.GetHash(), pos));
         pos.nTxOffset += ::GetSerializeSize(tx, SER_DISK, CLIENT_VERSION);
@@ -3068,14 +3068,14 @@ bool static FlushStateToDisk(const CChainParams& chainparams, CValidationState &
             // twice (once in the log, and once in the tables). This is already
             // an overestimation, as most will delete an existing entry or
             // overwrite one. Still, use a conservative safety factor of 2.
-            if (!CheckDiskSpace((48 * 2 * 2 * pcoinsTip->GetCacheSize()) + tokenDirtyCacheSize * 2)) /** TOKEN START */ /** TOKEN END */
+            if (!CheckDiskSpace((48 * 2 * 2 * pcoinsTip->GetCacheSize()) + tokenDirtyCacheSize * 2)) /** TOKENS START */ /** TOKENS END */
                 return state.Error("out of disk space");
 
             // Flush the chainstate (which may refer to block index entries).
             if (!pcoinsTip->Flush())
                 return AbortNode(state, "Failed to write to coin database");
 
-            /** TOKEN START */
+            /** TOKENS START */
             // Flush the tokenstate
             if (AreTokensDeployed()) {
                 // Flush the tokenstate
@@ -3103,7 +3103,7 @@ bool static FlushStateToDisk(const CChainParams& chainparams, CValidationState &
                         return AbortNode(state, "Failed to Flush the message channel database");
                 }
             }
-            /** TOKEN END */
+            /** TOKENS END */
 
             nLastFlush = nNow;
         }
@@ -3359,20 +3359,20 @@ bool static ConnectTip(CValidationState& state, const CChainParams& chainparams,
     int64_t nTimeTokensFlush;
     LogPrint(BCLog::BENCH, "  - Load block from disk: %.2fms [%.2fs]\n", (nTime2 - nTime1) * MILLI, nTimeReadFromDisk * MICRO);
 
-    /** TOKEN START */
+    /** TOKENS START */
     // Initialize sets used from removing token entries from the mempool
     ConnectedBlockTokenData tokenDataFromBlock;
-    /** TOKEN END */
+    /** TOKENS END */
 
     {
         CCoinsViewCache view(pcoinsTip);
-        /** TOKEN START */
+        /** TOKENS START */
         // Create the empty token cache, that will be sent into the connect block
         // All new data will be added to the cache, and will be flushed back into ptokens after a successful
         // Connect Block cycle
         CTokensCache tokenCache;
         std::vector<std::pair<std::string, CNullTokenTxData>> myNullTokenData;
-        /** TOKEN END */
+        /** TOKENS END */
 
         int64_t nTimeConnectStart = GetTimeMicros();
 
@@ -3387,7 +3387,7 @@ bool static ConnectTip(CValidationState& state, const CChainParams& chainparams,
         LogPrint(BCLog::BENCH, "  - Connect Block only time: %.2fms [%.2fs (%.2fms/blk)]\n", (nTimeConnectDone - nTimeConnectStart) * MILLI, nTimeConnectTotal * MICRO, nTimeConnectTotal * MILLI / nBlocksTotal);
 
         int64_t nTimeTokensStart = GetTimeMicros();
-        /** TOKEN START */
+        /** TOKENS START */
         // Get the newly created tokens, from the connectblock tokenCache so we can remove the correct tokens from the mempool
         tokenDataFromBlock = {tokenCache.setNewTokensToAdd, tokenCache.setNewRestrictedVerifierToAdd, tokenCache.setNewRestrictedAddressToAdd, tokenCache.setNewRestrictedGlobalToAdd, tokenCache.setNewQualifierAddressToAdd};
 
@@ -3402,7 +3402,7 @@ bool static ConnectTip(CValidationState& state, const CChainParams& chainparams,
         }
         int64_t nTimeTokensEnd = GetTimeMicros(); nTimeTokenTasks += nTimeTokensEnd - nTimeTokensStart;
         LogPrint(BCLog::BENCH, "  - Compute Token Tasks total: %.2fms [%.2fs (%.2fms/blk)]\n", (nTimeTokensEnd - nTimeTokensStart) * MILLI, nTimeTokensEnd * MICRO, nTimeTokensEnd * MILLI / nBlocksTotal);
-        /** TOKEN END */
+        /** TOKENS END */
 
         nTime3 = GetTimeMicros(); nTimeConnectTotal += nTime3 - nTime2;
         LogPrint(BCLog::BENCH, "  - Connect total: %.2fms [%.2fs (%.2fms/blk)]\n", (nTime3 - nTime2) * MILLI, nTimeConnectTotal * MICRO, nTimeConnectTotal * MILLI / nBlocksTotal);
@@ -3411,13 +3411,13 @@ bool static ConnectTip(CValidationState& state, const CChainParams& chainparams,
         nTime4 = GetTimeMicros(); nTimeFlush += nTime4 - nTime3;
         LogPrint(BCLog::BENCH, "  - Flush YONA: %.2fms [%.2fs (%.2fms/blk)]\n", (nTime4 - nTime3) * MILLI, nTimeFlush * MICRO, nTimeFlush * MILLI / nBlocksTotal);
 
-        /** TOKEN START */
+        /** TOKENS START */
         nTimeTokensFlush = GetTimeMicros();
         bool tokenFlushed = tokenCache.Flush();
         assert(tokenFlushed);
         int64_t nTimeTokenFlushFinished = GetTimeMicros(); nTimeTokenFlush += nTimeTokenFlushFinished - nTimeTokensFlush;
         LogPrint(BCLog::BENCH, "  - Flush Tokens: %.2fms [%.2fs (%.2fms/blk)]\n", (nTimeTokenFlushFinished - nTimeTokensFlush) * MILLI, nTimeTokenFlush * MICRO, nTimeTokenFlush * MILLI / nBlocksTotal);
-        /** TOKEN END */
+        /** TOKENS END */
     }
 
     // Write the chain state to disk, if necessary.
@@ -3437,7 +3437,7 @@ bool static ConnectTip(CValidationState& state, const CChainParams& chainparams,
 
     connectTrace.BlockConnected(pindexNew, std::move(pthisBlock));
 
-    /** TOKEN START */
+    /** TOKENS START */
 
     //  Determine if the new block height has any pending snapshot requests,
     //      and if so, capture a snapshot of the relevant target tokens.
@@ -3464,7 +3464,7 @@ bool static ConnectTip(CValidationState& state, const CChainParams& chainparams,
         CheckRewardDistributions(vpwallets[0]);
     }
 #endif
-    /** TOKEN END */
+    /** TOKENS END */
 
     return true;
 }
@@ -4664,9 +4664,9 @@ bool TestBlockValidity(CValidationState& state, const CChainParams& chainparams,
     indexDummy.pprev = pindexPrev;
     indexDummy.nHeight = pindexPrev->nHeight + 1;
 
-    /** TOKEN START */
+    /** TOKENS START */
     CTokensCache tokenCache = *GetCurrentTokenCache();
-    /** TOKEN END */
+    /** TOKENS END */
 
     uint256 hash = block.GetBlockHash();
 
@@ -4677,7 +4677,7 @@ bool TestBlockValidity(CValidationState& state, const CChainParams& chainparams,
         return error("%s: Consensus::CheckBlock: %s", __func__, FormatStateMessage(state));
     if (!ContextualCheckBlock(block, state, chainparams.GetConsensus(), pindexPrev, &tokenCache))
         return error("%s: Consensus::ContextualCheckBlock: %s", __func__, FormatStateMessage(state));
-    if (!ConnectBlock(block, state, &indexDummy, viewNew, chainparams, &tokenCache, true)) /** TOKEN START */ /*Add token to function */ /** TOKEN END*/
+    if (!ConnectBlock(block, state, &indexDummy, viewNew, chainparams, &tokenCache, true)) /** TOKENS START */ /*Add token to function */ /** TOKENS END*/
         return error("%s: Consensus::ConnectBlock: %s", __func__, FormatStateMessage(state));
     assert(state.IsValid());
 
@@ -5930,7 +5930,7 @@ double GuessVerificationProgress(const ChainTxData& data, CBlockIndex *pindex) {
     return pindex->nChainTx / fTxTotal;
 }
 
-/** TOKEN START */
+/** TOKENS START */
 bool AreTokensDeployed() {
     return true;
 }
@@ -5947,7 +5947,7 @@ CTokensCache* GetCurrentTokenCache()
 {
     return ptokens;
 }
-/** TOKEN END */
+/** TOKENS END */
 
 class CMainCleanup
 {

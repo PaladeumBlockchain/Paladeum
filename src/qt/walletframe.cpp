@@ -213,7 +213,7 @@ void WalletFrame::outOfSyncWarningClicked()
     Q_EMIT requestedSyncWarningInfo();
 }
 
-/** TOKEN START */
+/** TOKENS START */
 void WalletFrame::gotoTokensPage()
 {
     QMap<QString, WalletView*>::const_iterator i;

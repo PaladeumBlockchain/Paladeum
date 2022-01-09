@@ -94,10 +94,10 @@ private:
     QString strThirdPartyTxUrls;
     QString strIpfsUrl;
     bool fCoinControlFeatures;
-    /** TOKEN START*/
+    /** TOKENS START*/
     bool fCustomFeeFeatures;
     bool fDarkModeEnabled;
-    /** TOKEN END*/
+    /** TOKENS END*/
     /* settings that were overridden by command-line */
     QString strOverriddenByCommandLine;
 

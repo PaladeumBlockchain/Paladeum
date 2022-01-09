@@ -186,9 +186,9 @@ enum opcodetype
     OP_NOP9 = 0xb8,
     OP_NOP10 = 0xb9,
 
-    /** TOKEN START */
+    /** TOKENS START */
     OP_YONA_TOKEN = 0xc0,
-    /** TOKEN END */
+    /** TOKENS END */
 
 
     // template matching params
@@ -671,7 +671,7 @@ public:
     bool IsPayToWitnessScriptHash() const;
     bool IsWitnessProgram(int& version, std::vector<unsigned char>& program) const;
 
-    /** TOKEN START */
+    /** TOKENS START */
     enum class txnouttype;
     bool IsTokenScript() const;
     bool IsTokenScript(int& nType, bool& fIsOwner) const;
@@ -687,7 +687,7 @@ public:
     bool IsNullTokenTxDataScript() const;
     bool IsNullTokenVerifierTxDataScript() const;
     bool IsNullGlobalRestrictionTokenTxDataScript() const;
-    /** TOKEN END */
+    /** TOKENS END */
 
     /** Used for obsolete pay-to-pubkey addresses indexing. */
     bool IsPayToPublicKey() const;

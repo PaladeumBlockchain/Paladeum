@@ -76,12 +76,12 @@ private:
     const PlatformStyle *platformStyle;
 
 
-    /** TOKEN START */
+    /** TOKENS START */
     TokensDialog *tokensPage;
     CreateTokenDialog *createTokensPage;
     ReissueTokenDialog *manageTokensPage;
     RestrictedTokensDialog *restrictedTokensPage;
-    /** TOKEN END */
+    /** TOKENS END */
 
 public Q_SLOTS:
     /** Switch to overview (home) page */
@@ -130,7 +130,7 @@ public Q_SLOTS:
     void requestedSyncWarningInfo();
 
 
-    /** TOKEN START */
+    /** TOKENS START */
     /** Switch to tokens page */
 
     void gotoTokensPage();
@@ -138,7 +138,7 @@ public Q_SLOTS:
     void gotoManageTokensPage();
     void gotoRestrictedTokensPage();
 
-    /** TOKEN END */
+    /** TOKENS END */
 
 Q_SIGNALS:
     /** Signal that we want to show the main window */

@@ -72,12 +72,12 @@ enum txnouttype
     TX_NULL_DATA = 5, //!< unspendable OP_RETURN script that carries data
     TX_WITNESS_V0_SCRIPTHASH = 6,
     TX_WITNESS_V0_KEYHASH = 7,
-    /** TOKEN START */
+    /** TOKENS START */
     TX_NEW_TOKEN = 8,
     TX_REISSUE_TOKEN = 9,
     TX_TRANSFER_TOKEN = 10,
     TX_RESTRICTED_TOKEN_DATA = 11, //!< unspendable OP_YONA_TOKEN script that carries data
-    /** TOKEN END */
+    /** TOKENS END */
     TX_CLTV = 12
 };
 

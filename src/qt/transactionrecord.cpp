@@ -48,10 +48,10 @@ QList<TransactionRecord> TransactionRecord::decomposeTransaction(const CWallet *
             const CTxOut& txout = wtx.tx->vout[i];
             isminetype mine = wallet->IsMine(txout);
 
-            /** TOKEN START */
+            /** TOKENS START */
             if (txout.scriptPubKey.IsTokenScript() || txout.scriptPubKey.IsNullTokenTxDataScript() || txout.scriptPubKey.IsNullGlobalRestrictionTokenTxDataScript())
                 continue;
-            /** TOKEN START */
+            /** TOKENS START */
 
             if(mine)
             {
@@ -96,10 +96,10 @@ QList<TransactionRecord> TransactionRecord::decomposeTransaction(const CWallet *
         isminetype fAllToMe = ISMINE_SPENDABLE;
         for (const CTxOut& txout : wtx.tx->vout)
         {
-            /** TOKEN START */
+            /** TOKENS START */
             if (txout.scriptPubKey.IsTokenScript() || txout.scriptPubKey.IsNullTokenTxDataScript() || txout.scriptPubKey.IsNullGlobalRestrictionTokenTxDataScript())
                 continue;
-            /** TOKEN START */
+            /** TOKENS START */
 
             isminetype mine = wallet->IsMine(txout);
             if(mine & ISMINE_WATCH_ONLY) involvesWatchAddress = true;
@@ -126,10 +126,10 @@ QList<TransactionRecord> TransactionRecord::decomposeTransaction(const CWallet *
             {
                 const CTxOut& txout = wtx.tx->vout[nOut];
 
-                /** TOKEN START */
+                /** TOKENS START */
                 if (txout.scriptPubKey.IsTokenScript())
                     continue;
-                /** TOKEN START */
+                /** TOKENS START */
 
                 TransactionRecord sub(hash, nTime);
                 sub.idx = nOut;
@@ -175,7 +175,7 @@ QList<TransactionRecord> TransactionRecord::decomposeTransaction(const CWallet *
             //
 
 
-            /** TOKEN START */
+            /** TOKENS START */
             // We will only show mixed debit transactions that are nNet < 0 or if they are nNet == 0 and
             // they do not contain tokens. This is so the list of transaction doesn't add 0 amount transactions to the
             // list.
@@ -195,12 +195,12 @@ QList<TransactionRecord> TransactionRecord::decomposeTransaction(const CWallet *
                 parts.append(TransactionRecord(hash, nTime, TransactionRecord::Other, "", nNet, 0));
                 parts.last().involvesWatchAddress = involvesWatchAddress;
             }
-            /** TOKEN START */
+            /** TOKENS START */
         }
     }
 
 
-    /** TOKEN START */
+    /** TOKENS START */
     if (AreTokensDeployed()) {
         CAmount nFee;
         std::string strSentAccount;
@@ -295,7 +295,7 @@ QList<TransactionRecord> TransactionRecord::decomposeTransaction(const CWallet *
             }
         }
     }
-    /** TOKEN END */
+    /** TOKENS END */
 
     return parts;
 }

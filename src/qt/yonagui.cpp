@@ -229,7 +229,7 @@ YonaGUI::YonaGUI(const PlatformStyle *_platformStyle, const NetworkStyle *networ
         setCentralWidget(rpcConsole);
     }
 
-    /** TOKEN START */
+    /** TOKENS START */
     labelCurrentMarket = new QLabel();
     labelCurrentPrice = new QLabel();
     headerWidget = new QWidget();
@@ -239,7 +239,7 @@ YonaGUI::YonaGUI(const PlatformStyle *_platformStyle, const NetworkStyle *networ
     labelVersionUpdate = new QLabel();
     networkVersionManager = new QNetworkAccessManager();
     versionRequest = new QNetworkRequest();
-    /** TOKEN END */
+    /** TOKENS END */
 
     // Accept D&D of URIs
     setAcceptDrops(true);
@@ -424,7 +424,7 @@ void YonaGUI::createActions()
     historyAction->setFont(font);
     tabGroup->addAction(historyAction);
 
-    /** TOKEN START */
+    /** TOKENS START */
     transferTokenAction = new QAction(platformStyle->SingleColorIconOnOff(":/icons/token_transfer_selected", ":/icons/token_transfer"), tr("&Transfer Tokens"), this);
     transferTokenAction->setStatusTip(tr("Transfer tokens to YONA addresses"));
     transferTokenAction->setToolTip(transferTokenAction->statusTip());
@@ -473,7 +473,7 @@ void YonaGUI::createActions()
     restrictedTokenAction->setFont(font);
     tabGroup->addAction(restrictedTokenAction);
 
-    /** TOKEN END */
+    /** TOKENS END */
 
 #ifdef ENABLE_WALLET
     // These showNormalIfMinimized are needed because Send Coins and Receive Coins
@@ -639,7 +639,7 @@ void YonaGUI::createToolBars()
 {
     if(walletFrame)
     {
-        /** TOKEN START */
+        /** TOKENS START */
         // Create the orange background and the vertical tool bar
         QWidget* toolbarWidget = new QWidget();
 
@@ -651,7 +651,7 @@ void YonaGUI::createToolBars()
         label->setPixmap(QPixmap::fromImage(QImage(":/icons/yonacointext")));
         label->setContentsMargins(0,0,0,50);
         label->setStyleSheet(".QLabel{background-color: transparent;}");
-        /** TOKEN END */
+        /** TOKENS END */
 
         QToolBar *toolbar = new QToolBar();
         toolbar->setStyle(style());
@@ -680,7 +680,7 @@ void YonaGUI::createToolBars()
         stringToUse = normalString;
 #endif
 
-        /** TOKEN START */
+        /** TOKENS START */
         QString tbStyleSheet = ".QToolBar {background-color : transparent; border-color: transparent; }  "
                                ".QToolButton {background-color: transparent; border-color: transparent; width: 249px; color: %1; border: none;} "
                                ".QToolButton:checked {background: none; background-color: none; selection-background-color: none; color: %2; border: none; font: %4} "
@@ -853,7 +853,7 @@ void YonaGUI::createToolBars()
         connect(pricingTimer, SIGNAL(timeout()), this, SLOT(getPriceInfo()));
         pricingTimer->start(10000);
         getPriceInfo();
-        /** TOKEN END */
+        /** TOKENS END */
 
         // Get the latest Yonacoin release and let the user know if they are using the latest version
         // Network request code for the header widget
@@ -1063,14 +1063,14 @@ void YonaGUI::setWalletActionsEnabled(bool enabled)
     usedReceivingAddressesAction->setEnabled(enabled);
     openAction->setEnabled(enabled);
 
-    /** TOKEN START */
+    /** TOKENS START */
     transferTokenAction->setEnabled(false);
     createTokenAction->setEnabled(false);
     manageTokenAction->setEnabled(false);
     messagingAction->setEnabled(false);
     votingAction->setEnabled(false);
     restrictedTokenAction->setEnabled(false);
-    /** TOKEN END */
+    /** TOKENS END */
 }
 
 void YonaGUI::createTrayIcon(const NetworkStyle *networkStyle)
@@ -1221,7 +1221,7 @@ void YonaGUI::gotoVerifyMessageTab(QString addr)
     if (walletFrame) walletFrame->gotoVerifyMessageTab(addr);
 }
 
-/** TOKEN START */
+/** TOKENS START */
 void YonaGUI::gotoTokensPage()
 {
     transferTokenAction->setChecked(true);
@@ -1245,7 +1245,7 @@ void YonaGUI::gotoRestrictedTokensPage()
     restrictedTokenAction->setChecked(true);
     if (walletFrame) walletFrame->gotoRestrictedTokensPage();
 };
-/** TOKEN END */
+/** TOKENS END */
 #endif // ENABLE_WALLET
 
 void YonaGUI::updateNetworkState()

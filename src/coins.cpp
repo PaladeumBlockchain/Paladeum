@@ -100,7 +100,7 @@ void AddCoins(CCoinsViewCache& cache, const CTransaction &tx, int nHeight, uint2
     bool fCoinstake = tx.IsCoinStake();
     const uint256& txid = tx.GetHash();
 
-    /** TOKEN START */
+    /** TOKENS START */
     if (AreTokensDeployed()) {
         if (tokensCache) {
             if (tx.IsNewToken()) { // This works are all new root tokens, sub token, and restricted tokens
@@ -263,7 +263,7 @@ void AddCoins(CCoinsViewCache& cache, const CTransaction &tx, int nHeight, uint2
             }
         }
     }
-    /** TOKEN END */
+    /** TOKENS END */
 
     for (size_t i = 0; i < tx.vout.size(); ++i) {
         bool overwrite = check ? cache.HaveCoin(COutPoint(txid, i)) : fCoinbase;
@@ -271,7 +271,7 @@ void AddCoins(CCoinsViewCache& cache, const CTransaction &tx, int nHeight, uint2
         // deal with the pre-BIP30 occurrences of duplicate coinbase transactions.
         cache.AddCoin(COutPoint(txid, i), Coin(tx.vout[i], nHeight, fCoinbase, fCoinstake, tx.nTime), overwrite);
 
-        /** TOKEN START */
+        /** TOKENS START */
         if (AreTokensDeployed()) {
             if (tokensCache) {
                 CTokenOutputEntry tokenData;
@@ -364,7 +364,7 @@ void AddCoins(CCoinsViewCache& cache, const CTransaction &tx, int nHeight, uint2
                 }
             }
         }
-        /** TOKEN END */
+        /** TOKENS END */
     }
 }
 
@@ -375,9 +375,9 @@ bool CCoinsViewCache::SpendCoin(const COutPoint &outpoint, Coin* moveout, CToken
         return false;
     cachedCoinsUsage -= it->second.coin.DynamicMemoryUsage();
 
-    /** TOKEN START */
+    /** TOKENS START */
     Coin tempCoin = it->second.coin;
-    /** TOKEN END */
+    /** TOKENS END */
 
     if (moveout) {
         *moveout = std::move(it->second.coin);
@@ -389,7 +389,7 @@ bool CCoinsViewCache::SpendCoin(const COutPoint &outpoint, Coin* moveout, CToken
         it->second.coin.Clear();
     }
 
-    /** TOKEN START */
+    /** TOKENS START */
     if (AreTokensDeployed()) {
         if (tokensCache) {
             if (!tokensCache->TrySpendCoin(outpoint, tempCoin.out)) {
@@ -397,7 +397,7 @@ bool CCoinsViewCache::SpendCoin(const COutPoint &outpoint, Coin* moveout, CToken
             }
         }
     }
-    /** TOKEN END */
+    /** TOKENS END */
 
     return true;
 }

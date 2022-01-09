@@ -1767,7 +1767,7 @@ void ListTransactions(CWallet* const pwallet, const CWalletTx& wtx, const std::s
         }
     }
 
-    /** TOKEN START */
+    /** TOKENS START */
     if (AreTokensDeployed()) {
         if (listTokensReceived.size() > 0 && wtx.GetDepthInMainChain() >= nMinDepth) {
             for (const CTokenOutputEntry &data : listTokensReceived){
@@ -1819,7 +1819,7 @@ void ListTransactions(CWallet* const pwallet, const CWalletTx& wtx, const std::s
             }
         }
     }
-    /** TOKEN END */
+    /** TOKENS END */
 }
 
 void ListTransactions(CWallet* const pwallet, const CWalletTx& wtx, const std::string& strAccount, int nMinDepth, bool fLong, UniValue& ret, const isminefilter& filter)

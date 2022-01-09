@@ -198,7 +198,7 @@ struct COutputEntry
     int vout;
 };
 
-/** TOKEN START */
+/** TOKENS START */
 struct CTokenOutputEntry
 {
     txnouttype type;
@@ -211,7 +211,7 @@ struct CTokenOutputEntry
     int64_t expireTime;
     int vout;
 };
-/** TOKEN END */
+/** TOKENS END */
 
 /** A transaction with a merkle branch linking it to the block chain. */
 class CMerkleTx
@@ -1052,7 +1052,7 @@ public:
     bool FundTransaction(CMutableTransaction& tx, CAmount& nFeeRet, int& nChangePosInOut, std::string& strFailReason, bool lockUnspents, const std::set<int>& setSubtractFeeFromOutputs, CCoinControl);
     bool SignTransaction(CMutableTransaction& tx);
 
-    /** TOKEN START */
+    /** TOKENS START */
     bool CreateTransactionWithTokens(const std::vector<CRecipient>& vecSend, CWalletTx& wtxNew, CReserveKey& reservekey, CAmount& nFeeRet, int& nChangePosInOut,
                                    std::string& strFailReason, const CCoinControl& coin_control, const std::vector<CNewToken> tokens, const CTxDestination destination, const KnownTokenType& tokenType, bool sign = true);
 
@@ -1080,7 +1080,7 @@ public:
 
     bool CreateNewChangeAddress(CReserveKey& reservekey, CKeyID& keyID, std::string& strFailReason);
 
-    /** TOKEN END */
+    /** TOKENS END */
 
     bool CommitTransaction(CWalletTx& wtxNew, CReserveKey& reservekey, CConnman* connman, CValidationState& state);
 

@@ -126,7 +126,7 @@ private:
     QAction *openAction;
     QAction *showHelpMessageAction;
 
-    /** TOKEN START */
+    /** TOKENS START */
     QAction *transferTokenAction;
     QAction *createTokenAction;
     QAction *manageTokenAction;
@@ -144,7 +144,7 @@ private:
     QLabel *labelVersionUpdate;
     QNetworkAccessManager* networkVersionManager;
     QNetworkRequest* versionRequest;
-    /** TOKEN END */
+    /** TOKENS END */
 
     QSystemTrayIcon *trayIcon;
     QMenu *trayIconMenu;
@@ -262,13 +262,13 @@ private Q_SLOTS:
     /** Show open dialog */
     void openClicked();
 
-    /** TOKEN START */
+    /** TOKENS START */
     /** Switch to tokens page */
     void gotoTokensPage();
     void gotoCreateTokensPage();
     void gotoManageTokensPage();
     void gotoRestrictedTokensPage();
-    /** TOKEN END */
+    /** TOKENS END */
 
 #endif // ENABLE_WALLET
     /** Show configuration dialog */

@@ -197,7 +197,7 @@ bool CheckTransaction(const CTransaction& tx, CValidationState &state, bool fChe
         if (!MoneyRange(nValueOut))
             return state.DoS(100, false, REJECT_INVALID, "bad-txns-txouttotal-toolarge");
 
-        /** TOKEN START */
+        /** TOKENS START */
         // Find and handle all new OP_YONA_TOKEN null data transactions
         if (txout.scriptPubKey.IsNullToken()) {
             CNullTokenTxData data;
@@ -252,9 +252,9 @@ bool CheckTransaction(const CTransaction& tx, CValidationState &state, bool fChe
                 fContainsNullTokenVerifierTx = true;
             }
         }
-        /** TOKEN END */
+        /** TOKENS END */
 
-        /** TOKEN START */
+        /** TOKENS START */
         bool isToken = false;
         int nType;
         bool fIsOwner;
@@ -359,7 +359,7 @@ bool CheckTransaction(const CTransaction& tx, CValidationState &state, bool fChe
         }
     }
 
-    /** TOKEN END */
+    /** TOKENS END */
 
     if (fCheckDuplicateInputs) {
         std::set<COutPoint> vInOutPoints;
@@ -389,7 +389,7 @@ bool CheckTransaction(const CTransaction& tx, CValidationState &state, bool fChe
                 return state.DoS(10, false, REJECT_INVALID, "bad-txns-prevout-null");
     }
 
-    /** TOKEN START */
+    /** TOKENS START */
     if (tx.IsNewToken()) {
         /** Verify the reissue tokens data */
         std::string strError = "";
@@ -562,7 +562,7 @@ bool CheckTransaction(const CTransaction& tx, CValidationState &state, bool fChe
     }
 
     // we allow restricted token reissuance without having a verifier string transaction, we don't force it to be update
-    /** TOKEN END */
+    /** TOKENS END */
 
     return true;
 }
