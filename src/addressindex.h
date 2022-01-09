@@ -18,10 +18,12 @@ struct CAddressUnspentKey {
     std::string token;
     uint256 txhash;
     size_t index;
+    int timeLock;
 
     size_t GetSerializeSize() const {
-        return 57 + token.size();
+        return 61 + token.size();
     }
+
     template<typename Stream>
     void Serialize(Stream& s) const {
         ser_writedata8(s, type);
@@ -29,6 +31,7 @@ struct CAddressUnspentKey {
         ::Serialize(s, token);
         txhash.Serialize(s);
         ser_writedata32(s, index);
+        ser_writedata32be(s, timeLock);
     }
     template<typename Stream>
     void Unserialize(Stream& s) {
@@ -37,22 +40,25 @@ struct CAddressUnspentKey {
         ::Unserialize(s, token);
         txhash.Unserialize(s);
         index = ser_readdata32(s);
+        timeLock = ser_readdata32be(s);
     }
 
-    CAddressUnspentKey(unsigned int addressType, uint160 addressHash, uint256 txid, size_t indexValue) {
+    CAddressUnspentKey(unsigned int addressType, uint160 addressHash, uint256 txid, size_t indexValue, int txTimeLock = 0) {
         type = addressType;
         hashBytes = addressHash;
         token = YONA;
         txhash = txid;
         index = indexValue;
+        timeLock = txTimeLock;
     }
 
-    CAddressUnspentKey(unsigned int addressType, uint160 addressHash, std::string tokenName, uint256 txid, size_t indexValue) {
+    CAddressUnspentKey(unsigned int addressType, uint160 addressHash, std::string tokenName, uint256 txid, size_t indexValue, int txTimeLock = 0) {
         type = addressType;
         hashBytes = addressHash;
         token = tokenName;
         txhash = txid;
         index = indexValue;
+        timeLock = txTimeLock;
     }
 
     CAddressUnspentKey() {
@@ -65,6 +71,7 @@ struct CAddressUnspentKey {
         token.clear();
         txhash.SetNull();
         index = 0;
+        timeLock = 0;
     }
 };
 
@@ -72,6 +79,7 @@ struct CAddressUnspentValue {
     CAmount satoshis;
     CScript script;
     int blockHeight;
+    uint64_t nTime;
 
     ADD_SERIALIZE_METHODS;
 
@@ -80,12 +88,14 @@ struct CAddressUnspentValue {
         READWRITE(satoshis);
         READWRITE(*(CScriptBase*)(&script));
         READWRITE(blockHeight);
+        READWRITE(nTime);
     }
 
-    CAddressUnspentValue(CAmount sats, CScript scriptPubKey, int height) {
+    CAddressUnspentValue(CAmount sats, CScript scriptPubKey, int height, uint64_t nTimeVal) {
         satoshis = sats;
         script = scriptPubKey;
         blockHeight = height;
+        nTime = nTimeVal;
     }
 
     CAddressUnspentValue() {
@@ -96,6 +106,7 @@ struct CAddressUnspentValue {
         satoshis = -1;
         script.clear();
         blockHeight = 0;
+        nTime = 0;
     }
 
     bool IsNull() const {
@@ -112,9 +123,10 @@ struct CAddressIndexKey {
     uint256 txhash;
     size_t index;
     bool spending;
+    int timeLock;
 
     size_t GetSerializeSize() const {
-        return 34 + token.size();
+        return 38 + token.size();
     }
     template<typename Stream>
     void Serialize(Stream& s) const {
@@ -124,6 +136,7 @@ struct CAddressIndexKey {
         // Heights are stored big-endian for key sorting in LevelDB
         ser_writedata32be(s, blockHeight);
         ser_writedata32be(s, txindex);
+        ser_writedata32be(s, timeLock);
         txhash.Serialize(s);
         ser_writedata32(s, index);
         char f = spending;
@@ -136,6 +149,7 @@ struct CAddressIndexKey {
         ::Unserialize(s, token);
         blockHeight = ser_readdata32be(s);
         txindex = ser_readdata32be(s);
+        timeLock = ser_readdata32be(s);
         txhash.Unserialize(s);
         index = ser_readdata32(s);
         char f = ser_readdata8(s);
@@ -143,24 +157,26 @@ struct CAddressIndexKey {
     }
 
     CAddressIndexKey(unsigned int addressType, uint160 addressHash, int height, int blockindex,
-                     uint256 txid, size_t indexValue, bool isSpending) {
+                     uint256 txid, size_t indexValue, bool isSpending, int txTimeLock = 0) {
         type = addressType;
         hashBytes = addressHash;
         token = YONA;
         blockHeight = height;
         txindex = blockindex;
+        timeLock = txTimeLock;
         txhash = txid;
         index = indexValue;
         spending = isSpending;
     }
 
     CAddressIndexKey(unsigned int addressType, uint160 addressHash, std::string tokenName, int height, int blockindex,
-                     uint256 txid, size_t indexValue, bool isSpending) {
+                     uint256 txid, size_t indexValue, bool isSpending, int txTimeLock = 0) {
         type = addressType;
         hashBytes = addressHash;
         token = tokenName;
         blockHeight = height;
         txindex = blockindex;
+        timeLock = txTimeLock;
         txhash = txid;
         index = indexValue;
         spending = isSpending;
@@ -176,11 +192,15 @@ struct CAddressIndexKey {
         token.clear();
         blockHeight = 0;
         txindex = 0;
+        timeLock = 0;
         txhash.SetNull();
         index = 0;
         spending = false;
     }
 
+    bool IsNull() {
+        return hashBytes.IsNull();
+    }
 };
 
 struct CAddressIndexIteratorKey {
@@ -307,6 +327,25 @@ struct CAddressIndexIteratorHeightKey {
         hashBytes.SetNull();
         token.clear();
         blockHeight = 0;
+    }
+};
+
+struct CAddressTransactionsEntry {
+    int blockHeight;
+    uint256 txhash;
+
+    CAddressTransactionsEntry(int height, uint256 hash) {
+        blockHeight = height;
+        txhash = hash;
+    }
+
+    CAddressTransactionsEntry() {
+        SetNull();
+    }
+
+    void SetNull() {
+        blockHeight = 0;
+        txhash.SetNull();
     }
 };
 

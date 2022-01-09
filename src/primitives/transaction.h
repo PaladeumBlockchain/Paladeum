@@ -197,6 +197,8 @@ public:
         return !(a == b);
     }
 
+    uint32_t GetLockTime() const;
+
     std::string ToString() const;
 };
 

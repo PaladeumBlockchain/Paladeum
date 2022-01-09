@@ -560,7 +560,7 @@ bool VerifyWalletHasToken(const std::string& token_name, std::pair<int, std::str
 #endif
 
 /** Helper method for extracting address bytes, token name and amount from an token script */
-bool ParseTokenScript(CScript scriptPubKey, uint160 &hashBytes, int& nScriptType, std::string &tokenName, CAmount &tokenAmount);
+bool ParseTokenScript(CScript scriptPubKey, uint160 &hashBytes, int& nScriptType, std::string &tokenName, CAmount &tokenAmount, uint32_t &nTimeLock);
 
 /** Helper method for extracting #TAGS from a verifier string */
 void ExtractVerifierStringQualifiers(const std::string& verifier, std::set<std::string>& qualifiers);

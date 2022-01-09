@@ -4618,7 +4618,7 @@ void GetTxOutKnownTokenTypes(const std::vector<CTxOut>& vout, int& issues, int& 
     }
 }
 
-bool ParseTokenScript(CScript scriptPubKey, uint160 &hashBytes, int& nScriptType, std::string &tokenName, CAmount &tokenAmount) {
+bool ParseTokenScript(CScript scriptPubKey, uint160 &hashBytes, int& nScriptType, std::string &tokenName, CAmount &tokenAmount, uint32_t &nTimeLock) {
     int nType;
     bool fIsOwner;
     int _nStartingPoint;
@@ -4657,6 +4657,7 @@ bool ParseTokenScript(CScript scriptPubKey, uint160 &hashBytes, int& nScriptType
             if (TransferTokenFromScript(scriptPubKey, token, _strAddress)) {
                 tokenName = token.strName;
                 tokenAmount = token.nAmount;
+                nTimeLock = token.nTimeLock;
                 isToken = true;
             } else {
                 LogPrintf("%s : Couldn't get transfer token from script: %s", __func__, HexStr(scriptPubKey));
@@ -4664,9 +4665,8 @@ bool ParseTokenScript(CScript scriptPubKey, uint160 &hashBytes, int& nScriptType
         } else {
             LogPrintf("%s : Unsupported token type: %s", __func__, nType);
         }
-    } else {
-//        LogPrintf("%s : Found no token in script: %s", __func__, HexStr(scriptPubKey));
     }
+
     if (isToken) {
         if (nScriptType == TX_SCRIPTHASH) {
             hashBytes = uint160(std::vector <unsigned char>(scriptPubKey.begin()+2, scriptPubKey.begin()+22));
@@ -4675,8 +4675,6 @@ bool ParseTokenScript(CScript scriptPubKey, uint160 &hashBytes, int& nScriptType
         } else {
             return false;
         }
-
-//        LogPrintf("%s : Found tokens in script at address %s : %s (%s)", __func__, _strAddress, tokenName, tokenAmount);
 
         return true;
     }

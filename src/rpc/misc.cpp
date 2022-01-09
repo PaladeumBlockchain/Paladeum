@@ -684,26 +684,8 @@ bool getAddressesFromParams(const UniValue& params, std::vector<std::pair<uint16
         if (!dest.GetIndexKey(hashBytes, type)) {
             throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, "Invalid address");
         }
+
         addresses.push_back(std::make_pair(hashBytes, type));
-    } else if (params[0].isObject()) {
-
-        UniValue addressValues = find_value(params[0].get_obj(), "addresses");
-        if (!addressValues.isArray()) {
-            throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, "Addresses is expected to be an array");
-        }
-
-        std::vector<UniValue> values = addressValues.getValues();
-
-        for (std::vector<UniValue>::iterator it = values.begin(); it != values.end(); ++it) {
-
-            CYonaAddress address(it->get_str());
-            uint160 hashBytes;
-            int type = 0;
-            if (!address.GetIndexKey(hashBytes, type)) {
-                throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, "Invalid address");
-            }
-            addresses.push_back(std::make_pair(hashBytes, type));
-        }
     } else {
         throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, "Invalid address");
     }
@@ -814,25 +796,18 @@ UniValue getaddressmempool(const JSONRPCRequest& request)
 
 UniValue getaddressutxos(const JSONRPCRequest& request)
 {
-    if (request.fHelp || request.params.size() != 1)
+    if (request.fHelp || request.params.size() < 1 || request.params.size() > 3)
         throw std::runtime_error(
             "getaddressutxos\n"
             "\nReturns all unspent outputs for an address (requires addressindex to be enabled).\n"
             "\nArguments:\n"
-            "{\n"
-            "  \"addresses\"\n"
-            "    [\n"
-            "      \"address\"  (string) The base58check encoded address\n"
-            "      ,...\n"
-            "    ],\n"
-            "  \"chainInfo\",  (boolean, optional, default false) Include chain info with results\n"
-            "  \"tokenName\"   (string, optional) Get UTXOs for a particular token instead of YONA ('*' for all tokens).\n"
-            "}\n"
+            "\"address\"         (string, required) The yona address.\n"
+            "\"token\"           (string, optional) The name of token.\n"
             "\nResult\n"
             "[\n"
             "  {\n"
             "    \"address\"  (string) The address base58check encoded\n"
-            "    \"tokenName\" (string) The token associated with the UTXOs (YONA for Yonacoin)\n"
+            "    \"tokenName\" (string) The token associated with the UTXOs\n"
             "    \"txid\"  (string) The output txid\n"
             "    \"height\"  (number) The block height\n"
             "    \"outputIndex\"  (number) The output index\n"
@@ -841,24 +816,22 @@ UniValue getaddressutxos(const JSONRPCRequest& request)
             "  }\n"
             "]\n"
             "\nExamples:\n"
-            + HelpExampleCli("getaddressutxos", "'{\"addresses\": [\"12c6DSiU4Rq3P4ZxziKxzrL5LmMBrzjrJX\"]}'")
-            + HelpExampleRpc("getaddressutxos", "{\"addresses\": [\"12c6DSiU4Rq3P4ZxziKxzrL5LmMBrzjrJX\"]}")
-            + HelpExampleCli("getaddressutxos", "'{\"addresses\": [\"12c6DSiU4Rq3P4ZxziKxzrL5LmMBrzjrJX\"],\"tokenName\":\"MY_TOKEN\"}'")
-            + HelpExampleRpc("getaddressutxos", "{\"addresses\": [\"12c6DSiU4Rq3P4ZxziKxzrL5LmMBrzjrJX\"],\"tokenName\":\"MY_TOKEN\"}")
+            + HelpExampleCli("getaddressutxos", "\"1D1ZrZNe3JUo7ZycKEYQQiQAWd9y54F4XX\" \"TOKEN\"")
+            + HelpExampleRpc("getaddressutxos", "\"1D1ZrZNe3JUo7ZycKEYQQiQAWd9y54F4XX\", \"TOKEN\"")
             );
 
-    bool includeChainInfo = false;
+    CAmount requiredAmount = 0;
+    if (!request.params[1].isNull()) {
+        requiredAmount = AmountFromValue(request.params[1]);
+    }
+
     std::string tokenName = YONA;
-    if (request.params[0].isObject()) {
-        UniValue chainInfo = find_value(request.params[0].get_obj(), "chainInfo");
-        if (chainInfo.isBool()) {
-            includeChainInfo = chainInfo.get_bool();
-        }
-        UniValue tokenNameParam = find_value(request.params[0].get_obj(), "tokenName");
-        if (tokenNameParam.isStr()) {
-            if (!AreTokensDeployed())
+    if (!request.params[2].isNull()) {
+        if (request.params[2].isStr()) {
+            if (!AreTokensDeployed()) {
                 throw JSONRPCError(RPC_INVALID_PARAMETER, "Tokens aren't active.  tokenName can't be specified.");
-            tokenName = tokenNameParam.get_str();
+            }
+            tokenName = request.params[2].get_str();
         }
     }
 
@@ -885,44 +858,47 @@ UniValue getaddressutxos(const JSONRPCRequest& request)
     std::sort(unspentOutputs.begin(), unspentOutputs.end(), heightSort);
 
     UniValue utxos(UniValue::VARR);
+    CAmount total = 0;
+
+    int nHeight = chainActive.Height();
 
     for (std::vector<std::pair<CAddressUnspentKey, CAddressUnspentValue> >::const_iterator it=unspentOutputs.begin(); it!=unspentOutputs.end(); it++) {
+        if (requiredAmount > 0 && total >= requiredAmount) {
+            break;
+        }
+
         UniValue output(UniValue::VOBJ);
         std::string address;
+        uint32_t nTimeLock = 0;
         if (!getAddressFromIndex(it->first.type, it->first.hashBytes, address)) {
             throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, "Unknown address type");
         }
 
-        std::string tokenNameOut = "YONA";
-        if (tokenName != "YONA") {
+        std::string tokenNameOut = YONA;
+        if (tokenName != YONA) {
             CAmount _amount;
-            uint32_t nTimeLock;
             if (!GetTokenInfoFromScript(it->second.script, tokenNameOut, _amount, nTimeLock)) {
                 throw JSONRPCError(RPC_INTERNAL_ERROR, "Couldn't decode token script");
             }
         }
 
-        output.push_back(Pair("address", address));
-        output.push_back(Pair("tokenName", tokenNameOut));
-        output.push_back(Pair("txid", it->first.txhash.GetHex()));
-        output.push_back(Pair("outputIndex", (int)it->first.index));
-        output.push_back(Pair("script", HexStr(it->second.script.begin(), it->second.script.end())));
-        output.push_back(Pair("satoshis", it->second.satoshis));
-        output.push_back(Pair("height", it->second.blockHeight));
-        utxos.push_back(output);
+        int64_t timeLock = (tokenName == YONA) ? it->first.timeLock : nTimeLock;
+        if (timeLock < ((int64_t)timeLock < LOCKTIME_THRESHOLD ? nHeight : (int64_t)chainActive.Tip()->GetMedianTimePast())) {
+            output.pushKV("address", address);
+            output.pushKV("token_name", tokenNameOut);
+            output.pushKV("txid", it->first.txhash.GetHex());
+            output.pushKV("outputIndex", (int)it->first.index);
+            output.pushKV("script", HexStr(it->second.script.begin(), it->second.script.end()));
+            output.pushKV("satoshis", it->second.satoshis);
+            output.pushKV("height", it->second.blockHeight);
+            output.pushKV("timelock", timeLock);
+            utxos.push_back(output);
+
+            total += it->second.satoshis;
+        }
     }
 
-    if (includeChainInfo) {
-        UniValue result(UniValue::VOBJ);
-        result.push_back(Pair("utxos", utxos));
-
-        LOCK(cs_main);
-        result.push_back(Pair("hash", chainActive.Tip()->GetBlockHash().GetHex()));
-        result.push_back(Pair("height", (int)chainActive.Height()));
-        return result;
-    } else {
-        return utxos;
-    }
+    return utxos;
 }
 
 UniValue getaddressdeltas(const JSONRPCRequest& request)
@@ -1068,16 +1044,10 @@ UniValue getaddressbalance(const JSONRPCRequest& request)
     if (request.fHelp || request.params.size() > 2)
         throw std::runtime_error(
             "getaddressbalance\n"
-            "\nReturns the balance for an address(es) (requires addressindex to be enabled).\n"
+            "\nReturns the balance for an address (requires addressindex to be enabled).\n"
             "\nArguments:\n"
-            "{\n"
-            "  \"addresses:\"\n"
-            "    [\n"
-            "      \"address\"  (string) The base58check encoded address\n"
-            "      ,...\n"
-            "    ]\n"
-            "},\n"
-            "\"includeTokens\" (boolean, optional, default false)  If true this will return an expanded result which includes token balances\n"
+            "\"address\"         (string, required) The yona address.\n"
+            "\"includeTokens\"   (boolean, optional) Include tokens.\n"
             "\n"
             "\nResult:\n"
             "{\n"
@@ -1087,16 +1057,14 @@ UniValue getaddressbalance(const JSONRPCRequest& request)
             "OR\n"
             "[\n"
             "  {\n"
-            "    \"tokenName\"  (string) The token associated with the balance (YONA for Yonacoin)\n"
+            "    \"tokenName\"  (string) The token associated with the balance\n"
             "    \"balance\"  (string) The current balance in satoshis\n"
             "    \"received\"  (string) The total number of satoshis received (including change)\n"
             "  },...\n"
             "\n]"
             "\nExamples:\n"
-            + HelpExampleCli("getaddressbalance", "'{\"addresses\": [\"12c6DSiU4Rq3P4ZxziKxzrL5LmMBrzjrJX\"]}'")
-            + HelpExampleCli("getaddressbalance", "'{\"addresses\": [\"12c6DSiU4Rq3P4ZxziKxzrL5LmMBrzjrJX\"]}', true")
-            + HelpExampleRpc("getaddressbalance", "{\"addresses\": [\"12c6DSiU4Rq3P4ZxziKxzrL5LmMBrzjrJX\"]}")
-            + HelpExampleRpc("getaddressbalance", "{\"addresses\": [\"12c6DSiU4Rq3P4ZxziKxzrL5LmMBrzjrJX\"]}, true")
+            + HelpExampleCli("getaddressbalance", "\"1D1ZrZNe3JUo7ZycKEYQQiQAWd9y54F4XX\" true")
+            + HelpExampleRpc("getaddressbalance", "\"1D1ZrZNe3JUo7ZycKEYQQiQAWd9y54F4XX\", true")
         );
 
     std::vector<std::pair<uint160, int> > addresses;
@@ -1124,27 +1092,43 @@ UniValue getaddressbalance(const JSONRPCRequest& request)
 
         //tokenName -> (received, balance)
         std::map<std::string, std::pair<CAmount, CAmount>> balances;
+        std::map<std::string, CAmount> locked;
 
         for (std::vector<std::pair<CAddressIndexKey, CAmount> >::const_iterator it = addressIndex.begin();
-             it != addressIndex.end(); it++) {
-            std::string tokenName = it->first.token;
-            if (balances.count(tokenName) == 0) {
-                balances[tokenName] = std::make_pair(0, 0);
+            it != addressIndex.end(); it++) {
+                std::string tokenName = it->first.token;
+                if (balances.count(tokenName) == 0) {
+                    balances[tokenName] = std::make_pair(0, 0);
+                    locked[tokenName] = 0;
+                }
+
+                if (it->second > 0) {
+                    balances[tokenName].first += it->second;
+                }
+
+                if (it->first.timeLock < ((int64_t)it->first.timeLock < LOCKTIME_THRESHOLD ? (int64_t)chainActive.Height() : (int64_t)chainActive.Tip()->GetMedianTimePast()))
+                {
+                    balances[tokenName].second += it->second;
+                } else {
+                    locked[tokenName] += it->second;
+                }
             }
-            if (it->second > 0) {
-                balances[tokenName].first += it->second;
-            }
-            balances[tokenName].second += it->second;
-        }
 
         UniValue result(UniValue::VARR);
+        auto currentActiveTokenCache = GetCurrentTokenCache();
 
         for (std::map<std::string, std::pair<CAmount, CAmount>>::const_iterator it = balances.begin();
                 it != balances.end(); it++) {
+
+            CNewToken token;
+            currentActiveTokenCache->GetTokenMetaDataIfExists(it->first, token);
+
             UniValue balance(UniValue::VOBJ);
-            balance.push_back(Pair("tokenName", it->first));
-            balance.push_back(Pair("balance", it->second.second));
-            balance.push_back(Pair("received", it->second.first));
+            balance.pushKV("tokenName", it->first);
+            balance.pushKV("balance", it->second.second);
+            balance.pushKV("received", it->second.first);
+            balance.pushKV("locked", locked[it->first]);
+            balance.pushKV("units", token.units);
             result.push_back(balance);
         }
 
@@ -1161,18 +1145,24 @@ UniValue getaddressbalance(const JSONRPCRequest& request)
 
         CAmount balance = 0;
         CAmount received = 0;
+        CAmount locked = 0;
 
         for (std::vector<std::pair<CAddressIndexKey, CAmount> >::const_iterator it = addressIndex.begin();
              it != addressIndex.end(); it++) {
             if (it->second > 0) {
                 received += it->second;
             }
-            balance += it->second;
+            if (it->first.timeLock < ((int64_t)it->first.timeLock < LOCKTIME_THRESHOLD ? (int64_t)chainActive.Height() : (int64_t)chainActive.Tip()->GetMedianTimePast())) {
+                balance += it->second;
+            } else {
+                locked += it->second;
+            }
         }
 
         UniValue result(UniValue::VOBJ);
-        result.push_back(Pair("balance", balance));
-        result.push_back(Pair("received", received));
+        result.pushKV("balance", balance);
+        result.pushKV("received", received);
+        result.pushKV("locked", locked);
 
         return result;
     }
@@ -1184,17 +1174,9 @@ UniValue getaddresstxids(const JSONRPCRequest& request)
     if (request.fHelp || request.params.size() > 2)
         throw std::runtime_error(
             "getaddresstxids\n"
-            "\nReturns the txids for an address(es) (requires addressindex to be enabled).\n"
+            "\nReturns the txids for an address (requires addressindex to be enabled).\n"
             "\nArguments:\n"
-            "{\n"
-            "  \"addresses\"\n"
-            "    [\n"
-            "      \"address\"  (string) The base58check encoded address\n"
-            "      ,...\n"
-            "    ]\n"
-            "  \"start\" (number, optional) The start block height\n"
-            "  \"end\" (number, optional) The end block height\n"
-            "},\n"
+            "\"address\"       (string, required) The yona address.\n"
             "\"includeTokens\" (boolean, optional, default false)  If true this will return an expanded result which includes token transactions\n"
             "\nResult:\n"
             "[\n"
@@ -1202,10 +1184,8 @@ UniValue getaddresstxids(const JSONRPCRequest& request)
             "  ,...\n"
             "]\n"
             "\nExamples:\n"
-            + HelpExampleCli("getaddresstxids", "'{\"addresses\": [\"12c6DSiU4Rq3P4ZxziKxzrL5LmMBrzjrJX\"]}'")
-            + HelpExampleRpc("getaddresstxids", "{\"addresses\": [\"12c6DSiU4Rq3P4ZxziKxzrL5LmMBrzjrJX\"]}")
-            + HelpExampleCli("getaddresstxids", "'{\"addresses\": [\"12c6DSiU4Rq3P4ZxziKxzrL5LmMBrzjrJX\"]}', true")
-            + HelpExampleRpc("getaddresstxids", "{\"addresses\": [\"12c6DSiU4Rq3P4ZxziKxzrL5LmMBrzjrJX\"]}, true")
+            + HelpExampleCli("getaddressbalance", "\"1D1ZrZNe3JUo7ZycKEYQQiQAWd9y54F4XX\" true")
+            + HelpExampleRpc("getaddressbalance", "\"1D1ZrZNe3JUo7ZycKEYQQiQAWd9y54F4XX\", true")
         );
 
     std::vector<std::pair<uint160, int> > addresses;
@@ -1345,11 +1325,11 @@ static const CRPCCommand commands[] =
     { "util",               "signmessagewithprivkey", &signmessagewithprivkey, {"privkey","message"} },
 
     /* Address index */
-    { "addressindex",       "getaddressmempool",      &getaddressmempool,      {"addresses","includeTokens"} },
-    { "addressindex",       "getaddressutxos",        &getaddressutxos,        {"addresses"} },
-    { "addressindex",       "getaddressdeltas",       &getaddressdeltas,       {"addresses"} },
-    { "addressindex",       "getaddresstxids",        &getaddresstxids,        {"addresses","includeTokens"} },
-    { "addressindex",       "getaddressbalance",      &getaddressbalance,      {"addresses","includeTokens"} },
+    { "addressindex",       "getaddressmempool",      &getaddressmempool,      {"address","includeTokens"} },
+    { "addressindex",       "getaddressutxos",        &getaddressutxos,        {"address","token"} },
+    { "addressindex",       "getaddressdeltas",       &getaddressdeltas,       {"address"} },
+    { "addressindex",       "getaddresstxids",        &getaddresstxids,        {"address","includeTokens"} },
+    { "addressindex",       "getaddressbalance",      &getaddressbalance,      {"address","includeTokens"} },
 
     /* Blockchain */
     { "blockchain",         "getspentinfo",           &getspentinfo,           {} },
