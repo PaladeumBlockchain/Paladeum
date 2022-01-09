@@ -26,7 +26,7 @@ void GenesisGenerator(CBlock genesis) {
 
     while(true)
     {
-        hash = genesis.GetHash();
+        hash = genesis.GetBlockHash();
         if (UintToArith256(hash) <= bnTarget)
             break;
         if ((genesis.nNonce & 0xFFF) == 0)
@@ -42,7 +42,7 @@ void GenesisGenerator(CBlock genesis) {
     }
 
     printf("block.nNonce = %u \n", genesis.nNonce);
-    printf("block.GetHash = %s\n", genesis.GetHash().ToString().c_str());
+    printf("block.GetBlockHash = %s\n", genesis.GetBlockHash().ToString().c_str());
     printf("block.MerkleRoot = %s \n", genesis.hashMerkleRoot.ToString().c_str());
 }
 
@@ -181,7 +181,7 @@ public:
         const char* pszTimestamp = "New Species of Mouse Opossum Discovered in Panama | Dec 10, 2021 Sci-News";
 
         genesis = CreateGenesisBlock(pszTimestamp, 1640816880, 4900, 0x1f3fffff, 1, 1 * COIN);
-        consensus.hashGenesisBlock = genesis.GetHash();
+        consensus.hashGenesisBlock = genesis.GetBlockHash();
 
         assert(consensus.hashGenesisBlock == uint256S("0x0020f74ccfaddbcbbc71041ed0ce985e9b89701847c6b4a824f0a44cdd95e0f5"));
         assert(genesis.hashMerkleRoot == uint256S("0xa8361e55f50f1764c1d25f82ae29caed27f0fff3ca83f1af36532787e4abd9b2"));
@@ -297,7 +297,7 @@ public:
         const char* pszTimestamp = "New Species of Mouse Opossum Discovered in Panama | Dec 10, 2021 Sci-News";
 
         genesis = CreateGenesisBlock(pszTimestamp, 1639241695, 2153, 0x1f3fffff, 1, 1 * COIN);
-        consensus.hashGenesisBlock = genesis.GetHash();
+        consensus.hashGenesisBlock = genesis.GetBlockHash();
         // assert(consensus.hashGenesisBlock == uint256S("0x000c8bc3b01f2fce94b55bab848eeaed66ef3d8481eaf0cf23763bca2cc43f31"));
         // assert(genesis.hashMerkleRoot == uint256S("0x756f73dccc4a501e0b51c619ebfa9b0abf9f81a1a48a9809047394bbf70dd47e"));
 
@@ -413,7 +413,7 @@ public:
         const char* pszTimestamp = "New Species of Mouse Opossum Discovered in Panama | Dec 10, 2021 Sci-News";
 
         genesis = CreateGenesisBlock(pszTimestamp, 1524179366, 1, 0x207fffff, 4, 5000 * COIN);
-        consensus.hashGenesisBlock = genesis.GetHash();
+        consensus.hashGenesisBlock = genesis.GetBlockHash();
 
         // assert(consensus.hashGenesisBlock == uint256S("0x0b2c703dc93bb63a36c4e33b85be4855ddbca2ac951a7a0a29b8de0408200a3c "));
         // assert(genesis.hashMerkleRoot == uint256S("0x28ff00a867739a352523808d301f504bc4547699398d70faf2266a8bae5f3516"));

@@ -339,7 +339,7 @@ BOOST_FIXTURE_TEST_SUITE(miner_tests, TestingSetup)
             std::shared_ptr<const CBlock> shared_pblock = std::make_shared<const CBlock>(*pblock);
             //BOOST_TEST_MESSAGE("Before process block");
             BOOST_CHECK(ProcessNewBlock(chainparams, shared_pblock, true, nullptr));
-            pblock->hashPrevBlock = pblock->GetHash();
+            pblock->hashPrevBlock = pblock->GetBlockHash();
         }
 
 //   while(true) {
@@ -386,7 +386,7 @@ BOOST_FIXTURE_TEST_SUITE(miner_tests, TestingSetup)
 //		  //  std::shared_ptr<const CBlock> shared_pblock = std::make_shared<const CBlock>(*pblock);
 //		  //  bool processBlock = ProcessNewBlock(chainparams, shared_pblock, true, nullptr);
 //		 //   BOOST_CHECK(ProcessNewBlock(chainparams, shared_pblock, true, nullptr));
-//			pblock->hashPrevBlock = pblock->GetHash();
+//			pblock->hashPrevBlock = pblock->GetBlockHash();
 //	}
 
 

@@ -1225,7 +1225,7 @@ bool GetTransaction(const uint256 &hash, CTransactionRef &txOut, const Consensus
             } catch (const std::exception& e) {
                 return error("%s: Deserialize or I/O error - %s", __func__, e.what());
             }
-            hashBlock = header.GetHash();
+            hashBlock = header.GetBlockHash();
             if (txOut->GetHash() != hash)
                 return error("%s: txid mismatch", __func__);
             return true;
@@ -1305,7 +1305,7 @@ bool ReadBlockFromDisk(CBlock& block, const CDiskBlockPos& pos, const Consensus:
     }
 
     // Check the header
-    if (block.IsProofOfWork() && !CheckProofOfWork(block.GetHash(), block.nBits, consensusParams))
+    if (block.IsProofOfWork() && !CheckProofOfWork(block.GetBlockHash(), block.nBits, consensusParams))
         return error("ReadBlockFromDisk: Errors in block header at %s", pos.ToString());
 
     return true;
@@ -1315,7 +1315,7 @@ bool ReadBlockFromDisk(CBlock& block, const CBlockIndex* pindex, const Consensus
 {
     if (!ReadBlockFromDisk(block, pindex->GetBlockPos(), consensusParams))
         return false;
-    if (block.GetHash() != pindex->GetBlockHash())
+    if (block.GetBlockHash() != pindex->GetBlockHash())
         return error("ReadBlockFromDisk(CBlock&, CBlockIndex*): GetHash() doesn't match index for %s at %s",
                 pindex->ToString(), pindex->GetBlockPos().ToString());
     return true;
@@ -1839,7 +1839,7 @@ static DisconnectResult DisconnectBlock(const CBlock& block, const CBlockIndex* 
     }
 
     std::vector<std::pair<std::string, CBlockTokenUndo> > vUndoData;
-    if (!ptokensdb->ReadBlockUndoTokenData(block.GetHash(), vUndoData)) {
+    if (!ptokensdb->ReadBlockUndoTokenData(block.GetBlockHash(), vUndoData)) {
         error("DisconnectBlock(): block token undo data inconsistent");
         return DISCONNECT_FAILED;
     }
@@ -2434,17 +2434,17 @@ static int64_t nBlocksTotal = 0;
 static bool ConnectBlock(const CBlock& block, CValidationState& state, CBlockIndex* pindex,
                   CCoinsViewCache& view, const CChainParams& chainparams, CTokensCache* tokensCache = nullptr, bool fJustCheck = false, bool ignoreAddressIndex = false)
 {
-    const uint256& hash = block.GetHash();
+    const uint256& hash = block.GetBlockHash();
 
     AssertLockHeld(cs_main);
     assert(pindex);
     // pindex->phashBlock can be null if called by CreateNewBlock/TestBlockValidity
     assert((pindex->phashBlock == nullptr) ||
-           (*pindex->phashBlock == block.GetHash()));
+           (*pindex->phashBlock == block.GetBlockHash()));
     int64_t nTimeStart = GetTimeMicros();
 
     // We recheck the hardened checkpoints here since ContextualCheckBlock(Header) is not called in ConnectBlock.
-    if(fCheckpointsEnabled && !Checkpoints::CheckHardened(pindex->nHeight, block.GetHash(), chainparams.Checkpoints())) {
+    if(fCheckpointsEnabled && !Checkpoints::CheckHardened(pindex->nHeight, block.GetBlockHash(), chainparams.Checkpoints())) {
         return state.DoS(100, error("%s: expected hardened checkpoint at height %d", __func__, pindex->nHeight), REJECT_CHECKPOINT, "bad-fork-hardened-checkpoint");
     }
 
@@ -2494,7 +2494,7 @@ static bool ConnectBlock(const CBlock& block, CValidationState& state, CBlockInd
                         REJECT_INVALID, "bad-cs-premature");
 
         CTransactionRef txPrev;
-        uint256 hashPrevBlock = block.GetHash();
+        uint256 hashPrevBlock = block.GetBlockHash();
 
         if (!GetTransaction(prevout.hash, txPrev, GetParams().GetConsensus(), hashPrevBlock)) {
             return state.DoS(100, error("%s: read txPrev failed", __func__),
@@ -2792,7 +2792,7 @@ static bool ConnectBlock(const CBlock& block, CValidationState& state, CBlockInd
         std::pair<std::string, CBlockTokenUndo>* undoTokenData = &undoPair;
         /** TOKEN END */
 
-        UpdateCoins(tx, view, i == 0 ? undoDummy : blockundo.vtxundo.back(), pindex->nHeight, block.GetHash(), tokensCache, undoTokenData);
+        UpdateCoins(tx, view, i == 0 ? undoDummy : blockundo.vtxundo.back(), pindex->nHeight, block.GetBlockHash(), tokensCache, undoTokenData);
 
         /** TOKEN START */
         if (!undoTokenData->first.empty()) {
@@ -2849,7 +2849,7 @@ static bool ConnectBlock(const CBlock& block, CValidationState& state, CBlockInd
         }
 
         if (vUndoTokenData.size()) {
-            if (!ptokensdb->WriteBlockUndoTokenData(block.GetHash(), vUndoTokenData))
+            if (!ptokensdb->WriteBlockUndoTokenData(block.GetBlockHash(), vUndoTokenData))
                 return AbortNode(state, "Failed to write token undo data");
         }
 
@@ -4108,13 +4108,13 @@ bool CheckCanonicalBlockSignature(const std::shared_ptr<const CBlock> pblock)
 
 static bool CheckBlockHeader(const CBlockHeader& block, CValidationState& state, const Consensus::Params& consensusParams, bool fCheckPOW = false)
 {
-    if (block.nVersion < 7 && block.GetHash() != consensusParams.hashGenesisBlock) {
+    if (block.nVersion < 7 && block.GetBlockHash() != consensusParams.hashGenesisBlock) {
         return state.Invalid(error("%s: rejected nVersion=%d block", __func__, block.nVersion),
                 REJECT_OBSOLETE, "bad-version");
     }
 
     // Check proof of work matches claimed amount
-    if (fCheckPOW && !CheckProofOfWork(block.GetHash(), block.nBits, consensusParams))
+    if (fCheckPOW && !CheckProofOfWork(block.GetBlockHash(), block.nBits, consensusParams))
         return state.DoS(50, false, REJECT_INVALID, "high-hash", false, "proof of work failed");
 
     // Check timestamp
@@ -4343,7 +4343,7 @@ static bool ContextualCheckBlockHeader(const CBlock& block, CValidationState& st
         if (pcheckpoint && nHeight < pcheckpoint->nHeight)
             return state.DoS(100, error("%s: forked chain older than last checkpoint (height %d)", __func__, nHeight), REJECT_CHECKPOINT, "bad-fork-prior-to-checkpoint");
 
-        if (!Checkpoints::CheckHardened(nHeight, block.GetHash(), params.Checkpoints()))
+        if (!Checkpoints::CheckHardened(nHeight, block.GetBlockHash(), params.Checkpoints()))
             return state.DoS(100, error("%s: expected hardened checkpoint at height %d", __func__, nHeight), REJECT_CHECKPOINT, "bad-fork-hardened-checkpoint");
     }
 
@@ -4510,7 +4510,7 @@ bool ProcessNewBlockHeaders(const std::vector<CBlockHeader>& headers, CValidatio
         LOCK(cs_main);
         for (const CBlockHeader& header : headers) {
             CBlockIndex *pindex = nullptr; // Use a temp pindex instead of ppindex to avoid a const_cast
-            if (!AcceptBlockHeader(header, state, header.GetHash(), chainparams, &pindex)) {
+            if (!AcceptBlockHeader(header, state, header.GetBlockHash(), chainparams, &pindex)) {
                 if (first_invalid) *first_invalid = header;
                 return false;
             }
@@ -4668,7 +4668,7 @@ bool TestBlockValidity(CValidationState& state, const CChainParams& chainparams,
     CTokensCache tokenCache = *GetCurrentTokenCache();
     /** TOKEN END */
 
-    uint256 hash = block.GetHash();
+    uint256 hash = block.GetBlockHash();
 
     // NOTE: CheckBlockHeader is called by CheckBlock
     if (!ContextualCheckBlockHeader(block, state, chainparams, pindexPrev, GetAdjustedTime(), hash))
@@ -5103,7 +5103,7 @@ bool CVerifyDB::VerifyDB(const CChainParams& chainparams, CCoinsView *coinsview,
         bool fCheckPoW = true;
         bool fCheckMerkleRoot = true;
         bool fDBCheck = true;
-        uint256 hash = block.GetHash();
+        uint256 hash = block.GetBlockHash();
         if (nCheckLevel >= 1 && !CheckBlock(block, state, hash, chainparams.GetConsensus(), fCheckPoW, fCheckMerkleRoot, fDBCheck))  // fCheckTokenDuplicate set to false, because we don't want to fail because the token exists in our database, when loading blocks from our token databse
             return error("%s: *** found bad block at %d, hash=%s (%s)\n", __func__,
                          pindex->nHeight, pindex->GetBlockHash().ToString(), FormatStateMessage(state));
@@ -5426,7 +5426,7 @@ bool LoadGenesisBlock(const CChainParams& chainparams)
     // mapBlockIndex. Note that we can't use chainActive here, since it is
     // set based on the coins db, not the block index db, which is the only
     // thing loaded at this point.
-    if (mapBlockIndex.count(chainparams.GenesisBlock().GetHash()))
+    if (mapBlockIndex.count(chainparams.GenesisBlock().GetBlockHash()))
         return true;
 
     try {
@@ -5498,7 +5498,7 @@ bool LoadExternalBlockFile(const CChainParams& chainparams, FILE* fileIn, CDiskB
                 nRewind = blkdat.GetPos();
 
                 // detect out of order blocks, and store them for later
-                uint256 hash = block.GetHash();
+                uint256 hash = block.GetBlockHash();
                 if (hash != chainparams.GetConsensus().hashGenesisBlock && mapBlockIndex.find(block.hashPrevBlock) == mapBlockIndex.end()) {
                     LogPrint(BCLog::REINDEX, "%s: Out of order block %s, parent %s not known\n", __func__, hash.ToString(),
                             block.hashPrevBlock.ToString());
@@ -5543,14 +5543,14 @@ bool LoadExternalBlockFile(const CChainParams& chainparams, FILE* fileIn, CDiskB
                         std::shared_ptr<CBlock> pblockrecursive = std::make_shared<CBlock>();
                         if (ReadBlockFromDisk(*pblockrecursive, it->second, chainparams.GetConsensus()))
                         {
-                            LogPrint(BCLog::REINDEX, "%s: Processing out of order child %s of %s\n", __func__, pblockrecursive->GetHash().ToString(),
+                            LogPrint(BCLog::REINDEX, "%s: Processing out of order child %s of %s\n", __func__, pblockrecursive->GetBlockHash().ToString(),
                                     head.ToString());
                             LOCK(cs_main);
                             CValidationState dummy;
                             if (AcceptBlock(pblockrecursive, dummy, chainparams, nullptr, true, &it->second, nullptr, hash, true))
                             {
                                 nLoaded++;
-                                queue.push_back(pblockrecursive->GetHash());
+                                queue.push_back(pblockrecursive->GetBlockHash());
                             }
                         }
                         range.first++;

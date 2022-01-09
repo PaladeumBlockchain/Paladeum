@@ -136,7 +136,7 @@ UniValue generateBlocks(std::shared_ptr<CReserveScript> coinbaseScript, int nGen
             LOCK(cs_main);
             IncrementExtraNonce(pblock, chainActive.Tip(), nExtraNonce);
         }
-        while (nMaxTries > 0 && pblock->nNonce < nInnerLoopCount && !CheckProofOfWork(pblock->GetHash(), pblock->nBits, GetParams().GetConsensus())) {
+        while (nMaxTries > 0 && pblock->nNonce < nInnerLoopCount && !CheckProofOfWork(pblock->GetBlockHash(), pblock->nBits, GetParams().GetConsensus())) {
             ++pblock->nNonce;
             --nMaxTries;
         }
@@ -146,9 +146,9 @@ UniValue generateBlocks(std::shared_ptr<CReserveScript> coinbaseScript, int nGen
         if (pblock->nNonce == nInnerLoopCount) {
             continue;
         }
-        uint256 hash = pblock->GetHash();
+        uint256 hash = pblock->GetBlockHash();
         std::shared_ptr<const CBlock> shared_pblock = std::make_shared<const CBlock>(*pblock);
-        if (!ProcessNewBlock(GetParams(), shared_pblock, true, nullptr, shared_pblock->GetHash()))
+        if (!ProcessNewBlock(GetParams(), shared_pblock, true, nullptr, shared_pblock->GetBlockHash()))
             throw JSONRPCError(RPC_INTERNAL_ERROR, "ProcessNewBlock, block not accepted");
         ++nHeight;
         blockHashes.push_back(hash.GetHex());
@@ -459,7 +459,7 @@ UniValue getblocktemplate(const JSONRPCRequest& request)
             if (!DecodeHexBlk(block, dataval.get_str()))
                 throw JSONRPCError(RPC_DESERIALIZATION_ERROR, "Block decode failed");
 
-            uint256 hash = block.GetHash();
+            uint256 hash = block.GetBlockHash();
             BlockMap::iterator mi = mapBlockIndex.find(hash);
             if (mi != mapBlockIndex.end()) {
                 CBlockIndex *pindex = mi->second;
@@ -755,7 +755,7 @@ public:
 
 protected:
     void BlockChecked(const CBlock& block, const CValidationState& stateIn) override {
-        if (block.GetHash() != hash)
+        if (block.GetBlockHash() != hash)
             return;
         found = true;
         state = stateIn;
@@ -794,7 +794,7 @@ UniValue submitblock(const JSONRPCRequest& request)
     if (block.nHeight > (uint32_t)chainActive.Height() + 10)
         throw JSONRPCError(RPC_DESERIALIZATION_ERROR, "Block height is to large");
 
-    uint256 hash = block.GetHash();
+    uint256 hash = block.GetBlockHash();
 
     bool fBlockPresent = false;
     {
