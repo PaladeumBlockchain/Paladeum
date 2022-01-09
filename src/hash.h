@@ -17,10 +17,6 @@
 
 #include <vector>
 
-extern "C" {
-#include <crypto/blake2b.h>
-} // "C"
-
 typedef uint256 ChainCode;
 
 /** A hasher class for Bitcoin's 256-bit hash (double SHA-256). */
@@ -302,24 +298,6 @@ inline int GetHashSelection(const uint256 PrevBlockHash, int index) {
     #define START_OF_LAST_16_NIBBLES_OF_HASH 48
     int hashSelection = PrevBlockHash.GetNibble(START_OF_LAST_16_NIBBLES_OF_HASH + index);
     return(hashSelection);
-}
-
-/** Blake2b hash wrapper */
-template <typename T>
-inline uint256 blake2b(const T* pbegin, const T* pend)
-{
-    static T pblank[1];
-    blake2b_ctx ctx;
-    uint256 hash;
-
-    const void* block = pbegin == pend ? pblank : pbegin;
-    size_t      length  = (pend - pbegin) * sizeof(T);
-
-    blake2b_init(&ctx, 32, NULL, 0);
-    blake2b_update(&ctx, block, length);
-    blake2b_final(&ctx, hash.begin());
-
-    return hash;
 }
 
 #endif // YONA_HASH_H
