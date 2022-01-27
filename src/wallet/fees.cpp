@@ -19,7 +19,6 @@ CAmount GetRequiredFee(unsigned int nTxBytes)
     return std::max(CWallet::minTxFee.GetFee(nTxBytes), ::minRelayTxFee.GetFee(nTxBytes));
 }
 
-
 CAmount GetMinimumFee(unsigned int nTxBytes, const CCoinControl& coin_control, const CTxMemPool& pool, const CBlockPolicyEstimator& estimator, FeeCalculation *feeCalc)
 {
     /* User control of how to calculate fee uses the following parameter precedence:

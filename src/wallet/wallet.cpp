@@ -4114,7 +4114,8 @@ bool CWallet::CreateTransactionAll(const std::vector<CRecipient>& vecSend, CWall
                     vin.scriptWitness.SetNull();
                 }
 
-                nFeeNeeded = GetMinimumFee(nBytes, coin_control, ::mempool, ::feeEstimator, &feeCalc);
+                bool nTokenTransaction = fTransferToken || fNewToken || fReissueToken;
+                nFeeNeeded = GetStaticFee(nTokenTransaction, chainActive.Height());
 
                 // If we made it here and we aren't even able to meet the relay fee on the next pass, give up
                 // because we must be at the maximum allowed fee.

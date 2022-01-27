@@ -14,6 +14,8 @@
 #include "txmempool.h"
 #include "walletmodel.h"
 
+#include "consensus/consensus.h"
+
 #include "wallet/coincontrol.h"
 #include "init.h"
 #include "policy/fees.h"
@@ -511,7 +513,8 @@ void CoinControlDialog::updateLabels(WalletModel *model, QDialog* dialog)
                 nBytes -= 34;
 
         // Fee
-        nPayFee = GetMinimumFee(nBytes, *coinControl, ::mempool, ::feeEstimator, nullptr /* FeeCalculation */);
+        // ToDo: pass spend height here
+        nPayFee = GetStaticFee(false, 0);
 
         if (nPayAmount > 0)
         {

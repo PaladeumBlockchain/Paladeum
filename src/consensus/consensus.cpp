@@ -4,6 +4,11 @@
 
 #include "consensus.h"
 #include <validation.h>
+#include <amount.h>
+
+CAmount GetStaticFee(bool nTokenTransaction, int nSpendHeight) {
+    return nTokenTransaction ? 0.005 * COIN : 0.008 * COIN;
+}
 
 unsigned int GetMaxBlockWeight()
 {
