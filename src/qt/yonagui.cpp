@@ -1538,7 +1538,7 @@ void YonaGUI::incomingTransaction(const QString& date, int unit, const CAmount& 
 
 void YonaGUI::checkTokens()
 {
-    // Check that status of RIP2 and activate the tokens icon if it is active
+    // Check that status of tokens and activate the tokens icon if it is active
     if(AreTokensDeployed()) {
         transferTokenAction->setDisabled(false);
         transferTokenAction->setToolTip(tr("Transfer tokens to YONA addresses"));

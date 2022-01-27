@@ -238,7 +238,7 @@ bool SendTokensEntry::validate()
     if (!ui->memoBox->text().isEmpty()) {
         if (!AreMessagesDeployed()) {
             ui->messageTextLabel->show();
-            ui->messageTextLabel->setText(tr("Memos can only be added once RIP5 is voted in"));
+            ui->messageTextLabel->setText(tr("Memos can only be added once messaging is voted in"));
             ui->memoBox->setStyleSheet(STYLE_INVALID);
             retval = false;
         }

@@ -436,7 +436,7 @@ UniValue issue(const JSONRPCRequest& request)
             "5. \"units\"                 (integer, optional, default=0, min=0, max=8), the number of decimals precision for the token (0 for whole units (\"1\"), 8 for max precision (\"1.00000000\")\n"
             "6. \"reissuable\"            (boolean, optional, default=true (false for unique tokens)), whether future reissuance is allowed\n"
             "7. \"has_ipfs\"              (boolean, optional, default=false), whether ipfs hash is going to be added to the token\n"
-            "8. \"ipfs_hash\"             (string, optional but required if has_ipfs = 1), an ipfs hash or a txid hash once RIP5 is activated\n"
+            "8. \"ipfs_hash\"             (string, optional but required if has_ipfs = 1), an ipfs hash or a txid hash once messaging is activated\n"
 
             "\nResult:\n"
             "\"txid\"                     (string) The transaction id\n"
@@ -1432,7 +1432,7 @@ UniValue transfer(const JSONRPCRequest& request)
                 "2. \"qty\"                      (numeric, required) number of tokens you want to send to the address\n"
                 "3. \"to_address\"               (string, required) address to send the token to\n"
                 "4. \"timelock\"                 (integer, optional, default=0) Timelock for token UTXOs, could be height or timestamp\n"
-                "5. \"message\"                  (string, optional) Once RIP5 is voted in ipfs hash or txid hash to send along with the transfer\n"
+                "5. \"message\"                  (string, optional) Once messaging is voted in ipfs hash or txid hash to send along with the transfer\n"
                 "6. \"expire_time\"              (numeric, optional) UTC timestamp of when the message expires\n"
                 "7. \"change_address\"       (string, optional, default = \"\") the transactions YONA change will be sent to this address\n"
                 "8. \"token_change_address\"     (string, optional, default = \"\") the transactions Token change will be sent to this address\n"
@@ -1572,7 +1572,7 @@ UniValue transferfromaddresses(const JSONRPCRequest& request)
             "3. \"qty\"                      (numeric, required) number of tokens you want to send to the address\n"
             "4. \"to_address\"               (string, required) address to send the token to\n"
             "5. \"timelock\"                 (integer, optional, default=0) Timelock for token UTXOs, could be height or timestamp\n"
-            "6. \"message\"                  (string, optional) Once RIP5 is voted in ipfs hash or txid hash to send along with the transfer\n"
+            "6. \"message\"                  (string, optional) Once messaging is voted in ipfs hash or txid hash to send along with the transfer\n"
             "7. \"expire_time\"              (numeric, optional) UTC timestamp of when the message expires\n"
             "8. \"yona_change_address\"       (string, optional, default = \"\") the transactions YONA change will be sent to this address\n"
             "9. \"token_change_address\"     (string, optional, default = \"\") the transactions Token change will be sent to this address\n"
@@ -1739,7 +1739,7 @@ UniValue transferfromaddress(const JSONRPCRequest& request)
                 "3. \"qty\"                      (numeric, required) number of tokens you want to send to the address\n"
                 "4. \"to_address\"               (string, required) address to send the token to\n"
                 "5. \"timelock\"                 (integer, optional, default=0) Timelock for token UTXOs, could be height or timestamp\n"
-                "6. \"message\"                  (string, optional) Once RIP5 is voted in ipfs hash or txid hash to send along with the transfer\n"
+                "6. \"message\"                  (string, optional) Once messaging is voted in ipfs hash or txid hash to send along with the transfer\n"
                 "7. \"expire_time\"              (numeric, optional) UTC timestamp of when the message expires\n"
                 "8. \"yona_change_address\"      (string, optional, default = \"\") the transaction YONA change will be sent to this address\n"
                 "9. \"token_change_address\"     (string, optional, default = \"\") the transaction Token change will be sent to this address\n"
@@ -1892,7 +1892,7 @@ UniValue reissue(const JSONRPCRequest& request)
                 "4. \"change_address\"           (string, optional) address that the change of the transaction will be sent to\n"
                 "5. \"reissuable\"               (boolean, optional, default=true), whether future reissuance is allowed\n"
                 "6. \"new_units\"                (numeric, optional, default=-1), the new units that will be associated with the token\n"
-                "7. \"new_ipfs\"                 (string, optional, default=\"\"), whether to update the current ipfs hash or txid once RIP5 is active\n"
+                "7. \"new_ipfs\"                 (string, optional, default=\"\"), whether to update the current ipfs hash or txid once messaging is active\n"
 
                 "\nResult:\n"
                 "\"txid\"                     (string) The transaction id\n"
@@ -3050,7 +3050,7 @@ UniValue issuequalifiertoken(const JSONRPCRequest& request)
                 "3. \"to_address\"            (string), optional, default=\"\"), address token will be sent to, if it is empty, address will be generated for you\n"
                 "4. \"change_address\"        (string), optional, default=\"\"), address the the yona change will be sent to, if it is empty, change address will be generated for you\n"
                 "5. \"has_ipfs\"              (boolean, optional, default=false), whether ipfs hash is going to be added to the token\n"
-                "6. \"ipfs_hash\"             (string, optional but required if has_ipfs = 1), an ipfs hash or a txid hash once RIP5 is activated\n"
+                "6. \"ipfs_hash\"             (string, optional but required if has_ipfs = 1), an ipfs hash or a txid hash once messaging is activated\n"
 
                 "\nResult:\n"
                 "\"txid\"                     (string) The transaction id\n"
@@ -3208,7 +3208,7 @@ UniValue issuerestrictedtoken(const JSONRPCRequest& request)
                 "6. \"units\"                 (integer, optional, default=0, min=0, max=8) the number of decimals precision for the token (0 for whole units (\"1\"), 8 for max precision (\"1.00000000\")\n"
                 "7. \"reissuable\"            (boolean, optional, default=true (false for unique tokens)) whether future reissuance is allowed\n"
                 "8. \"has_ipfs\"              (boolean, optional, default=false) whether an ipfs hash or txid hash is going to be added to the token\n"
-                "9. \"ipfs_hash\"             (string, optional but required if has_ipfs = 1) an ipfs hash or a txid hash once RIP5 is activated\n"
+                "9. \"ipfs_hash\"             (string, optional but required if has_ipfs = 1) an ipfs hash or a txid hash once messaging is activated\n"
 
                 "\nResult:\n"
                 "\"txid\"                     (string) The transaction id\n"
@@ -3355,7 +3355,7 @@ UniValue reissuerestrictedtoken(const JSONRPCRequest& request)
                 "6. \"change_address\"        (string, optional, default=\"\") address that the yona change will be sent to, if it is empty, change address will be generated for you\n"
                 "7. \"new_units\"             (numeric, optional, default=-1) the new units that will be associated with the token\n"
                 "8. \"reissuable\"            (boolean, optional, default=true (false for unique tokens)) whether future reissuance is allowed\n"
-                "9. \"new_ipfs\"              (string, optional, default=\"\") whether to update the current ipfs hash or txid once RIP5 is active\n"
+                "9. \"new_ipfs\"              (string, optional, default=\"\") whether to update the current ipfs hash or txid once messaging is active\n"
 
                 "\nResult:\n"
                 "\"txid\"                     (string) The transaction id\n"
@@ -3493,7 +3493,7 @@ UniValue transferqualifier(const JSONRPCRequest& request)
                 "2. \"qty\"                      (numeric, required) number of tokens you want to send to the address\n"
                 "3. \"to_address\"               (string, required) address to send the token to\n"
                 "4. \"change_address\"           (string, optional, default = \"\") the transaction change will be sent to this address\n"
-                "5. \"message\"                  (string, optional) Once RIP5 is voted in ipfs hash or txid hash to send along with the transfer\n"
+                "5. \"message\"                  (string, optional) Once messaging is voted in ipfs hash or txid hash to send along with the transfer\n"
                 "6. \"expire_time\"              (numeric, optional) UTC timestamp of when the message expires\n"
 
                 "\nResult:\n"
@@ -3542,7 +3542,7 @@ UniValue transferqualifier(const JSONRPCRequest& request)
 
     if (request.params.size() > 4) {
         if (!AreMessagesDeployed()) {
-            throw JSONRPCError(RPC_INVALID_PARAMS, std::string("Unable to send messages until Messaging RIP5 is enabled"));
+            throw JSONRPCError(RPC_INVALID_PARAMS, std::string("Unable to send messages until Messaging messaging is enabled"));
         }
     }
 

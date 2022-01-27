@@ -624,9 +624,6 @@ CWallet *GetFirstWallet() {
     return(vpwallets[0]);
 }
 
-
-// Solo
-
 std::unique_ptr<CBlockTemplate> BlockAssembler::CreateNewBlock(const CScript& scriptPubKeyIn, bool fProofOfStake, int64_t* pTotalFees)
 {
     int64_t nTimeStart = GetTimeMicros();
@@ -721,9 +718,6 @@ std::unique_ptr<CBlockTemplate> BlockAssembler::CreateNewBlock(const CScript& sc
     // Fill in header
     pblock->hashPrevBlock  = pindexPrev->GetBlockHash();
 
-    // if (pblock->IsProofOfStake())
-        // pblock->nTime = pblock->vtx[1]->nTime; //same as coinstake timestamp
-
     if (!fProofOfStake) {
         UpdateTime(pblock, chainparams.GetConsensus(), pindexPrev);
     }
@@ -741,25 +735,4 @@ std::unique_ptr<CBlockTemplate> BlockAssembler::CreateNewBlock(const CScript& sc
     LogPrint(BCLog::BENCH, "CreateNewBlock() packages: %.2fms (%d packages, %d updated descendants), validity: %.2fms (total %.2fms)\n", 0.001 * (nTime1 - nTimeStart), nPackagesSelected, nDescendantsUpdated, 0.001 * (nTime2 - nTime1), 0.001 * (nTime2 - nTimeStart));
 
     return std::move(pblocktemplate);
-}
-
-
-
-static bool ProcessBlockFound(const std::shared_ptr<const CBlock> &pblock, const CChainParams& chainparams, const uint256& hash)
-{
-    LogPrintf("%s\n", pblock->ToString());
-    LogPrintf("generated %s\n", FormatMoney(pblock->vtx[0]->vout[0].nValue));
-
-    // Found a solution
-    {
-        LOCK(cs_main);
-        if (pblock->hashPrevBlock != chainActive.Tip()->GetBlockHash())
-            return error("ProcessBlockFound -- generated block is stale");
-    }
-
-    // Process this block the same as if we had received it from another node
-    if (!ProcessNewBlock(chainparams, pblock, true, nullptr, hash))
-        return error("ProcessBlockFound -- ProcessNewBlock() failed, block not accepted");
-
-    return true;
 }

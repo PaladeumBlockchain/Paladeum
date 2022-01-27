@@ -799,7 +799,7 @@ bool ReissueTokenDialog::checkIPFSHash(QString hash)
     if (!hash.isEmpty()) {
         if (!AreMessagesDeployed()) {
             if (hash.length() > 46) {
-                showMessage(tr("Only IPFS Hashes allowed until RIP5 is activated"));
+                showMessage(tr("Only IPFS Hashes allowed until messaging is activated"));
                 disableReissueButton();
                 return false;
             }
