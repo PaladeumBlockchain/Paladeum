@@ -1290,7 +1290,8 @@ void ReissueTokenDialog::on_buttonMinimizeFee_clicked()
 
 void ReissueTokenDialog::setMinimumFee()
 {
-    ui->customFee->setValue(GetRequiredFee(1000));
+    // ToDo: pass spend height here
+    ui->customFee->setValue(GetStaticFee(true, 0));
 }
 
 void ReissueTokenDialog::updateFeeSectionControls()

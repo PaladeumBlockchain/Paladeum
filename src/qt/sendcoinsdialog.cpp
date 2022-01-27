@@ -724,7 +724,8 @@ void SendCoinsDialog::on_buttonMinimizeFee_clicked()
 
 void SendCoinsDialog::setMinimumFee()
 {
-    ui->customFee->setValue(GetRequiredFee(1000));
+    // ToDo: pass spend height here
+    ui->customFee->setValue(GetStaticFee(false, 0));
 }
 
 void SendCoinsDialog::updateFeeSectionControls()
