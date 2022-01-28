@@ -29,6 +29,7 @@
 #include "ui_interface.h"
 
 #include <QAction>
+#include <QToolBar>
 #include <QActionGroup>
 #include <QFileDialog>
 #include <QHBoxLayout>
@@ -47,6 +48,7 @@ WalletView::WalletView(const PlatformStyle *_platformStyle, QWidget *parent):
     overviewPage = new OverviewPage(platformStyle);
 
     transactionsPage = new QWidget(this);
+    tokensOverview = new QWidget(this);
     QVBoxLayout *vbox = new QVBoxLayout();
     QHBoxLayout *hbox_buttons = new QHBoxLayout();
     transactionView = new TransactionView(platformStyle, this);
@@ -76,11 +78,59 @@ WalletView::WalletView(const PlatformStyle *_platformStyle, QWidget *parent):
     addWidget(receiveCoinsPage);
     addWidget(sendCoinsPage);
 
+    tokensStack = new QStackedWidget(this);
+    QVBoxLayout *tokensLayout = new QVBoxLayout();
+    QActionGroup *tabGroup = new QActionGroup(this);
+
+    QAction *transferTokenAction = new QAction(platformStyle->SingleColorIconOnOff(":/icons/token_transfer_selected", ":/icons/token_transfer"), tr("&Transfer Tokens"), this);
+    transferTokenAction->setStatusTip(tr("Transfer tokens to YONA addresses"));
+    transferTokenAction->setToolTip(transferTokenAction->statusTip());
+    transferTokenAction->setCheckable(true);
+    tabGroup->addAction(transferTokenAction);
+
+    QAction *createTokenAction = new QAction(platformStyle->SingleColorIconOnOff(":/icons/token_create_selected", ":/icons/token_create"), tr("&Create Tokens"), this);
+    createTokenAction->setStatusTip(tr("Create new main/sub/unique tokens"));
+    createTokenAction->setToolTip(createTokenAction->statusTip());
+    createTokenAction->setCheckable(true);
+    tabGroup->addAction(createTokenAction);
+
+    QAction *manageTokenAction = new QAction(platformStyle->SingleColorIconOnOff(":/icons/token_manage_selected", ":/icons/token_manage"), tr("&Manage Tokens"), this);
+    manageTokenAction->setStatusTip(tr("Manage tokens you are the administrator of"));
+    manageTokenAction->setToolTip(manageTokenAction->statusTip());
+    manageTokenAction->setCheckable(true);
+    tabGroup->addAction(manageTokenAction);
+
+    QAction *restrictedTokenAction = new QAction(platformStyle->SingleColorIconOnOff(":/icons/restricted_token_selected", ":/icons/restricted_token"), tr("&Restricted Tokens"), this);
+    restrictedTokenAction->setStatusTip(tr("Manage restricted tokens"));
+    restrictedTokenAction->setToolTip(restrictedTokenAction->statusTip());
+    restrictedTokenAction->setCheckable(true);
+    tabGroup->addAction(restrictedTokenAction);
+
+    QToolBar *tokensToolbar = new QToolBar(this);
+    tokensToolbar->setContextMenuPolicy(Qt::PreventContextMenu);
+    tokensToolbar->setMovable(false);
+    tokensToolbar->setToolButtonStyle(Qt::ToolButtonTextBesideIcon);
+    tokensToolbar->addAction(transferTokenAction);
+    tokensToolbar->addAction(createTokenAction);
+    tokensToolbar->addAction(manageTokenAction);
+    tokensToolbar->addAction(restrictedTokenAction);
+
+    tokensLayout->addWidget(tokensToolbar);
+    tokensLayout->addWidget(tokensStack);
+    tokensOverview->setLayout(tokensLayout);
+
+    connect(transferTokenAction, SIGNAL(triggered()), this, SLOT(gotoTokensPage()));
+    connect(createTokenAction, SIGNAL(triggered()), this, SLOT(gotoCreateTokensPage()));
+    connect(manageTokenAction, SIGNAL(triggered()), this, SLOT(gotoManageTokensPage()));
+    connect(restrictedTokenAction, SIGNAL(triggered()), this, SLOT(gotoRestrictedTokensPage()));
+
+    tokensStack->addWidget(tokensPage);
+    tokensStack->addWidget(createTokensPage);
+    tokensStack->addWidget(manageTokensPage);
+    tokensStack->addWidget(restrictedTokensPage);
+
     /** TOKENS START */
-    addWidget(tokensPage);
-    addWidget(createTokensPage);
-    addWidget(manageTokensPage);
-    addWidget(restrictedTokensPage);
+    addWidget(tokensOverview);
     /** TOKENS END */
 
     // Clicking on a transaction on the overview pre-selects the transaction on the transaction history page
@@ -107,7 +157,9 @@ WalletView::WalletView(const PlatformStyle *_platformStyle, QWidget *parent):
     connect(overviewPage, SIGNAL(tokenIssueSubClicked(QModelIndex)), createTokensPage, SLOT(focusSubToken(QModelIndex)));
     connect(overviewPage, SIGNAL(tokenIssueUniqueClicked(QModelIndex)), createTokensPage, SLOT(focusUniqueToken(QModelIndex)));
     connect(overviewPage, SIGNAL(tokenReissueClicked(QModelIndex)), manageTokensPage, SLOT(focusReissueToken(QModelIndex)));
-    /** RNV END */
+    /** TOKENS END */
+
+    transferTokenAction->setChecked(true);
 }
 
 WalletView::~WalletView()
@@ -262,6 +314,11 @@ void WalletView::gotoSendCoinsPage(QString addr)
 
     if (!addr.isEmpty())
         sendCoinsPage->setAddress(addr);
+}
+
+void WalletView::gotoTokensOverviewPage()
+{
+    setCurrentWidget(tokensOverview);
 }
 
 void WalletView::gotoSignMessageTab(QString addr)
@@ -431,22 +488,26 @@ void WalletView::gotoTokensPage()
         fFirstVisit = false;
         tokensPage->handleFirstSelection();
     }
-    setCurrentWidget(tokensPage);
+    // setCurrentWidget(tokensPage);
     tokensPage->focusTokenListBox();
+
+    tokensStack->setCurrentWidget(tokensPage);
+
+    setCurrentWidget(tokensOverview);
 }
 
 void WalletView::gotoCreateTokensPage()
 {
-    setCurrentWidget(createTokensPage);
+    tokensStack->setCurrentWidget(createTokensPage);
 }
 
 void WalletView::gotoManageTokensPage()
 {
-    setCurrentWidget(manageTokensPage);
+    tokensStack->setCurrentWidget(manageTokensPage);
 }
 
 void WalletView::gotoRestrictedTokensPage()
 {
-    setCurrentWidget(restrictedTokensPage);
+    tokensStack->setCurrentWidget(restrictedTokensPage);
 }
 /** TOKENS END */

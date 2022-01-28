@@ -127,14 +127,8 @@ private:
     QAction *showHelpMessageAction;
 
     /** TOKENS START */
-    QAction *transferTokenAction;
-    QAction *createTokenAction;
-    QAction *manageTokenAction;
-    QAction *messagingAction;
-    QAction *votingAction;
-    QAction *restrictedTokenAction;
+    QAction *tokensOverviewAction;
     QAction *getMyWordsAction;
-    QWidget *headerWidget;
     QLabel *labelCurrentMarket;
     QLabel *labelCurrentPrice;
     QComboBox *comboRvnUnit;
@@ -213,13 +207,6 @@ public Q_SLOTS:
     */
     void message(const QString &title, const QString &message, unsigned int style, bool *ret = nullptr);
 
-    void currencySelectionChanged(int unitIndex);
-    void onCurrencyChange(int newIndex);
-
-    void getPriceInfo();
-
-    void getLatestVersion();
-
 #ifdef ENABLE_WALLET
     /** Set the encryption status as shown in the UI.
        @param[in] status            current encryption status
@@ -264,10 +251,7 @@ private Q_SLOTS:
 
     /** TOKENS START */
     /** Switch to tokens page */
-    void gotoTokensPage();
-    void gotoCreateTokensPage();
-    void gotoManageTokensPage();
-    void gotoRestrictedTokensPage();
+    void gotoTokensOverviewPage();
     /** TOKENS END */
 
 #endif // ENABLE_WALLET

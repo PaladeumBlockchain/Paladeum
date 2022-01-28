@@ -287,15 +287,13 @@ RES_ICONS = \
   qt/res/icons/token_administrator.png \
   qt/res/icons/token_administrator_dark.png \
   qt/res/icons/token_create.png \
-  qt/res/icons/token_create_selected.png \
   qt/res/icons/token_manage.png \
-  qt/res/icons/token_manage_selected.png \
   qt/res/icons/token_transfer.png \
-  qt/res/icons/token_transfer_selected.png \
   qt/res/icons/yonacointext.png \
   qt/res/icons/yona.ico \
   qt/res/icons/yona_testnet.ico \
   qt/res/icons/yona.png \
+  qt/res/icons/yona_white.png \
   qt/res/icons/chevron.png \
   qt/res/icons/clock1.png \
   qt/res/icons/clock2.png \
@@ -324,7 +322,6 @@ RES_ICONS = \
   qt/res/icons/hd_disabled.png \
   qt/res/icons/hd_enabled.png \
   qt/res/icons/history.png \
-  qt/res/icons/history_selected.png \
   qt/res/icons/info.png \
   qt/res/icons/key.png \
   qt/res/icons/lock_closed.png \
@@ -332,16 +329,12 @@ RES_ICONS = \
   qt/res/icons/network_disabled.png \
   qt/res/icons/open.png \
   qt/res/icons/overview.png \
-  qt/res/icons/overview_selected.png \
   qt/res/icons/quit.png \
   qt/res/icons/receive.png \
-  qt/res/icons/receive_selected.png \
   qt/res/icons/refresh.png \
   qt/res/icons/remove.png \
   qt/res/icons/restricted_token.png \
-  qt/res/icons/restricted_token_selected.png \
   qt/res/icons/send.png \
-  qt/res/icons/send_selected.png \
   qt/res/icons/synced.png \
   qt/res/icons/transaction0.png \
   qt/res/icons/transaction2.png \

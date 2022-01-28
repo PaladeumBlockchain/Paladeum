@@ -154,13 +154,7 @@ YonaGUI::YonaGUI(const PlatformStyle *_platformStyle, const NetworkStyle *networ
     openWalletRepairAction(0),
     openAction(0),
     showHelpMessageAction(0),
-    transferTokenAction(0),
-    createTokenAction(0),
-    manageTokenAction(0),
-    messagingAction(0),
-    votingAction(0),
-    restrictedTokenAction(0),
-    headerWidget(0),
+    tokensOverviewAction(0),
     labelCurrentMarket(0),
     labelCurrentPrice(0),
     comboRvnUnit(0),
@@ -232,7 +226,6 @@ YonaGUI::YonaGUI(const PlatformStyle *_platformStyle, const NetworkStyle *networ
     /** TOKENS START */
     labelCurrentMarket = new QLabel();
     labelCurrentPrice = new QLabel();
-    headerWidget = new QWidget();
     pricingTimer = new QTimer();
     networkManager = new QNetworkAccessManager();
     request = new QNetworkRequest();
@@ -384,7 +377,7 @@ void YonaGUI::createActions()
 
     QActionGroup *tabGroup = new QActionGroup(this);
 
-    overviewAction = new QAction(platformStyle->SingleColorIconOnOff(":/icons/overview_selected", ":/icons/overview"), tr("&Overview"), this);
+    overviewAction = new QAction(platformStyle->SingleColorIconOnOff(":/icons/overview", ":/icons/overview"), tr("&Overview"), this);
     overviewAction->setStatusTip(tr("Show general overview of wallet"));
     overviewAction->setToolTip(overviewAction->statusTip());
     overviewAction->setCheckable(true);
@@ -392,7 +385,7 @@ void YonaGUI::createActions()
     overviewAction->setFont(font);
     tabGroup->addAction(overviewAction);
 
-    sendCoinsAction = new QAction(platformStyle->SingleColorIconOnOff(":/icons/send_selected", ":/icons/send"), tr("&Send"), this);
+    sendCoinsAction = new QAction(platformStyle->SingleColorIconOnOff(":/icons/send", ":/icons/send"), tr("&Send"), this);
     sendCoinsAction->setStatusTip(tr("Send coins to a Yona address"));
     sendCoinsAction->setToolTip(sendCoinsAction->statusTip());
     sendCoinsAction->setCheckable(true);
@@ -404,7 +397,7 @@ void YonaGUI::createActions()
     sendCoinsMenuAction->setStatusTip(sendCoinsAction->statusTip());
     sendCoinsMenuAction->setToolTip(sendCoinsMenuAction->statusTip());
 
-    receiveCoinsAction = new QAction(platformStyle->SingleColorIconOnOff(":/icons/receiving_addresses_selected", ":/icons/receiving_addresses"), tr("&Receive"), this);
+    receiveCoinsAction = new QAction(platformStyle->SingleColorIconOnOff(":/icons/receiving_addresses", ":/icons/receiving_addresses"), tr("&Receive"), this);
     receiveCoinsAction->setStatusTip(tr("Request payments (generates QR codes and yona: URIs)"));
     receiveCoinsAction->setToolTip(receiveCoinsAction->statusTip());
     receiveCoinsAction->setCheckable(true);
@@ -416,7 +409,7 @@ void YonaGUI::createActions()
     receiveCoinsMenuAction->setStatusTip(receiveCoinsAction->statusTip());
     receiveCoinsMenuAction->setToolTip(receiveCoinsMenuAction->statusTip());
 
-    historyAction = new QAction(platformStyle->SingleColorIconOnOff(":/icons/history_selected", ":/icons/history"), tr("&Transactions"), this);
+    historyAction = new QAction(platformStyle->SingleColorIconOnOff(":/icons/history", ":/icons/history"), tr("&Transactions"), this);
     historyAction->setStatusTip(tr("Browse transaction history"));
     historyAction->setToolTip(historyAction->statusTip());
     historyAction->setCheckable(true);
@@ -425,54 +418,13 @@ void YonaGUI::createActions()
     tabGroup->addAction(historyAction);
 
     /** TOKENS START */
-    transferTokenAction = new QAction(platformStyle->SingleColorIconOnOff(":/icons/token_transfer_selected", ":/icons/token_transfer"), tr("&Transfer Tokens"), this);
-    transferTokenAction->setStatusTip(tr("Transfer tokens to YONA addresses"));
-    transferTokenAction->setToolTip(transferTokenAction->statusTip());
-    transferTokenAction->setCheckable(true);
-    transferTokenAction->setShortcut(QKeySequence(Qt::ALT + Qt::Key_5));
-    transferTokenAction->setFont(font);
-    tabGroup->addAction(transferTokenAction);
-
-    createTokenAction = new QAction(platformStyle->SingleColorIconOnOff(":/icons/token_create_selected", ":/icons/token_create"), tr("&Create Tokens"), this);
-    createTokenAction->setStatusTip(tr("Create new main/sub/unique tokens"));
-    createTokenAction->setToolTip(createTokenAction->statusTip());
-    createTokenAction->setCheckable(true);
-    createTokenAction->setShortcut(QKeySequence(Qt::ALT + Qt::Key_6));
-    createTokenAction->setFont(font);
-    tabGroup->addAction(createTokenAction);
-
-    manageTokenAction = new QAction(platformStyle->SingleColorIconOnOff(":/icons/token_manage_selected", ":/icons/token_manage"), tr("&Manage Tokens"), this);
-    manageTokenAction->setStatusTip(tr("Manage tokens you are the administrator of"));
-    manageTokenAction->setToolTip(manageTokenAction->statusTip());
-    manageTokenAction->setCheckable(true);
-    manageTokenAction->setShortcut(QKeySequence(Qt::ALT + Qt::Key_7));
-    manageTokenAction->setFont(font);
-    tabGroup->addAction(manageTokenAction);
-
-    messagingAction = new QAction(platformStyle->SingleColorIcon(":/icons/editcopy"), tr("&Messaging"), this);
-    messagingAction->setStatusTip(tr("Coming Soon"));
-    messagingAction->setToolTip(messagingAction->statusTip());
-    messagingAction->setCheckable(true);
-    messagingAction->setShortcut(QKeySequence(Qt::ALT + Qt::Key_8));
-    messagingAction->setFont(font);
-    tabGroup->addAction(messagingAction);
-
-    votingAction = new QAction(platformStyle->SingleColorIcon(":/icons/edit"), tr("&Voting"), this);
-    votingAction->setStatusTip(tr("Coming Soon"));
-    votingAction->setToolTip(votingAction->statusTip());
-    votingAction->setCheckable(true);
-    votingAction->setShortcut(QKeySequence(Qt::ALT + Qt::Key_9));
-    votingAction->setFont(font);
-    tabGroup->addAction(votingAction);
-
-    restrictedTokenAction = new QAction(platformStyle->SingleColorIconOnOff(":/icons/restricted_token_selected", ":/icons/restricted_token"), tr("&Restricted Tokens"), this);
-    restrictedTokenAction->setStatusTip(tr("Manage restricted tokens"));
-    restrictedTokenAction->setToolTip(restrictedTokenAction->statusTip());
-    restrictedTokenAction->setCheckable(true);
-//    restrictedTokenAction->setShortcut(QKeySequence(Qt::ALT + Qt::Key_9));
-    restrictedTokenAction->setFont(font);
-    tabGroup->addAction(restrictedTokenAction);
-
+    tokensOverviewAction = new QAction(platformStyle->SingleColorIconOnOff(":/icons/token_manage", ":/icons/token_manage"), tr("&Tokens"), this);
+    tokensOverviewAction->setStatusTip(tr("Tokens overview"));
+    tokensOverviewAction->setToolTip(tokensOverviewAction->statusTip());
+    tokensOverviewAction->setCheckable(true);
+    tokensOverviewAction->setShortcut(QKeySequence(Qt::ALT + Qt::Key_5));
+    tokensOverviewAction->setFont(font);
+    tabGroup->addAction(tokensOverviewAction);
     /** TOKENS END */
 
 #ifdef ENABLE_WALLET
@@ -490,16 +442,9 @@ void YonaGUI::createActions()
     connect(receiveCoinsMenuAction, SIGNAL(triggered()), this, SLOT(gotoReceiveCoinsPage()));
     connect(historyAction, SIGNAL(triggered()), this, SLOT(showNormalIfMinimized()));
     connect(historyAction, SIGNAL(triggered()), this, SLOT(gotoHistoryPage()));
-    connect(transferTokenAction, SIGNAL(triggered()), this, SLOT(showNormalIfMinimized()));
-    connect(transferTokenAction, SIGNAL(triggered()), this, SLOT(gotoTokensPage()));
-    connect(createTokenAction, SIGNAL(triggered()), this, SLOT(showNormalIfMinimized()));
-    connect(createTokenAction, SIGNAL(triggered()), this, SLOT(gotoCreateTokensPage()));
-    connect(manageTokenAction, SIGNAL(triggered()), this, SLOT(showNormalIfMinimized()));
-    connect(manageTokenAction, SIGNAL(triggered()), this, SLOT(gotoManageTokensPage()));
-    connect(restrictedTokenAction, SIGNAL(triggered()), this, SLOT(showNormalIfMinimized()));
-    connect(restrictedTokenAction, SIGNAL(triggered()), this, SLOT(gotoRestrictedTokensPage()));
-    // TODO add messaging actions to go to messaging page when clicked
-    // TODO add voting actions to go to voting page when clicked
+
+    connect(tokensOverviewAction, SIGNAL(triggered()), this, SLOT(showNormalIfMinimized()));
+    connect(tokensOverviewAction, SIGNAL(triggered()), this, SLOT(gotoTokensOverviewPage()));
 #endif // ENABLE_WALLET
 
     quitAction = new QAction(platformStyle->TextColorIcon(":/icons/quit"), tr("E&xit"), this);
@@ -640,35 +585,34 @@ void YonaGUI::createToolBars()
     if(walletFrame)
     {
         /** TOKENS START */
-        // Create the orange background and the vertical tool bar
-        QWidget* toolbarWidget = new QWidget();
+        QToolBar *toolbar = addToolBar(tr("Tabs toolbar"));
+        // toolbar->setStyleSheet(
+        //         "QToolBar{background-color: #2b58ad; border: 0px;}"
+        //         "QToolButton{color: #ffffff; font-size: 14pt; border: 0px; border-bottom: 3px solid white;}"
+        //         "QToolButton:checked{background-color: #f3f3f3; border: 0px; border-bottom: 3px solid #116961;}"
+        //         "QToolButton:checked:hover{background-color: #f3f3f3; border: 0px; border-bottom: 3px solid #116961;}"
+        //         "QToolButton:hover{background-color: #f3f3f3; border: 0px; border-bottom: 3px solid #f3f3f3;}");
 
-        QString widgetStyleSheet = ".QWidget {background-color: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1, stop: 0 %1, stop: 1 %2);}";
-
-        toolbarWidget->setStyleSheet(widgetStyleSheet.arg(platformStyle->LightBlueColor().name(), platformStyle->DarkBlueColor().name()));
+        toolbar->setStyleSheet(
+                    "QToolBar{background-color: #2b58ad; border: 0px;}"
+                    "QToolButton{color: #ffffff; font-size: 14pt; border: 0px;}"
+                    "QToolButton:checked{background-color: #214384;}");
 
         QLabel* label = new QLabel();
-        label->setPixmap(QPixmap::fromImage(QImage(":/icons/yonacointext")));
-        label->setContentsMargins(0,0,0,50);
+        QPixmap logo_pixmap(":/icons/yona_white");
+        label->setPixmap(logo_pixmap.scaled(QSize(35,35), Qt::KeepAspectRatio, Qt::SmoothTransformation));
+        label->setContentsMargins(10, 3, 5, 3);
         label->setStyleSheet(".QLabel{background-color: transparent;}");
-        /** TOKENS END */
 
-        QToolBar *toolbar = new QToolBar();
-        toolbar->setStyle(style());
-        toolbar->setMinimumWidth(label->width());
         toolbar->setContextMenuPolicy(Qt::PreventContextMenu);
         toolbar->setMovable(false);
         toolbar->setToolButtonStyle(Qt::ToolButtonTextBesideIcon);
+        toolbar->addWidget(label);
         toolbar->addAction(overviewAction);
         toolbar->addAction(sendCoinsAction);
         toolbar->addAction(receiveCoinsAction);
         toolbar->addAction(historyAction);
-        toolbar->addAction(createTokenAction);
-        toolbar->addAction(transferTokenAction);
-        toolbar->addAction(manageTokenAction);
-//        toolbar->addAction(messagingAction);
-//        toolbar->addAction(votingAction);
-        toolbar->addAction(restrictedTokenAction);
+        toolbar->addAction(tokensOverviewAction);
 
         QString openSansFontString = "font: normal 22pt \"Open Sans\";";
         QString normalString = "font: normal 22pt \"Arial\";";
@@ -681,17 +625,6 @@ void YonaGUI::createToolBars()
 #endif
 
         /** TOKENS START */
-        QString tbStyleSheet = ".QToolBar {background-color : transparent; border-color: transparent; }  "
-                               ".QToolButton {background-color: transparent; border-color: transparent; width: 249px; color: %1; border: none;} "
-                               ".QToolButton:checked {background: none; background-color: none; selection-background-color: none; color: %2; border: none; font: %4} "
-                               ".QToolButton:hover {background: none; background-color: none; border: none; color: %3;} "
-                               ".QToolButton:disabled {color: gray;}";
-
-        toolbar->setStyleSheet(tbStyleSheet.arg(platformStyle->ToolBarNotSelectedTextColor().name(),
-                                                platformStyle->ToolBarSelectedTextColor().name(),
-                                                platformStyle->DarkOrangeColor().name(), stringToUse));
-
-        toolbar->setOrientation(Qt::Vertical);
         toolbar->setIconSize(QSize(40, 40));
 
         QLayout* lay = toolbar->layout();
@@ -700,88 +633,14 @@ void YonaGUI::createToolBars()
 
         overviewAction->setChecked(true);
 
-        QVBoxLayout* yonaLabelLayout = new QVBoxLayout(toolbarWidget);
-        yonaLabelLayout->addWidget(label);
-        yonaLabelLayout->addWidget(toolbar);
-        yonaLabelLayout->setDirection(QBoxLayout::TopToBottom);
-        yonaLabelLayout->addStretch(1);
-
         QString mainWalletWidgetStyle = QString(".QWidget{background-color: %1}").arg(platformStyle->MainBackGroundColor().name());
         QWidget* mainWalletWidget = new QWidget();
         mainWalletWidget->setStyleSheet(mainWalletWidgetStyle);
 
-        /** Create the shadow effects for the main wallet frame. Make it so it puts a shadow on the tool bar */
-#if !defined(Q_OS_MAC)
-        QGraphicsDropShadowEffect *walletFrameShadow = new QGraphicsDropShadowEffect;
-        walletFrameShadow->setBlurRadius(50);
-        walletFrameShadow->setColor(COLOR_WALLETFRAME_SHADOW);
-        walletFrameShadow->setXOffset(-8.0);
-        walletFrameShadow->setYOffset(0);
-        mainWalletWidget->setGraphicsEffect(walletFrameShadow);
-#endif
-
         QString widgetBackgroundSytleSheet = QString(".QWidget{background-color: %1}").arg(platformStyle->TopWidgetBackGroundColor().name());
-
-        // Set the headers widget options
-        headerWidget->setContentsMargins(0,25,0,0);
-        headerWidget->setStyleSheet(widgetBackgroundSytleSheet);
-        headerWidget->setGraphicsEffect(GUIUtil::getShadowEffect());
-        headerWidget->setFixedHeight(75);
-
-        QFont currentMarketFont;
-        currentMarketFont.setFamily("Open Sans");
-        currentMarketFont.setWeight(QFont::Weight::Normal);
-        currentMarketFont.setLetterSpacing(QFont::SpacingType::AbsoluteSpacing, -0.6);
-        currentMarketFont.setPixelSize(18);
-
-        // Set the pricing information
-        QHBoxLayout* priceLayout = new QHBoxLayout(headerWidget);
-        priceLayout->setContentsMargins(0,0,0,25);
-        priceLayout->setDirection(QBoxLayout::LeftToRight);
-        priceLayout->setAlignment(Qt::AlignVCenter);
-        labelCurrentMarket->setContentsMargins(50,0,0,0);
-        labelCurrentMarket->setAlignment(Qt::AlignVCenter);
-        labelCurrentMarket->setStyleSheet(STRING_LABEL_COLOR);
-        labelCurrentMarket->setFont(currentMarketFont);
-        labelCurrentMarket->setText(tr("Yonacoin Market Price"));
-
-        QString currentPriceStyleSheet = ".QLabel{color: %1;}";
-        labelCurrentPrice->setContentsMargins(25,0,0,0);
-        labelCurrentPrice->setAlignment(Qt::AlignVCenter);
-        labelCurrentPrice->setStyleSheet(currentPriceStyleSheet.arg(COLOR_LABELS.name()));
-        labelCurrentPrice->setFont(currentMarketFont);
-
-        comboRvnUnit = new QComboBox(headerWidget);
-        QStringList list;
-        for(int unitNum = 0; unitNum < CurrencyUnits::count(); unitNum++) {
-            list.append(QString(CurrencyUnits::CurrencyOptions[unitNum].Header));
-        }
-        comboRvnUnit->addItems(list);
-        comboRvnUnit->setFixedHeight(26);
-        comboRvnUnit->setContentsMargins(5,0,0,0);
-        comboRvnUnit->setStyleSheet(STRING_LABEL_COLOR);
-        comboRvnUnit->setFont(currentMarketFont);
-
-        labelVersionUpdate->setText("<a href=\"https://github.com/YonaProject/Yonacoin/releases\">New Wallet Version Available</a>");
-        labelVersionUpdate->setTextFormat(Qt::RichText);
-        labelVersionUpdate->setTextInteractionFlags(Qt::TextBrowserInteraction);
-        labelVersionUpdate->setOpenExternalLinks(true);
-        labelVersionUpdate->setContentsMargins(0,0,15,0);
-        labelVersionUpdate->setAlignment(Qt::AlignVCenter);
-        labelVersionUpdate->setStyleSheet(STRING_LABEL_COLOR);
-        labelVersionUpdate->setFont(currentMarketFont);
-        labelVersionUpdate->hide();
-
-        priceLayout->setGeometry(headerWidget->rect());
-        priceLayout->addWidget(labelCurrentMarket, 0, Qt::AlignVCenter | Qt::AlignLeft);
-        priceLayout->addWidget(labelCurrentPrice, 0,  Qt::AlignVCenter | Qt::AlignLeft);
-        priceLayout->addWidget(comboRvnUnit, 0 , Qt::AlignBottom| Qt::AlignLeft);
-        priceLayout->addStretch();
-        priceLayout->addWidget(labelVersionUpdate, 0 , Qt::AlignVCenter | Qt::AlignRight);
 
         // Create the layout for widget to the right of the tool bar
         QVBoxLayout* mainFrameLayout = new QVBoxLayout(mainWalletWidget);
-        mainFrameLayout->addWidget(headerWidget);
 #ifdef ENABLE_WALLET
         mainFrameLayout->addWidget(walletFrame);
 #endif
@@ -789,7 +648,6 @@ void YonaGUI::createToolBars()
         mainFrameLayout->setContentsMargins(QMargins());
 
         QVBoxLayout* layout = new QVBoxLayout();
-        layout->addWidget(toolbarWidget);
         layout->addWidget(mainWalletWidget);
         layout->setSpacing(0);
         layout->setContentsMargins(QMargins());
@@ -798,157 +656,8 @@ void YonaGUI::createToolBars()
         containerWidget->setLayout(layout);
         setCentralWidget(containerWidget);
 
-        // Network request code for the header widget
-        QObject::connect(networkManager, &QNetworkAccessManager::finished,
-                         this, [=](QNetworkReply *reply) {
-                    if (reply->error()) {
-                        labelCurrentPrice->setText("");
-                        qDebug() << reply->errorString();
-                        return;
-                    }
-                    // Get the data from the network request
-                    QString answer = reply->readAll();
-
-                    // Create regex expression to find the value with 8 decimals
-                    QRegExp rx("\\d*.\\d\\d\\d\\d\\d\\d\\d\\d");
-                    rx.indexIn(answer);
-
-                    // List the found values
-                    QStringList list = rx.capturedTexts();
-
-                    QString currentPriceStyleSheet = ".QLabel{color: %1;}";
-                    // Evaluate the current and next numbers and assign a color (green for positive, red for negative)
-                    bool ok;
-                    if (!list.isEmpty()) {
-                        double next = list.first().toDouble(&ok) * this->currentPriceDisplay->Scalar;
-                        if (!ok) {
-                            labelCurrentPrice->setStyleSheet(currentPriceStyleSheet.arg(COLOR_LABELS.name()));
-                            labelCurrentPrice->setText("");
-                        } else {
-                            double current = labelCurrentPrice->text().toDouble(&ok);
-                            if (!ok) {
-                                current = 0.00000000;
-                            } else {
-                                if (next < current && !this->unitChanged)
-                                    labelCurrentPrice->setStyleSheet(currentPriceStyleSheet.arg("red"));
-                                else if (next > current && !this->unitChanged)
-                                    labelCurrentPrice->setStyleSheet(currentPriceStyleSheet.arg("green"));
-                                else
-                                    labelCurrentPrice->setStyleSheet(currentPriceStyleSheet.arg(COLOR_LABELS.name()));
-                            }
-                            this->unitChanged = false;
-                            labelCurrentPrice->setText(QString("%1").arg(QString().setNum(next, 'f', this->currentPriceDisplay->Decimals)));
-                            labelCurrentPrice->setToolTip(tr("Brought to you by binance.com"));
-                        }
-                    }
-                }
-        );
-
         connect(quitAction, SIGNAL(triggered()), qApp, SLOT(quit()));
-
-
-        // Signal change of displayed price units, must get new conversion ratio
-        connect(comboRvnUnit, SIGNAL(activated(int)), this, SLOT(currencySelectionChanged(int)));
-        // Create the timer
-        connect(pricingTimer, SIGNAL(timeout()), this, SLOT(getPriceInfo()));
-        pricingTimer->start(10000);
-        getPriceInfo();
         /** TOKENS END */
-
-        // Get the latest Yonacoin release and let the user know if they are using the latest version
-        // Network request code for the header widget
-        QObject::connect(networkVersionManager, &QNetworkAccessManager::finished,
-                         this, [=](QNetworkReply *reply) {
-                    if (reply->error()) {
-                        qDebug() << reply->errorString();
-                        return;
-                    }
-
-                    // Get the data from the network request
-                    QString answer = reply->readAll();
-
-                    UniValue releases(UniValue::VARR);
-                    releases.read(answer.toStdString());
-
-                    if (!releases.isArray()) {
-                        return;
-                    }
-
-                    if (!releases.size()) {
-                        return;
-                    }
-
-                    // Latest release lives in the first index of the array return from github v3 api
-                    auto latestRelease = releases[0];
-
-                    auto keys = latestRelease.getKeys();
-                    for (auto key : keys) {
-                       if (key == "tag_name") {
-                           auto latestVersion = latestRelease["tag_name"].get_str();
-
-                           QRegExp rx("v(\\d+).(\\d+).(\\d+)");
-                           rx.indexIn(QString::fromStdString(latestVersion));
-
-                           // List the found values
-                           QStringList list = rx.capturedTexts();
-                           static const int CLIENT_VERSION_MAJOR_INDEX = 1;
-                           static const int CLIENT_VERSION_MINOR_INDEX = 2;
-                           static const int CLIENT_VERSION_REVISION_INDEX = 3;
-                           bool fNewSoftwareFound = false;
-                           bool fStopSearch = false;
-                           if (list.size() >= 4) {
-                               if (CLIENT_VERSION_MAJOR < list[CLIENT_VERSION_MAJOR_INDEX].toInt()) {
-                                   fNewSoftwareFound = true;
-                               } else {
-                                   if (CLIENT_VERSION_MAJOR > list[CLIENT_VERSION_MAJOR_INDEX].toInt()) {
-                                       fStopSearch = true;
-                                   }
-                               }
-
-                               if (!fStopSearch) {
-                                   if (CLIENT_VERSION_MINOR < list[CLIENT_VERSION_MINOR_INDEX].toInt()) {
-                                       fNewSoftwareFound = true;
-                                   } else {
-                                       if (CLIENT_VERSION_MINOR > list[CLIENT_VERSION_MINOR_INDEX].toInt()) {
-                                           fStopSearch = true;
-                                       }
-                                   }
-                               }
-
-                               if (!fStopSearch) {
-                                   if (CLIENT_VERSION_REVISION < list[CLIENT_VERSION_REVISION_INDEX].toInt()) {
-                                       fNewSoftwareFound = true;
-                                   }
-                               }
-                           }
-
-                           if (fNewSoftwareFound) {
-                               labelVersionUpdate->setToolTip(QString::fromStdString(strprintf("Currently running: %s\nLatest version: %s", FormatFullVersion(),
-                                                                                               latestVersion)));
-                               labelVersionUpdate->show();
-
-                               // Only display the message on startup to the user around 1/2 of the time
-                               if (GetRandInt(2) == 1) {
-                                   bool fRet = uiInterface.ThreadSafeQuestion(
-                                           strprintf("\nCurrently running: %s\nLatest version: %s", FormatFullVersion(),
-                                                     latestVersion) + "\n\nWould you like to visit the releases page?",
-                                           "",
-                                           "New Wallet Version Found",
-                                           CClientUIInterface::MSG_VERSION | CClientUIInterface::BTN_NO);
-                                   if (fRet) {
-                                       QString link = "https://github.com/YonaProject/Yonacoin/releases";
-                                       QDesktopServices::openUrl(QUrl(link));
-                                   }
-                               }
-                           } else {
-                               labelVersionUpdate->hide();
-                           }
-                       }
-                    }
-                }
-        );
-
-        getLatestVersion();
     }
 }
 
@@ -993,12 +702,6 @@ void YonaGUI::setClientModel(ClientModel *_clientModel)
 
             // initialize the disable state of the tray icon with the current value in the model.
             setTrayIconVisible(optionsModel->getHideTrayIcon());
-
-            // Signal to notify the settings have updated the display currency
-            connect(optionsModel,SIGNAL(displayCurrencyIndexChanged(int)), this, SLOT(onCurrencyChange(int)));
-
-            // Init the currency display from settings
-            this->onCurrencyChange(optionsModel->getDisplayCurrencyIndex());
         }
     } else {
         // Disable possibility to show main window via action
@@ -1064,12 +767,7 @@ void YonaGUI::setWalletActionsEnabled(bool enabled)
     openAction->setEnabled(enabled);
 
     /** TOKENS START */
-    transferTokenAction->setEnabled(false);
-    createTokenAction->setEnabled(false);
-    manageTokenAction->setEnabled(false);
-    messagingAction->setEnabled(false);
-    votingAction->setEnabled(false);
-    restrictedTokenAction->setEnabled(false);
+    tokensOverviewAction->setEnabled(false);
     /** TOKENS END */
 }
 
@@ -1222,28 +920,10 @@ void YonaGUI::gotoVerifyMessageTab(QString addr)
 }
 
 /** TOKENS START */
-void YonaGUI::gotoTokensPage()
+void YonaGUI::gotoTokensOverviewPage()
 {
-    transferTokenAction->setChecked(true);
-    if (walletFrame) walletFrame->gotoTokensPage();
-};
-
-void YonaGUI::gotoCreateTokensPage()
-{
-    createTokenAction->setChecked(true);
-    if (walletFrame) walletFrame->gotoCreateTokensPage();
-};
-
-void YonaGUI::gotoManageTokensPage()
-{
-    manageTokenAction->setChecked(true);
-    if (walletFrame) walletFrame->gotoManageTokensPage();
-};
-
-void YonaGUI::gotoRestrictedTokensPage()
-{
-    restrictedTokenAction->setChecked(true);
-    if (walletFrame) walletFrame->gotoRestrictedTokensPage();
+    tokensOverviewAction->setChecked(true);
+    if (walletFrame) walletFrame->gotoTokensOverviewPage();
 };
 /** TOKENS END */
 #endif // ENABLE_WALLET
@@ -1540,27 +1220,11 @@ void YonaGUI::checkTokens()
 {
     // Check that status of tokens and activate the tokens icon if it is active
     if(AreTokensDeployed()) {
-        transferTokenAction->setDisabled(false);
-        transferTokenAction->setToolTip(tr("Transfer tokens to YONA addresses"));
-        createTokenAction->setDisabled(false);
-        createTokenAction->setToolTip(tr("Create new main/sub/unique tokens"));
-        manageTokenAction->setDisabled(false);
-        }
-    else {
-        transferTokenAction->setDisabled(true);
-        transferTokenAction->setToolTip(tr("Tokens not yet active"));
-        createTokenAction->setDisabled(true);
-        createTokenAction->setToolTip(tr("Tokens not yet active"));
-        manageTokenAction->setDisabled(true);
-        }
-
-    if (AreRestrictedTokensDeployed()) {
-        restrictedTokenAction->setDisabled(false);
-        restrictedTokenAction->setToolTip(tr("Manage restricted tokens"));
-
+        tokensOverviewAction->setDisabled(false);
+        tokensOverviewAction->setToolTip(tr("Tokens overview"));
     } else {
-        restrictedTokenAction->setDisabled(true);
-        restrictedTokenAction->setToolTip(tr("Restricted Tokens not yet active"));
+        tokensOverviewAction->setDisabled(true);
+        tokensOverviewAction->setToolTip(tr("Tokens not yet active"));
     }
 }
 #endif // ENABLE_WALLET
@@ -1873,38 +1537,6 @@ void UnitDisplayStatusBarControl::onMenuSelection(QAction* action)
     }
 }
 
-/** Triggered only when the user changes the combobox on the main GUI */
-void YonaGUI::currencySelectionChanged(int unitIndex)
-{
-    if(clientModel && clientModel->getOptionsModel())
-    {
-        clientModel->getOptionsModel()->setDisplayCurrencyIndex(unitIndex);
-    }
-}
-
-/** Triggered when the options model's display currency is updated */
-void YonaGUI::onCurrencyChange(int newIndex)
-{
-    qDebug() << "YonaGUI::onPriceUnitChange: " + QString::number(newIndex);
-
-    if(newIndex < 0 || newIndex >= CurrencyUnits::count()){
-        return;
-    }
-
-    this->unitChanged = true;
-    this->currentPriceDisplay = &CurrencyUnits::CurrencyOptions[newIndex];
-    //Update the main GUI box in case this was changed from the settings screen
-    //This will fire the event again, but the options model prevents the infinite loop
-    this->comboRvnUnit->setCurrentIndex(newIndex);
-    this->getPriceInfo();
-}
-
-void YonaGUI::getPriceInfo()
-{
-    request->setUrl(QUrl(QString("https://api.binance.com/api/v1/ticker/price?symbol=%1").arg(this->currentPriceDisplay->Ticker)));
-    networkManager->get(*request);
-}
-
 #ifdef ENABLE_WALLET
 void YonaGUI::mnemonic()
 {
@@ -1912,9 +1544,3 @@ void YonaGUI::mnemonic()
         dlg.exec();
 }
 #endif
-
-void YonaGUI::getLatestVersion()
-{
-    versionRequest->setUrl(QUrl("https://api.github.com/repos/YonaProject/Yonacoin/releases"));
-    networkVersionManager->get(*versionRequest);
-}

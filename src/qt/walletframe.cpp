@@ -214,6 +214,13 @@ void WalletFrame::outOfSyncWarningClicked()
 }
 
 /** TOKENS START */
+void WalletFrame::gotoTokensOverviewPage()
+{
+    QMap<QString, WalletView*>::const_iterator i;
+    for (i = mapWalletViews.constBegin(); i != mapWalletViews.constEnd(); ++i)
+        i.value()->gotoTokensOverviewPage();
+}
+
 void WalletFrame::gotoTokensPage()
 {
     QMap<QString, WalletView*>::const_iterator i;

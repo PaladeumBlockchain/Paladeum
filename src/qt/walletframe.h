@@ -99,6 +99,7 @@ public Q_SLOTS:
     /** TOKENS START */
 
     /** Switch to tokens page */
+    void gotoTokensOverviewPage();
     void gotoTokensPage();
     void gotoCreateTokensPage();
     void gotoManageTokensPage();

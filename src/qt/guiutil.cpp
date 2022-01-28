@@ -151,14 +151,7 @@ QFont getTopLabelFont()
 
 QGraphicsDropShadowEffect* getShadowEffect()
 {
-#if defined(Q_OS_MAC)
     return nullptr;
-#endif
-    QGraphicsDropShadowEffect *shadow = new QGraphicsDropShadowEffect;
-    shadow->setBlurRadius(50);
-    shadow->setColor(darkModeEnabled ? COLOR_SHADOW_DARK : COLOR_SHADOW_LIGHT);
-    shadow->setOffset(8.0);
-    return shadow;
 }
 
 QString dateTimeStr(const QDateTime &date)
