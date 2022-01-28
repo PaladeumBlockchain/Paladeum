@@ -926,10 +926,10 @@ std::string CopyrightHolders(const std::string &strPrefix)
 {
     std::string strCopyrightHolders = strPrefix + strprintf(_(COPYRIGHT_HOLDERS), _(COPYRIGHT_HOLDERS_SUBSTITUTION));
 
-    // Check for untranslated substitution to make sure Yona Core copyright is not removed by accident
-    if (strprintf(COPYRIGHT_HOLDERS, COPYRIGHT_HOLDERS_SUBSTITUTION).find("Yona Core") == std::string::npos)
+    // Check for untranslated substitution to make sure AokChain Core copyright is not removed by accident
+    if (strprintf(COPYRIGHT_HOLDERS, COPYRIGHT_HOLDERS_SUBSTITUTION).find("Yona") == std::string::npos)
     {
-        strCopyrightHolders += "\n" + strPrefix + "The Yona developers";
+        strCopyrightHolders += "\n" + strPrefix + "Yona Developers";
     }
     return strCopyrightHolders;
 }
