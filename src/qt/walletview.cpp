@@ -82,25 +82,25 @@ WalletView::WalletView(const PlatformStyle *_platformStyle, QWidget *parent):
     QVBoxLayout *tokensLayout = new QVBoxLayout();
     QActionGroup *tabGroup = new QActionGroup(this);
 
-    QAction *transferTokenAction = new QAction(platformStyle->SingleColorIconOnOff(":/icons/token_transfer_selected", ":/icons/token_transfer"), tr("&Transfer Tokens"), this);
+    QAction *transferTokenAction = new QAction(platformStyle->SingleColorIconOnOff(":/icons/token_transfer", ":/icons/token_transfer"), tr("&Transfer Tokens"), this);
     transferTokenAction->setStatusTip(tr("Transfer tokens to YONA addresses"));
     transferTokenAction->setToolTip(transferTokenAction->statusTip());
     transferTokenAction->setCheckable(true);
     tabGroup->addAction(transferTokenAction);
 
-    QAction *createTokenAction = new QAction(platformStyle->SingleColorIconOnOff(":/icons/token_create_selected", ":/icons/token_create"), tr("&Create Tokens"), this);
+    QAction *createTokenAction = new QAction(platformStyle->SingleColorIconOnOff(":/icons/token_create", ":/icons/token_create"), tr("&Create Tokens"), this);
     createTokenAction->setStatusTip(tr("Create new main/sub/unique tokens"));
     createTokenAction->setToolTip(createTokenAction->statusTip());
     createTokenAction->setCheckable(true);
     tabGroup->addAction(createTokenAction);
 
-    QAction *manageTokenAction = new QAction(platformStyle->SingleColorIconOnOff(":/icons/token_manage_selected", ":/icons/token_manage"), tr("&Manage Tokens"), this);
+    QAction *manageTokenAction = new QAction(platformStyle->SingleColorIconOnOff(":/icons/token_manage", ":/icons/token_manage"), tr("&Manage Tokens"), this);
     manageTokenAction->setStatusTip(tr("Manage tokens you are the administrator of"));
     manageTokenAction->setToolTip(manageTokenAction->statusTip());
     manageTokenAction->setCheckable(true);
     tabGroup->addAction(manageTokenAction);
 
-    QAction *restrictedTokenAction = new QAction(platformStyle->SingleColorIconOnOff(":/icons/restricted_token_selected", ":/icons/restricted_token"), tr("&Restricted Tokens"), this);
+    QAction *restrictedTokenAction = new QAction(platformStyle->SingleColorIconOnOff(":/icons/restricted_token", ":/icons/restricted_token"), tr("&Restricted Tokens"), this);
     restrictedTokenAction->setStatusTip(tr("Manage restricted tokens"));
     restrictedTokenAction->setToolTip(restrictedTokenAction->statusTip());
     restrictedTokenAction->setCheckable(true);
@@ -114,6 +114,11 @@ WalletView::WalletView(const PlatformStyle *_platformStyle, QWidget *parent):
     tokensToolbar->addAction(createTokenAction);
     tokensToolbar->addAction(manageTokenAction);
     tokensToolbar->addAction(restrictedTokenAction);
+
+    tokensToolbar->setStyleSheet(
+            "QToolBar{background-color: #ffffff; border: 0px;}"
+            "QToolButton{color: #000000; font-size: 14pt; border: 0px;}"
+            "QToolButton:checked{background-color: #f3f3f3;}");
 
     tokensLayout->addWidget(tokensToolbar);
     tokensLayout->addWidget(tokensStack);

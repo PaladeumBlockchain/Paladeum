@@ -418,7 +418,7 @@ void YonaGUI::createActions()
     tabGroup->addAction(historyAction);
 
     /** TOKENS START */
-    tokensOverviewAction = new QAction(platformStyle->SingleColorIconOnOff(":/icons/token_manage", ":/icons/token_manage"), tr("&Tokens"), this);
+    tokensOverviewAction = new QAction(platformStyle->SingleColorIconOnOff(":/icons/token_overview", ":/icons/token_overview"), tr("&Tokens"), this);
     tokensOverviewAction->setStatusTip(tr("Tokens overview"));
     tokensOverviewAction->setToolTip(tokensOverviewAction->statusTip());
     tokensOverviewAction->setCheckable(true);

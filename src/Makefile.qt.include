@@ -287,6 +287,7 @@ RES_ICONS = \
   qt/res/icons/token_administrator.png \
   qt/res/icons/token_administrator_dark.png \
   qt/res/icons/token_create.png \
+  qt/res/icons/token_overview.png \
   qt/res/icons/token_manage.png \
   qt/res/icons/token_transfer.png \
   qt/res/icons/yonacointext.png \

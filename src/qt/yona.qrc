@@ -63,6 +63,7 @@
         <file alias="token_administrator">res/icons/token_administrator.png</file>
         <file alias="token_administrator_dark">res/icons/token_administrator_dark.png</file>
         <file alias="token_create">res/icons/token_create.png</file>
+        <file alias="token_overview">res/icons/token_overview.png</file>
         <file alias="token_manage">res/icons/token_manage.png</file>
         <file alias="token_transfer">res/icons/token_transfer.png</file>
         <file alias="yonacointext">res/icons/yonacointext.png</file>
