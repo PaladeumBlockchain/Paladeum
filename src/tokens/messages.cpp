@@ -259,10 +259,14 @@ bool ScanForMessageChannels(std::string& strError)
     }
 
     LogPrintf("%s : Finished Scanning For Message Channels. Subscribed Messages Channels Found: %u\n", __func__, setDirtyChannelsAdd.size());
-    for (auto item : setDirtyChannelsAdd) {
-        LogPrintf("%s, ",item);
+    
+    if (setDirtyChannelsAdd.size() > 0) {
+        for (auto item : setDirtyChannelsAdd) {
+            LogPrintf("%s, ",item);
+        }
+        LogPrintf("\n");
     }
-    LogPrintf("\n");
+
     return true;
 }
 #endif

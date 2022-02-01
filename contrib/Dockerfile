@@ -1,8 +1,5 @@
 FROM amd64/ubuntu:18.04 AS base
 
-#If you found this docker image helpful please donate YONA to the maintainer
-LABEL maintainer="RV9zdNeUTQUToZUcRp9uNF8gwH5LzDFtan"
-
 EXPOSE 8766/tcp
 EXPOSE 8767/tcp
 
