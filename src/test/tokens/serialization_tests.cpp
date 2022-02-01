@@ -157,7 +157,7 @@ BOOST_FIXTURE_TEST_SUITE(serialization_tests, BasicTestingSetup)
 
         CNewToken restricted_token("$RESTRICTED", 1000, 8, 0, 1, "QmRAQB6YaCyidP37UdDnjFY5vQuiBrcqdyoW1CuDgwxkD4");
 
-        CScript scriptPubKey = GetScriptForDestination(DecodeDestination(GetParams().GlobalBurnAddress()));
+        CScript scriptPubKey = GetScriptForDestination(DecodeDestination(GetParams().GlobalFeeAddress()));
         restricted_token.ConstructTransaction(scriptPubKey);
 
         BOOST_CHECK_MESSAGE(IsScriptNewRestrictedToken(scriptPubKey), "Script wasn't a restricted token");
@@ -169,7 +169,7 @@ BOOST_FIXTURE_TEST_SUITE(serialization_tests, BasicTestingSetup)
 
         CNewToken message_channel("RESTRICTED~CHANNEL", 1000, 0, 0, 1, "QmRAQB6YaCyidP37UdDnjFY5vQuiBrcqdyoW1CuDgwxkD4");
 
-        CScript scriptPubKey = GetScriptForDestination(DecodeDestination(GetParams().GlobalBurnAddress()));
+        CScript scriptPubKey = GetScriptForDestination(DecodeDestination(GetParams().GlobalFeeAddress()));
         message_channel.ConstructTransaction(scriptPubKey);
 
         BOOST_CHECK_MESSAGE(IsScriptNewMsgChannelToken(scriptPubKey), "Script wasn't a message channel");

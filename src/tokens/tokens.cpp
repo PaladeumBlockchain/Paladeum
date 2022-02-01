@@ -3208,7 +3208,7 @@ bool CheckIssueBurnTx(const CTxOut& txOut, const KnownTokenType& type)
 bool CheckReissueBurnTx(const CTxOut& txOut)
 {
     // Check the first transaction and verify that the correct YONA Amount
-    if (txOut.nValue != GetReissueTokenBurnAmount())
+    if (txOut.nValue != GetReissueTokenFeeAmount())
         return false;
 
     // Extract the destination
@@ -3221,7 +3221,7 @@ bool CheckReissueBurnTx(const CTxOut& txOut)
         return false;
 
     // Check destination address is the correct burn address
-    if (EncodeDestination(destination) != GetParams().ReissueTokenBurnAddress())
+    if (EncodeDestination(destination) != GetParams().ReissueTokenFeeAddress())
         return false;
 
     return true;
@@ -3750,54 +3750,54 @@ void GetAllMyTokens(CWallet* pwallet, std::vector<std::string>& names, int nMinC
 }
 #endif
 
-CAmount GetIssueTokenBurnAmount()
+CAmount GetIssueTokenFeeAmount()
 {
-    return GetParams().IssueTokenBurnAmount();
+    return GetParams().IssueTokenFeeAmount();
 }
 
-CAmount GetReissueTokenBurnAmount()
+CAmount GetReissueTokenFeeAmount()
 {
-    return GetParams().ReissueTokenBurnAmount();
+    return GetParams().ReissueTokenFeeAmount();
 }
 
-CAmount GetIssueSubTokenBurnAmount()
+CAmount GetIssueSubTokenFeeAmount()
 {
-    return GetParams().IssueSubTokenBurnAmount();
+    return GetParams().IssueSubTokenFeeAmount();
 }
 
-CAmount GetIssueUniqueTokenBurnAmount()
+CAmount GetIssueUniqueTokenFeeAmount()
 {
-    return GetParams().IssueUniqueTokenBurnAmount();
+    return GetParams().IssueUniqueTokenFeeAmount();
 }
 
-CAmount GetIssueUsernameTokenBurnAmount()
+CAmount GetIssueUsernameTokenFeeAmount()
 {
-    return GetParams().IssueUsernameTokenBurnAmount();
+    return GetParams().IssueUsernameTokenFeeAmount();
 }
 
-CAmount GetIssueMsgChannelTokenBurnAmount()
+CAmount GetIssueMsgChannelTokenFeeAmount()
 {
-    return GetParams().IssueMsgChannelTokenBurnAmount();
+    return GetParams().IssueMsgChannelTokenFeeAmount();
 }
 
-CAmount GetIssueQualifierTokenBurnAmount()
+CAmount GetIssueQualifierTokenFeeAmount()
 {
-    return GetParams().IssueQualifierTokenBurnAmount();
+    return GetParams().IssueQualifierTokenFeeAmount();
 }
 
-CAmount GetIssueSubQualifierTokenBurnAmount()
+CAmount GetIssueSubQualifierTokenFeeAmount()
 {
-    return GetParams().IssueSubQualifierTokenBurnAmount();
+    return GetParams().IssueSubQualifierTokenFeeAmount();
 }
 
-CAmount GetIssueRestrictedTokenBurnAmount()
+CAmount GetIssueRestrictedTokenFeeAmount()
 {
-    return GetParams().IssueRestrictedTokenBurnAmount();
+    return GetParams().IssueRestrictedTokenFeeAmount();
 }
 
-CAmount GetAddNullQualifierTagBurnAmount()
+CAmount GetAddNullQualifierTagFeeAmount()
 {
-    return GetParams().AddNullQualifierTagBurnAmount();
+    return GetParams().AddNullQualifierTagFeeAmount();
 }
 
 CAmount GetBurnAmount(const int nType)
@@ -3809,27 +3809,27 @@ CAmount GetBurnAmount(const KnownTokenType type)
 {
     switch (type) {
         case KnownTokenType::ROOT:
-            return GetIssueTokenBurnAmount();
+            return GetIssueTokenFeeAmount();
         case KnownTokenType::SUB:
-            return GetIssueSubTokenBurnAmount();
+            return GetIssueSubTokenFeeAmount();
         case KnownTokenType::MSGCHANNEL:
-            return GetIssueMsgChannelTokenBurnAmount();
+            return GetIssueMsgChannelTokenFeeAmount();
         case KnownTokenType::OWNER:
             return 0;
         case KnownTokenType::UNIQUE:
-            return GetIssueUniqueTokenBurnAmount();
+            return GetIssueUniqueTokenFeeAmount();
         case KnownTokenType::VOTE:
             return 0;
         case KnownTokenType::REISSUE:
-            return GetReissueTokenBurnAmount();
+            return GetReissueTokenFeeAmount();
         case KnownTokenType::QUALIFIER:
-            return GetIssueQualifierTokenBurnAmount();
+            return GetIssueQualifierTokenFeeAmount();
         case KnownTokenType::SUB_QUALIFIER:
-            return GetIssueSubQualifierTokenBurnAmount();
+            return GetIssueSubQualifierTokenFeeAmount();
         case KnownTokenType::RESTRICTED:
-            return GetIssueRestrictedTokenBurnAmount();
+            return GetIssueRestrictedTokenFeeAmount();
         case KnownTokenType::NULL_ADD_QUALIFIER:
-            return GetAddNullQualifierTagBurnAmount();
+            return GetAddNullQualifierTagFeeAmount();
         default:
             return 0;
     }
@@ -3844,29 +3844,29 @@ std::string GetBurnAddress(const KnownTokenType type)
 {
     switch (type) {
         case KnownTokenType::ROOT:
-            return GetParams().IssueTokenBurnAddress();
+            return GetParams().IssueTokenFeeAddress();
         case KnownTokenType::SUB:
-            return GetParams().IssueSubTokenBurnAddress();
+            return GetParams().IssueSubTokenFeeAddress();
         case KnownTokenType::MSGCHANNEL:
-            return GetParams().IssueMsgChannelTokenBurnAddress();
+            return GetParams().IssueMsgChannelTokenFeeAddress();
         case KnownTokenType::OWNER:
             return "";
         case KnownTokenType::UNIQUE:
-            return GetParams().IssueUniqueTokenBurnAddress();
+            return GetParams().IssueUniqueTokenFeeAddress();
         case KnownTokenType::USERNAME:
-            return GetParams().IssueUsernameTokenBurnAddress();
+            return GetParams().IssueUsernameTokenFeeAddress();
         case KnownTokenType::VOTE:
             return "";
         case KnownTokenType::REISSUE:
-            return GetParams().ReissueTokenBurnAddress();
+            return GetParams().ReissueTokenFeeAddress();
         case KnownTokenType::QUALIFIER:
-            return GetParams().IssueQualifierTokenBurnAddress();
+            return GetParams().IssueQualifierTokenFeeAddress();
         case KnownTokenType::SUB_QUALIFIER:
-            return GetParams().IssueSubQualifierTokenBurnAddress();
+            return GetParams().IssueSubQualifierTokenFeeAddress();
         case KnownTokenType::RESTRICTED:
-            return GetParams().IssueRestrictedTokenBurnAddress();
+            return GetParams().IssueRestrictedTokenFeeAddress();
         case KnownTokenType::NULL_ADD_QUALIFIER:
-            return GetParams().AddNullQualifierTagBurnAddress();
+            return GetParams().AddNullQualifierTagFeeAddress();
         default:
             return "";
     }
@@ -4293,7 +4293,7 @@ bool CreateReissueTokenTransaction(CWallet* pwallet, CCoinControl& coinControl, 
     CAmount curBalance = pwallet->GetBalance();
 
     // Get the current burn amount for issuing an token
-    CAmount burnAmount = GetReissueTokenBurnAmount();
+    CAmount burnAmount = GetReissueTokenFeeAmount();
 
     // Check to make sure the wallet has the YONA required by the burnAmount
     if (curBalance < burnAmount) {
@@ -4365,7 +4365,7 @@ bool CreateReissueTokenTransaction(CWallet* pwallet, CCoinControl& coinControl, 
     }
 
     // Get the script for the burn address
-    CScript scriptPubKeyBurn = GetScriptForDestination(DecodeDestination(GetParams().ReissueTokenBurnAddress()));
+    CScript scriptPubKeyBurn = GetScriptForDestination(DecodeDestination(GetParams().ReissueTokenFeeAddress()));
 
     // Create and send the transaction
     CRecipient recipient = {scriptPubKeyBurn, burnAmount, fSubtractFeeFromAmount};

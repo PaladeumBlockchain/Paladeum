@@ -212,32 +212,20 @@ public:
         };
 
         /** YONA Start **/
-        // Burn Amounts
-        nIssueTokenBurnAmount = 1 * COIN;
-        nReissueTokenBurnAmount = 1 * COIN;
-        nIssueSubTokenBurnAmount = 1 * COIN;
-        nIssueUniqueTokenBurnAmount = 1 * COIN;
-        nIssueUsernameTokenBurnAmount = 1 * COIN;
-        nIssueMsgChannelTokenBurnAmount = 1 * COIN;
-        nIssueQualifierTokenBurnAmount = 1 * COIN;
-        nIssueSubQualifierTokenBurnAmount = 1 * COIN;
-        nIssueRestrictedTokenBurnAmount = 1 * COIN;
-        nAddNullQualifierTagBurnAmount = 1 * COIN;
-
-        // Burn Addresses
-        strIssueTokenBurnAddress = "YmvWrhCZBVZ69NbrMZB4qycs4h3Zho7zrW";
-        strReissueTokenBurnAddress = "YmvWrhCZBVZ69NbrMZB4qycs4h3Zho7zrW";
-        strIssueSubTokenBurnAddress = "YmvWrhCZBVZ69NbrMZB4qycs4h3Zho7zrW";
-        strIssueUniqueTokenBurnAddress = "YmvWrhCZBVZ69NbrMZB4qycs4h3Zho7zrW";
-        strIssueUsernameTokenBurnAddress = "YmvWrhCZBVZ69NbrMZB4qycs4h3Zho7zrW";
-        strIssueMsgChannelTokenBurnAddress = "YmvWrhCZBVZ69NbrMZB4qycs4h3Zho7zrW";
-        strIssueQualifierTokenBurnAddress = "YmvWrhCZBVZ69NbrMZB4qycs4h3Zho7zrW";
-        strIssueSubQualifierTokenBurnAddress = "YmvWrhCZBVZ69NbrMZB4qycs4h3Zho7zrW";
-        strIssueRestrictedTokenBurnAddress = "YmvWrhCZBVZ69NbrMZB4qycs4h3Zho7zrW";
-        strAddNullQualifierTagBurnAddress = "YmvWrhCZBVZ69NbrMZB4qycs4h3Zho7zrW";
+        // Fee Amounts
+        nIssueTokenFeeAmount = 10 * COIN;
+        nReissueTokenFeeAmount = 2 * COIN;
+        nIssueSubTokenFeeAmount = 5 * COIN;
+        nIssueUniqueTokenFeeAmount = 0.2 * COIN;
+        nIssueUsernameTokenFeeAmount = 2 * COIN;
+        nIssueMsgChannelTokenFeeAmount = 2 * COIN;
+        nIssueQualifierTokenFeeAmount = 20 * COIN;
+        nIssueSubQualifierTokenFeeAmount = 3 * COIN;
+        nIssueRestrictedTokenFeeAmount = 10 * COIN;
+        nAddNullQualifierTagFeeAmount = 0.01 * COIN;
 
         // Global Burn Address
-        strGlobalBurnAddress = "YmvWrhCZBVZ69NbrMZB4qycs4h3Zho7zrW";
+        strTokenFeeAddress = "YmvWrhCZBVZ69NbrMZB4qycs4h3Zho7zrW";
 
         nMaxReorganizationDepth = 180; // 180 at 20 seconds block timespan is +/- 60 minutes.
         nMinReorganizationPeers = 4;
@@ -259,14 +247,12 @@ public:
         consensus.nBIP34Enabled = true;
         consensus.nBIP65Enabled = true;
         consensus.nBIP66Enabled = true;
-        consensus.nSegwitEnabled = true;
+        consensus.nSegwitEnabled = false;
         consensus.nCSVEnabled = true;
-
         consensus.powLimit = uint256S("003fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff");
         consensus.posLimit = uint256S("0000000000ffffffffffffffffffffffffffffffffffffffffffffffffffffff");
-
-        consensus.nTargetTimespan = 16 * 60;
-        consensus.nTargetSpacing = 64;
+        consensus.nTargetTimespan = 1000;
+        consensus.nTargetSpacing = 20;
         consensus.fDiffNoRetargeting = false;
         consensus.fDiffAllowMinDifficultyBlocks = false;
         consensus.nRuleChangeActivationThreshold = 1310; // Approx 65% for testchains
@@ -333,32 +319,20 @@ public:
         };
 
         /** YONA Start **/
-        // Burn Amounts
-        nIssueTokenBurnAmount = 500 * COIN;
-        nReissueTokenBurnAmount = 100 * COIN;
-        nIssueSubTokenBurnAmount = 100 * COIN;
-        nIssueUniqueTokenBurnAmount = 5 * COIN;
-        nIssueUsernameTokenBurnAmount = 5 * COIN;
-        nIssueMsgChannelTokenBurnAmount = 100 * COIN;
-        nIssueQualifierTokenBurnAmount = 1000 * COIN;
-        nIssueSubQualifierTokenBurnAmount = 100 * COIN;
-        nIssueRestrictedTokenBurnAmount = 1500 * COIN;
-        nAddNullQualifierTagBurnAmount = .1 * COIN;
-
-        // Burn Addresses
-        strIssueTokenBurnAddress = "YmvWrhCZBVZ69NbrMZB4qycs4h3Zho7zrW";
-        strReissueTokenBurnAddress = "YmvWrhCZBVZ69NbrMZB4qycs4h3Zho7zrW";
-        strIssueSubTokenBurnAddress = "YmvWrhCZBVZ69NbrMZB4qycs4h3Zho7zrW";
-        strIssueUniqueTokenBurnAddress = "YmvWrhCZBVZ69NbrMZB4qycs4h3Zho7zrW";
-        strIssueUsernameTokenBurnAddress = "YmvWrhCZBVZ69NbrMZB4qycs4h3Zho7zrW";
-        strIssueMsgChannelTokenBurnAddress = "YmvWrhCZBVZ69NbrMZB4qycs4h3Zho7zrW";
-        strIssueQualifierTokenBurnAddress = "YmvWrhCZBVZ69NbrMZB4qycs4h3Zho7zrW";
-        strIssueSubQualifierTokenBurnAddress = "YmvWrhCZBVZ69NbrMZB4qycs4h3Zho7zrW";
-        strIssueRestrictedTokenBurnAddress = "YmvWrhCZBVZ69NbrMZB4qycs4h3Zho7zrW";
-        strAddNullQualifierTagBurnAddress = "YmvWrhCZBVZ69NbrMZB4qycs4h3Zho7zrW";
+        // Fee Amounts
+        nIssueTokenFeeAmount = 10 * COIN;
+        nReissueTokenFeeAmount = 2 * COIN;
+        nIssueSubTokenFeeAmount = 5 * COIN;
+        nIssueUniqueTokenFeeAmount = 0.2 * COIN;
+        nIssueUsernameTokenFeeAmount = 2 * COIN;
+        nIssueMsgChannelTokenFeeAmount = 2 * COIN;
+        nIssueQualifierTokenFeeAmount = 20 * COIN;
+        nIssueSubQualifierTokenFeeAmount = 3 * COIN;
+        nIssueRestrictedTokenFeeAmount = 10 * COIN;
+        nAddNullQualifierTagFeeAmount = 0.01 * COIN;
 
         // Global Burn Address
-        strGlobalBurnAddress = "YmvWrhCZBVZ69NbrMZB4qycs4h3Zho7zrW";
+        strTokenFeeAddress = "YmvWrhCZBVZ69NbrMZB4qycs4h3Zho7zrW";
 
         nMaxReorganizationDepth = 180; // 180 at 20 seconds block timespan is +/- 60 minutes.
         nMinReorganizationPeers = 4;
@@ -446,32 +420,20 @@ public:
         nExtCoinType = 1;
 
         /** YONA Start **/
-        // Burn Amounts
-        nIssueTokenBurnAmount = 500 * COIN;
-        nReissueTokenBurnAmount = 100 * COIN;
-        nIssueSubTokenBurnAmount = 100 * COIN;
-        nIssueUniqueTokenBurnAmount = 5 * COIN;
-        nIssueUsernameTokenBurnAmount = 5 * COIN;
-        nIssueMsgChannelTokenBurnAmount = 100 * COIN;
-        nIssueQualifierTokenBurnAmount = 1000 * COIN;
-        nIssueSubQualifierTokenBurnAmount = 100 * COIN;
-        nIssueRestrictedTokenBurnAmount = 1500 * COIN;
-        nAddNullQualifierTagBurnAmount = .1 * COIN;
-
-        // Burn Addresses
-        strIssueTokenBurnAddress = "YmvWrhCZBVZ69NbrMZB4qycs4h3Zho7zrW";
-        strReissueTokenBurnAddress = "YmvWrhCZBVZ69NbrMZB4qycs4h3Zho7zrW";
-        strIssueSubTokenBurnAddress = "YmvWrhCZBVZ69NbrMZB4qycs4h3Zho7zrW";
-        strIssueUniqueTokenBurnAddress = "YmvWrhCZBVZ69NbrMZB4qycs4h3Zho7zrW";
-        strIssueUsernameTokenBurnAddress = "YmvWrhCZBVZ69NbrMZB4qycs4h3Zho7zrW";
-        strIssueMsgChannelTokenBurnAddress = "YmvWrhCZBVZ69NbrMZB4qycs4h3Zho7zrW";
-        strIssueQualifierTokenBurnAddress = "YmvWrhCZBVZ69NbrMZB4qycs4h3Zho7zrW";
-        strIssueSubQualifierTokenBurnAddress = "YmvWrhCZBVZ69NbrMZB4qycs4h3Zho7zrW";
-        strIssueRestrictedTokenBurnAddress = "YmvWrhCZBVZ69NbrMZB4qycs4h3Zho7zrW";
-        strAddNullQualifierTagBurnAddress = "YmvWrhCZBVZ69NbrMZB4qycs4h3Zho7zrW";
+        // Fee Amounts
+        nIssueTokenFeeAmount = 10 * COIN;
+        nReissueTokenFeeAmount = 2 * COIN;
+        nIssueSubTokenFeeAmount = 5 * COIN;
+        nIssueUniqueTokenFeeAmount = 0.2 * COIN;
+        nIssueUsernameTokenFeeAmount = 2 * COIN;
+        nIssueMsgChannelTokenFeeAmount = 2 * COIN;
+        nIssueQualifierTokenFeeAmount = 20 * COIN;
+        nIssueSubQualifierTokenFeeAmount = 3 * COIN;
+        nIssueRestrictedTokenFeeAmount = 10 * COIN;
+        nAddNullQualifierTagFeeAmount = 0.01 * COIN;
 
         // Global Burn Address
-        strGlobalBurnAddress = "YmvWrhCZBVZ69NbrMZB4qycs4h3Zho7zrW";
+        strTokenFeeAddress = "YmvWrhCZBVZ69NbrMZB4qycs4h3Zho7zrW";
 
         nMaxReorganizationDepth = 60; // 60 at 1 minute block timespan is +/- 60 minutes.
         nMinReorganizationPeers = 4;

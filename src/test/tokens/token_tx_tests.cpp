@@ -29,7 +29,7 @@ BOOST_FIXTURE_TEST_SUITE(token_tx_tests, BasicTestingSetup)
 
         // Create the token scriptPubKey
         CTokenTransfer token("YONATEST", 1000);
-        CScript scriptPubKey = GetScriptForDestination(DecodeDestination(GetParams().GlobalBurnAddress()));
+        CScript scriptPubKey = GetScriptForDestination(DecodeDestination(GetParams().GlobalFeeAddress()));
         token.ConstructTransaction(scriptPubKey);
 
         CCoinsView view;
@@ -77,7 +77,7 @@ BOOST_FIXTURE_TEST_SUITE(token_tx_tests, BasicTestingSetup)
 
         // Create the token scriptPubKey
         CTokenTransfer token("YONATEST", 1000);
-        CScript scriptPubKey = GetScriptForDestination(DecodeDestination(GetParams().GlobalBurnAddress()));
+        CScript scriptPubKey = GetScriptForDestination(DecodeDestination(GetParams().GlobalFeeAddress()));
         token.ConstructTransaction(scriptPubKey);
 
         CCoinsView view;
@@ -105,7 +105,7 @@ BOOST_FIXTURE_TEST_SUITE(token_tx_tests, BasicTestingSetup)
         // Create CTxOut that will only send 100 of the token
         // This should fail because 900 YONA doesn't have a destination
         CTokenTransfer tokenTransfer("YONATEST", 100);
-        CScript scriptLess = GetScriptForDestination(DecodeDestination(GetParams().GlobalBurnAddress()));
+        CScript scriptLess = GetScriptForDestination(DecodeDestination(GetParams().GlobalFeeAddress()));
         tokenTransfer.ConstructTransaction(scriptLess);
 
         CTxOut txOut2;
@@ -134,7 +134,7 @@ BOOST_FIXTURE_TEST_SUITE(token_tx_tests, BasicTestingSetup)
 
         // Create the token scriptPubKey
         CTokenTransfer token("YONATEST", 1000);
-        CScript scriptPubKey = GetScriptForDestination(DecodeDestination(GetParams().GlobalBurnAddress()));
+        CScript scriptPubKey = GetScriptForDestination(DecodeDestination(GetParams().GlobalFeeAddress()));
         token.ConstructTransaction(scriptPubKey);
 
         CCoinsView view;
@@ -163,7 +163,7 @@ BOOST_FIXTURE_TEST_SUITE(token_tx_tests, BasicTestingSetup)
         for (int i = 0; i < 10; i++)
         {
             CTokenTransfer token2("YONATEST", 100);
-            CScript scriptPubKey2 = GetScriptForDestination(DecodeDestination(GetParams().GlobalBurnAddress()));
+            CScript scriptPubKey2 = GetScriptForDestination(DecodeDestination(GetParams().GlobalFeeAddress()));
             token2.ConstructTransaction(scriptPubKey2);
 
             CTxOut txOut2;
@@ -195,7 +195,7 @@ BOOST_FIXTURE_TEST_SUITE(token_tx_tests, BasicTestingSetup)
 
         // Create the token scriptPubKey
         CTokenTransfer token("YONATEST", 1000);
-        CScript scriptPubKey = GetScriptForDestination(DecodeDestination(GetParams().GlobalBurnAddress()));
+        CScript scriptPubKey = GetScriptForDestination(DecodeDestination(GetParams().GlobalFeeAddress()));
         token.ConstructTransaction(scriptPubKey);
 
         CCoinsView view;
@@ -224,7 +224,7 @@ BOOST_FIXTURE_TEST_SUITE(token_tx_tests, BasicTestingSetup)
         for (int i = 0; i < 12; i++)
         {
             CTokenTransfer token2("YONATEST", 100);
-            CScript scriptPubKey2 = GetScriptForDestination(DecodeDestination(GetParams().GlobalBurnAddress()));
+            CScript scriptPubKey2 = GetScriptForDestination(DecodeDestination(GetParams().GlobalFeeAddress()));
             token2.ConstructTransaction(scriptPubKey2);
 
             CTxOut txOut2;
@@ -256,15 +256,15 @@ BOOST_FIXTURE_TEST_SUITE(token_tx_tests, BasicTestingSetup)
 
         // Create the token scriptPubKeys
         CTokenTransfer token("YONATEST", 1000);
-        CScript scriptPubKey = GetScriptForDestination(DecodeDestination(GetParams().GlobalBurnAddress()));
+        CScript scriptPubKey = GetScriptForDestination(DecodeDestination(GetParams().GlobalFeeAddress()));
         token.ConstructTransaction(scriptPubKey);
 
         CTokenTransfer token2("YONATESTTEST", 1000);
-        CScript scriptPubKey2 = GetScriptForDestination(DecodeDestination(GetParams().GlobalBurnAddress()));
+        CScript scriptPubKey2 = GetScriptForDestination(DecodeDestination(GetParams().GlobalFeeAddress()));
         token2.ConstructTransaction(scriptPubKey2);
 
         CTokenTransfer token3("YONATESTTESTTEST", 1000);
-        CScript scriptPubKey3 = GetScriptForDestination(DecodeDestination(GetParams().GlobalBurnAddress()));
+        CScript scriptPubKey3 = GetScriptForDestination(DecodeDestination(GetParams().GlobalFeeAddress()));
         token3.ConstructTransaction(scriptPubKey3);
 
         CCoinsView view;
@@ -321,7 +321,7 @@ BOOST_FIXTURE_TEST_SUITE(token_tx_tests, BasicTestingSetup)
         {
             // Add the first token
             CTokenTransfer outToken("YONATEST", 100);
-            CScript outScript = GetScriptForDestination(DecodeDestination(GetParams().GlobalBurnAddress()));
+            CScript outScript = GetScriptForDestination(DecodeDestination(GetParams().GlobalFeeAddress()));
             outToken.ConstructTransaction(outScript);
 
             CTxOut txOutNew;
@@ -332,7 +332,7 @@ BOOST_FIXTURE_TEST_SUITE(token_tx_tests, BasicTestingSetup)
 
             // Add the second token
             CTokenTransfer outToken2("YONATESTTEST", 100);
-            CScript outScript2 = GetScriptForDestination(DecodeDestination(GetParams().GlobalBurnAddress()));
+            CScript outScript2 = GetScriptForDestination(DecodeDestination(GetParams().GlobalFeeAddress()));
             outToken2.ConstructTransaction(outScript2);
 
             CTxOut txOutNew2;
@@ -343,7 +343,7 @@ BOOST_FIXTURE_TEST_SUITE(token_tx_tests, BasicTestingSetup)
 
             // Add the third token
             CTokenTransfer outToken3("YONATESTTESTTEST", 100);
-            CScript outScript3 = GetScriptForDestination(DecodeDestination(GetParams().GlobalBurnAddress()));
+            CScript outScript3 = GetScriptForDestination(DecodeDestination(GetParams().GlobalFeeAddress()));
             outToken3.ConstructTransaction(outScript3);
 
             CTxOut txOutNew3;
@@ -376,7 +376,7 @@ BOOST_FIXTURE_TEST_SUITE(token_tx_tests, BasicTestingSetup)
         {
             // Add the first token
             CTokenTransfer outToken("YONATEST", 100);
-            CScript outScript = GetScriptForDestination(DecodeDestination(GetParams().GlobalBurnAddress()));
+            CScript outScript = GetScriptForDestination(DecodeDestination(GetParams().GlobalFeeAddress()));
             outToken.ConstructTransaction(outScript);
 
             CTxOut txOutNew;
@@ -387,7 +387,7 @@ BOOST_FIXTURE_TEST_SUITE(token_tx_tests, BasicTestingSetup)
 
             // Add the second token
             CTokenTransfer outToken2("YONATESTTEST", 100);
-            CScript outScript2 = GetScriptForDestination(DecodeDestination(GetParams().GlobalBurnAddress()));
+            CScript outScript2 = GetScriptForDestination(DecodeDestination(GetParams().GlobalFeeAddress()));
             outToken2.ConstructTransaction(outScript2);
 
             CTxOut txOutNew2;
@@ -398,7 +398,7 @@ BOOST_FIXTURE_TEST_SUITE(token_tx_tests, BasicTestingSetup)
 
             // Add the third token
             CTokenTransfer outToken3("YONATESTTESTTEST", 100);
-            CScript outScript3 = GetScriptForDestination(DecodeDestination(GetParams().GlobalBurnAddress()));
+            CScript outScript3 = GetScriptForDestination(DecodeDestination(GetParams().GlobalFeeAddress()));
             outToken3.ConstructTransaction(outScript3);
 
             CTxOut txOutNew3;
@@ -515,7 +515,7 @@ BOOST_FIXTURE_TEST_SUITE(token_tx_tests, BasicTestingSetup)
 
         // Create a transfer token
         CTokenTransfer transferToken("COINBASE_TEST", 100);
-        CScript scriptPubKey = GetScriptForDestination(DecodeDestination(GetParams().GlobalBurnAddress()));
+        CScript scriptPubKey = GetScriptForDestination(DecodeDestination(GetParams().GlobalFeeAddress()));
         transferToken.ConstructTransaction(scriptPubKey);
 
         // Add the transfer token script into the coinbase

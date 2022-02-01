@@ -228,7 +228,7 @@ BOOST_FIXTURE_TEST_SUITE(token_tests, BasicTestingSetup)
 
         // Create the token scriptPubKey
         CTokenTransfer token("YONA", 1000);
-        CScript scriptPubKey = GetScriptForDestination(DecodeDestination(GetParams().GlobalBurnAddress()));
+        CScript scriptPubKey = GetScriptForDestination(DecodeDestination(GetParams().GlobalFeeAddress()));
         token.ConstructTransaction(scriptPubKey);
 
         CTxOut txOut;
@@ -249,7 +249,7 @@ BOOST_FIXTURE_TEST_SUITE(token_tests, BasicTestingSetup)
 
         // Create the token scriptPubKey
         CNewToken token("YONA", 1000, 8, 1, 0, "");
-        CScript scriptPubKey = GetScriptForDestination(DecodeDestination(GetParams().GlobalBurnAddress()));
+        CScript scriptPubKey = GetScriptForDestination(DecodeDestination(GetParams().GlobalFeeAddress()));
         token.ConstructTransaction(scriptPubKey);
 
         CTxOut txOut;
@@ -699,7 +699,7 @@ BOOST_FIXTURE_TEST_SUITE(token_tests, BasicTestingSetup)
 
         // Create the script for addinga  tag to an address
         CNullTokenTxData addTagData("#TAG", 1);
-        CScript addTagScript = GetScriptForDestination(DecodeDestination(GetParams().GlobalBurnAddress()));
+        CScript addTagScript = GetScriptForDestination(DecodeDestination(GetParams().GlobalFeeAddress()));
         addTagData.ConstructTransaction(addTagScript);
 
         // Create the txOut and add it to the mutable transaction

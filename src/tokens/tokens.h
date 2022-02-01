@@ -379,15 +379,15 @@ public :
 };
 
 //! Functions to be used to get access to the current burn amount required for specific token issuance transactions
-CAmount GetIssueTokenBurnAmount();
-CAmount GetReissueTokenBurnAmount();
-CAmount GetIssueSubTokenBurnAmount();
-CAmount GetIssueUniqueTokenBurnAmount();
-CAmount GetIssueMsgChannelTokenBurnAmount();
-CAmount GetIssueQualifierTokenBurnAmount();
-CAmount GetIssueSubQualifierTokenBurnAmount();
-CAmount GetIssueRestrictedTokenBurnAmount();
-CAmount GetAddNullQualifierTagBurnAmount();
+CAmount GetIssueTokenFeeAmount();
+CAmount GetReissueTokenFeeAmount();
+CAmount GetIssueSubTokenFeeAmount();
+CAmount GetIssueUniqueTokenFeeAmount();
+CAmount GetIssueMsgChannelTokenFeeAmount();
+CAmount GetIssueQualifierTokenFeeAmount();
+CAmount GetIssueSubQualifierTokenFeeAmount();
+CAmount GetIssueRestrictedTokenFeeAmount();
+CAmount GetAddNullQualifierTagFeeAmount();
 CAmount GetBurnAmount(const KnownTokenType type);
 CAmount GetBurnAmount(const int nType);
 

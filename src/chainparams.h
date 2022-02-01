@@ -91,49 +91,33 @@ public:
     bool CSVEnabled() const;
 
     /** YONA Start **/
-    const CAmount& IssueTokenBurnAmount() const { return nIssueTokenBurnAmount; }
-    const CAmount& ReissueTokenBurnAmount() const { return nReissueTokenBurnAmount; }
-    const CAmount& IssueSubTokenBurnAmount() const { return nIssueSubTokenBurnAmount; }
-    const CAmount& IssueUniqueTokenBurnAmount() const { return nIssueUniqueTokenBurnAmount; }
-    const CAmount& IssueUsernameTokenBurnAmount() const { return nIssueUsernameTokenBurnAmount; }
-    const CAmount& IssueMsgChannelTokenBurnAmount() const { return nIssueMsgChannelTokenBurnAmount; }
-    const CAmount& IssueQualifierTokenBurnAmount() const { return nIssueQualifierTokenBurnAmount; }
-    const CAmount& IssueSubQualifierTokenBurnAmount() const { return nIssueSubQualifierTokenBurnAmount; }
-    const CAmount& IssueRestrictedTokenBurnAmount() const { return nIssueRestrictedTokenBurnAmount; }
-    const CAmount& AddNullQualifierTagBurnAmount() const { return nAddNullQualifierTagBurnAmount; }
+    const CAmount& IssueTokenFeeAmount() const { return nIssueTokenFeeAmount; }
+    const CAmount& ReissueTokenFeeAmount() const { return nReissueTokenFeeAmount; }
+    const CAmount& IssueSubTokenFeeAmount() const { return nIssueSubTokenFeeAmount; }
+    const CAmount& IssueUniqueTokenFeeAmount() const { return nIssueUniqueTokenFeeAmount; }
+    const CAmount& IssueUsernameTokenFeeAmount() const { return nIssueUsernameTokenFeeAmount; }
+    const CAmount& IssueMsgChannelTokenFeeAmount() const { return nIssueMsgChannelTokenFeeAmount; }
+    const CAmount& IssueQualifierTokenFeeAmount() const { return nIssueQualifierTokenFeeAmount; }
+    const CAmount& IssueSubQualifierTokenFeeAmount() const { return nIssueSubQualifierTokenFeeAmount; }
+    const CAmount& IssueRestrictedTokenFeeAmount() const { return nIssueRestrictedTokenFeeAmount; }
+    const CAmount& AddNullQualifierTagFeeAmount() const { return nAddNullQualifierTagFeeAmount; }
 
-    const std::string& IssueTokenBurnAddress() const { return strIssueTokenBurnAddress; }
-    const std::string& ReissueTokenBurnAddress() const { return strReissueTokenBurnAddress; }
-    const std::string& IssueSubTokenBurnAddress() const { return strIssueSubTokenBurnAddress; }
-    const std::string& IssueUniqueTokenBurnAddress() const { return strIssueUniqueTokenBurnAddress; }
-    const std::string& IssueUsernameTokenBurnAddress() const { return strIssueUsernameTokenBurnAddress; }
-    const std::string& IssueMsgChannelTokenBurnAddress() const { return strIssueMsgChannelTokenBurnAddress; }
-    const std::string& IssueQualifierTokenBurnAddress() const { return strIssueQualifierTokenBurnAddress; }
-    const std::string& IssueSubQualifierTokenBurnAddress() const { return strIssueSubQualifierTokenBurnAddress; }
-    const std::string& IssueRestrictedTokenBurnAddress() const { return strIssueRestrictedTokenBurnAddress; }
-    const std::string& AddNullQualifierTagBurnAddress() const { return strAddNullQualifierTagBurnAddress; }
-    const std::string& GlobalBurnAddress() const { return strGlobalBurnAddress; }
+    const std::string& IssueTokenFeeAddress() const { return strTokenFeeAddress; }
+    const std::string& ReissueTokenFeeAddress() const { return strTokenFeeAddress; }
+    const std::string& IssueSubTokenFeeAddress() const { return strTokenFeeAddress; }
+    const std::string& IssueUniqueTokenFeeAddress() const { return strTokenFeeAddress; }
+    const std::string& IssueUsernameTokenFeeAddress() const { return strTokenFeeAddress; }
+    const std::string& IssueMsgChannelTokenFeeAddress() const { return strTokenFeeAddress; }
+    const std::string& IssueQualifierTokenFeeAddress() const { return strTokenFeeAddress; }
+    const std::string& IssueSubQualifierTokenFeeAddress() const { return strTokenFeeAddress; }
+    const std::string& IssueRestrictedTokenFeeAddress() const { return strTokenFeeAddress; }
+    const std::string& AddNullQualifierTagFeeAddress() const { return strTokenFeeAddress; }
+    const std::string& GlobalFeeAddress() const { return strTokenFeeAddress; }
 
-    //  Indicates whether or not the provided address is a burn address
-    bool IsBurnAddress(const std::string & p_address) const
+    //  Indicates whether or not the provided address is a fee address
+    bool IsFeeAddress(const std::string & p_address) const
     {
-        if (
-            p_address == strIssueTokenBurnAddress
-            || p_address == strReissueTokenBurnAddress
-            || p_address == strIssueSubTokenBurnAddress
-            || p_address == strIssueUniqueTokenBurnAddress
-            || p_address == strIssueUsernameTokenBurnAddress
-            || p_address == strIssueMsgChannelTokenBurnAddress
-            || p_address == strIssueQualifierTokenBurnAddress
-            || p_address == strIssueSubQualifierTokenBurnAddress
-            || p_address == strIssueRestrictedTokenBurnAddress
-            || p_address == strAddNullQualifierTagBurnAddress
-            || p_address == strGlobalBurnAddress
-        ) {
-            return true;
-        }
-
-        return false;
+        return p_address == strTokenFeeAddress;
     }
 
     int MaxReorganizationDepth() const { return nMaxReorganizationDepth; }
@@ -162,32 +146,20 @@ protected:
     ChainTxData chainTxData;
 
     /** YONA Start **/
-    // Burn Amounts
-    CAmount nIssueTokenBurnAmount;
-    CAmount nReissueTokenBurnAmount;
-    CAmount nIssueSubTokenBurnAmount;
-    CAmount nIssueUniqueTokenBurnAmount;
-    CAmount nIssueUsernameTokenBurnAmount;
-    CAmount nIssueMsgChannelTokenBurnAmount;
-    CAmount nIssueQualifierTokenBurnAmount;
-    CAmount nIssueSubQualifierTokenBurnAmount;
-    CAmount nIssueRestrictedTokenBurnAmount;
-    CAmount nAddNullQualifierTagBurnAmount;
+    // Fee Amounts
+    CAmount nIssueTokenFeeAmount;
+    CAmount nReissueTokenFeeAmount;
+    CAmount nIssueSubTokenFeeAmount;
+    CAmount nIssueUniqueTokenFeeAmount;
+    CAmount nIssueUsernameTokenFeeAmount;
+    CAmount nIssueMsgChannelTokenFeeAmount;
+    CAmount nIssueQualifierTokenFeeAmount;
+    CAmount nIssueSubQualifierTokenFeeAmount;
+    CAmount nIssueRestrictedTokenFeeAmount;
+    CAmount nAddNullQualifierTagFeeAmount;
 
-    // Burn Addresses
-    std::string strIssueTokenBurnAddress;
-    std::string strReissueTokenBurnAddress;
-    std::string strIssueSubTokenBurnAddress;
-    std::string strIssueUniqueTokenBurnAddress;
-    std::string strIssueUsernameTokenBurnAddress;
-    std::string strIssueMsgChannelTokenBurnAddress;
-    std::string strIssueQualifierTokenBurnAddress;
-    std::string strIssueSubQualifierTokenBurnAddress;
-    std::string strIssueRestrictedTokenBurnAddress;
-    std::string strAddNullQualifierTagBurnAddress;
-
-    // Global Burn Address
-    std::string strGlobalBurnAddress;
+    // Fee Address
+    std::string strTokenFeeAddress;
 
     int nMaxReorganizationDepth;
     int nMinReorganizationPeers;

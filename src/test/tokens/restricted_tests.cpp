@@ -18,7 +18,7 @@ BOOST_FIXTURE_TEST_SUITE(restricted_tests, BasicTestingSetup)
 
         CMutableTransaction mutableTransaction;
 
-        CScript newRestrictedScript = GetScriptForDestination(DecodeDestination(GetParams().GlobalBurnAddress()));
+        CScript newRestrictedScript = GetScriptForDestination(DecodeDestination(GetParams().GlobalFeeAddress()));
 
         CNewToken restricted_token("$RESTRICTED_NAME", 5);
         restricted_token.ConstructTransaction(newRestrictedScript);
@@ -34,7 +34,7 @@ BOOST_FIXTURE_TEST_SUITE(restricted_tests, BasicTestingSetup)
         BOOST_CHECK_MESSAGE(RestrictedTokenFromTransaction(tx, fetched_token, address), "Failed to get restricted from transaction");
         BOOST_CHECK_MESSAGE(fetched_token.strName == restricted_token.strName, "Restricted Tests: Failed token names check");
         BOOST_CHECK_MESSAGE(fetched_token.nAmount == restricted_token.nAmount, "Restricted Tests: Failed amount check");
-        BOOST_CHECK_MESSAGE(address == GetParams().GlobalBurnAddress(), "Restricted Tests: Failed address check");
+        BOOST_CHECK_MESSAGE(address == GetParams().GlobalFeeAddress(), "Restricted Tests: Failed address check");
     }
 
     BOOST_AUTO_TEST_CASE(restricted_from_transaction_fail_test)
@@ -43,7 +43,7 @@ BOOST_FIXTURE_TEST_SUITE(restricted_tests, BasicTestingSetup)
 
         CMutableTransaction mutableTransaction;
 
-        CScript newRestrictedScript = GetScriptForDestination(DecodeDestination(GetParams().GlobalBurnAddress()));
+        CScript newRestrictedScript = GetScriptForDestination(DecodeDestination(GetParams().GlobalFeeAddress()));
 
         CNewToken restricted_token("NOT_RESTRICTED_NAME", 5);
         restricted_token.ConstructTransaction(newRestrictedScript);
@@ -64,7 +64,7 @@ BOOST_FIXTURE_TEST_SUITE(restricted_tests, BasicTestingSetup)
 
         /// Create CTxOut to use in the tests ///
         // Create filler yona tx
-        CScript yonaTransfer = GetScriptForDestination(DecodeDestination(GetParams().GlobalBurnAddress()));
+        CScript yonaTransfer = GetScriptForDestination(DecodeDestination(GetParams().GlobalFeeAddress()));
         CTxOut yonaOut(1*COIN, yonaTransfer);
 
         // Create transaction and add burn to it
@@ -73,7 +73,7 @@ BOOST_FIXTURE_TEST_SUITE(restricted_tests, BasicTestingSetup)
 
         // Add the parent transaction for sub qualifier tx
         CTokenTransfer parentTransfer("RESTRICTED_NAME!", OWNER_TOKEN_AMOUNT);
-        CScript parentScript = GetScriptForDestination(DecodeDestination(GetParams().GlobalBurnAddress()));
+        CScript parentScript = GetScriptForDestination(DecodeDestination(GetParams().GlobalFeeAddress()));
         parentTransfer.ConstructTransaction(parentScript);
         CTxOut parentOut(0, parentScript);
 
@@ -84,13 +84,13 @@ BOOST_FIXTURE_TEST_SUITE(restricted_tests, BasicTestingSetup)
         CTxOut verifierOut(0, verifierScript);
 
         // Create the new restricted Script
-        CScript newRestrictedScript = GetScriptForDestination(DecodeDestination(GetParams().GlobalBurnAddress()));
+        CScript newRestrictedScript = GetScriptForDestination(DecodeDestination(GetParams().GlobalFeeAddress()));
         CNewToken restricted_token("$RESTRICTED_NAME", 5 * COIN, 0, 0, 0, "");
         restricted_token.ConstructTransaction(newRestrictedScript);
         CTxOut tokenOut(0, newRestrictedScript);
 
         // Create a fake owner script
-        CScript newRestrictedTokenOwnerScript = GetScriptForDestination(DecodeDestination(GetParams().GlobalBurnAddress()));
+        CScript newRestrictedTokenOwnerScript = GetScriptForDestination(DecodeDestination(GetParams().GlobalFeeAddress()));
         restricted_token.ConstructOwnerTransaction(newRestrictedTokenOwnerScript);
         CTxOut ownerOut(0, newRestrictedTokenOwnerScript);
         /// Finish Creating CTxOut to use in the tests ///

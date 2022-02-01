@@ -940,10 +940,10 @@ void ReissueTokenDialog::onReissueTokenClicked()
     QStringList formatted;
 
     // generate bold amount string
-    QString amount = "<b>" + QString::fromStdString(ValueFromAmountString(GetReissueTokenBurnAmount(), 8)) + " YONA";
+    QString amount = "<b>" + QString::fromStdString(ValueFromAmountString(GetReissueTokenFeeAmount(), 8)) + " YONA";
     amount.append("</b>");
     // generate monospace address string
-    QString addressburn = "<span style='font-family: monospace;'>" + QString::fromStdString(GetParams().ReissueTokenBurnAddress());
+    QString addressburn = "<span style='font-family: monospace;'>" + QString::fromStdString(GetParams().ReissueTokenFeeAddress());
     addressburn.append("</span>");
 
     QString recipientElement1;
@@ -979,7 +979,7 @@ void ReissueTokenDialog::onReissueTokenClicked()
 
     // add total amount in all subdivision units
     questionString.append("<hr />");
-    CAmount totalAmount = GetReissueTokenBurnAmount() + nFeeRequired;
+    CAmount totalAmount = GetReissueTokenFeeAmount() + nFeeRequired;
     QStringList alternativeUnits;
     for (YonaUnits::Unit u : YonaUnits::availableUnits())
     {

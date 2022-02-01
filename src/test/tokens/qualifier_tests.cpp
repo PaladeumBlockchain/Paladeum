@@ -18,7 +18,7 @@ BOOST_FIXTURE_TEST_SUITE(qualifier_tests, BasicTestingSetup)
 
         CMutableTransaction mutableTransaction;
 
-        CScript newQualifierScript = GetScriptForDestination(DecodeDestination(GetParams().GlobalBurnAddress()));
+        CScript newQualifierScript = GetScriptForDestination(DecodeDestination(GetParams().GlobalFeeAddress()));
 
         CNewToken qualifier_token("#QUALIFIER_NAME", 5 * COIN);
         qualifier_token.ConstructTransaction(newQualifierScript);
@@ -34,7 +34,7 @@ BOOST_FIXTURE_TEST_SUITE(qualifier_tests, BasicTestingSetup)
         BOOST_CHECK_MESSAGE(QualifierTokenFromTransaction(tx, fetched_token,address), "Failed to get qualifier from transaction");
         BOOST_CHECK_MESSAGE(fetched_token.strName == qualifier_token.strName, "Qualifier Tests: Failed token names check");
         BOOST_CHECK_MESSAGE(fetched_token.nAmount== qualifier_token.nAmount, "Qualifier Tests: Failed amount check");
-        BOOST_CHECK_MESSAGE(address == GetParams().GlobalBurnAddress(), "Qualifier Tests: Failed address check");
+        BOOST_CHECK_MESSAGE(address == GetParams().GlobalFeeAddress(), "Qualifier Tests: Failed address check");
     }
 
     BOOST_AUTO_TEST_CASE(qualifier_from_transaction__fail_test)
@@ -43,7 +43,7 @@ BOOST_FIXTURE_TEST_SUITE(qualifier_tests, BasicTestingSetup)
 
         CMutableTransaction mutableTransaction;
 
-        CScript newQualifierScript = GetScriptForDestination(DecodeDestination(GetParams().GlobalBurnAddress()));
+        CScript newQualifierScript = GetScriptForDestination(DecodeDestination(GetParams().GlobalFeeAddress()));
 
         CNewToken qualifier_token("NOT_QUALIFIER_NAME", 5 * COIN);
         qualifier_token.ConstructTransaction(newQualifierScript);
@@ -71,7 +71,7 @@ BOOST_FIXTURE_TEST_SUITE(qualifier_tests, BasicTestingSetup)
         mutableTransaction.vout.push_back(burnOut);
 
         // Create the new Qualifier Script
-        CScript newQualifierScript = GetScriptForDestination(DecodeDestination(GetParams().GlobalBurnAddress()));
+        CScript newQualifierScript = GetScriptForDestination(DecodeDestination(GetParams().GlobalFeeAddress()));
         CNewToken qualifier_token("#QUALIFIER_NAME", 5 * COIN, 0, 0, 0, "");
         qualifier_token.ConstructTransaction(newQualifierScript);
         CTxOut tokenOut(0, newQualifierScript);
@@ -95,13 +95,13 @@ BOOST_FIXTURE_TEST_SUITE(qualifier_tests, BasicTestingSetup)
 
         // Add the parent transaction for sub qualifier tx
         CTokenTransfer parentTransfer("#QUALIFIER_NAME", OWNER_TOKEN_AMOUNT);
-        CScript parentScript = GetScriptForDestination(DecodeDestination(GetParams().GlobalBurnAddress()));
+        CScript parentScript = GetScriptForDestination(DecodeDestination(GetParams().GlobalFeeAddress()));
         parentTransfer.ConstructTransaction(parentScript);
         CTxOut parentOut(0, parentScript);
         mutableTransaction.vout.push_back(parentOut);
 
         // Create the new Qualifier Script
-        CScript newQualifierScript = GetScriptForDestination(DecodeDestination(GetParams().GlobalBurnAddress()));
+        CScript newQualifierScript = GetScriptForDestination(DecodeDestination(GetParams().GlobalFeeAddress()));
         CNewToken qualifier_token("#QUALIFIER_NAME/#SUB1", 5 * COIN, 0, 0, 0, "");
         qualifier_token.ConstructTransaction(newQualifierScript);
         CTxOut tokenOut(0, newQualifierScript);
