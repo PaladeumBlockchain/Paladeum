@@ -32,7 +32,7 @@ void BlockNetwork::SetNetwork(const std::string& net)
 uint256 CBlockHeader::GetBlockHash() const
 {
     // return SerializeHash(*this);
-    return blake2b(BEGIN(nVersion), END(nHeight));
+    return blake2b(BEGIN(nVersion), END(nNonce));
 }
 
 std::string CBlockHeader::ToString() const
