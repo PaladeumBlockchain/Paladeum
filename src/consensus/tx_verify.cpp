@@ -624,13 +624,13 @@ bool Consensus::CheckTxInputs(const CTransaction& tx, CValidationState& state, c
         if (!MoneyRange(txfee_aux)) {
             return state.DoS(100, false, REJECT_INVALID, "bad-txns-fee-out-of-range");
         }
-    }
 
-    // Enforce transaction fees for every block
-    const CAmount minfee = GetStaticFee(nTokenTransaction, nSpendHeight);
-    if (txfee_aux < minfee)
-        return state.DoS(100, false, REJECT_INVALID, "bad-txns-fee-not-enough", false,
-            strprintf("txfee (%s) < minfee (%s)", FormatMoney(txfee_aux), FormatMoney(minfee)));
+        // Enforce transaction fees for every block
+        const CAmount minfee = GetStaticFee(nTokenTransaction, nSpendHeight);
+        if (txfee_aux < minfee)
+            return state.DoS(100, false, REJECT_INVALID, "bad-txns-fee-not-enough", false,
+                strprintf("txfee (%s) < minfee (%s)", FormatMoney(txfee_aux), FormatMoney(minfee)));
+    }
 
     txfee = txfee_aux;
     return true;
