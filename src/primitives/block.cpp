@@ -31,13 +31,15 @@ void BlockNetwork::SetNetwork(const std::string& net)
 
 uint256 CBlockHeader::GetBlockHash() const
 {
-    return SerializeHash(*this);
+    // return SerializeHash(*this);
+    return blake2b(BEGIN(nVersion), END(nHeight));
 }
 
 std::string CBlockHeader::ToString() const
 {
     std::stringstream s;
-    s << strprintf("CBlock(ver=0x%08x, hashPrevBlock=%s, hashMerkleRoot=%s, nTime=%u, nBits=%08x, nNonce=%u, nHeight=%u)\n",
+    s << strprintf("CBlock(hash=%s, ver=0x%08x, hashPrevBlock=%s, hashMerkleRoot=%s, nTime=%u, nBits=%08x, nNonce=%u, nHeight=%u)\n",
+                   GetBlockHash().ToString(),
                    nVersion,
                    hashPrevBlock.ToString(),
                    hashMerkleRoot.ToString(),

@@ -83,11 +83,6 @@ public:
 
     std::string ToString() const;
 
-    /// Use for testing algo switch
-    uint256 TestTiger() const;
-    uint256 TestSha512() const;
-    uint256 TestGost512() const;
-
     int64_t GetBlockTime() const
     {
         return (int64_t)nTime;

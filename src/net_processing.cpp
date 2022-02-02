@@ -1348,6 +1348,9 @@ bool static ProcessHeadersMessage(CNode *pfrom, CConnman *connman, const std::ve
         uint256 hashLastBlock;
         for (const CBlockHeader& header : headers) {
             if (!hashLastBlock.IsNull() && header.hashPrevBlock != hashLastBlock) {
+                std::cout << header.ToString() << "\n";
+                std::cout << hashLastBlock.ToString() << "\n\n";
+
                 Misbehaving(pfrom->GetId(), 20);
                 return error("non-continuous headers sequence");
             }

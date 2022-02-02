@@ -282,9 +282,10 @@ public:
 
         const char* pszTimestamp = "Two New Bird Species Discovered on Borneo | Jan 31, 2021 Sci-News";
 
-        genesis = CreateGenesisBlock(pszTimestamp, 1643716321, 436, 0x1f3fffff, 1, 1 * COIN);
+        genesis = CreateGenesisBlock(pszTimestamp, 1643716321, 1571, 0x1f3fffff, 1, 1 * COIN);
         consensus.hashGenesisBlock = genesis.GetBlockHash();
-        assert(consensus.hashGenesisBlock == uint256S("0x001436122ac2c667993533457a902a2a5df9e644d94bb1a7f725f13845e15ea2"));
+
+        assert(consensus.hashGenesisBlock == uint256S("0x003d3047ad5e9080b78e34b84abc9f5fe8ccd398f30f212091818b2b1ba47cb1"));
         assert(genesis.hashMerkleRoot == uint256S("0x118822c3e5222b39c9738b998bb42572499efd6bf7a0128b82fe2cf4a9abbfe8"));
 
         vFixedSeeds.clear();
