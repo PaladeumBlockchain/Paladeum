@@ -4295,6 +4295,9 @@ static bool ContextualCheckBlockHeader(const CBlock& block, CValidationState& st
     assert(pindexPrev != nullptr);
     const int nHeight = pindexPrev->nHeight + 1;
 
+    if (block.nHeight != nHeight)
+        return state.DoS(100, false, REJECT_INVALID, "bad-blk-height", false, strprintf("invalid height (block %s, actual %s)", block.nHeight, nHeight));
+
     //If this is a reorg, check that it is not too deep
     int nMaxReorgDepth = gArgs.GetArg("-maxreorg", GetParams().MaxReorganizationDepth());
     int nMinReorgPeers = gArgs.GetArg("-minreorgpeers", GetParams().MinReorganizationPeers());
