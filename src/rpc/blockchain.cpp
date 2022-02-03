@@ -139,6 +139,7 @@ UniValue blockheaderToJSON(const CBlockIndex* blockindex)
     result.pushKV("proof-of-stake", GetDifficulty(GetLastBlockIndex(blockindex, true)));
     result.push_back(Pair("chainwork", blockindex->nChainWork.GetHex()));
     result.pushKV("modifier", blockindex->nStakeModifier.GetHex());
+    result.pushKV("flags", blockindex->IsProofOfStake()? "proof-of-stake" : "proof-of-work");
 
     if (blockindex->pprev)
         result.push_back(Pair("previousblockhash", blockindex->pprev->GetBlockHash().GetHex()));
@@ -296,6 +297,7 @@ UniValue blockToJSON(const CBlock& block, const CBlockIndex* blockindex, bool tx
     result.pushKV("proof-of-work", GetDifficulty(blockindex));
     result.pushKV("proof-of-stake", GetDifficulty(GetLastBlockIndex(blockindex, true)));
     result.push_back(Pair("chainwork", blockindex->nChainWork.GetHex()));
+    result.pushKV("flags", blockindex->IsProofOfStake()? "proof-of-stake" : "proof-of-work");
 
     if (blockindex->pprev)
         result.push_back(Pair("previousblockhash", blockindex->pprev->GetBlockHash().GetHex()));
