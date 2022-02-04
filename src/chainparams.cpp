@@ -180,10 +180,10 @@ public:
 
         const char* pszTimestamp = "New Species of Mouse Opossum Discovered in Panama | Dec 10, 2021 Sci-News";
 
-        genesis = CreateGenesisBlock(pszTimestamp, 1640816880, 703, 0x1f3fffff, 1, 1 * COIN);
+        genesis = CreateGenesisBlock(pszTimestamp, 1640816880, 4900, 0x1f3fffff, 1, 1 * COIN);
         consensus.hashGenesisBlock = genesis.GetBlockHash();
 
-        assert(consensus.hashGenesisBlock == uint256S("0x003d14f2fa1aba21f7b40711601a66736f283c041633a5b7ee10420d18702719"));
+        assert(consensus.hashGenesisBlock == uint256S("0x0020f74ccfaddbcbbc71041ed0ce985e9b89701847c6b4a824f0a44cdd95e0f5"));
         assert(genesis.hashMerkleRoot == uint256S("0xa8361e55f50f1764c1d25f82ae29caed27f0fff3ca83f1af36532787e4abd9b2"));
 
         base58Prefixes[PUBKEY_ADDRESS] = std::vector<unsigned char>(1,140);
@@ -333,7 +333,7 @@ public:
         nAddNullQualifierTagFeeAmount = 0.01 * COIN;
 
         // Global Burn Address
-        strTokenFeeAddress = "YmvWrhCZBVZ69NbrMZB4qycs4h3Zho7zrW";
+        strTokenFeeAddress = "yWZtsXxhbfUEbfHF5M7Lw2tuZPjA17MF46";
 
         nMaxReorganizationDepth = 180; // 180 at 20 seconds block timespan is +/- 60 minutes.
         nMinReorganizationPeers = 4;

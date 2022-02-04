@@ -119,6 +119,8 @@ SendCoinsDialog::SendCoinsDialog(const PlatformStyle *_platformStyle, QWidget *p
     setupCoinControl(platformStyle);
     setupScrollView(platformStyle);
     setupFeeControl(platformStyle);
+
+    ui->frameFee->hide();
 }
 
 void SendCoinsDialog::setClientModel(ClientModel *_clientModel)
