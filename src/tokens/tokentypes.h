@@ -28,11 +28,11 @@ enum class KnownTokenType
     QUALIFIER = 4,
     SUB_QUALIFIER = 5,
     RESTRICTED = 6,
-    VOTE = 7,
-    REISSUE = 8,
-    OWNER = 9,
-    NULL_ADD_QUALIFIER = 10,
-    USERNAME = 11,
+    USERNAME = 7,
+    VOTE = 8,
+    REISSUE = 9,
+    OWNER = 10,
+    NULL_ADD_QUALIFIER = 11,
     INVALID = 12
 };
 

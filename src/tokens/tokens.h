@@ -589,5 +589,7 @@ bool ContextualCheckReissueToken(CTokensCache* tokenCache, const CReissueToken& 
 bool ContextualCheckReissueToken(CTokensCache* tokenCache, const CReissueToken& reissue_token, std::string& strError);
 bool ContextualCheckUniqueTokenTx(CTokensCache* tokenCache, std::string& strError, const CTransaction& tx);
 bool ContextualCheckUniqueToken(CTokensCache* tokenCache, const CNewToken& unique_token, std::string& strError);
+bool ContextualCheckUsernameTokenTx(CTokensCache* tokenCache, std::string& strError, const CTransaction& tx);
+bool ContextualCheckUsernameToken(CTokensCache* tokenCache, const CNewToken& username_token, std::string& strError);
 
 #endif //YONACOIN_TOKEN_PROTOCOL_H

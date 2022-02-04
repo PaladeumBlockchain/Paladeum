@@ -3818,6 +3818,8 @@ CAmount GetBurnAmount(const KnownTokenType type)
             return 0;
         case KnownTokenType::UNIQUE:
             return GetIssueUniqueTokenFeeAmount();
+        case KnownTokenType::USERNAME:
+            return GetIssueUsernameTokenFeeAmount();
         case KnownTokenType::VOTE:
             return 0;
         case KnownTokenType::REISSUE:
@@ -5790,6 +5792,35 @@ bool ContextualCheckUniqueTokenTx(CTokensCache* tokenCache, std::string& strErro
 bool ContextualCheckUniqueToken(CTokensCache* tokenCache, const CNewToken& unique_token, std::string& strError)
 {
     if (!ContextualCheckNewToken(tokenCache, unique_token, strError))
+        return false;
+
+    return true;
+}
+
+bool ContextualCheckUsernameTokenTx(CTokensCache* tokenCache, std::string& strError, const CTransaction& tx)
+{
+    for (auto out : tx.vout)
+    {
+        if (IsScriptNewUsername(out.scriptPubKey))
+        {
+            CNewToken token;
+            std::string strAddress;
+            if (!TokenFromScript(out.scriptPubKey, token, strAddress)) {
+                strError = "bad-txns-issue-username-serialization-failed";
+                return false;
+            }
+
+            if (!ContextualCheckUsernameToken(tokenCache, token, strError))
+                return false;
+        }
+    }
+
+    return true;
+}
+
+bool ContextualCheckUsernameToken(CTokensCache* tokenCache, const CNewToken& username_token, std::string& strError)
+{
+    if (!ContextualCheckNewToken(tokenCache, username_token, strError))
         return false;
 
     return true;

@@ -820,6 +820,9 @@ bool Consensus::CheckTxTokens(const CTransaction& tx, CValidationState& state, c
         } else if (tx.IsNewUniqueToken()) {
             if (!ContextualCheckUniqueTokenTx(tokenCache, strError, tx))
                 return state.DoS(100, false, REJECT_INVALID, "bad-txns-issue-unique-contextual-" + strError, false, "", tx.GetHash());
+        } else if (tx.IsNewUsername()) {
+            if (!ContextualCheckUsernameTokenTx(tokenCache, strError, tx))
+                return state.DoS(100, false, REJECT_INVALID, "bad-txns-issue-username-contextual-" + strError, false, "", tx.GetHash());
         } else if (tx.IsNewMsgChannelToken()) {
             if (!AreMessagesDeployed())
                 return state.DoS(100, false, REJECT_INVALID, "bad-txns-issue-msgchannel-before-messaging-is-active", false, "", tx.GetHash());

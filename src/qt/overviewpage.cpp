@@ -173,7 +173,7 @@ public:
         bool admin = index.data(TokenTableModel::AdministratorRole).toBool();
 
         /** Need to know the heigh to the pixmap. If it is 0 we don't we dont own this token so dont have room for the icon */
-        int nIconSize = admin ? pixmap.height() : 0;
+        int nIconSize = admin ? 25 : 0;
         int nIPFSIconSize = ipfspixmap.height();
         int extraNameSpacing = 12;
         if (nIconSize)
@@ -181,8 +181,8 @@ public:
 
         /** Get basic padding and half height */
         QRect mainRect = option.rect;
-        int xspace = nIconSize + 32;
-        int ypad = 2;
+        int xspace = nIconSize + 25;
+        int ypad = 1;
 
         // Create the gradient rect to draw the gradient over
         QRect gradientRect = mainRect;
@@ -195,7 +195,7 @@ public:
         /** Create the three main rectangles  (Icon, Name, Amount) */
         QRect tokenAdministratorRect(QPoint(20, gradientRect.top() + halfheight/2 - 3*ypad), QSize(nIconSize, nIconSize));
         QRect tokenNameRect(gradientRect.left() + xspace - extraNameSpacing, gradientRect.top()+ypad+(halfheight/2), gradientRect.width() - xspace, halfheight + ypad);
-        QRect amountRect(gradientRect.left() + xspace, gradientRect.top()+ypad+(halfheight/2), gradientRect.width() - xspace - 24, halfheight);
+        QRect amountRect(gradientRect.left() + xspace, gradientRect.top()+ypad+(halfheight/2), gradientRect.width() - xspace - 16, halfheight);
         QRect ipfsLinkRect(QPoint(gradientRect.right() - nIconSize/2, gradientRect.top() + halfheight/1.5), QSize(nIconSize/2, nIconSize/2));
 
         // Create the gradient for the token items

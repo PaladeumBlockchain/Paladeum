@@ -4114,7 +4114,8 @@ bool CWallet::CreateTransactionAll(const std::vector<CRecipient>& vecSend, CWall
                     vin.scriptWitness.SetNull();
                 }
 
-                bool nTokenTransaction = fTransferToken || fNewToken || fReissueToken;
+                // bool nTokenTransaction = fTransferToken || fNewToken || fReissueToken;
+                bool nTokenTransaction = fTransferToken;
                 nFeeNeeded = GetStaticFee(nTokenTransaction, chainActive.Height());
 
                 if (nFeeRet >= nFeeNeeded) {
