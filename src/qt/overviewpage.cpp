@@ -307,6 +307,7 @@ OverviewPage::OverviewPage(const PlatformStyle *platformStyle, QWidget *parent) 
     currentWatchUnconfBalance(-1),
     currentWatchImmatureBalance(-1),
     currentWatchOnlyStake(-1),
+    currentLockedBalance(-1),
     txdelegate(new TxViewDelegate(platformStyle, this)),
     tokendelegate(new TokenViewDelegate(platformStyle, this))
 {
@@ -363,6 +364,7 @@ OverviewPage::OverviewPage(const PlatformStyle *platformStyle, QWidget *parent) 
     /** Update the labels colors */
     ui->tokenBalanceLabel->setStyleSheet(STRING_LABEL_COLOR);
     ui->yonaBalancesLabel->setStyleSheet(STRING_LABEL_COLOR);
+    ui->labelStakeText->setStyleSheet(STRING_LABEL_COLOR);
     ui->labelBalanceText->setStyleSheet(STRING_LABEL_COLOR);
     ui->labelPendingText->setStyleSheet(STRING_LABEL_COLOR);
     ui->labelImmatureText->setStyleSheet(STRING_LABEL_COLOR);
@@ -391,6 +393,8 @@ OverviewPage::OverviewPage(const PlatformStyle *platformStyle, QWidget *parent) 
     ui->labelTotalText->setFont(GUIUtil::getSubLabelFont());
     ui->labelTotal->setFont(GUIUtil::getTopLabelFontBolded());
     ui->labelWatchTotal->setFont(GUIUtil::getTopLabelFontBolded());
+    ui->labelStakeText->setFont(GUIUtil::getSubLabelFont());
+    ui->labelStake->setFont(GUIUtil::getSubLabelFont());
 
     /** Create the search bar for tokens */
     ui->tokenSearch->setAttribute(Qt::WA_MacShowFocusRect, 0);
@@ -546,7 +550,7 @@ OverviewPage::~OverviewPage()
     delete ui;
 }
 
-void OverviewPage::setBalance(const CAmount& balance, const CAmount& unconfirmedBalance, const CAmount& immatureBalance, const CAmount& stake, const CAmount& watchOnlyBalance, const CAmount& watchUnconfBalance, const CAmount& watchImmatureBalance, const CAmount& watchOnlyStake)
+void OverviewPage::setBalance(const CAmount& balance, const CAmount& unconfirmedBalance, const CAmount& immatureBalance, const CAmount& stake, const CAmount& watchOnlyBalance, const CAmount& watchUnconfBalance, const CAmount& watchImmatureBalance, const CAmount& watchOnlyStake, const CAmount& lockedBalance)
 {
     int unit = walletModel->getOptionsModel()->getDisplayUnit();
     currentBalance = balance;
@@ -557,14 +561,15 @@ void OverviewPage::setBalance(const CAmount& balance, const CAmount& unconfirmed
     currentWatchUnconfBalance = watchUnconfBalance;
     currentWatchImmatureBalance = watchImmatureBalance;
     currentWatchOnlyStake = watchOnlyStake;
+    currentLockedBalance = lockedBalance;
+
     ui->labelBalance->setText(YonaUnits::formatWithUnit(unit, balance, false, YonaUnits::separatorAlways));
-    ui->labelUnconfirmed->setText(YonaUnits::formatWithUnit(unit, unconfirmedBalance, false, YonaUnits::separatorAlways));
+    ui->labelUnconfirmed->setText(YonaUnits::formatWithUnit(unit, unconfirmedBalance + lockedBalance, false, YonaUnits::separatorAlways));
     ui->labelImmature->setText(YonaUnits::formatWithUnit(unit, immatureBalance, false, YonaUnits::separatorAlways));
     // ToDo: remove this
     ui->labelTotal->setText(YonaUnits::formatWithUnit(unit, balance + unconfirmedBalance + immatureBalance, false, YonaUnits::separatorAlways));
-    // ToDo: enable this
-    // ui->labelStake->setText(YonaUnits::formatWithUnit(unit, stake, false, YonaUnits::separatorAlways));
-    // ui->labelTotal->setText(YonaUnits::formatWithUnit(unit, balance + unconfirmedBalance + immatureBalance + stake, false, YonaUnits::separatorAlways));
+    ui->labelStake->setText(YonaUnits::formatWithUnit(unit, stake, false, YonaUnits::separatorAlways));
+    ui->labelTotal->setText(YonaUnits::formatWithUnit(unit, balance + unconfirmedBalance + immatureBalance + lockedBalance, false, YonaUnits::separatorAlways));
     ui->labelWatchAvailable->setText(YonaUnits::formatWithUnit(unit, watchOnlyBalance, false, YonaUnits::separatorAlways));
     ui->labelWatchPending->setText(YonaUnits::formatWithUnit(unit, watchUnconfBalance, false, YonaUnits::separatorAlways));
     ui->labelWatchImmature->setText(YonaUnits::formatWithUnit(unit, watchImmatureBalance, false, YonaUnits::separatorAlways));
@@ -581,10 +586,8 @@ void OverviewPage::setBalance(const CAmount& balance, const CAmount& unconfirmed
     ui->labelImmature->setVisible(showImmature || showWatchOnlyImmature);
     ui->labelImmatureText->setVisible(showImmature || showWatchOnlyImmature);
     ui->labelWatchImmature->setVisible(showWatchOnlyImmature); // show watch-only immature balance
-
-    // ToDo: enable this
-    // ui->labelStake->setVisible(showStake || showWatchOnlyStake);
-    // ui->labelStakeText->setVisible(showStake || showWatchOnlyStake);
+    ui->labelStake->setVisible(showStake || showWatchOnlyStake);
+    ui->labelStakeText->setVisible(showStake || showWatchOnlyStake);
 }
 
 // show/hide watch-only labels
@@ -641,8 +644,8 @@ void OverviewPage::setWalletModel(WalletModel *model)
 
         // Keep up to date with wallet
         setBalance(model->getBalance(), model->getUnconfirmedBalance(), model->getImmatureBalance(), model->getStake(),
-                   model->getWatchBalance(), model->getWatchUnconfirmedBalance(), model->getWatchImmatureBalance(), model->getWatchStake());
-        connect(model, SIGNAL(balanceChanged(CAmount,CAmount,CAmount,CAmount,CAmount,CAmount,CAmount,CAmount)), this, SLOT(setBalance(CAmount,CAmount,CAmount,CAmount,CAmount,CAmount,CAmount,CAmount)));
+                   model->getWatchBalance(), model->getWatchUnconfirmedBalance(), model->getWatchImmatureBalance(), model->getWatchStake(), model->getLockedBalance());
+        connect(model, SIGNAL(balanceChanged(CAmount,CAmount,CAmount,CAmount,CAmount,CAmount,CAmount,CAmount,CAmount)), this, SLOT(setBalance(CAmount,CAmount,CAmount,CAmount,CAmount,CAmount,CAmount,CAmount,CAmount)));
 
         connect(model->getOptionsModel(), SIGNAL(displayUnitChanged(int)), this, SLOT(updateDisplayUnit()));
 
@@ -660,7 +663,7 @@ void OverviewPage::updateDisplayUnit()
     {
         if(currentBalance != -1)
             setBalance(currentBalance, currentUnconfirmedBalance, currentImmatureBalance, currentStake,
-                       currentWatchOnlyBalance, currentWatchUnconfBalance, currentWatchImmatureBalance, currentWatchOnlyStake);
+                       currentWatchOnlyBalance, currentWatchUnconfBalance, currentWatchImmatureBalance, currentWatchOnlyStake, currentLockedBalance);
 
         // Update txdelegate->unit with the current unit
         txdelegate->unit = walletModel->getOptionsModel()->getDisplayUnit();
