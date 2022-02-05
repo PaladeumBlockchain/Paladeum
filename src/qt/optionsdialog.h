@@ -6,8 +6,6 @@
 #ifndef YONA_QT_OPTIONSDIALOG_H
 #define YONA_QT_OPTIONSDIALOG_H
 
-#include "currencyunits.h"
-
 #include <QDialog>
 #include <QValidator>
 

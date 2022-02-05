@@ -105,16 +105,6 @@ const std::string YonaGUI::DEFAULT_UIPLATFORM =
  * collisions in the future with additional wallets */
 const QString YonaGUI::DEFAULT_WALLET = "~Default";
 
-/* Bit of a bodge, c++ really doesn't want you to predefine values
- * in only header files, so we do one-time value assignment here. */
-std::array<CurrencyUnitDetails, 5> CurrencyUnits::CurrencyOptions = { {
-    { "BTC",    "YONABTC"  , 1,          8},
-    { "mBTC",   "YONABTC"  , 1000,       5},
-    { "µBTC",   "YONABTC"  , 1000000,    2},
-    { "Satoshi","YONABTC"  , 100000000,  0},
-    { "USDT",   "YONAUSDT" , 1,          5}
-} };
-
 static bool ThreadSafeMessageBox(YonaGUI *gui, const std::string& message, const std::string& caption, unsigned int style);
 
 YonaGUI::YonaGUI(const PlatformStyle *_platformStyle, const NetworkStyle *networkStyle, QWidget *parent) :

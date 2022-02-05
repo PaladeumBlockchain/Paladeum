@@ -11,7 +11,6 @@
 #endif
 
 #include "amount.h"
-#include "currencyunits.h"
 
 #include <QLabel>
 #include <QMainWindow>
@@ -153,7 +152,6 @@ private:
 
     const PlatformStyle *platformStyle;
 
-    const CurrencyUnitDetails* currentPriceDisplay = &CurrencyUnits::CurrencyOptions[0];
     bool unitChanged = true; //Setting this true makes the first price update not appear as an uptick
 
     /** Load the custome open sans fonts into the font database */
