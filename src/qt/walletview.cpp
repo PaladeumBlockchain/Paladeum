@@ -321,11 +321,6 @@ void WalletView::gotoSendCoinsPage(QString addr)
         sendCoinsPage->setAddress(addr);
 }
 
-void WalletView::gotoTokensOverviewPage()
-{
-    setCurrentWidget(tokensOverview);
-}
-
 void WalletView::gotoSignMessageTab(QString addr)
 {
     // calls show() in showTab_SM()
@@ -487,17 +482,19 @@ void WalletView::requestedSyncWarningInfo()
 
 bool fFirstVisit = true;
 /** TOKENS START */
-void WalletView::gotoTokensPage()
+void WalletView::gotoTokensOverviewPage()
 {
     if (fFirstVisit){
         fFirstVisit = false;
         tokensPage->handleFirstSelection();
     }
-    // setCurrentWidget(tokensPage);
     tokensPage->focusTokenListBox();
 
+    setCurrentWidget(tokensOverview);
+}
+void WalletView::gotoTokensPage()
+{
     tokensStack->setCurrentWidget(tokensPage);
-
     setCurrentWidget(tokensOverview);
 }
 

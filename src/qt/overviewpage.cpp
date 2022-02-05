@@ -169,8 +169,10 @@ public:
         /** Get the icon for the administrator of the token */
         QPixmap pixmap = qvariant_cast<QPixmap>(index.data(Qt::DecorationRole));
         QPixmap ipfspixmap = qvariant_cast<QPixmap>(index.data(TokenTableModel::TokenIPFSHashDecorationRole));
+        QString name = index.data(TokenTableModel::TokenNameRole).toString();
 
         bool admin = index.data(TokenTableModel::AdministratorRole).toBool();
+        bool username = name.toStdString().rfind("@", 0) == 0;
 
         /** Need to know the heigh to the pixmap. If it is 0 we don't we dont own this token so dont have room for the icon */
         int nIconSize = admin ? 25 : 0;
@@ -181,7 +183,7 @@ public:
 
         /** Get basic padding and half height */
         QRect mainRect = option.rect;
-        int xspace = nIconSize + 25;
+        int xspace = nIconSize + (admin ? 15 : 25);
         int ypad = 1;
 
         // Create the gradient rect to draw the gradient over
@@ -193,7 +195,7 @@ public:
         int halfheight = (gradientRect.height() - 2*ypad)/2;
 
         /** Create the three main rectangles  (Icon, Name, Amount) */
-        QRect tokenAdministratorRect(QPoint(20, gradientRect.top() + halfheight/2 - 3*ypad), QSize(nIconSize, nIconSize));
+        QRect tokenAdministratorRect(QPoint(10, gradientRect.top() + halfheight/2 - 3*ypad), QSize(nIconSize, nIconSize));
         QRect tokenNameRect(gradientRect.left() + xspace - extraNameSpacing, gradientRect.top()+ypad+(halfheight/2), gradientRect.width() - xspace, halfheight + ypad);
         QRect amountRect(gradientRect.left() + xspace, gradientRect.top()+ypad+(halfheight/2), gradientRect.width() - xspace - 16, halfheight);
         QRect ipfsLinkRect(QPoint(gradientRect.right() - nIconSize/2, gradientRect.top() + halfheight/1.5), QSize(nIconSize/2, nIconSize/2));
@@ -202,22 +204,12 @@ public:
         QLinearGradient gradient(mainRect.topLeft(), mainRect.bottomRight());
 
         // Select the color of the gradient
-        if (admin) {
-            if (darkModeEnabled) {
-                gradient.setColorAt(0, COLOR_ADMIN_CARD_DARK);
-                gradient.setColorAt(1, COLOR_ADMIN_CARD_DARK);
-            } else {
-                gradient.setColorAt(0, COLOR_DARK_ORANGE);
-                gradient.setColorAt(1, COLOR_LIGHT_ORANGE);
-            }
+        if (username) {
+            gradient.setColorAt(0, QColor("#1c57b3"));
+            gradient.setColorAt(1, QColor("#154287"));
         } else {
-            if (darkModeEnabled) {
-                gradient.setColorAt(0, COLOR_REGULAR_CARD_LIGHT_BLUE_DARK_MODE);
-                gradient.setColorAt(1, COLOR_REGULAR_CARD_DARK_BLUE_DARK_MODE);
-            } else {
-                gradient.setColorAt(0, COLOR_LIGHT_BLUE);
-                gradient.setColorAt(1, COLOR_DARK_BLUE);
-            }
+            gradient.setColorAt(0, QColor("#4c9d19"));
+            gradient.setColorAt(1, QColor("#377112"));
         }
 
         // Using 4 are the radius because the pixels are solid
@@ -254,7 +246,7 @@ public:
         amountFont.setLetterSpacing(QFont::SpacingType::AbsoluteSpacing, -0.3);
 
         /** Get the name and formatted amount from the data */
-        QString name = index.data(TokenTableModel::TokenNameRole).toString();
+        // QString name = index.data(TokenTableModel::TokenNameRole).toString();
         QString amountText = index.data(TokenTableModel::FormattedAmountRole).toString();
 
         // Setup the pens
