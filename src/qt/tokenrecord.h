@@ -18,12 +18,12 @@ class TokenRecord
 public:
 
     TokenRecord():
-            name(""), quantity(0), units(0), fIsAdministrator(false), ipfshash("")
+            name(""), quantity(0), units(0), fIsAdministrator(false), fIsLocked(false), ipfshash("")
     {
     }
 
-    TokenRecord(const std::string _name, const CAmount& _quantity, const int _units, const bool _fIsAdministrator, const std::string _ipfshash):
-            name(_name), quantity(_quantity), units(_units), fIsAdministrator(_fIsAdministrator), ipfshash(_ipfshash)
+    TokenRecord(const std::string _name, const CAmount& _quantity, const int _units, const bool _fIsAdministrator, const bool _fIsLocked, const std::string _ipfshash):
+            name(_name), quantity(_quantity), units(_units), fIsAdministrator(_fIsAdministrator), fIsLocked(_fIsLocked), ipfshash(_ipfshash)
     {
     }
 
@@ -48,6 +48,7 @@ public:
     CAmount quantity;
     int units;
     bool fIsAdministrator;
+    bool fIsLocked;
     std::string ipfshash;
     /**@}*/
 

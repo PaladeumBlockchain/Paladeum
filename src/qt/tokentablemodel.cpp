@@ -44,11 +44,20 @@ public:
             {
                 LOCK(cs_main);
                 std::map<std::string, CAmount> balances;
+                std::map<std::string, CAmount> locked_balances;
                 std::map<std::string, std::vector<COutput> > outputs;
+                std::map<std::string, std::vector<COutput> > outputs_locked;
+
                 if (!GetAllMyTokenBalances(outputs, balances)) {
                     qWarning("TokenTablePriv::refreshWallet: Error retrieving token balances");
                     return;
                 }
+
+                if (!GetAllMyLockedTokenBalances(outputs_locked, locked_balances)) {
+                    qWarning("TokenTablePriv::refreshWallet: Error retrieving locked token balances");
+                    return;
+                }
+
                 std::set<std::string> setTokensToSkip;
                 auto bal = balances.begin();
                 for (; bal != balances.end(); bal++) {
@@ -84,7 +93,17 @@ public:
                             continue;
                         }
                     }
-                    cachedBalances.append(TokenRecord(bal->first, bal->second, units, fIsAdministrator, EncodeTokenData(ipfsHash)));
+                    cachedBalances.append(TokenRecord(bal->first, bal->second, units, fIsAdministrator, false, EncodeTokenData(ipfsHash)));
+                }
+
+                auto lbal = locked_balances.begin();
+                for (; lbal != locked_balances.end(); lbal++) {
+                    CNewToken tokenData;
+                    if (!currentActiveTokenCache->GetTokenMetaDataIfExists(lbal->first, tokenData)) {
+                        qWarning("TokenTablePriv::refreshWallet: Error retrieving locked token data");
+                        return;
+                    }
+                    cachedBalances.append(TokenRecord(lbal->first + " (LOCKED)", lbal->second, tokenData.units, false, true, EncodeTokenData(tokenData.strIPFSHash)));
                 }
             }
         }
@@ -180,20 +199,25 @@ QVariant TokenTableModel::data(const QModelIndex &index, int role) const
 
             return pixmap;
         }
+        case IsLockedRole:
+        {
+            return rec->fIsLocked;
+        }
         case Qt::DecorationRole:
         {
             if (index.column() == Quantity)
                 return QVariant();
 
-            if (!rec->fIsAdministrator)
-                QVariant();
-
             QPixmap pixmap;
 
-            if (darkModeEnabled)
-                pixmap = QPixmap::fromImage(QImage(":/icons/token_administrator_dark"));
-            else
+            if (!rec->fIsAdministrator) {
+                QVariant();
+                if (rec->fIsLocked) {
+                    pixmap = QPixmap::fromImage(QImage(":/icons/token_locked"));
+                }
+            } else {
                 pixmap = QPixmap::fromImage(QImage(":/icons/token_administrator"));
+            }
 
             return pixmap;
         }

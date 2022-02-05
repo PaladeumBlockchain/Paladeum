@@ -62,6 +62,7 @@
         <file alias="refresh">res/icons/refresh.png</file>
         <file alias="token_administrator">res/icons/token_administrator.png</file>
         <file alias="token_administrator_dark">res/icons/token_administrator_dark.png</file>
+        <file alias="token_locked">res/icons/token_locked.png</file>
         <file alias="token_create">res/icons/token_create.png</file>
         <file alias="token_overview">res/icons/token_overview.png</file>
         <file alias="token_manage">res/icons/token_manage.png</file>

@@ -47,7 +47,9 @@ public:
         /** YONA or name of an token */
             TokenIPFSHashRole = 104,
         /** IPFS Decoration Role */
-            TokenIPFSHashDecorationRole = 105
+            TokenIPFSHashDecorationRole = 105,
+        /** IsLockedRole */
+            IsLockedRole = 106
     };
 
     int rowCount(const QModelIndex &parent) const;

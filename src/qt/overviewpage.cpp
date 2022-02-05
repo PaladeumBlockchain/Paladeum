@@ -173,6 +173,7 @@ public:
 
         bool admin = index.data(TokenTableModel::AdministratorRole).toBool();
         bool username = name.toStdString().rfind("@", 0) == 0;
+        bool locked = index.data(TokenTableModel::IsLockedRole).toBool();
 
         /** Need to know the heigh to the pixmap. If it is 0 we don't we dont own this token so dont have room for the icon */
         int nIconSize = admin ? 25 : 0;
@@ -207,6 +208,9 @@ public:
         if (username) {
             gradient.setColorAt(0, QColor("#1c57b3"));
             gradient.setColorAt(1, QColor("#154287"));
+        } else if (locked) {
+            gradient.setColorAt(0, QColor("#5d5d5d"));
+            gradient.setColorAt(1, QColor("#777777"));
         } else {
             gradient.setColorAt(0, QColor("#4c9d19"));
             gradient.setColorAt(1, QColor("#377112"));
