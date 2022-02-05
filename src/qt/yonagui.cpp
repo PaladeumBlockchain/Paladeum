@@ -27,6 +27,7 @@
 #include "walletframe.h"
 #include "walletmodel.h"
 #include "mnemonicdialog.h"
+#include "wallet/wallet.h"
 #endif // ENABLE_WALLET
 
 #ifdef Q_OS_MAC
@@ -107,6 +108,8 @@ const QString YonaGUI::DEFAULT_WALLET = "~Default";
 
 static bool ThreadSafeMessageBox(YonaGUI *gui, const std::string& message, const std::string& caption, unsigned int style);
 
+double GetPoSKernelPS();
+
 YonaGUI::YonaGUI(const PlatformStyle *_platformStyle, const NetworkStyle *networkStyle, QWidget *parent) :
     QMainWindow(parent),
     enableWallet(false),
@@ -118,6 +121,7 @@ YonaGUI::YonaGUI(const PlatformStyle *_platformStyle, const NetworkStyle *networ
     connectionsControl(0),
     labelBlocksIcon(0),
     progressBarLabel(0),
+    labelStakingIcon(0),
     progressBar(0),
     progressDialog(0),
     appMenuBar(0),
@@ -264,6 +268,15 @@ YonaGUI::YonaGUI(const PlatformStyle *_platformStyle, const NetworkStyle *networ
     labelWalletHDStatusIcon = new QLabel();
     connectionsControl = new GUIUtil::ClickableLabel();
     labelBlocksIcon = new GUIUtil::ClickableLabel();
+
+    labelStakingIcon = new GUIUtil::ClickableLabel();
+
+    QTimer *timerStakingIcon = new QTimer(labelStakingIcon);
+    connect(timerStakingIcon, SIGNAL(timeout()), this, SLOT(updateStakingIcon()));
+    timerStakingIcon->start(30 * 1000);
+    updateStakingIcon();
+    this->nStaking = gArgs.GetBoolArg("-staking", false);
+
     if(enableWallet)
     {
         frameBlocksLayout->addStretch();
@@ -272,6 +285,8 @@ YonaGUI::YonaGUI(const PlatformStyle *_platformStyle, const NetworkStyle *networ
         frameBlocksLayout->addWidget(labelWalletEncryptionIcon);
         frameBlocksLayout->addWidget(labelWalletHDStatusIcon);
     }
+    frameBlocksLayout->addStretch();
+    frameBlocksLayout->addWidget(labelStakingIcon);
     frameBlocksLayout->addStretch();
     frameBlocksLayout->addWidget(connectionsControl);
     frameBlocksLayout->addStretch();
@@ -312,6 +327,7 @@ YonaGUI::YonaGUI(const PlatformStyle *_platformStyle, const NetworkStyle *networ
     subscribeToCoreSignals();
 
     connect(connectionsControl, SIGNAL(clicked(QPoint)), this, SLOT(toggleNetworkActive()));
+    connect(labelStakingIcon, SIGNAL(clicked(QPoint)), this, SLOT(toggleStakingActive()));
 
     modalOverlay = new ModalOverlay(this->centralWidget());
 #ifdef ENABLE_WALLET
@@ -1341,6 +1357,47 @@ void YonaGUI::toggleHidden()
     showNormalIfMinimized(true);
 }
 
+void YonaGUI::updateStakingIcon()
+{
+    if (walletFrame) {
+        nWeight = walletFrame->updateWeight();
+    }
+
+    if (this->nStaking && nWeight) {
+        uint64_t nWeight = this->nWeight;
+        uint64_t nNetworkWeight = 1.1429 * GetPoSKernelPS();
+        unsigned nEstimateTime = 1.0455 * 64 * nNetworkWeight / nWeight;
+
+        QString text;
+        if (nEstimateTime < 60) {
+            text = tr("%n second(s)", "", nEstimateTime);
+        } else if (nEstimateTime < 60 * 60) {
+            text = tr("%n minute(s)", "", nEstimateTime / 60);
+        } else if (nEstimateTime < 24 * 60 * 60) {
+            text = tr("%n hour(s)", "", nEstimateTime / (60 * 60));
+        } else {
+            text = tr("%n day(s)", "", nEstimateTime / (60 * 60 * 24));
+        }
+
+        nWeight /= COIN;
+        nNetworkWeight /= COIN;
+        labelStakingIcon->setPixmap(platformStyle->SingleColorIcon(":/icons/staking_on").pixmap(STATUSBAR_ICONSIZE, STATUSBAR_ICONSIZE));
+        labelStakingIcon->setToolTip(tr("Staking.<br>Your weight is %1<br>Network weight is %2<br>Expected time to earn reward is %3").arg(nWeight).arg(nNetworkWeight).arg(text));
+
+        // stakingButton->setText(tr("Stop Staking"));
+    } else {
+        labelStakingIcon->setPixmap(platformStyle->SingleColorIcon(":/icons/staking_off").pixmap(STATUSBAR_ICONSIZE, STATUSBAR_ICONSIZE));
+        if (IsInitialBlockDownload()) {
+            labelStakingIcon->setToolTip(tr("Not staking because wallet is syncing"));
+        } else if (!nWeight) {
+            labelStakingIcon->setToolTip(tr("Not staking because you don't have mature coins"));
+        } else {
+            labelStakingIcon->setToolTip(tr("Not staking"));
+        }
+        // stakingButton->setText(tr("Start Staking"));
+    }
+}
+
 void YonaGUI::detectShutdown()
 {
     if (ShutdownRequested())
@@ -1438,6 +1495,27 @@ void YonaGUI::toggleNetworkActive()
 {
     if (clientModel) {
         clientModel->setNetworkActive(!clientModel->getNetworkActive());
+    }
+}
+
+void YonaGUI::toggleStakingActive()
+{
+    this->nStaking = !this->nStaking;
+
+    if (this->nStaking) {
+        walletFrame->unlockWallet();
+        if (walletFrame->isWalletUnlocked()) {
+            for (CWallet* pwallet : vpwallets) {
+                pwallet->StartStake();
+            }
+
+            updateStakingIcon();
+        }
+    } else {
+        for (CWallet* pwallet : vpwallets) {
+            pwallet->StopStake();
+        }
+        updateStakingIcon();
     }
 }
 

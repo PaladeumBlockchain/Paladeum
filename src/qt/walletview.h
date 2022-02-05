@@ -113,6 +113,8 @@ public Q_SLOTS:
     void changePassphrase();
     /** Ask for passphrase to unlock wallet temporarily */
     void unlockWallet();
+    /** Check if wallet is unlocked */
+    bool isWalletUnlocked();
 
     /** Show 12-words */
     void getMyWords();
@@ -127,6 +129,8 @@ public Q_SLOTS:
 
     /** Show progress dialog e.g. for rescan */
     void showProgress(const QString &title, int nProgress);
+
+    unsigned long long updateWeight();
 
     /** User has requested more information about the out of sync state */
     void requestedSyncWarningInfo();

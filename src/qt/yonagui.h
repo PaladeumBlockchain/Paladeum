@@ -98,6 +98,7 @@ private:
     QLabel *connectionsControl;
     QLabel *labelBlocksIcon;
     QLabel *progressBarLabel;
+    QLabel *labelStakingIcon;
     QProgressBar *progressBar;
     QProgressDialog *progressDialog;
 
@@ -149,6 +150,9 @@ private:
     /** Keep track of previous number of blocks, to detect progress */
     int prevBlocks;
     int spinnerFrame;
+
+    uint64_t nWeight;
+    bool nStaking;
 
     const PlatformStyle *platformStyle;
 
@@ -275,6 +279,8 @@ private Q_SLOTS:
     /** Simply calls showNormalIfMinimized(true) for use in SLOT() macro */
     void toggleHidden();
 
+    void updateStakingIcon();
+
     /** called by a timer to check if fRequestShutdown has been set **/
     void detectShutdown();
 
@@ -286,6 +292,9 @@ private Q_SLOTS:
 
     /** Toggle networking */
     void toggleNetworkActive();
+
+    /** Toggle stacking */
+    void toggleStakingActive();
 
     void showModalOverlay();
 };

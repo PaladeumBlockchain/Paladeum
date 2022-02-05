@@ -66,6 +66,8 @@
         <file alias="token_overview">res/icons/token_overview.png</file>
         <file alias="token_manage">res/icons/token_manage.png</file>
         <file alias="token_transfer">res/icons/token_transfer.png</file>
+        <file alias="staking_on">res/icons/staking_on.png</file>
+        <file alias="staking_off">res/icons/staking_off.png</file>
         <file alias="yonacointext">res/icons/yonacointext.png</file>
 	<file alias="restricted_token">res/icons/restricted_token.png</file>
     </qresource>

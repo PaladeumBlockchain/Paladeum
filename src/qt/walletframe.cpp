@@ -181,6 +181,14 @@ void WalletFrame::unlockWallet()
         walletView->unlockWallet();
 }
 
+bool WalletFrame::isWalletUnlocked()
+{
+    WalletView *walletView = currentWalletView();
+    if (walletView)
+        return walletView->isWalletUnlocked();
+    return false;
+}
+
 void WalletFrame::getMyWords()
 {
     WalletView *walletView = currentWalletView();
@@ -188,6 +196,13 @@ void WalletFrame::getMyWords()
         walletView->getMyWords();
 }
 
+unsigned long long WalletFrame::updateWeight()
+{
+    WalletView *walletView = currentWalletView();
+    if (walletView)
+        return walletView->updateWeight();
+    return 0;
+}
 
 void WalletFrame::usedSendingAddresses()
 {

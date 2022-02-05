@@ -85,9 +85,13 @@ public Q_SLOTS:
     void changePassphrase();
     /** Ask for passphrase to unlock wallet temporarily */
     void unlockWallet();
+    /** Check if wallet is unlocked */
+    bool isWalletUnlocked();
     
     /** Show the 12-words **/
     void getMyWords();
+
+    unsigned long long updateWeight();
 
     /** Show used sending addresses */
     void usedSendingAddresses();
