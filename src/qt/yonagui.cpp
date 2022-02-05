@@ -149,15 +149,10 @@ YonaGUI::YonaGUI(const PlatformStyle *_platformStyle, const NetworkStyle *networ
     openAction(0),
     showHelpMessageAction(0),
     tokensOverviewAction(0),
-    labelCurrentMarket(0),
-    labelCurrentPrice(0),
-    comboRvnUnit(0),
-    pricingTimer(0),
+    footerWidget(0),
+    stakingButton(0),
     networkManager(0),
     request(0),
-    labelVersionUpdate(0),
-    networkVersionManager(0),
-    versionRequest(0),
     trayIcon(0),
     trayIconMenu(0),
     notificator(0),
@@ -218,14 +213,8 @@ YonaGUI::YonaGUI(const PlatformStyle *_platformStyle, const NetworkStyle *networ
     }
 
     /** TOKENS START */
-    labelCurrentMarket = new QLabel();
-    labelCurrentPrice = new QLabel();
-    pricingTimer = new QTimer();
     networkManager = new QNetworkAccessManager();
     request = new QNetworkRequest();
-    labelVersionUpdate = new QLabel();
-    networkVersionManager = new QNetworkAccessManager();
-    versionRequest = new QNetworkRequest();
     /** TOKENS END */
 
     // Accept D&D of URIs
@@ -236,6 +225,8 @@ YonaGUI::YonaGUI(const PlatformStyle *_platformStyle, const NetworkStyle *networ
 #if !defined(Q_OS_MAC)
     this->setFont(QFont("Open Sans"));
 #endif
+
+    footerWidget = new QWidget();
 
     // Create actions for the toolbar, menu bar and tray/dock icon
     // Needs walletFrame to be initialized
@@ -643,6 +634,19 @@ void YonaGUI::createToolBars()
         QWidget* mainWalletWidget = new QWidget();
         mainWalletWidget->setStyleSheet(mainWalletWidgetStyle);
 
+        // Set the headers widget options
+        footerWidget->setContentsMargins(0,0,0,0);
+        footerWidget->setStyleSheet(QString(".QWidget {background-color: #ffffff;}"));
+        footerWidget->setFixedHeight(50);
+
+        stakingButton = new QPushButton(this);
+        connect(stakingButton, SIGNAL(clicked()), this, SLOT(toggleStakingActive()));
+        stakingButton->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+        stakingButton->setText(tr("Start Staking"));
+
+        QHBoxLayout* footerLayout = new QHBoxLayout(footerWidget);
+        footerLayout->addWidget(stakingButton);
+
         QString widgetBackgroundSytleSheet = QString(".QWidget{background-color: %1}").arg(platformStyle->TopWidgetBackGroundColor().name());
 
         // Create the layout for widget to the right of the tool bar
@@ -650,6 +654,7 @@ void YonaGUI::createToolBars()
 #ifdef ENABLE_WALLET
         mainFrameLayout->addWidget(walletFrame);
 #endif
+        mainFrameLayout->addWidget(footerWidget);
         mainFrameLayout->setDirection(QBoxLayout::TopToBottom);
         mainFrameLayout->setContentsMargins(QMargins());
 
@@ -1384,7 +1389,7 @@ void YonaGUI::updateStakingIcon()
         labelStakingIcon->setPixmap(platformStyle->SingleColorIcon(":/icons/staking_on").pixmap(STATUSBAR_ICONSIZE, STATUSBAR_ICONSIZE));
         labelStakingIcon->setToolTip(tr("Staking.<br>Your weight is %1<br>Network weight is %2<br>Expected time to earn reward is %3").arg(nWeight).arg(nNetworkWeight).arg(text));
 
-        // stakingButton->setText(tr("Stop Staking"));
+        stakingButton->setText(tr("Stop Staking"));
     } else {
         labelStakingIcon->setPixmap(platformStyle->SingleColorIcon(":/icons/staking_off").pixmap(STATUSBAR_ICONSIZE, STATUSBAR_ICONSIZE));
         if (IsInitialBlockDownload()) {
@@ -1394,7 +1399,7 @@ void YonaGUI::updateStakingIcon()
         } else {
             labelStakingIcon->setToolTip(tr("Not staking"));
         }
-        // stakingButton->setText(tr("Start Staking"));
+        stakingButton->setText(tr("Start Staking"));
     }
 }
 

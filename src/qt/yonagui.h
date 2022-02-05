@@ -20,6 +20,7 @@
 #include <QSystemTrayIcon>
 #include <QComboBox>
 #include <QDateTime>
+#include <QPushButton>
 
 class ClientModel;
 class NetworkStyle;
@@ -129,15 +130,10 @@ private:
     /** TOKENS START */
     QAction *tokensOverviewAction;
     QAction *getMyWordsAction;
-    QLabel *labelCurrentMarket;
-    QLabel *labelCurrentPrice;
-    QComboBox *comboRvnUnit;
-    QTimer *pricingTimer;
     QNetworkAccessManager* networkManager;
     QNetworkRequest* request;
-    QLabel *labelVersionUpdate;
-    QNetworkAccessManager* networkVersionManager;
-    QNetworkRequest* versionRequest;
+    QWidget *footerWidget;
+    QPushButton *stakingButton;
     /** TOKENS END */
 
     QSystemTrayIcon *trayIcon;
