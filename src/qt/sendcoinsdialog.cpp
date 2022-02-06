@@ -425,7 +425,9 @@ void SendCoinsDialog::on_sendButton_clicked()
             recipientElement.append(QString(" (%1)").arg(rcp.username));
         }
 
-        // ToDo: timelock here
+        if (rcp.coinLockTime > 0) {
+            recipientElement.append(tr(" locked till %1").arg(QDateTime::fromTime_t(rcp.coinLockTime).toString("yyyy.MM.dd HH:mm")));
+        }
 
         formatted.append(recipientElement);
     }

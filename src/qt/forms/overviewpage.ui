@@ -110,7 +110,7 @@
                  </size>
                 </property>
                 <property name="toolTip">
-                 <string>The displayed information may be out of date. Your wallet automatically synchronizes with the AokChain network after a connection is established, but this process has not completed yet.</string>
+                 <string>The displayed information may be out of date. Your wallet automatically synchronizes with the Yona network after a connection is established, but this process has not completed yet.</string>
                 </property>
                 <property name="text">
                  <string/>
@@ -549,7 +549,7 @@
                  </size>
                 </property>
                 <property name="toolTip">
-                 <string>The displayed information may be out of date. Your wallet automatically synchronizes with the AokChain network after a connection is established, but this process has not completed yet.</string>
+                 <string>The displayed information may be out of date. Your wallet automatically synchronizes with the Yona network after a connection is established, but this process has not completed yet.</string>
                 </property>
                 <property name="text">
                  <string/>
@@ -729,7 +729,7 @@
                  </size>
                 </property>
                 <property name="toolTip">
-                 <string>The displayed information may be out of date. Your wallet automatically synchronizes with the AokChain network after a connection is established, but this process has not completed yet.</string>
+                 <string>The displayed information may be out of date. Your wallet automatically synchronizes with the Yona network after a connection is established, but this process has not completed yet.</string>
                 </property>
                 <property name="text">
                  <string/>

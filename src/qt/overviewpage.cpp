@@ -570,7 +570,6 @@ void OverviewPage::setBalance(const CAmount& balance, const CAmount& unconfirmed
     ui->labelBalance->setText(YonaUnits::formatWithUnit(unit, balance, false, YonaUnits::separatorAlways));
     ui->labelUnconfirmed->setText(YonaUnits::formatWithUnit(unit, unconfirmedBalance + lockedBalance, false, YonaUnits::separatorAlways));
     ui->labelImmature->setText(YonaUnits::formatWithUnit(unit, immatureBalance, false, YonaUnits::separatorAlways));
-    // ToDo: remove this
     ui->labelTotal->setText(YonaUnits::formatWithUnit(unit, balance + unconfirmedBalance + immatureBalance, false, YonaUnits::separatorAlways));
     ui->labelStake->setText(YonaUnits::formatWithUnit(unit, stake, false, YonaUnits::separatorAlways));
     ui->labelTotal->setText(YonaUnits::formatWithUnit(unit, balance + unconfirmedBalance + immatureBalance + lockedBalance, false, YonaUnits::separatorAlways));

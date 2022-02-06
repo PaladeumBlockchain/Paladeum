@@ -273,7 +273,7 @@ WalletModel::SendCoinsReturn WalletModel::prepareTransaction(WalletModelTransact
         {   // User-entered yona address / amount:
             if(!validateAddress(rcp.address))
             {
-                if (ptokensdb->UsernameAddress(rcp.address.toStdString()) == "") {
+                if (ptokensdb->UsernameAddress(rcp.username.toStdString()) == "") {
                     return InvalidUsername;
                 }
 
@@ -286,7 +286,7 @@ WalletModel::SendCoinsReturn WalletModel::prepareTransaction(WalletModelTransact
             setAddress.insert(rcp.address);
             ++nAddresses;
 
-            CScript scriptPubKey = GetScriptForDestination(DecodeDestination(rcp.address.toStdString()));
+            CScript scriptPubKey = GetScriptForDestination(DecodeDestination(rcp.address.toStdString()), rcp.coinLockTime);
             CRecipient recipient = {scriptPubKey, rcp.amount, rcp.fSubtractFeeFromAmount};
             vecSend.push_back(recipient);
 
