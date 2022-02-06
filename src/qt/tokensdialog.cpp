@@ -380,7 +380,7 @@ void TokensDialog::on_sendButton_clicked()
             return;
         }
 
-        vTransfers.emplace_back(std::make_pair(CTokenTransfer(recipient.tokenName.toStdString(), recipient.amount, recipient.timeLock, DecodeTokenData(recipient.message.toStdString()), 0), recipient.address.toStdString()));
+        vTransfers.emplace_back(std::make_pair(CTokenTransfer(recipient.tokenName.toStdString(), recipient.amount, recipient.tokenLockTime, DecodeTokenData(recipient.message.toStdString()), 0), recipient.address.toStdString()));
     }
 
     // Always use a CCoinControl instance, use the TokenControlDialog instance if CoinControl has been enabled
@@ -447,8 +447,8 @@ void TokensDialog::on_sendButton_clicked()
             recipientElement.append(QString(" (%1)").arg(rcp.username));
         }
 
-        if (rcp.timeLock > 0) {
-            recipientElement.append(QString(" with lock time %1").arg(rcp.timeLock));
+        if (rcp.tokenLockTime > 0) {
+            recipientElement.append(QString(" locked till %1").arg(QDateTime::fromTime_t(rcp.tokenLockTime).toString("yyyy.MM.dd HH:mm")));
         }
 
         formatted.append(recipientElement);

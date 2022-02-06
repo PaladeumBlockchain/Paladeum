@@ -58,6 +58,8 @@ public:
     // If from a payment request, this is used for storing the memo
     QString message;
 
+    int64_t coinLockTime; // memory only
+
     // If from a payment request, paymentRequest.IsInitialized() will be true
     PaymentRequestPlus paymentRequest;
     // Empty if no authentication or invalid signature/cert/etc.
@@ -121,7 +123,7 @@ public:
     QString address;
     QString label;
     CAmount amount;
-    uint32_t timeLock;
+    uint32_t tokenLockTime;
     // If from a payment request, this is used for storing the memo
     QString message;
 
@@ -153,7 +155,7 @@ public:
         READWRITE(sAddress);
         READWRITE(sLabel);
         READWRITE(amount);
-        READWRITE(timeLock);
+        READWRITE(tokenLockTime);
         READWRITE(sMessage);
         READWRITE(sPaymentRequest);
         READWRITE(sAuthenticatedMerchant);

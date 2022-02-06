@@ -59,6 +59,7 @@ SendTokensEntry::SendTokensEntry(const PlatformStyle *_platformStyle, const QStr
 
     // Connect signals
     connect(ui->payTokenAmount, SIGNAL(valueChanged()), this, SIGNAL(payAmountChanged()));
+    connect(ui->useLockTime, SIGNAL(toggled(bool)), this, SLOT(toggleTimeLock(bool)));
     connect(ui->deleteButton, SIGNAL(clicked()), this, SLOT(deleteClicked()));
     connect(ui->deleteButton_is, SIGNAL(clicked()), this, SLOT(deleteClicked()));
     connect(ui->deleteButton_s, SIGNAL(clicked()), this, SLOT(deleteClicked()));
@@ -111,6 +112,9 @@ SendTokensEntry::SendTokensEntry(const PlatformStyle *_platformStyle, const QStr
     ui->labellLabel->setStyleSheet(STRING_LABEL_COLOR);
     ui->labellLabel->setFont(GUIUtil::getSubLabelFont());
 
+    ui->tokenLockTimeLabel->setStyleSheet(STRING_LABEL_COLOR);
+    ui->tokenLockTimeLabel->setFont(GUIUtil::getSubLabelFont());
+
     ui->amountLabel->setStyleSheet(STRING_LABEL_COLOR);
     ui->amountLabel->setFont(GUIUtil::getSubLabelFont());
 
@@ -124,8 +128,11 @@ SendTokensEntry::SendTokensEntry(const PlatformStyle *_platformStyle, const QStr
 
     ui->tokenSelectionBox->setFont(GUIUtil::getSubLabelFont());
     ui->administratorCheckbox->setFont(GUIUtil::getSubLabelFont());
+    ui->useLockTime->setStyleSheet(QString(".QCheckBox{ %1; }").arg(STRING_LABEL_COLOR));
     ui->payTo->setFont(GUIUtil::getSubLabelFont());
     ui->addAsLabel->setFont(GUIUtil::getSubLabelFont());
+    ui->tokenLockTime->setFont(GUIUtil::getSubLabelFont());
+    ui->tokenLockTime->setMinimumDate(QDate::currentDate());
     ui->payTokenAmount->setFont(GUIUtil::getSubLabelFont());
     ui->messageTextLabel->setFont(GUIUtil::getSubLabelFont());
     ui->tokenAmountLabel->setFont(GUIUtil::getSubLabelFont());
@@ -135,6 +142,11 @@ SendTokensEntry::SendTokensEntry(const PlatformStyle *_platformStyle, const QStr
     ui->memoLabel->setFont(GUIUtil::getSubLabelFont());
     ui->memoLabel->setStyleSheet(STRING_LABEL_COLOR);
     ui->memoBox->setFont(GUIUtil::getSubLabelFont());
+}
+
+void SendTokensEntry::toggleTimeLock(bool checked)
+{
+    ui->tokenLockTime->setEnabled(checked);
 }
 
 SendTokensEntry::~SendTokensEntry()
@@ -181,6 +193,8 @@ void SendTokensEntry::clear()
     // clear UI elements for normal payment
     ui->payTo->clear();
     ui->addAsLabel->clear();
+    ui->tokenLockTime->clear();
+    ui->useLockTime->setCheckState(Qt::Unchecked);
     ui->messageTextLabel->clear();
     ui->messageTextLabel->hide();
     ui->messageLabel->hide();
@@ -289,6 +303,8 @@ bool SendTokensEntry::validate()
         }
     }
 
+
+
     // TODO check to make sure the payAmount value is within the constraints of how much you own
 
     return retval;
@@ -313,8 +329,11 @@ SendTokensRecipient SendTokensEntry::getValue()
 
     recipient.label = ui->addAsLabel->text();
 
-    // ToDo: parse real timelock here
-    recipient.timeLock = 0;
+    if (ui->useLockTime->checkState() == Qt::Checked) {
+        recipient.tokenLockTime = ui->tokenLockTime->dateTime().toTime_t();
+    } else {
+        recipient.tokenLockTime = 0;
+    }
 
     recipient.amount = ui->payTokenAmount->value();
     recipient.message = ui->memoBox->text();
@@ -543,6 +562,8 @@ void SendTokensEntry::switchAdministratorList(bool fSwitchStatus)
         ui->payTokenAmount->setValue(1); // When using TokenAmountField, you must use 1 instead of 1 * COIN, because of the way that TokenAmountField uses the unit and value to display the amount
         ui->payTokenAmount->setDisabled(true);
 
+        ui->tokenLockTime->setDisabled(true);
+        ui->tokenLockTime->clear();
 
         ui->tokenAmountLabel->clear();
 
@@ -566,6 +587,10 @@ void SendTokensEntry::switchAdministratorList(bool fSwitchStatus)
 //            ui->payTokenAmount->clear();
 //            ui->payTokenAmount->setUnit(MAX_UNIT);
             ui->tokenAmountLabel->clear();
+
+            ui->tokenLockTime->setDisabled(true);
+            ui->tokenLockTime->clear();
+
             ui->tokenSelectionBox->setFocus();
         } else {
             ui->payTo->setFocus();

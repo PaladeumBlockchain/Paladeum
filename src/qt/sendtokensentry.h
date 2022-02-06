@@ -82,6 +82,7 @@ private Q_SLOTS:
     void on_pasteButton_clicked();
     void onTokenSelected(int index);
     void onSendOwnershipChanged();
+    void toggleTimeLock(bool checked);
 
 private:
     SendTokensRecipient recipient;

@@ -15,6 +15,7 @@
 #include "platformstyle.h"
 #include "walletmodel.h"
 #include "guiconstants.h"
+#include "validation.h"
 #include "darkstyle.h"
 #include "validation.h"
 
@@ -42,6 +43,8 @@ SendCoinsEntry::SendCoinsEntry(const PlatformStyle *_platformStyle, QWidget *par
         ui->payToLayout->setSpacing(4);
 #if QT_VERSION >= 0x040700
     ui->addAsLabel->setPlaceholderText(tr("Enter a label for this address to add it to your address book"));
+    ui->coinLockTime->setFont(GUIUtil::getSubLabelFont());
+    ui->coinLockTime->setMinimumDate(QDate::currentDate());
 #endif
 
     // normal yona address field
@@ -52,6 +55,7 @@ SendCoinsEntry::SendCoinsEntry(const PlatformStyle *_platformStyle, QWidget *par
     // Connect signals
     connect(ui->payAmount, SIGNAL(valueChanged()), this, SIGNAL(payAmountChanged()));
     connect(ui->checkboxSubtractFeeFromAmount, SIGNAL(toggled(bool)), this, SIGNAL(subtractFeeFromAmountChanged()));
+    connect(ui->useLockTime, SIGNAL(toggled(bool)), this, SLOT(toggleTimeLock(bool)));
     connect(ui->deleteButton, SIGNAL(clicked()), this, SLOT(deleteClicked()));
     connect(ui->deleteButton_is, SIGNAL(clicked()), this, SLOT(deleteClicked()));
     connect(ui->deleteButton_s, SIGNAL(clicked()), this, SLOT(deleteClicked()));
@@ -66,6 +70,9 @@ SendCoinsEntry::SendCoinsEntry(const PlatformStyle *_platformStyle, QWidget *par
     ui->labellLabel->setStyleSheet(STRING_LABEL_COLOR);
     ui->labellLabel->setFont(GUIUtil::getSubLabelFont());
 
+    ui->lockTimeLabel->setStyleSheet(STRING_LABEL_COLOR);
+    ui->lockTimeLabel->setFont(GUIUtil::getSubLabelFont());
+
     ui->amountLabel->setStyleSheet(STRING_LABEL_COLOR);
     ui->amountLabel->setFont(GUIUtil::getSubLabelFont());
 
@@ -73,10 +80,16 @@ SendCoinsEntry::SendCoinsEntry(const PlatformStyle *_platformStyle, QWidget *par
     ui->messageLabel->setFont(GUIUtil::getSubLabelFont());
 
     ui->checkboxSubtractFeeFromAmount->setStyleSheet(QString(".QCheckBox{ %1; }").arg(STRING_LABEL_COLOR));
+    ui->useLockTime->setStyleSheet(QString(".QCheckBox{ %1; }").arg(STRING_LABEL_COLOR));
     ui->payTo->setFont(GUIUtil::getSubLabelFont());
     ui->addAsLabel->setFont(GUIUtil::getSubLabelFont());
     ui->payAmount->setFont(GUIUtil::getSubLabelFont());
     ui->messageTextLabel->setFont(GUIUtil::getSubLabelFont());
+}
+
+void SendCoinsEntry::toggleTimeLock(bool checked)
+{
+    ui->coinLockTime->setEnabled(checked);
 }
 
 SendCoinsEntry::~SendCoinsEntry()
@@ -125,6 +138,7 @@ void SendCoinsEntry::clear()
     ui->addAsLabel->clear();
     ui->payAmount->clear();
     ui->checkboxSubtractFeeFromAmount->setCheckState(Qt::Unchecked);
+    ui->useLockTime->setCheckState(Qt::Unchecked);
     ui->messageTextLabel->clear();
     ui->messageTextLabel->hide();
     ui->messageLabel->hide();
@@ -204,6 +218,12 @@ SendCoinsRecipient SendCoinsEntry::getValue()
     recipient.amount = ui->payAmount->value();
     recipient.message = ui->messageTextLabel->text();
     recipient.fSubtractFeeFromAmount = (ui->checkboxSubtractFeeFromAmount->checkState() == Qt::Checked);
+
+    if (ui->useLockTime->checkState() == Qt::Checked) {
+        recipient.coinLockTime = ui->coinLockTime->dateTime().toTime_t();
+    } else {
+        recipient.coinLockTime = 0;
+    }
 
     return recipient;
 }
