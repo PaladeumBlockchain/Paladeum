@@ -644,7 +644,6 @@ void OverviewPage::setWalletModel(WalletModel *model)
         ui->tokenVerticalSpaceWidget->setStyleSheet("background-color: transparent");
         ui->tokenVerticalSpaceWidget2->setStyleSheet("background-color: transparent");
 
-
         // Keep up to date with wallet
         setBalance(model->getBalance(), model->getUnconfirmedBalance(), model->getImmatureBalance(), model->getStake(),
                    model->getWatchBalance(), model->getWatchUnconfirmedBalance(), model->getWatchImmatureBalance(), model->getWatchStake(), model->getLockedBalance());
