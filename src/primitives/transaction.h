@@ -17,6 +17,7 @@
 #include <iostream>
 
 static const int SERIALIZE_TRANSACTION_NO_WITNESS = 0x40000000;
+static const int32_t MESSAGE_VERSION = 2;
 
 class CCoinsViewCache;
 class CNullTokenTxVerifierString;
@@ -230,6 +231,8 @@ inline void UnserializeTransaction(TxType& tx, Stream& s) {
     unsigned char flags = 0;
     tx.vin.clear();
     tx.vout.clear();
+    tx.nMessage.clear();
+
     /* Try to read the vin. In case the dummy is there, this will be read as an empty vector. */
     s >> tx.vin;
     if (tx.vin.size() == 0 && fAllowWitness) {
@@ -255,6 +258,10 @@ inline void UnserializeTransaction(TxType& tx, Stream& s) {
         throw std::ios_base::failure("Unknown transaction optional data");
     }
     s >> tx.nLockTime;
+
+    if (tx.nVersion >= MESSAGE_VERSION) {
+        s >> tx.nMessage;
+    }
 }
 
 template<typename Stream, typename TxType>
@@ -285,6 +292,9 @@ inline void SerializeTransaction(const TxType& tx, Stream& s) {
         }
     }
     s << tx.nLockTime;
+    if (tx.nVersion >= MESSAGE_VERSION) {
+        s << tx.nMessage;
+    }
 }
 
 
@@ -313,6 +323,7 @@ public:
     const int32_t nVersion;
     const uint32_t nTime;
     const uint32_t nLockTime;
+    const std::string nMessage;
 
 private:
     /** Memory only. */
@@ -426,6 +437,7 @@ struct CMutableTransaction
     int32_t nVersion;
     uint32_t nTime;
     uint32_t nLockTime;
+    std::string nMessage;
 
     CMutableTransaction();
     CMutableTransaction(const CTransaction& tx);

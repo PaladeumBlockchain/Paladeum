@@ -800,8 +800,11 @@ void CreateTokenDialog::onCreateTokenClicked()
             return;
     }
 
+    // ToDo: transaction message
+    std::string txMessage;
+
     // Create the transaction
-    if (!CreateTokenTransaction(model->getWallet(), ctrl, token, address.toStdString(), error, tx, reservekey, nFeeRequired, fRestrictedTokenCreation ? &verifierStripped : nullptr)) {
+    if (!CreateTokenTransaction(model->getWallet(), ctrl, token, address.toStdString(), error, tx, reservekey, nFeeRequired, txMessage, fRestrictedTokenCreation ? &verifierStripped : nullptr)) {
         showMessage("Invalid: " + QString::fromStdString(error.second));
         return;
     }

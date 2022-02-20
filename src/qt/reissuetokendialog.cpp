@@ -924,8 +924,11 @@ void ReissueTokenDialog::onReissueTokenClicked()
             return;
     }
 
+    // ToDo: transaction message
+    std::string txMessage;
+
     // Create the transaction
-    if (!CreateReissueTokenTransaction(model->getWallet(), ctrl, reissueToken, address.toStdString(), error, tx, reservekey, nFeeRequired, verifier_string.empty() ? nullptr : &verifier_string)) {
+    if (!CreateReissueTokenTransaction(model->getWallet(), ctrl, reissueToken, address.toStdString(), error, tx, reservekey, nFeeRequired, txMessage, verifier_string.empty() ? nullptr : &verifier_string)) {
         showMessage("Invalid: " + QString::fromStdString(error.second));
         return;
     }

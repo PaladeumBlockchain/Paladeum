@@ -264,8 +264,11 @@ void RestrictedTokensDialog::freezeAddressClicked()
             return;
     }
 
+    // ToDo: transaction message
+    std::string txMesssage = "";
+
     // Create the Transaction
-    if (!CreateTransferTokenTransaction(model->getWallet(), ctrl, vTransfers, "", error, transaction, reservekey, nRequiredFee, &vecFreezeAddressTxData, &vecFreezeGlobalTxData)) {
+    if (!CreateTransferTokenTransaction(model->getWallet(), ctrl, vTransfers, "", error, transaction, reservekey, nRequiredFee, txMesssage, &vecFreezeAddressTxData, &vecFreezeGlobalTxData)) {
         QMessageBox createTransactionBox;
         createTransactionBox.setText(QString::fromStdString(error.second));
         createTransactionBox.exec();
@@ -390,8 +393,11 @@ void RestrictedTokensDialog::assignQualifierClicked()
     std::vector< std::pair<CNullTokenTxData, std::string> > vecTokenData;
     vecTokenData.push_back(std::make_pair(CNullTokenTxData(token_name, flag), address));
 
+    // ToDo: transaction message
+    std::string txMessage;
+
     // Create the Transaction
-    if (!CreateTransferTokenTransaction(model->getWallet(), ctrl, vTransfers, "", error, transaction, reservekey, nRequiredFee, &vecTokenData)) {
+    if (!CreateTransferTokenTransaction(model->getWallet(), ctrl, vTransfers, "", error, transaction, reservekey, nRequiredFee, txMessage, &vecTokenData)) {
         QMessageBox createTransactionBox;
         createTransactionBox.setText(QString::fromStdString(error.second));
         createTransactionBox.exec();

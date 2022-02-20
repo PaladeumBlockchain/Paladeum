@@ -50,6 +50,8 @@ SendTokensEntry::SendTokensEntry(const PlatformStyle *_platformStyle, const QStr
         ui->payToLayout->setSpacing(4);
 #if QT_VERSION >= 0x040700
     ui->addAsLabel->setPlaceholderText(tr("Enter a label for this address to add it to your address book"));
+
+    ui->txMessageEdit->setPlaceholderText(tr("Enter a transaction message (optional)"));
 #endif
 
     // normal yona address field
@@ -112,6 +114,9 @@ SendTokensEntry::SendTokensEntry(const PlatformStyle *_platformStyle, const QStr
     ui->labellLabel->setStyleSheet(STRING_LABEL_COLOR);
     ui->labellLabel->setFont(GUIUtil::getSubLabelFont());
 
+    ui->txMessageLabel->setStyleSheet(STRING_LABEL_COLOR);
+    ui->txMessageLabel->setFont(GUIUtil::getSubLabelFont());
+
     ui->tokenLockTimeLabel->setStyleSheet(STRING_LABEL_COLOR);
     ui->tokenLockTimeLabel->setFont(GUIUtil::getSubLabelFont());
 
@@ -131,6 +136,7 @@ SendTokensEntry::SendTokensEntry(const PlatformStyle *_platformStyle, const QStr
     ui->useLockTime->setStyleSheet(QString(".QCheckBox{ %1; }").arg(STRING_LABEL_COLOR));
     ui->payTo->setFont(GUIUtil::getSubLabelFont());
     ui->addAsLabel->setFont(GUIUtil::getSubLabelFont());
+    ui->txMessageEdit->setFont(GUIUtil::getSubLabelFont());
     ui->tokenLockTime->setFont(GUIUtil::getSubLabelFont());
     ui->tokenLockTime->setMinimumDate(QDate::currentDate());
     ui->payTokenAmount->setFont(GUIUtil::getSubLabelFont());
@@ -193,6 +199,7 @@ void SendTokensEntry::clear()
     // clear UI elements for normal payment
     ui->payTo->clear();
     ui->addAsLabel->clear();
+    ui->txMessageEdit->clear();
     ui->tokenLockTime->clear();
     ui->useLockTime->setCheckState(Qt::Unchecked);
     ui->messageTextLabel->clear();
@@ -337,6 +344,8 @@ SendTokensRecipient SendTokensEntry::getValue()
 
     recipient.amount = ui->payTokenAmount->value();
     recipient.message = ui->memoBox->text();
+
+    recipient.tx_message = ui->txMessageEdit->text();
 
     return recipient;
 }

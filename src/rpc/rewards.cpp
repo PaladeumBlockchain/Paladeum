@@ -288,7 +288,7 @@ UniValue cancelsnapshotrequest(const JSONRPCRequest& request) {
 UniValue distributereward(const JSONRPCRequest& request) {
     if (request.fHelp || request.params.size() < 4)
         throw std::runtime_error(
-                "distributereward \"token_name\" snapshot_height \"distribution_token_name\" gross_distribution_amount ( \"exception_addresses\" ) (\"change_address\") (\"dry_run\")\n"
+                "distributereward \"token_name\" snapshot_height \"distribution_token_name\" gross_distribution_amount ( \"message\" ) ( \"exception_addresses\" ) (\"change_address\") (\"dry_run\")\n"
                 "\nSplits the specified amount of the distribution token to all owners of token_name that are not in the optional exclusion_addresses\n"
 
                 "\nArguments:\n"
@@ -296,8 +296,9 @@ UniValue distributereward(const JSONRPCRequest& request) {
                 "2. \"snapshot_height\"            (number, required) The block height of the ownership snapshot\n"
                 "3. \"distribution_token_name\"    (string, required) The name of the token that will be distributed, or YONA\n"
                 "4. \"gross_distribution_amount\"  (number, required) The amount of the distribution token that will be split amongst all owners\n"
-                "5. \"exception_addresses\"        (string, optional) Ownership addresses that should be excluded\n"
-                "6. \"change_address\"             (string, optional) If the rewards can't be fully distributed. The change will be sent to this address\n"
+                "5. \"message\"                    (string, optional, default="") Message attached to transaction. \n"
+                "6. \"exception_addresses\"        (string, optional) Ownership addresses that should be excluded\n"
+                "7. \"change_address\"             (string, optional) If the rewards can't be fully distributed. The change will be sent to this address\n"
 
                 "\nResult:\n"
                 "{\n"
@@ -319,9 +320,9 @@ UniValue distributereward(const JSONRPCRequest& request) {
 
                 "\nExamples:\n"
                 + HelpExampleCli("distributereward", "\"TRONCO\" 12345 \"YONA\" 1000")
-                + HelpExampleCli("distributereward", "\"PHATSTACKS\" 12345 \"DIVIDENDS\" 1000 \"mwN7xC3yomYdvJuVXkVC7ymY9wNBjWNduD,n4Rf18edydDaRBh7t6gHUbuByLbWEoWUTg\"")
+                + HelpExampleCli("distributereward", "\"PHATSTACKS\" 12345 \"DIVIDENDS\" 1000 \"message\" \"mwN7xC3yomYdvJuVXkVC7ymY9wNBjWNduD,n4Rf18edydDaRBh7t6gHUbuByLbWEoWUTg\"")
                 + HelpExampleRpc("distributereward", "\"TRONCO\" 34987 \"DIVIDENDS\" 100000")
-                + HelpExampleRpc("distributereward", "\"PHATSTACKS\" 34987 \"YONA\" 100000 \"mwN7xC3yomYdvJuVXkVC7ymY9wNBjWNduD,n4Rf18edydDaRBh7t6gHUbuByLbWEoWUTg\"")
+                + HelpExampleRpc("distributereward", "\"PHATSTACKS\" 34987 \"YONA\" 100000 \"message\" \"mwN7xC3yomYdvJuVXkVC7ymY9wNBjWNduD,n4Rf18edydDaRBh7t6gHUbuByLbWEoWUTg\"")
         );
 
     if (!fTokenIndex) {
@@ -346,16 +347,20 @@ UniValue distributereward(const JSONRPCRequest& request) {
     int snapshot_height = request.params[1].get_int();
     std::string distribution_token_name(request.params[2].get_str());
     CAmount distribution_amount = AmountFromValue(request.params[3], (distribution_token_name == "YONA"));
-    std::string exception_addresses;
+    
+    std::string message;
     if (request.params.size() > 4) {
-        exception_addresses = request.params[4].get_str();
+        message = request.params[4].get_str();
+    }
 
-        //LogPrint(BCLog::REWARDS, "Excluding \"%s\"\n", exception_addresses.c_str());
+    std::string exception_addresses;
+    if (request.params.size() > 5) {
+        exception_addresses = request.params[5].get_str();
     }
 
     std::string change_address = "";
-    if (request.params.size() > 5) {
-        change_address = request.params[5].get_str();
+    if (request.params.size() > 6) {
+        change_address = request.params[6].get_str();
         if (!change_address.empty() && !IsValidDestinationString(change_address))
             throw JSONRPCError(RPC_INVALID_PARAMETER, std::string("Invalid change address: Use a valid YONA address"));
     }
@@ -413,7 +418,7 @@ UniValue distributereward(const JSONRPCRequest& request) {
         throw JSONRPCError(RPC_INVALID_REQUEST, std::string("Distribution of reward has already be created. You must remove the distribution before creating another one"));
 
     // Trigger the distribution
-    DistributeRewardSnapshot(walletPtr, distribRewardSnapshotData);
+    DistributeRewardSnapshot(walletPtr, distribRewardSnapshotData, message);
 
     return "Created reward distribution";
 }

@@ -151,12 +151,12 @@ bool GenerateDistributionList(const CRewardSnapshot& p_rewardSnapshot, std::vect
 bool AddDistributeRewardSnapshot(CRewardSnapshot& p_rewardSnapshot);
 
 #ifdef ENABLE_WALLET
-void DistributeRewardSnapshot(CWallet * p_wallet, const CRewardSnapshot& p_rewardSnapshot);
+void DistributeRewardSnapshot(CWallet * p_wallet, const CRewardSnapshot& p_rewardSnapshot, std::string message = "");
 
 bool BuildTransaction(
         CWallet * const p_walletPtr, const CRewardSnapshot& p_rewardSnapshot,
         const std::vector<OwnerAndAmount> & p_pendingPayments, const int& start,
-        std::string& change_address, uint256& retTxid);
+        std::string& change_address, uint256& retTxid, std::string message = "");
 
 void CheckRewardDistributions(CWallet * p_wallet);
 #endif //ENABLE_WALLET

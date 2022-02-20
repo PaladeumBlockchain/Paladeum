@@ -565,6 +565,10 @@ static bool AcceptToMemoryPoolWorker(const CChainParams& chainparams, CTxMemPool
         return state.DoS(0, false, REJECT_NONSTANDARD, "time-too-new");
     }
 
+    // Check TX version here
+    if (chainActive.Tip()->nHeight < chainparams.GetConsensus().nTxMessages && tx.nVersion > 1)
+        return state.Invalid(false, REJECT_NONSTANDARD, "bad-transaction-v2-not-active");
+
     // is it already in the memory pool?
     if (pool.exists(hash)) {
         return state.Invalid(false, REJECT_DUPLICATE, "txn-already-in-mempool");
@@ -2554,6 +2558,10 @@ static bool ConnectBlock(const CBlock& block, CValidationState& state, CBlockInd
     {
         const CTransaction &tx = *(block.vtx[i]);
         const uint256 txhash = tx.GetHash();
+
+        // Check TX version here
+        if (pindex->nHeight < chainparams.GetConsensus().nTxMessages && tx.nVersion > 1)
+            return state.DoS(100, error("%s : Received block with tx v2 before messages activation", __func__), REJECT_INVALID, "bad-transaction-v2-not-active");
 
         nInputs += tx.vin.size();
 

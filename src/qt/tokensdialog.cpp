@@ -368,6 +368,8 @@ void TokensDialog::on_sendButton_clicked()
 
     std::vector< std::pair<CTokenTransfer, std::string> >vTransfers;
 
+    std::string txMessage;
+
     for (auto recipient : recipients) {
         std::string recipientAddress = recipient.address.toStdString();
 
@@ -379,6 +381,9 @@ void TokensDialog::on_sendButton_clicked()
             Q_EMIT message(tr("Send Coins"), msgParams.first, msgParams.second);
             return;
         }
+
+        if (!recipient.tx_message.toStdString().empty())
+            txMessage = recipient.tx_message.toStdString();
 
         vTransfers.emplace_back(std::make_pair(CTokenTransfer(recipient.tokenName.toStdString(), recipient.amount, recipient.tokenLockTime, DecodeTokenData(recipient.message.toStdString()), 0), recipient.address.toStdString()));
     }
@@ -402,7 +407,7 @@ void TokensDialog::on_sendButton_clicked()
             return;
     }
 
-    if (!CreateTransferTokenTransaction(model->getWallet(), ctrl, vTransfers, "", error, tx, reservekey, nFeeRequired)) {
+    if (!CreateTransferTokenTransaction(model->getWallet(), ctrl, vTransfers, "", error, tx, reservekey, nFeeRequired, txMessage)) {
         QMessageBox msgBox;
         msgBox.setText(QString::fromStdString(error.second));
         msgBox.exec();

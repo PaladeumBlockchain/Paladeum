@@ -4028,14 +4028,14 @@ std::string EncodeIPFS(std::string decoded){
 };
 
 #ifdef ENABLE_WALLET
-bool CreateTokenTransaction(CWallet* pwallet, CCoinControl& coinControl, const CNewToken& token, const std::string& address, std::pair<int, std::string>& error, CWalletTx& wtxNew, CReserveKey& reservekey, CAmount& nFeeRequired, std::string* verifier_string)
+bool CreateTokenTransaction(CWallet* pwallet, CCoinControl& coinControl, const CNewToken& token, const std::string& address, std::pair<int, std::string>& error, CWalletTx& wtxNew, CReserveKey& reservekey, CAmount& nFeeRequired, std::string message, std::string* verifier_string)
 {
     std::vector<CNewToken> tokens;
     tokens.push_back(token);
-    return CreateTokenTransaction(pwallet, coinControl, tokens, address, error, wtxNew, reservekey, nFeeRequired, verifier_string);
+    return CreateTokenTransaction(pwallet, coinControl, tokens, address, error, wtxNew, reservekey, nFeeRequired, message, verifier_string);
 }
 
-bool CreateTokenTransaction(CWallet* pwallet, CCoinControl& coinControl, const std::vector<CNewToken> tokens, const std::string& address, std::pair<int, std::string>& error, CWalletTx& wtxNew, CReserveKey& reservekey, CAmount& nFeeRequired, std::string* verifier_string)
+bool CreateTokenTransaction(CWallet* pwallet, CCoinControl& coinControl, const std::vector<CNewToken> tokens, const std::string& address, std::pair<int, std::string>& error, CWalletTx& wtxNew, CReserveKey& reservekey, CAmount& nFeeRequired, std::string message, std::string* verifier_string)
 {
     std::string change_address = EncodeDestination(coinControl.destChange);
 
@@ -4191,7 +4191,7 @@ bool CreateTokenTransaction(CWallet* pwallet, CCoinControl& coinControl, const s
         vecSend.push_back(rec);
     }
 
-    if (!pwallet->CreateTransactionWithTokens(vecSend, wtxNew, reservekey, nFeeRequired, nChangePosRet, strTxError, coinControl, tokens, DecodeDestination(address), tokenType)) {
+    if (!pwallet->CreateTransactionWithTokens(vecSend, wtxNew, reservekey, nFeeRequired, message, nChangePosRet, strTxError, coinControl, tokens, DecodeDestination(address), tokenType)) {
         if (!fSubtractFeeFromAmount && burnAmount + nFeeRequired > curBalance)
             strTxError = strprintf("Error: This transaction requires a transaction fee of at least %s", FormatMoney(nFeeRequired));
         error = std::make_pair(RPC_WALLET_ERROR, strTxError);
@@ -4200,7 +4200,7 @@ bool CreateTokenTransaction(CWallet* pwallet, CCoinControl& coinControl, const s
     return true;
 }
 
-bool CreateReissueTokenTransaction(CWallet* pwallet, CCoinControl& coinControl, const CReissueToken& reissueToken, const std::string& address, std::pair<int, std::string>& error, CWalletTx& wtxNew, CReserveKey& reservekey, CAmount& nFeeRequired, std::string* verifier_string)
+bool CreateReissueTokenTransaction(CWallet* pwallet, CCoinControl& coinControl, const CReissueToken& reissueToken, const std::string& address, std::pair<int, std::string>& error, CWalletTx& wtxNew, CReserveKey& reservekey, CAmount& nFeeRequired, std::string message, std::string* verifier_string)
 {
     // Create transaction variables
     std::string strTxError;
@@ -4374,7 +4374,7 @@ bool CreateReissueTokenTransaction(CWallet* pwallet, CCoinControl& coinControl, 
     CRecipient recipient2 = {scriptTransferOwnerToken, 0, fSubtractFeeFromAmount};
     vecSend.push_back(recipient);
     vecSend.push_back(recipient2);
-    if (!pwallet->CreateTransactionWithReissueToken(vecSend, wtxNew, reservekey, nFeeRequired, nChangePosRet, strTxError, coinControl, reissueToken, DecodeDestination(address))) {
+    if (!pwallet->CreateTransactionWithReissueToken(vecSend, wtxNew, reservekey, nFeeRequired, message, nChangePosRet, strTxError, coinControl, reissueToken, DecodeDestination(address))) {
         if (!fSubtractFeeFromAmount && burnAmount + nFeeRequired > curBalance)
             strTxError = strprintf("Error: This transaction requires a transaction fee of at least %s", FormatMoney(nFeeRequired));
         error = std::make_pair(RPC_WALLET_ERROR, strTxError);
@@ -4386,7 +4386,7 @@ bool CreateReissueTokenTransaction(CWallet* pwallet, CCoinControl& coinControl, 
 
 // nullTokenTxData -> Use this for freeze/unfreeze an address or adding a qualifier to an address
 // nullGlobalRestrictionData -> Use this to globally freeze/unfreeze a restricted token.
-bool CreateTransferTokenTransaction(CWallet* pwallet, const CCoinControl& coinControl, const std::vector< std::pair<CTokenTransfer, std::string> >vTransfers, const std::string& changeAddress, std::pair<int, std::string>& error, CWalletTx& wtxNew, CReserveKey& reservekey, CAmount& nFeeRequired, std::vector<std::pair<CNullTokenTxData, std::string> >* nullTokenTxData, std::vector<CNullTokenTxData>* nullGlobalRestrictionData)
+bool CreateTransferTokenTransaction(CWallet* pwallet, const CCoinControl& coinControl, const std::vector< std::pair<CTokenTransfer, std::string> >vTransfers, const std::string& changeAddress, std::pair<int, std::string>& error, CWalletTx& wtxNew, CReserveKey& reservekey, CAmount& nFeeRequired, std::string message, std::vector<std::pair<CNullTokenTxData, std::string> >* nullTokenTxData, std::vector<CNullTokenTxData>* nullGlobalRestrictionData)
 {
     // Initialize Values for transaction
     std::string strTxError;
@@ -4533,7 +4533,7 @@ bool CreateTransferTokenTransaction(CWallet* pwallet, const CCoinControl& coinCo
     }
 
     // Create and send the transaction
-    if (!pwallet->CreateTransactionWithTransferToken(vecSend, wtxNew, reservekey, nFeeRequired, nChangePosRet, strTxError, coinControl)) {
+    if (!pwallet->CreateTransactionWithTransferToken(vecSend, wtxNew, reservekey, nFeeRequired, message, nChangePosRet, strTxError, coinControl)) {
         if (!fSubtractFeeFromAmount && nFeeRequired > curBalance) {
             error = std::make_pair(RPC_WALLET_ERROR, strprintf("Error: This transaction requires a transaction fee of at least %s", FormatMoney(nFeeRequired)));
             return false;

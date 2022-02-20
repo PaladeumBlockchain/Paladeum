@@ -179,7 +179,7 @@ bool GenerateDistributionList(const CRewardSnapshot& p_rewardSnapshot, std::vect
 
 #ifdef ENABLE_WALLET
 
-void DistributeRewardSnapshot(CWallet * p_wallet, const CRewardSnapshot& p_rewardSnapshot)
+void DistributeRewardSnapshot(CWallet * p_wallet, const CRewardSnapshot& p_rewardSnapshot, std::string message)
 {
     if (p_wallet->IsLocked()) {
         LogPrint(BCLog::REWARDS, "Skipping distribution: Wallet is locked!\n");
@@ -235,7 +235,7 @@ void DistributeRewardSnapshot(CWallet * p_wallet, const CRewardSnapshot& p_rewar
             int start = i * MAX_PAYMENTS_PER_TRANSACTION;
             uint256 retTxid;
             std::string change = "";
-            if (!BuildTransaction(p_wallet, p_rewardSnapshot, paymentDetails, start, change, retTxid)) {
+            if (!BuildTransaction(p_wallet, p_rewardSnapshot, paymentDetails, start, change, retTxid, message)) {
                 LogPrint(BCLog::REWARDS, "Failed to build Tx: distribute: %s, amount: %d\n", p_rewardSnapshot.strDistributionToken, p_rewardSnapshot.nDistributionAmount);
                 return;
             }
@@ -247,7 +247,7 @@ void DistributeRewardSnapshot(CWallet * p_wallet, const CRewardSnapshot& p_rewar
 bool BuildTransaction(
         CWallet * const p_walletPtr, const CRewardSnapshot& p_rewardSnapshot,
         const std::vector<OwnerAndAmount> & p_pendingPayments,const int& start,
-        std::string& change_address, uint256& retTxid)
+        std::string& change_address, uint256& retTxid, std::string message)
 {
     int expectedCount = 0;
     int actualCount = 0;
@@ -311,7 +311,7 @@ bool BuildTransaction(
         std::string strError;
         int nChangePosRet = -1;
 
-        if (!p_walletPtr->CreateTransaction(vDestinations, *txnPtr.get(), *reserveKeyPtr.get(), nFeeRequired, nChangePosRet, strError, ctrl)) {
+        if (!p_walletPtr->CreateTransaction(vDestinations, *txnPtr.get(), *reserveKeyPtr.get(), nFeeRequired, message, nChangePosRet, strError, ctrl)) {
             if (totalPaymentAmt + nFeeRequired > curBalance) {
                 mapRewardSnapshots[rewardSnapshotHash].nStatus = CRewardSnapshot::NOT_ENOUGH_FEE;
                 pDistributeSnapshotDb->OverrideDistributeSnapshot(rewardSnapshotHash, mapRewardSnapshots.at(rewardSnapshotHash));

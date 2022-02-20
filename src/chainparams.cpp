@@ -164,6 +164,7 @@ public:
 
         // Proof-of-Stake
         consensus.nLastPOWBlock = 1440;
+        consensus.nTxMessages = std::numeric_limits<int>::max();
         consensus.nStakeTimestampMask = 0xf; // 15
 
         /**
@@ -271,6 +272,7 @@ public:
 
         // Proof-of-Stake
         consensus.nLastPOWBlock = 1440;
+        consensus.nTxMessages = std::numeric_limits<int>::max();
         consensus.nStakeTimestampMask = 0xf; // 15
 
         pchMessageStart[0] = 0x79;
@@ -376,6 +378,7 @@ public:
 
         // Proof-of-Stake
         consensus.nLastPOWBlock = 1440;
+        consensus.nTxMessages = 10;
         consensus.nStakeTimestampMask = 0xf; // 15
 
         pchMessageStart[0] = 0x79;
@@ -387,11 +390,11 @@ public:
 
         const char* pszTimestamp = "New Species of Mouse Opossum Discovered in Panama | Dec 10, 2021 Sci-News";
 
-        genesis = CreateGenesisBlock(pszTimestamp, 1524179366, 1, 0x207fffff, 4, 5000 * COIN);
+        genesis = CreateGenesisBlock(pszTimestamp, 1524179366, 5, 0x207fffff, 4, 5000 * COIN);
         consensus.hashGenesisBlock = genesis.GetBlockHash();
 
-        // assert(consensus.hashGenesisBlock == uint256S("0x0b2c703dc93bb63a36c4e33b85be4855ddbca2ac951a7a0a29b8de0408200a3c "));
-        // assert(genesis.hashMerkleRoot == uint256S("0x28ff00a867739a352523808d301f504bc4547699398d70faf2266a8bae5f3516"));
+        assert(consensus.hashGenesisBlock == uint256S("0x0c68d38b0e2774ada15a4b2296a9f5bbace8a7ab3f465e8b51e14cfd49b64b53 "));
+        assert(genesis.hashMerkleRoot == uint256S("0x5979cd840953b850000a3d33eaeaed731f08eb4a8b95111e72dba141ee760651"));
 
         vFixedSeeds.clear(); //!< Regtest mode doesn't have any fixed seeds.
         vSeeds.clear();      //!< Regtest mode doesn't have any DNS seeds.
@@ -434,7 +437,7 @@ public:
         nAddNullQualifierTagFeeAmount = 0.01 * COIN;
 
         // Global Burn Address
-        strTokenFeeAddress = "YmvWrhCZBVZ69NbrMZB4qycs4h3Zho7zrW";
+        strTokenFeeAddress = "mmbbmGLSeCpR9VhGp2JMXVkf7xkbjtcEET";
 
         nMaxReorganizationDepth = 60; // 60 at 1 minute block timespan is +/- 60 minutes.
         nMinReorganizationPeers = 4;

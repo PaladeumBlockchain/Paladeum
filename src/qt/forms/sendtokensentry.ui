@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>883</width>
-    <height>266</height>
+    <height>348</height>
    </rect>
   </property>
   <property name="focusPolicy">
@@ -316,6 +316,23 @@
        </widget>
       </item>
      </layout>
+    </item>
+    <item row="4" column="0">
+     <widget class="QLabel" name="txMessageLabel">
+      <property name="text">
+       <string>Message:</string>
+      </property>
+      <property name="alignment">
+       <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+      </property>
+     </widget>
+    </item>
+    <item row="4" column="2">
+     <widget class="QLineEdit" name="txMessageEdit">
+      <property name="maxLength">
+       <number>120</number>
+      </property>
+     </widget>
     </item>
    </layout>
   </widget>
