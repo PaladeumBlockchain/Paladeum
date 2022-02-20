@@ -164,7 +164,7 @@ public:
 
         // Proof-of-Stake
         consensus.nLastPOWBlock = 1440;
-        consensus.nTxMessages = std::numeric_limits<int>::max();
+        consensus.nTxMessages = 95000;
         consensus.nStakeTimestampMask = 0xf; // 15
 
         /**
