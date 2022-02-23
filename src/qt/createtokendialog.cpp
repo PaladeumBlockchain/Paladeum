@@ -764,7 +764,16 @@ void CreateTokenDialog::onCreateTokenClicked()
     if (hasIPFS)
         ipfsDecoded = DecodeTokenData(ui->ipfsText->text().toStdString());
 
-    CNewToken token(name.toStdString(), quantity, units, reissuable ? 1 : 0, hasIPFS ? 1 : 0, ipfsDecoded);
+    bool hasRoyalties = false;
+    bool royaltiesStatic = false;
+    CAmount royaltiesAmount = 0;
+
+    CNewToken token(
+        name.toStdString(), quantity, units,
+        reissuable ? 1 : 0, hasIPFS ? 1 : 0,
+        hasRoyalties ? 1 : 0, royaltiesStatic ? 1 : 0,
+        royaltiesAmount, ipfsDecoded
+    );
 
     std::string verifierStripped = GetStrippedVerifierString(ui->lineEditVerifierString->text().toStdString());
     bool fRestrictedTokenCreation = false;

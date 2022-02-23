@@ -104,14 +104,17 @@ public:
     int8_t units;        // 1 Byte
     int8_t nReissuable;  // 1 Byte
     int8_t nHasIPFS;     // 1 Byte
-    std::string strIPFSHash; // MAX 40 Bytes
+    int8_t nHasRoyalties;     // 1 Byte
+    int8_t nRoyaltiesStatic;  // 1 Byte
+    CAmount nRoyaltiesAmount; // 8 Bytes
+    std::string strIPFSHash;  // MAX 40 Bytes
 
     CNewToken()
     {
         SetNull();
     }
 
-    CNewToken(const std::string& strName, const CAmount& nAmount, const int& units, const int& nReissuable, const int& nHasIPFS, const std::string& strIPFSHash);
+    CNewToken(const std::string& strName, const CAmount& nAmount, const int& units, const int& nReissuable, const int& nHasIPFS, const int& nHasRoyalties, const int& nRoyaltiesStatic, const CAmount& nRoyaltiesAmount, const std::string& strIPFSHash);
     CNewToken(const std::string& strName, const CAmount& nAmount);
 
     CNewToken(const CNewToken& token);
@@ -124,6 +127,9 @@ public:
         units = int8_t(MAX_UNIT);
         nReissuable = int8_t(0);
         nHasIPFS = int8_t(0);
+        nHasRoyalties = int8_t(0);
+        nRoyaltiesStatic = int8_t(0);
+        nRoyaltiesAmount = 0;
         strIPFSHash = "";
     }
 
@@ -142,7 +148,13 @@ public:
         READWRITE(nAmount);
         READWRITE(units);
         READWRITE(nReissuable);
+        READWRITE(nHasRoyalties);
+        READWRITE(nRoyaltiesStatic);
         READWRITE(nHasIPFS);
+        if (nHasRoyalties)
+        {
+            READWRITE(nRoyaltiesAmount);
+        }
         if (nHasIPFS == 1) {
             ReadWriteTokenHash(s, ser_action, strIPFSHash);
         }

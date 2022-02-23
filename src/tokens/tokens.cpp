@@ -477,6 +477,9 @@ CNewToken::CNewToken(const CNewToken& token)
     this->units = token.units;
     this->nHasIPFS = token.nHasIPFS;
     this->nReissuable = token.nReissuable;
+    this->nHasRoyalties = token.nHasRoyalties;
+    this->nRoyaltiesStatic = token.nRoyaltiesStatic;
+    this->nRoyaltiesAmount = token.nRoyaltiesAmount;
     this->strIPFSHash = token.strIPFSHash;
 }
 
@@ -487,6 +490,9 @@ CNewToken& CNewToken::operator=(const CNewToken& token)
     this->units = token.units;
     this->nHasIPFS = token.nHasIPFS;
     this->nReissuable = token.nReissuable;
+    this->nHasRoyalties = token.nHasRoyalties;
+    this->nRoyaltiesStatic = token.nRoyaltiesStatic;
+    this->nRoyaltiesAmount = token.nRoyaltiesAmount;
     this->strIPFSHash = token.strIPFSHash;
     return *this;
 }
@@ -501,13 +507,20 @@ std::string CNewToken::ToString()
     ss << "reissuable : " << std::to_string(nReissuable) << "\n";
     ss << "has_ipfs : " << std::to_string(nHasIPFS) << "\n";
 
+    ss << "royalties : " << std::to_string(nHasRoyalties) << "\n";
+    if (nHasRoyalties) {
+        ss << "royalties_static : " << nRoyaltiesStatic;
+        ss << "royalties_amount : " << nRoyaltiesAmount;
+    }
+
+    ss << "has_ipfs : " << std::to_string(nHasIPFS) << "\n";
     if (nHasIPFS)
         ss << "ipfs_hash : " << strIPFSHash;
 
     return ss.str();
 }
 
-CNewToken::CNewToken(const std::string& strName, const CAmount& nAmount, const int& units, const int& nReissuable, const int& nHasIPFS, const std::string& strIPFSHash)
+CNewToken::CNewToken(const std::string& strName, const CAmount& nAmount, const int& units, const int& nReissuable, const int& nHasIPFS, const int& nHasRoyalties, const int& nRoyaltiesStatic, const CAmount& nRoyaltiesAmount, const std::string& strIPFSHash)
 {
     this->SetNull();
     this->strName = strName;
@@ -515,8 +528,12 @@ CNewToken::CNewToken(const std::string& strName, const CAmount& nAmount, const i
     this->units = int8_t(units);
     this->nReissuable = int8_t(nReissuable);
     this->nHasIPFS = int8_t(nHasIPFS);
+    this->nHasRoyalties = int8_t(nHasRoyalties);
+    this->nRoyaltiesStatic = int8_t(nRoyaltiesStatic);
+    this->nRoyaltiesAmount = nRoyaltiesAmount;
     this->strIPFSHash = strIPFSHash;
 }
+
 CNewToken::CNewToken(const std::string& strName, const CAmount& nAmount)
 {
     this->SetNull();
@@ -525,6 +542,9 @@ CNewToken::CNewToken(const std::string& strName, const CAmount& nAmount)
     this->units = int8_t(DEFAULT_UNITS);
     this->nReissuable = int8_t(DEFAULT_REISSUABLE);
     this->nHasIPFS = int8_t(DEFAULT_HAS_IPFS);
+    this->nHasRoyalties = int8_t(DEFAULT_HAS_ROYALTIES);
+    this->nRoyaltiesStatic = int8_t(DEFAULT_ROYALTIES_STATIC);
+    this->nRoyaltiesAmount = DEFAULT_ROYALTIES_AMOUNT;
     this->strIPFSHash = DEFAULT_IPFS;
 }
 
