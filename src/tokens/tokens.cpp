@@ -477,10 +477,11 @@ CNewToken::CNewToken(const CNewToken& token)
     this->units = token.units;
     this->nHasIPFS = token.nHasIPFS;
     this->nReissuable = token.nReissuable;
-    this->nHasRoyalties = token.nHasRoyalties;
-    this->nRoyaltiesStatic = token.nRoyaltiesStatic;
-    this->nRoyaltiesAmount = token.nRoyaltiesAmount;
     this->strIPFSHash = token.strIPFSHash;
+
+    this->nHasRoyalties = token.nHasRoyalties;
+    this->nRoyaltiesAddress = token.nRoyaltiesAddress;
+    this->nRoyaltiesAmount = token.nRoyaltiesAmount;
 }
 
 CNewToken& CNewToken::operator=(const CNewToken& token)
@@ -490,10 +491,12 @@ CNewToken& CNewToken::operator=(const CNewToken& token)
     this->units = token.units;
     this->nHasIPFS = token.nHasIPFS;
     this->nReissuable = token.nReissuable;
-    this->nHasRoyalties = token.nHasRoyalties;
-    this->nRoyaltiesStatic = token.nRoyaltiesStatic;
-    this->nRoyaltiesAmount = token.nRoyaltiesAmount;
     this->strIPFSHash = token.strIPFSHash;
+
+    this->nHasRoyalties = token.nHasRoyalties;
+    this->nRoyaltiesAddress = token.nRoyaltiesAddress;
+    this->nRoyaltiesAmount = token.nRoyaltiesAmount;
+
     return *this;
 }
 
@@ -505,11 +508,10 @@ std::string CNewToken::ToString()
     ss << "amount : " << nAmount << "\n";
     ss << "units : " << std::to_string(units) << "\n";
     ss << "reissuable : " << std::to_string(nReissuable) << "\n";
-    ss << "has_ipfs : " << std::to_string(nHasIPFS) << "\n";
 
-    ss << "royalties : " << std::to_string(nHasRoyalties) << "\n";
+    ss << "has_royalties : " << nHasRoyalties;
     if (nHasRoyalties) {
-        ss << "royalties_static : " << nRoyaltiesStatic;
+        ss << "royalties_address : " << nRoyaltiesAddress;
         ss << "royalties_amount : " << nRoyaltiesAmount;
     }
 
@@ -520,7 +522,7 @@ std::string CNewToken::ToString()
     return ss.str();
 }
 
-CNewToken::CNewToken(const std::string& strName, const CAmount& nAmount, const int& units, const int& nReissuable, const int& nHasIPFS, const int& nHasRoyalties, const int& nRoyaltiesStatic, const CAmount& nRoyaltiesAmount, const std::string& strIPFSHash)
+CNewToken::CNewToken(const std::string& strName, const CAmount& nAmount, const int& units, const int& nReissuable, const int& nHasIPFS, const std::string& strIPFSHash, const int& nHasRoyalties, const std::string& nRoyaltiesAddress, const CAmount& nRoyaltiesAmount)
 {
     this->SetNull();
     this->strName = strName;
@@ -528,10 +530,11 @@ CNewToken::CNewToken(const std::string& strName, const CAmount& nAmount, const i
     this->units = int8_t(units);
     this->nReissuable = int8_t(nReissuable);
     this->nHasIPFS = int8_t(nHasIPFS);
-    this->nHasRoyalties = int8_t(nHasRoyalties);
-    this->nRoyaltiesStatic = int8_t(nRoyaltiesStatic);
-    this->nRoyaltiesAmount = nRoyaltiesAmount;
     this->strIPFSHash = strIPFSHash;
+
+    this->nHasRoyalties = nHasRoyalties;
+    this->nRoyaltiesAddress = nRoyaltiesAddress;
+    this->nRoyaltiesAmount = nRoyaltiesAmount;
 }
 
 CNewToken::CNewToken(const std::string& strName, const CAmount& nAmount)
@@ -542,10 +545,11 @@ CNewToken::CNewToken(const std::string& strName, const CAmount& nAmount)
     this->units = int8_t(DEFAULT_UNITS);
     this->nReissuable = int8_t(DEFAULT_REISSUABLE);
     this->nHasIPFS = int8_t(DEFAULT_HAS_IPFS);
-    this->nHasRoyalties = int8_t(DEFAULT_HAS_ROYALTIES);
-    this->nRoyaltiesStatic = int8_t(DEFAULT_ROYALTIES_STATIC);
-    this->nRoyaltiesAmount = DEFAULT_ROYALTIES_AMOUNT;
     this->strIPFSHash = DEFAULT_IPFS;
+
+    this->nHasRoyalties = DEFAULT_HAS_ROYALTIES;
+    this->nRoyaltiesAddress = DEFAULT_ROYALTIES_ADDRESS;
+    this->nRoyaltiesAmount = DEFAULT_ROYALTIES_AMOUNT;
 }
 
 CDatabasedTokenData::CDatabasedTokenData(const CNewToken& token, const int& nHeight, const uint256& blockHash)
@@ -1750,7 +1754,8 @@ void CTokenTransfer::ConstructTransaction(CScript& script) const
 }
 
 CReissueToken::CReissueToken(const std::string &strTokenName, const CAmount &nAmount, const int &nUnits, const int &nReissuable,
-                             const std::string &strIPFSHash)
+                            const std::string &strIPFSHash, const int& nHasRoyalties, const std::string& nRoyaltiesAddress,
+                            const CAmount& nRoyaltiesAmount)
 {
     SetNull();
     this->strName = strTokenName;
@@ -1758,6 +1763,10 @@ CReissueToken::CReissueToken(const std::string &strTokenName, const CAmount &nAm
     this->nReissuable = int8_t(nReissuable);
     this->nAmount = nAmount;
     this->nUnits = nUnits;
+
+    this->nHasRoyalties = int8_t(nHasRoyalties);
+    this->nRoyaltiesAddress = nRoyaltiesAddress;
+    this->nRoyaltiesAmount = nRoyaltiesAmount;
 }
 
 void CReissueToken::ConstructTransaction(CScript& script) const
@@ -2051,6 +2060,11 @@ bool CTokensCache::AddReissueToken(const CReissueToken& reissue, const std::stri
     if (!mapReissuedTokenData.count(reissue.strName)) {
         token.nAmount += reissue.nAmount;
         token.nReissuable = reissue.nReissuable;
+
+        token.nHasRoyalties = reissue.nHasRoyalties;
+        token.nRoyaltiesAddress = reissue.nRoyaltiesAddress;
+        token.nRoyaltiesAmount = reissue.nRoyaltiesAmount;
+
         if (reissue.nUnits != -1)
             token.units = reissue.nUnits;
 
@@ -2058,13 +2072,20 @@ bool CTokensCache::AddReissueToken(const CReissueToken& reissue, const std::stri
             token.nHasIPFS = 1;
             token.strIPFSHash = reissue.strIPFSHash;
         }
+
         mapReissuedTokenData.insert(make_pair(reissue.strName, token));
     } else {
         mapReissuedTokenData.at(reissue.strName).nAmount += reissue.nAmount;
         mapReissuedTokenData.at(reissue.strName).nReissuable = reissue.nReissuable;
+
+        mapReissuedTokenData.at(reissue.strName).nHasRoyalties = reissue.nHasRoyalties;
+        mapReissuedTokenData.at(reissue.strName).nRoyaltiesAddress = reissue.nRoyaltiesAddress;
+        mapReissuedTokenData.at(reissue.strName).nRoyaltiesAmount = reissue.nRoyaltiesAmount;
+
         if (reissue.nUnits != -1) {
             mapReissuedTokenData.at(reissue.strName).units = reissue.nUnits;
         }
+
         if (reissue.strIPFSHash != "") {
             mapReissuedTokenData.at(reissue.strName).nHasIPFS = 1;
             mapReissuedTokenData.at(reissue.strName).strIPFSHash = reissue.strIPFSHash;
@@ -5491,7 +5512,7 @@ bool CheckNewToken(const CNewToken& token, std::string& strError)
         return false;
     }
 
-    if (tokenType == KnownTokenType::UNIQUE|| tokenType == KnownTokenType::USERNAME || tokenType == KnownTokenType::MSGCHANNEL) {
+    if (tokenType == KnownTokenType::UNIQUE || tokenType == KnownTokenType::USERNAME || tokenType == KnownTokenType::MSGCHANNEL) {
         if (token.units != UNIQUE_TOKEN_UNITS) {
             strError = _("Invalid parameter: units must be ") + std::to_string(UNIQUE_TOKEN_UNITS);
             return false;
@@ -5502,6 +5523,19 @@ bool CheckNewToken(const CNewToken& token, std::string& strError)
         }
         if (token.nReissuable != 0) {
             strError = _("Invalid parameter: reissuable must be 0");
+            return false;
+        }
+
+        if (token.nHasRoyalties != UNIQUE_TOKENS_HAS_ROYALTIES) {
+            strError = _("Invalid parameter: royalties must be 0");
+            return false;
+        }
+        if (token.nRoyaltiesAddress != UNIQUE_TOKENS_ROYALTIES_ADDRESS) {
+            strError = _("Invalid parameter: royalties address must be empty");
+            return false;
+        }
+        if (token.nRoyaltiesAmount != UNIQUE_TOKENS_ROYALTIES_AMOUNT) {
+            strError = _("Invalid parameter: royalties amount must be 0");
             return false;
         }
     }
@@ -5517,6 +5551,19 @@ bool CheckNewToken(const CNewToken& token, std::string& strError)
         }
         if (token.nReissuable != 0) {
             strError = _("Invalid parameter: reissuable must be 0");
+            return false;
+        }
+
+        if (token.nHasRoyalties != UNIQUE_TOKENS_HAS_ROYALTIES) {
+            strError = _("Invalid parameter: royalties must be 0");
+            return false;
+        }
+        if (token.nRoyaltiesAddress != UNIQUE_TOKENS_ROYALTIES_ADDRESS) {
+            strError = _("Invalid parameter: royalties address must be empty");
+            return false;
+        }
+        if (token.nRoyaltiesAmount != UNIQUE_TOKENS_ROYALTIES_AMOUNT) {
+            strError = _("Invalid parameter: royalties amount must be 0");
             return false;
         }
     }
@@ -5553,6 +5600,46 @@ bool CheckNewToken(const CNewToken& token, std::string& strError)
 
     if (token.nHasIPFS != 0 && token.nHasIPFS != 1) {
         strError = _("Invalid parameter: has_ipfs must be 0 or 1.");
+        return false;
+    }
+
+    // Royalties
+    if (token.nHasRoyalties != 0 && token.nHasRoyalties != 1) {
+        strError = _("Invalid parameter: royalties must be 0 or 1.");
+        return false;
+    }
+
+    if (token.nHasRoyalties == 0) {
+        if (token.nRoyaltiesAddress != "") {
+            strError = _("Invalid parameter: royalties disabled, address must be empty.");
+            return false;
+        }
+        if (token.nRoyaltiesAmount != 0) {
+            strError = _("Invalid parameter: royalties disabled, amount must be 0.");
+            return false;
+        }
+    } else {
+        CTxDestination dest = DecodeDestination(token.nRoyaltiesAddress);
+        if (!IsValidDestination(dest)) {
+            strError = _("Invalid parameter: royalties address must be valid.");
+            return false;
+        }
+    }
+
+    if (token.nRoyaltiesAmount < 0) {
+        strError = _("Invalid parameter: token royalties can't be less than zero.");
+        return false;
+    }
+    if (token.nRoyaltiesAmount > MAX_MONEY) {
+        strError = _("Invalid parameter: token royalties greater than max money: ") + std::to_string(MAX_MONEY / COIN);
+        return false;
+    }
+    if (!CheckAmountWithUnits(token.nRoyaltiesAmount, token.units)) {
+        strError = _("Invalid parameter: royalties must be divisible by the smaller unit assigned to the token");
+        return false;
+    }
+    if (token.nRoyaltiesAmount > token.nAmount) {
+        strError = _("Invalid parameter: royalty amount can't be more than token supply.");
         return false;
     }
 
@@ -5697,6 +5784,46 @@ bool ContextualCheckReissueToken(CTokensCache* tokenCache, const CReissueToken& 
     if (reissue_token.strIPFSHash != "") {
         if (!CheckEncoded(reissue_token.strIPFSHash, strError))
             return false;
+    }
+
+    // Royalties
+    if (reissue_token.nHasRoyalties != 0 && reissue_token.nHasRoyalties != 1) {
+        strError = _("Invalid parameter: royalties must be 0 or 1.");
+        return false;
+    }
+
+    if (reissue_token.nHasRoyalties == 0) {
+        if (reissue_token.nRoyaltiesAddress != "") {
+            strError = _("Invalid parameter: royalties disabled, address must be empty.");
+            return false;
+        }
+        if (reissue_token.nRoyaltiesAmount != 0) {
+            strError = _("Invalid parameter: royalties disabled, amount must be 0.");
+            return false;
+        }
+    } else {
+        CTxDestination dest = DecodeDestination(reissue_token.nRoyaltiesAddress);
+        if (!IsValidDestination(dest)) {
+            strError = _("Invalid parameter: royalties address must be valid.");
+            return false;
+        }
+    }
+
+    if (reissue_token.nRoyaltiesAmount < 0) {
+        strError = _("Invalid parameter: token royalties can't be less than zero.");
+        return false;
+    }
+    if (reissue_token.nRoyaltiesAmount > MAX_MONEY) {
+        strError = _("Invalid parameter: token royalties greater than max money: ") + std::to_string(MAX_MONEY / COIN);
+        return false;
+    }
+    if (!CheckAmountWithUnits(reissue_token.nRoyaltiesAmount, prev_token.units)) {
+        strError = _("Invalid parameter: royalties must be divisible by the smaller unit assigned to the token");
+        return false;
+    }
+    if (reissue_token.nRoyaltiesAmount > prev_token.nAmount + reissue_token.nAmount) {
+        strError = _("Invalid parameter: royalty amount can't be more than token supply.");
+        return false;
     }
 
     if (IsTokenNameAnRestricted(reissue_token.strName)) {

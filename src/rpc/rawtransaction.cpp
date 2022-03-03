@@ -749,15 +749,15 @@ UniValue createrawtransaction(const JSONRPCRequest& request)
                     CAmount nAmount = AmountFromValue(token_quantity);
 
                     bool hasRoyalties = false;
-                    bool royaltiesStatic = false;
+                    std::string royaltiesAddress = "";
                     CAmount royaltiesAmount = 0;
 
                     // Create a new token
                     CNewToken token(
                         token_name.get_str(), nAmount, units.get_int(),
-                        reissuable.get_int(), has_ipfs.get_int(),
-                        hasRoyalties, royaltiesStatic, royaltiesAmount,
-                        DecodeTokenData(ipfs_hash.get_str()));
+                        reissuable.get_int(), has_ipfs.get_int(), DecodeTokenData(ipfs_hash.get_str()),
+                        hasRoyalties ? 1 : 0, royaltiesAddress, royaltiesAmount
+                    );
 
                     // Verify that data
                     std::string strError = "";
@@ -828,14 +828,16 @@ UniValue createrawtransaction(const JSONRPCRequest& request)
                         CNewToken token;
                         if (ipfs_hashes.isNull()) {
                             token = CNewToken(GetUniqueTokenName(root_name.get_str(), token_tags[i].get_str()),
-                                              UNIQUE_TOKEN_AMOUNT,  UNIQUE_TOKEN_UNITS, UNIQUE_TOKENS_REISSUABLE, 0,
-                                              UNIQUE_TOKENS_HAS_ROYALTIES, UNIQUE_TOKENS_ROYALTIES_STATIC,
-                                              UNIQUE_TOKENS_ROYALTIES_AMOUNT, "");
+                                              UNIQUE_TOKEN_AMOUNT,  UNIQUE_TOKEN_UNITS, UNIQUE_TOKENS_REISSUABLE, 0, "",
+                                              UNIQUE_TOKENS_HAS_ROYALTIES, UNIQUE_TOKENS_ROYALTIES_ADDRESS,
+                                              UNIQUE_TOKENS_ROYALTIES_AMOUNT
+                            );
                         } else {
                             token = CNewToken(GetUniqueTokenName(root_name.get_str(), token_tags[i].get_str()),
-                                              UNIQUE_TOKEN_AMOUNT, UNIQUE_TOKEN_UNITS, UNIQUE_TOKENS_REISSUABLE,
-                                              1, UNIQUE_TOKENS_HAS_ROYALTIES, UNIQUE_TOKENS_ROYALTIES_STATIC,
-                                              UNIQUE_TOKENS_ROYALTIES_AMOUNT, DecodeTokenData(ipfs_hashes[i].get_str()));
+                                              UNIQUE_TOKEN_AMOUNT, UNIQUE_TOKEN_UNITS, UNIQUE_TOKENS_REISSUABLE, 1, DecodeTokenData(ipfs_hashes[i].get_str()),
+                                              UNIQUE_TOKENS_HAS_ROYALTIES, UNIQUE_TOKENS_ROYALTIES_ADDRESS,
+                                              UNIQUE_TOKENS_ROYALTIES_AMOUNT
+                            );
                         }
 
                         // Verify that data
@@ -1100,15 +1102,14 @@ UniValue createrawtransaction(const JSONRPCRequest& request)
                         throw JSONRPCError(RPC_INVALID_PARAMETER, std::string("Invalid parmeter, verifier string is not. Please check the syntax. Error Msg - " + strError));
 
                     bool hasRoyalties = false;
-                    bool royaltiesStatic = false;
+                    std::string royaltiesAddress = "";
                     CAmount royaltiesAmount = 0;
 
                     // Create a new token
                     CNewToken token(
                         strTokenName, nAmount, units.get_int(),
-                        reissuable.get_int(), has_ipfs.get_int(),
-                        hasRoyalties, royaltiesStatic, royaltiesAmount,
-                        DecodeTokenData(ipfs_hash.get_str())
+                        reissuable.get_int(), has_ipfs.get_int(), DecodeTokenData(ipfs_hash.get_str()),
+                        hasRoyalties ? 1 : 0, royaltiesAddress, royaltiesAmount
                     );
 
                     // Verify the new token data
@@ -1338,15 +1339,15 @@ UniValue createrawtransaction(const JSONRPCRequest& request)
                     bool reissuable = false;
 
                     bool hasRoyalties = false;
-                    bool royaltiesStatic = false;
+                    std::string royaltiesAddress = "";
                     CAmount royaltiesAmount = 0;
 
                     // Create a new qualifier token
                     CNewToken token(
                         strTokenName, nAmount, units,
-                        reissuable ? 1 : 0, fHasIpfs ? 1 : 0,
-                        hasRoyalties ? 1 : 0, royaltiesStatic ? 1 : 0,
-                        royaltiesAmount, DecodeTokenData(ipfs_hash.get_str()));
+                        reissuable ? 1 : 0, fHasIpfs ? 1 : 0, DecodeTokenData(ipfs_hash.get_str()),
+                        hasRoyalties ? 1 : 0, royaltiesAddress, royaltiesAmount
+                    );
 
                     // Verify the new token data
                     std::string strError = "";

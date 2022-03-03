@@ -594,14 +594,13 @@ UniValue issue(const JSONRPCRequest& request)
     }
 
     bool hasRoyalties = false;
-    bool royaltiesStatic = false;
+    std::string royaltiesAddress = "";
     CAmount royaltiesAmount = 0;
 
     CNewToken token(
         tokenName, nAmount, units,
-        reissuable ? 1 : 0, has_ipfs ? 1 : 0,
-        hasRoyalties ? 1 : 0, royaltiesStatic ? 1 : 0,
-        royaltiesAmount, DecodeTokenData(ipfs_hash)
+        reissuable ? 1 : 0, has_ipfs ? 1 : 0, DecodeTokenData(ipfs_hash),
+        hasRoyalties ? 1 : 0, royaltiesAddress, royaltiesAmount
     );
 
     CReserveKey reservekey(pwallet);
@@ -741,16 +740,17 @@ UniValue issueunique(const JSONRPCRequest& request)
         {
             token = CNewToken(
                 tokenName, UNIQUE_TOKEN_AMOUNT, UNIQUE_TOKEN_UNITS,
-                UNIQUE_TOKENS_REISSUABLE, 0, UNIQUE_TOKENS_HAS_ROYALTIES,
-                UNIQUE_TOKENS_ROYALTIES_STATIC, UNIQUE_TOKENS_ROYALTIES_AMOUNT, "");
+                UNIQUE_TOKENS_REISSUABLE, 0, "",
+                UNIQUE_TOKENS_HAS_ROYALTIES, UNIQUE_TOKENS_ROYALTIES_ADDRESS,
+                UNIQUE_TOKENS_ROYALTIES_AMOUNT);
         }
         else
         {
             token = CNewToken(
                 tokenName, UNIQUE_TOKEN_AMOUNT, UNIQUE_TOKEN_UNITS,
-                UNIQUE_TOKENS_REISSUABLE, 1, UNIQUE_TOKENS_HAS_ROYALTIES,
-                UNIQUE_TOKENS_ROYALTIES_STATIC, UNIQUE_TOKENS_ROYALTIES_AMOUNT, 
-                              DecodeTokenData(ipfsHashes[i].get_str()));
+                UNIQUE_TOKENS_REISSUABLE, 1, DecodeTokenData(ipfsHashes[i].get_str()),
+                UNIQUE_TOKENS_HAS_ROYALTIES, UNIQUE_TOKENS_ROYALTIES_ADDRESS,
+                UNIQUE_TOKENS_ROYALTIES_AMOUNT);
         }
 
         tokens.push_back(token);
@@ -849,9 +849,11 @@ UniValue registerusername(const JSONRPCRequest& request)
         address = EncodeDestination(keyID);
     }
 
-    CNewToken token(tokenName, COIN, 0, 0, 0,
-        UNIQUE_TOKENS_HAS_ROYALTIES, UNIQUE_TOKENS_ROYALTIES_STATIC,
-        UNIQUE_TOKENS_ROYALTIES_AMOUNT, "");
+    CNewToken token(
+        tokenName, COIN, 0, 0, 0, "",
+        UNIQUE_TOKENS_HAS_ROYALTIES, UNIQUE_TOKENS_ROYALTIES_ADDRESS,
+        UNIQUE_TOKENS_ROYALTIES_AMOUNT
+    );
 
     CReserveKey reservekey(pwallet);
     CWalletTx transaction;
@@ -2021,7 +2023,14 @@ UniValue reissue(const JSONRPCRequest& request)
     if (fMessageCheck)
         CheckIPFSTxidMessage(newipfs, expireTime);
 
-    CReissueToken reissueToken(token_name, nAmount, newUnits, reissuable, DecodeTokenData(newipfs));
+    bool hasRoyalties = false;
+    std::string royaltiesAddress = "";
+    CAmount royaltiesAmount = 0;
+
+    CReissueToken reissueToken(
+        token_name, nAmount, newUnits, reissuable, DecodeTokenData(newipfs),
+        hasRoyalties ? 1 : 0, royaltiesAddress, royaltiesAmount
+    );
 
     std::pair<int, std::string> error;
     CReserveKey reservekey(pwallet);
@@ -3245,14 +3254,13 @@ UniValue issuequalifiertoken(const JSONRPCRequest& request)
         CheckIPFSTxidMessage(ipfs_hash, expireTime);
 
     bool hasRoyalties = false;
-    bool royaltiesStatic = false;
+    std::string royaltiesAddress = "";
     CAmount royaltiesAmount = 0;
 
     CNewToken token(
         tokenName, nAmount, units,
-        reissuable ? 1 : 0, has_ipfs ? 1 : 0,
-        hasRoyalties ? 1 : 0, royaltiesStatic ? 1 : 0,
-        royaltiesAmount, DecodeTokenData(ipfs_hash)
+        reissuable ? 1 : 0, has_ipfs ? 1 : 0, DecodeTokenData(ipfs_hash),
+        hasRoyalties ? 1 : 0, royaltiesAddress, royaltiesAmount
     );
 
     CReserveKey reservekey(pwallet);
@@ -3413,14 +3421,13 @@ UniValue issuerestrictedtoken(const JSONRPCRequest& request)
         CheckIPFSTxidMessage(ipfs_hash, expireTime);
 
     bool hasRoyalties = false;
-    bool royaltiesStatic = false;
+    std::string royaltiesAddress = "";
     CAmount royaltiesAmount = 0;
 
     CNewToken token(
         tokenName, nAmount, units,
-        reissuable ? 1 : 0, has_ipfs ? 1 : 0,
-        hasRoyalties ? 1 : 0, royaltiesStatic ? 1 : 0,
-        royaltiesAmount, DecodeTokenData(ipfs_hash)
+        reissuable ? 1 : 0, has_ipfs ? 1 : 0, DecodeTokenData(ipfs_hash),
+        hasRoyalties ? 1 : 0, royaltiesAddress, royaltiesAmount
     );
 
     CReserveKey reservekey(pwallet);
@@ -3568,7 +3575,14 @@ UniValue reissuerestrictedtoken(const JSONRPCRequest& request)
     if (fMessageCheck)
         CheckIPFSTxidMessage(new_ipfs_data, expireTime);
 
-    CReissueToken reissueToken(tokenName, nAmount, newUnits, reissuable ? 1 : 0, DecodeTokenData(new_ipfs_data));
+    bool hasRoyalties = false;
+    std::string royaltiesAddress = "";
+    CAmount royaltiesAmount = 0;
+
+    CReissueToken reissueToken(
+        tokenName, nAmount, newUnits, reissuable ? 1 : 0, DecodeTokenData(new_ipfs_data),
+        hasRoyalties, royaltiesAddress, royaltiesAmount
+    );
 
     CReserveKey reservekey(pwallet);
     CWalletTx transaction;

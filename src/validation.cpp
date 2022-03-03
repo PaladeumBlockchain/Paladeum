@@ -51,6 +51,7 @@
 
 #include <atomic>
 #include <sstream>
+#include <algorithm>
 
 #include <boost/algorithm/string/replace.hpp>
 #include <boost/algorithm/string/join.hpp>

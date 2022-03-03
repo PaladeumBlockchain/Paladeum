@@ -903,7 +903,15 @@ void ReissueTokenDialog::onReissueTokenClicked()
     if (hasIPFS)
         ipfsDecoded = DecodeTokenData(ui->ipfsText->text().toStdString());
 
-    CReissueToken reissueToken(name.toStdString(), quantity, unit, reissuable ? 1 : 0, ipfsDecoded);
+    bool hasRoyalties = false;
+    std::string royaltiesAddress = "";
+    CAmount royaltiesAmount = 0;
+
+    CReissueToken reissueToken(
+        name.toStdString(), quantity,
+        unit, reissuable ? 1 : 0, ipfsDecoded,
+        hasRoyalties ? 1 : 0, royaltiesAddress, royaltiesAmount
+    );
 
     CWalletTx tx;
     CReserveKey reservekey(model->getWallet());

@@ -99,22 +99,23 @@ bool ReadWriteTokenHash(Stream &s, Operation ser_action, std::string &strIPFSHas
 class CNewToken
 {
 public:
-    std::string strName; // MAX 31 Bytes
-    CAmount nAmount;     // 8 Bytes
-    int8_t units;        // 1 Byte
-    int8_t nReissuable;  // 1 Byte
-    int8_t nHasIPFS;     // 1 Byte
-    int8_t nHasRoyalties;     // 1 Byte
-    int8_t nRoyaltiesStatic;  // 1 Byte
-    CAmount nRoyaltiesAmount; // 8 Bytes
+    std::string strName;  // MAX 31 Bytes
+    CAmount nAmount;      // 8 Bytes
+    int8_t units;         // 1 Byte
+    int8_t nReissuable;   // 1 Byte
+    int8_t nHasIPFS;      // 1 Byte
     std::string strIPFSHash;  // MAX 40 Bytes
+
+    int8_t nHasRoyalties;
+    std::string nRoyaltiesAddress;
+    CAmount nRoyaltiesAmount;
 
     CNewToken()
     {
         SetNull();
     }
 
-    CNewToken(const std::string& strName, const CAmount& nAmount, const int& units, const int& nReissuable, const int& nHasIPFS, const int& nHasRoyalties, const int& nRoyaltiesStatic, const CAmount& nRoyaltiesAmount, const std::string& strIPFSHash);
+    CNewToken(const std::string& strName, const CAmount& nAmount, const int& units, const int& nReissuable, const int& nHasIPFS, const std::string& strIPFSHash, const int& nHasRoyalties, const std::string& nRoyaltiesAddress, const CAmount& nRoyaltiesAmount);
     CNewToken(const std::string& strName, const CAmount& nAmount);
 
     CNewToken(const CNewToken& token);
@@ -127,10 +128,11 @@ public:
         units = int8_t(MAX_UNIT);
         nReissuable = int8_t(0);
         nHasIPFS = int8_t(0);
-        nHasRoyalties = int8_t(0);
-        nRoyaltiesStatic = int8_t(0);
-        nRoyaltiesAmount = 0;
         strIPFSHash = "";
+
+        nHasRoyalties = int8_t(0);
+        nRoyaltiesAddress = "";
+        nRoyaltiesAmount = 0;
     }
 
     bool IsNull() const;
@@ -148,13 +150,14 @@ public:
         READWRITE(nAmount);
         READWRITE(units);
         READWRITE(nReissuable);
+
         READWRITE(nHasRoyalties);
-        READWRITE(nRoyaltiesStatic);
-        READWRITE(nHasIPFS);
-        if (nHasRoyalties)
-        {
+        if (nHasRoyalties == 1) {
+            READWRITE(nRoyaltiesAddress);
             READWRITE(nRoyaltiesAmount);
         }
+
+        READWRITE(nHasIPFS);
         if (nHasIPFS == 1) {
             ReadWriteTokenHash(s, ser_action, strIPFSHash);
         }
@@ -259,6 +262,10 @@ public:
     int8_t nReissuable;
     std::string strIPFSHash;
 
+    int8_t nHasRoyalties;
+    std::string nRoyaltiesAddress;
+    CAmount nRoyaltiesAmount;
+
     CReissueToken()
     {
         SetNull();
@@ -271,6 +278,10 @@ public:
         nUnits = 0;
         nReissuable = 1;
         strIPFSHash = "";
+
+        nHasRoyalties = int8_t(0);
+        nRoyaltiesAddress = "";
+        nRoyaltiesAmount = 0;
     }
 
     ADD_SERIALIZE_METHODS;
@@ -282,10 +293,15 @@ public:
         READWRITE(nAmount);
         READWRITE(nUnits);
         READWRITE(nReissuable);
+
+        READWRITE(nHasRoyalties);
+        READWRITE(nRoyaltiesAddress);
+        READWRITE(nRoyaltiesAmount);
+
         ReadWriteTokenHash(s, ser_action, strIPFSHash);
     }
 
-    CReissueToken(const std::string& strTokenName, const CAmount& nAmount, const int& nUnits, const int& nReissuable, const std::string& strIPFSHash);
+    CReissueToken(const std::string& strTokenName, const CAmount& nAmount, const int& nUnits, const int& nReissuable, const std::string& strIPFSHash, const int& nHasRoyalties, const std::string& nRoyaltiesAddress, const CAmount& nRoyaltiesAmount);
     void ConstructTransaction(CScript& script) const;
     bool IsNull() const;
 };

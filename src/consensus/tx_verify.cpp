@@ -188,6 +188,7 @@ bool CheckTransaction(const CTransaction& tx, CValidationState &state, bool fChe
     bool fContainsRestrictedTokenReissue = false;
     bool fContainsNullTokenVerifierTx = false;
     int nCountAddTagOuts = 0;
+
     for (const auto& txout : tx.vout)
     {
         if (txout.IsEmpty() && !tx.IsCoinBase() && !tx.IsCoinStake())
@@ -308,6 +309,7 @@ bool CheckTransaction(const CTransaction& tx, CValidationState &state, bool fChe
                 // Specific check and error message to go with to make sure the amount is 0
                 if (txout.nValue != 0)
                     return state.DoS(100, false, REJECT_INVALID, "bad-txns-token-transfer-amount-isn't-zero");
+
             } else if (nType == TX_NEW_TOKEN) {
                 // Specific check and error message to go with to make sure the amount is 0
                 if (txout.nValue != 0)
@@ -688,6 +690,7 @@ bool Consensus::CheckTxTokens(const CTransaction& tx, CValidationState& state, c
     }
 
     // Create map that stores the amount of an token transaction output. Used to verify no tokens are burned
+    std::map<std::string, bool> tokenRoyalties;
     std::map<std::string, CAmount> totalOutputs;
     int index = 0;
     int64_t currentTime = GetTime();
@@ -757,6 +760,15 @@ bool Consensus::CheckTxTokens(const CTransaction& tx, CValidationState& state, c
 
                     if (!CheckAmountWithUnits(transfer.nAmount, token.units))
                         return state.DoS(100, false, REJECT_INVALID, "bad-txns-transfer-token-amount-not-match-units", false, "", tx.GetHash());
+
+                    if (token.nHasRoyalties && token.nRoyaltiesAmount > 0)
+                    {
+                        if (tokenRoyalties.find(transfer.strName) == tokenRoyalties.end())
+                            tokenRoyalties[transfer.strName] = false;
+
+                        if (address == token.nRoyaltiesAddress && transfer.nAmount >= token.nRoyaltiesAmount && transfer.nTimeLock == 0)
+                            tokenRoyalties[transfer.strName] = true;
+                    }
                 }
             }
 
@@ -793,6 +805,14 @@ bool Consensus::CheckTxTokens(const CTransaction& tx, CValidationState& state, c
             }
         }
         index++;
+    }
+
+    auto iter = tokenRoyalties.begin();
+    while (iter != tokenRoyalties.end()) {
+        if (!iter->second) {
+            return state.DoS(100, false, REJECT_INVALID, "bad-tx-token-royalty-missing", false, "", tx.GetHash());
+        }
+        ++iter;
     }
 
     if (tokenCache) {
