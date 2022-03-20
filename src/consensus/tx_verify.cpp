@@ -201,6 +201,9 @@ bool CheckTransaction(const CTransaction& tx, CValidationState &state, bool fChe
         if (!MoneyRange(nValueOut))
             return state.DoS(100, false, REJECT_INVALID, "bad-txns-txouttotal-toolarge");
 
+        if(txout.scriptPubKey.IsOfflineStaking() && !IsOfflineStakingEnabled(pindexBestHeader, GetParams().GetConsensus()))
+            return state.DoS(100, false, REJECT_INVALID, "offline-staking-not-enabled");
+
         /** TOKENS START */
         // Find and handle all new OP_YONA_TOKEN null data transactions
         if (txout.scriptPubKey.IsNullToken()) {

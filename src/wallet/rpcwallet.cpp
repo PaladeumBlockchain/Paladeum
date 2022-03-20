@@ -224,6 +224,46 @@ CTxDestination GetAccountAddress(CWallet* const pwallet, std::string strAccount,
     return pubKey.GetID();
 }
 
+UniValue getofflinestakingaddress(const JSONRPCRequest& request)
+{
+
+    if (request.fHelp || request.params.size() != 2)
+        throw std::runtime_error(
+            "getofflinestakingaddress \"stakingaddress\" \"spendingaddress\"\n"
+            "Returns a offline staking address based on two address inputs\n"
+            "Arguments:\n"
+            "1. \"stakingaddress\"  (string, required) The staking address.\n"
+            "2. \"spendingaddress\" (string, required) The spending address.\n\n"
+            "\nExamples:\n"
+            + HelpExampleCli("getofflinestakingaddress", "\"mqyGZvLYfEH27Zk3z6JkwJgB1zpjaEHfiW\" \"mrfjgazyerYxDQHJAPDdUcC3jpmi8WZ2uv\"") +
+            "\nAs a json rpc call\n"
+            + HelpExampleRpc("getofflinestakingaddress", "\"mqyGZvLYfEH27Zk3z6JkwJgB1zpjaEHfiW\", \"mrfjgazyerYxDQHJAPDdUcC3jpmi8WZ2uv\"")
+        );
+
+    if (!IsOfflineStakingEnabled(pindexBestHeader, GetParams().GetConsensus()))
+        throw std::runtime_error(
+            "Offline staking is not active yet.");
+
+    if (request.params[0].get_str() == request.params[1].get_str())
+        throw std::runtime_error(
+            "The staking address should be different to the spending address"
+        );
+
+    CYonaAddress stakingAddress(request.params[0].get_str());
+    CKeyID stakingKeyID;
+    if (!stakingAddress.IsValid() || !stakingAddress.GetKeyID(stakingKeyID))
+        throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, "Staking address is not a valid address");
+
+    CYonaAddress spendingAddress(request.params[1].get_str());
+    CKeyID spendingKeyID;
+    if (!spendingAddress.IsValid() || !spendingAddress.GetKeyID(spendingKeyID))
+        throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, "Spending address is not a valid address");
+
+    spendingAddress.GetKeyID(spendingKeyID);
+
+    return CYonaAddress(stakingKeyID, spendingKeyID).ToString();
+}
+
 UniValue getaccountaddress(const JSONRPCRequest& request)
 {
     CWallet * const pwallet = GetWalletForJSONRPCRequest(request);
@@ -1375,6 +1415,8 @@ public:
 
     bool operator()(const CNoDestination &dest) const { return false; }
 
+    bool operator()(const std::pair<CKeyID, CKeyID> &dest) const { return false; }
+
     bool operator()(const CKeyID &keyID) {
         if (pwallet) {
             CScript basescript = GetScriptForDestination(keyID);
@@ -1874,7 +1916,7 @@ UniValue listtransactions(const JSONRPCRequest& request)
         return NullUniValue;
     }
 
-    if (request.fHelp || request.params.size() > 4)
+    if (request.fHelp || request.params.size() > 5)
         throw std::runtime_error(
             "listtransactions ( \"account\" count skip include_watchonly)\n"
             "\nReturns up to 'count' most recent transactions skipping the first 'from' transactions for account 'account'.\n"
@@ -1883,6 +1925,7 @@ UniValue listtransactions(const JSONRPCRequest& request)
             "2. count          (numeric, optional, default=10) The number of transactions to return\n"
             "3. skip           (numeric, optional, default=0) The number of transactions to skip\n"
             "4. include_watchonly (bool, optional, default=false) Include transactions to watch-only addresses (see 'importaddress')\n"
+            "5. include_offline_staking (bool, optional, default=true) Include transactions to offline staking addresses\n"
             "\nResult:\n"
             "[\n"
             "  {\n"
@@ -1946,10 +1989,13 @@ UniValue listtransactions(const JSONRPCRequest& request)
     int nFrom = 0;
     if (!request.params[2].isNull())
         nFrom = request.params[2].get_int();
-    isminefilter filter = ISMINE_SPENDABLE;
+    isminefilter filter = ISMINE_SPENDABLE | ISMINE_STAKABLE;
     if(!request.params[3].isNull())
         if(request.params[3].get_bool())
             filter = filter | ISMINE_WATCH_ONLY;
+    if(request.params.size() > 4)
+        if(!request.params[4].get_bool())
+            filter &= ~ISMINE_WATCH_ONLY;
 
     if (nCount < 0)
         throw JSONRPCError(RPC_INVALID_PARAMETER, "Negative count");
@@ -2874,6 +2920,7 @@ UniValue getwalletinfo(const JSONRPCRequest& request)
     obj.push_back(Pair("walletname", pwallet->GetName()));
     obj.push_back(Pair("walletversion", pwallet->GetVersion()));
     obj.push_back(Pair("balance",       ValueFromAmount(pwallet->GetBalance())));
+    obj.push_back(Pair("offlinestaking_balance",       ValueFromAmount(pwallet->GetOfflineStakingBalance())));
     obj.push_back(Pair("unconfirmed_balance", ValueFromAmount(pwallet->GetUnconfirmedBalance())));
     obj.push_back(Pair("immature_balance",    ValueFromAmount(pwallet->GetImmatureBalance())));
     obj.push_back(Pair("locked_balance",    ValueFromAmount(pwallet->GetLockedBalance())));
@@ -3784,6 +3831,7 @@ static const CRPCCommand commands[] =
     { "wallet",             "getmasterkeyinfo",         &getmasterkeyinfo,         {} },
     { "wallet",             "getmywords",               &getmywords,                        {} },
     { "wallet",             "getnewaddress",            &getnewaddress,            {"account"} },
+    { "wallet",             "getofflinestakingaddress",    &getofflinestakingaddress,    {"stakingaddress","spendingaddress"}  },
     { "wallet",             "getrawchangeaddress",      &getrawchangeaddress,      {} },
     { "wallet",             "getreceivedbyaccount",     &getreceivedbyaccount,     {"account","minconf"} },
     { "wallet",             "getreceivedbyaddress",     &getreceivedbyaddress,     {"address","minconf"} },

@@ -167,6 +167,9 @@ public:
         consensus.nTxMessages = std::numeric_limits<int>::max();
         consensus.nStakeTimestampMask = 0xf; // 15
 
+        // Fork to enable offline staking and remove the block limiter
+        consensus.offlineStakingFork = std::numeric_limits<int>::max();
+
         /**
          * The message start string is designed to be unlikely to occur in normal data.
          * The characters are rarely used upper ASCII, not valid as UTF-8, and produce
@@ -189,7 +192,8 @@ public:
 
         base58Prefixes[PUBKEY_ADDRESS] = std::vector<unsigned char>(1,140);
         base58Prefixes[SCRIPT_ADDRESS] = std::vector<unsigned char>(1,143);
-        base58Prefixes[SECRET_KEY] =     std::vector<unsigned char>(1,108);
+        base58Prefixes[SECRET_KEY]     = std::vector<unsigned char>(1,108);
+        base58Prefixes[OFFLINE_STAKING_ADDRESS] = std::vector<unsigned char>(1,21);
         base58Prefixes[EXT_PUBLIC_KEY] = {0x04, 0x35, 0x87, 0xCF};
         base58Prefixes[EXT_SECRET_KEY] = {0x04, 0x35, 0x83, 0x94};
 
@@ -275,6 +279,9 @@ public:
         consensus.nTxMessages = 95000;
         consensus.nStakeTimestampMask = 0xf; // 15
 
+        // Fork to enable offline staking and remove the block limiter
+        consensus.offlineStakingFork = std::numeric_limits<int>::max();
+
         pchMessageStart[0] = 0x79;
         pchMessageStart[1] = 0x6e;
         pchMessageStart[2] = 0x61;
@@ -296,6 +303,7 @@ public:
         base58Prefixes[PUBKEY_ADDRESS] = std::vector<unsigned char>(1,140);
         base58Prefixes[SCRIPT_ADDRESS] = std::vector<unsigned char>(1,143);
         base58Prefixes[SECRET_KEY] =     std::vector<unsigned char>(1,108);
+        base58Prefixes[OFFLINE_STAKING_ADDRESS] = std::vector<unsigned char>(1,21);
         base58Prefixes[EXT_PUBLIC_KEY] = {0x04, 0x35, 0x87, 0xCF};
         base58Prefixes[EXT_SECRET_KEY] = {0x04, 0x35, 0x83, 0x94};
 
@@ -381,6 +389,9 @@ public:
         consensus.nTxMessages = 10;
         consensus.nStakeTimestampMask = 0xf; // 15
 
+        // Fork to enable offline staking and remove the block limiter
+        consensus.offlineStakingFork = 0;
+
         pchMessageStart[0] = 0x79;
         pchMessageStart[1] = 0x6e;
         pchMessageStart[2] = 0x61;
@@ -417,6 +428,7 @@ public:
         base58Prefixes[PUBKEY_ADDRESS] = std::vector<unsigned char>(1,111);
         base58Prefixes[SCRIPT_ADDRESS] = std::vector<unsigned char>(1,196);
         base58Prefixes[SECRET_KEY] =     std::vector<unsigned char>(1,239);
+        base58Prefixes[OFFLINE_STAKING_ADDRESS] = std::vector<unsigned char>(1,21);
         base58Prefixes[EXT_PUBLIC_KEY] = {0x04, 0x35, 0x87, 0xCF};
         base58Prefixes[EXT_SECRET_KEY] = {0x04, 0x35, 0x83, 0x94};
 

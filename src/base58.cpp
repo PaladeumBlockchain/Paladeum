@@ -13,6 +13,7 @@
 #include <string.h>
 #include <vector>
 #include <string>
+#include <utility>
 #include <boost/variant/apply_visitor.hpp>
 #include <boost/variant/static_visitor.hpp>
 
@@ -164,6 +165,16 @@ void CBase58Data::SetData(const std::vector<unsigned char>& vchVersionIn, const 
         memcpy(vchData.data(), pdata, nSize);
 }
 
+void CBase58Data::SetData(const std::vector<unsigned char>& vchVersionIn, const void* pdata, size_t nSize, const void* pdata2, size_t nSize2)
+{
+    vchVersion = vchVersionIn;
+    vchData.resize(nSize+nSize2);
+    if (!vchData.empty()) {
+        memcpy(&vchData[0], pdata, nSize);
+        memcpy(&vchData[nSize], pdata2, nSize2);
+    }
+}
+
 void CBase58Data::SetData(const std::vector<unsigned char>& vchVersionIn, const unsigned char* pbegin, const unsigned char* pend)
 {
     SetData(vchVersionIn, (void*)pbegin, pend - pbegin);
@@ -223,6 +234,7 @@ public:
     explicit CYonaAddressVisitor(CYonaAddress* addrIn) : addr(addrIn) {}
 
     bool operator()(const CKeyID& id) const { return addr->Set(id); }
+    bool operator()(const std::pair<CKeyID, CKeyID>& id) const { return addr->Set(id.first, id.second); }
     bool operator()(const CScriptID& id) const { return addr->Set(id); }
     bool operator()(const CNoDestination& no) const { return false; }
 };
@@ -232,6 +244,12 @@ public:
 bool CYonaAddress::Set(const CKeyID& id)
 {
     SetData(GetParams().Base58Prefix(CChainParams::PUBKEY_ADDRESS), &id, 20);
+    return true;
+}
+
+bool CYonaAddress::Set(const CKeyID& id, const CKeyID& id2)
+{
+    SetData(GetParams().Base58Prefix(CChainParams::OFFLINE_STAKING_ADDRESS), &id, 20, &id2, 20);
     return true;
 }
 
@@ -246,6 +264,28 @@ bool CYonaAddress::Set(const CTxDestination& dest)
     return boost::apply_visitor(CYonaAddressVisitor(this), dest);
 }
 
+bool CYonaAddress::GetSpendingAddress(CYonaAddress &address) const
+{
+    if(!IsOfflineStakingAddress(GetParams()))
+        return false;
+
+    uint160 id;
+    memcpy(&id, &vchData[20], 20);
+    address.Set(CKeyID(id));
+    return true;
+}
+
+bool CYonaAddress::GetStakingAddress(CYonaAddress &address) const
+{
+    if (!IsOfflineStakingAddress(GetParams()))
+        return false;
+
+    uint160 id;
+    memcpy(&id, &vchData[0], 20);
+    address.Set(CKeyID(id));
+    return true;
+}
+
 bool CYonaAddress::IsValid() const
 {
     return IsValid(GetParams());
@@ -253,10 +293,18 @@ bool CYonaAddress::IsValid() const
 
 bool CYonaAddress::IsValid(const CChainParams& params) const
 {
+    if (vchVersion == params.Base58Prefix(CChainParams::OFFLINE_STAKING_ADDRESS))
+        return vchData.size() == 40;
+
     bool fCorrectSize = vchData.size() == 20;
     bool fKnownVersion = vchVersion == params.Base58Prefix(CChainParams::PUBKEY_ADDRESS) ||
                          vchVersion == params.Base58Prefix(CChainParams::SCRIPT_ADDRESS);
     return fCorrectSize && fKnownVersion;
+}
+
+bool CYonaAddress::IsOfflineStakingAddress(const CChainParams& params) const
+{
+    return vchVersion == params.Base58Prefix(CChainParams::OFFLINE_STAKING_ADDRESS) && vchData.size() == 40;
 }
 
 CTxDestination CYonaAddress::Get() const
@@ -265,12 +313,46 @@ CTxDestination CYonaAddress::Get() const
         return CNoDestination();
     uint160 id;
     memcpy(&id, vchData.data(), 20);
-    if (vchVersion == GetParams().Base58Prefix(CChainParams::PUBKEY_ADDRESS))
+    if (vchVersion == GetParams().Base58Prefix(CChainParams::OFFLINE_STAKING_ADDRESS)) {
+        uint160 id2;
+        memcpy(&id2, &vchData[20], 20);
+        return std::make_pair(CKeyID(id), CKeyID(id2));
+    } if (vchVersion == GetParams().Base58Prefix(CChainParams::PUBKEY_ADDRESS))
         return CKeyID(id);
     else if (vchVersion == GetParams().Base58Prefix(CChainParams::SCRIPT_ADDRESS))
         return CScriptID(id);
     else
         return CNoDestination();
+}
+
+bool CYonaAddress::GetKeyID(CKeyID& keyID) const
+{
+    if (!(IsValid() && vchVersion == GetParams().Base58Prefix(CChainParams::PUBKEY_ADDRESS)))
+        return false;
+    uint160 id;
+    memcpy(&id, &vchData[0], 20);
+    keyID = CKeyID(id);
+    return true;
+}
+
+bool CYonaAddress::GetStakingKeyID(CKeyID& keyID) const
+{
+    if (!(IsValid() && vchVersion == GetParams().Base58Prefix(CChainParams::OFFLINE_STAKING_ADDRESS)))
+        return false;
+    uint160 id;
+    memcpy(&id, &vchData[0], 20);
+    keyID = CKeyID(id);
+    return true;
+}
+
+bool CYonaAddress::GetSpendingKeyID(CKeyID& keyID) const
+{
+    if (!(IsValid() && vchVersion == GetParams().Base58Prefix(CChainParams::OFFLINE_STAKING_ADDRESS)))
+        return false;
+    uint160 id;
+    memcpy(&id, &vchData[20], 20);
+    keyID = CKeyID(id);
+    return true;
 }
 
 bool CYonaAddress::GetIndexKey(uint160& hashBytes, int& type) const
@@ -284,6 +366,10 @@ bool CYonaAddress::GetIndexKey(uint160& hashBytes, int& type) const
     } else if (vchVersion == GetParams().Base58Prefix(CChainParams::SCRIPT_ADDRESS)) {
         memcpy(&hashBytes, &vchData[0], 20);
         type = 2;
+        return true;
+    } else if (vchVersion == GetParams().Base58Prefix(CChainParams::OFFLINE_STAKING_ADDRESS)) {
+        memcpy(&hashBytes, Hash160(vchData.begin(), vchData.end()).begin(), 20);
+        type = 3;
         return true;
     }
 

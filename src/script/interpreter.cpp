@@ -1128,11 +1128,14 @@ bool EvalScript(std::vector<std::vector<unsigned char> > &stack, const CScript &
                     }
                         break;
 
-                        /** TOKENS START */
+                    /** TOKENS START */
                     case OP_YONA_TOKEN:
                         break;
-                        /** TOKENS END */
+                    /** TOKENS END */
 
+                    case OP_OFFLINE_STAKE:
+                        stack.push_back(checker.IsCoinStake() ? vchTrue : vchFalse);
+                        break;
 
                     default:
                         return set_error(serror, SCRIPT_ERR_BAD_OPCODE);

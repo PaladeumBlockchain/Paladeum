@@ -78,7 +78,8 @@ enum txnouttype
     TX_TRANSFER_TOKEN = 10,
     TX_RESTRICTED_TOKEN_DATA = 11, //!< unspendable OP_YONA_TOKEN script that carries data
     /** TOKENS END */
-    TX_CLTV = 12
+    TX_CLTV = 12,
+    TX_OFFLINE_STAKING = 13
 };
 
 class CNoDestination {
@@ -94,7 +95,7 @@ public:
  *  * CScriptID: TX_SCRIPTHASH destination
  *  A CTxDestination is the internal data type encoded in a yonacoin address
  */
-typedef boost::variant<CNoDestination, CKeyID, CScriptID> CTxDestination;
+typedef boost::variant<CNoDestination, CKeyID, CScriptID, std::pair<CKeyID, CKeyID>> CTxDestination;
 
 /** Check whether a CTxDestination is a CNoDestination. */
 bool IsValidDestination(const CTxDestination& dest);

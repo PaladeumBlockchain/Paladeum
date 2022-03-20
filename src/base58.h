@@ -80,6 +80,7 @@ protected:
 
     CBase58Data();
     void SetData(const std::vector<unsigned char> &vchVersionIn, const void* pdata, size_t nSize);
+    void SetData(const std::vector<unsigned char> &vchVersionIn, const void* pdata, size_t nSize, const void* pdata2, size_t nSize2);
     void SetData(const std::vector<unsigned char> &vchVersionIn, const unsigned char *pbegin, const unsigned char *pend);
 
 public:
@@ -103,18 +104,27 @@ public:
 class CYonaAddress : public CBase58Data {
 public:
     bool Set(const CKeyID &id);
+    bool Set(const CKeyID &id, const CKeyID &id2);
     bool Set(const CScriptID &id);
     bool Set(const CTxDestination &dest);
     bool IsValid() const;
     bool IsValid(const CChainParams &params) const;
+    bool IsOfflineStakingAddress(const CChainParams& params) const;
 
     CYonaAddress() {}
     CYonaAddress(const CTxDestination &dest) { Set(dest); }
+    CYonaAddress(const CKeyID &id, const CKeyID &id2) { Set(id, id2); }
     CYonaAddress(const std::string& strAddress) { SetString(strAddress); }
     CYonaAddress(const char* pszAddress) { SetString(pszAddress); }
 
     CTxDestination Get() const;
+    bool GetKeyID(CKeyID &keyID) const;
+    bool GetStakingKeyID(CKeyID &keyID) const;
+    bool GetSpendingKeyID(CKeyID &keyID) const;
     bool GetIndexKey(uint160& hashBytes, int& type) const;
+
+    bool GetStakingAddress(CYonaAddress &address) const;
+    bool GetSpendingAddress(CYonaAddress &address) const;
 };
 
 /**

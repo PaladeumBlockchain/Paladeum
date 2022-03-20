@@ -75,6 +75,8 @@ struct Params {
     int nStakeTimestampMask;
     bool nSegwitEnabled;
     bool nCSVEnabled;
+
+    int offlineStakingFork;
 };
 } // namespace Consensus
 

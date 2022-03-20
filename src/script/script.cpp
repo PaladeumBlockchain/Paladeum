@@ -145,8 +145,10 @@ const char* GetOpName(opcodetype opcode)
     case OP_NOP9                   : return "OP_NOP9";
     case OP_NOP10                  : return "OP_NOP10";
 
+    case OP_OFFLINE_STAKE              : return "OP_OFFLINE_STAKE";
+
     /** TOKENS START */
-    case OP_YONA_TOKEN              : return "OP_YONA_TOKEN";
+    case OP_YONA_TOKEN             : return "OP_YONA_TOKEN";
     /** TOKENS END */
 
     case OP_INVALIDOPCODE          : return "OP_INVALIDOPCODE";
@@ -433,6 +435,25 @@ bool CScript::IsWitnessProgram(int& version, std::vector<unsigned char>& program
         return true;
     }
     return false;
+}
+
+bool CScript::IsOfflineStaking() const
+{
+    return (this->size() == 1+1+25+1+25+1 &&
+            (*this)[0] == OP_OFFLINE_STAKE &&
+            (*this)[1] == OP_IF &&
+            (*this)[2] == OP_DUP &&
+            (*this)[3] == OP_HASH160 &&
+            (*this)[4] == 0x14 &&
+            (*this)[25] == OP_EQUALVERIFY &&
+            (*this)[26] == OP_CHECKSIG &&
+            (*this)[27] == OP_ELSE &&
+            (*this)[28] == OP_DUP &&
+            (*this)[29] == OP_HASH160 &&
+            (*this)[30] == 0x14 &&
+            (*this)[51] == OP_EQUALVERIFY &&
+            (*this)[52] == OP_CHECKSIG &&
+            (*this)[53] == OP_ENDIF);
 }
 
 bool CScript::IsPayToPublicKey() const

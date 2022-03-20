@@ -2343,6 +2343,9 @@ int32_t ComputeBlockVersion(const CBlockIndex* pindexPrev, const Consensus::Para
         }
     }
 
+    if (IsOfflineStakingEnabled(pindexPrev, GetParams().GetConsensus()))
+        nVersion |= nOfflineStakingVersionMask;
+
     return nVersion;
 }
 
@@ -4041,6 +4044,16 @@ bool GetBlockPublicKey(const CBlock& block, std::vector<unsigned char>& vchPubKe
         vchPubKey = vSolutions[0];
         return true;
     }
+    else if (whichType == TX_OFFLINE_STAKING)
+    {
+        if (block.vtx[1]->vin[0].scriptSig.size() <= 0x21)
+            return false;
+
+        std::vector<unsigned char> signerPubKey(block.vtx[1]->vin[0].scriptSig.end() - 0x21, block.vtx[1]->vin[0].scriptSig.end());
+        vchPubKey = signerPubKey;
+
+        return true;
+    }
     else
     {
         // Block signing key also can be encoded in the nonspendable output
@@ -4240,6 +4253,16 @@ bool IsWitnessEnabled(const CBlockIndex* pindexPrev, const Consensus::Params& pa
 bool IsWitnessEnabled(const Consensus::Params& params) {
 	return params.nSegwitEnabled;
 }
+
+bool IsOfflineStakingEnabled(const CBlockIndex* pindexPrev, const Consensus::Params& params)
+{
+    int nHeight = 0;
+    if (pindexPrev) {
+        nHeight = pindexPrev->nHeight + 1;
+    }
+    return nHeight >= params.offlineStakingFork;
+}
+
 // Compute at which vout of the block's coinbase transaction the witness
 // commitment occurs, or -1 if not found.
 static int GetWitnessCommitmentIndex(const CBlock& block)
@@ -4355,6 +4378,9 @@ static bool ContextualCheckBlockHeader(const CBlock& block, CValidationState& st
     // Reject outdated version blocks once tokens are active.
     if (AreTokensDeployed() && block.nVersion < VERSIONBITS_TOP_BITS_TOKENS)
         return state.Invalid(false, REJECT_OBSOLETE, strprintf("bad-version(0x%08x)", block.nVersion), strprintf("rejected nVersion=0x%08x block", block.nVersion));
+
+    if ((block.nVersion & nOfflineStakingVersionMask) != nOfflineStakingVersionMask && IsOfflineStakingEnabled(pindexPrev, GetParams().GetConsensus()))
+        return state.Invalid(false, REJECT_OBSOLETE, strprintf("bad-version(0x%08x)", block.nVersion), "rejected offline staking block");
 
     return true;
 }
