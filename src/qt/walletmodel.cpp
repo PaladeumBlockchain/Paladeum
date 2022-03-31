@@ -111,6 +111,11 @@ CAmount WalletModel::getLockedBalance() const
     return wallet->GetLockedBalance();
 }
 
+CAmount WalletModel::getOfflineBalance() const
+{
+    return wallet->GetOfflineStakingBalance();
+}
+
 bool WalletModel::haveWatchOnly() const
 {
     return fHaveWatchOnly;
@@ -177,6 +182,7 @@ void WalletModel::checkBalanceChanged()
     CAmount newWatchImmatureBalance = 0;
     CAmount newWatchOnlyStake = 0;
     CAmount newLockedBalance = getLockedBalance();
+    CAmount newOfflineBalance = getOfflineBalance();
 
     if (haveWatchOnly())
     {
@@ -187,7 +193,7 @@ void WalletModel::checkBalanceChanged()
     }
 
     if(cachedBalance != newBalance || cachedUnconfirmedBalance != newUnconfirmedBalance || cachedImmatureBalance != newImmatureBalance ||
-        cachedWatchOnlyBalance != newWatchOnlyBalance || cachedWatchUnconfBalance != newWatchUnconfBalance || cachedWatchImmatureBalance != newWatchImmatureBalance || cachedStake != newStake || cachedWatchOnlyStake != newWatchOnlyStake)
+        cachedWatchOnlyBalance != newWatchOnlyBalance || cachedWatchUnconfBalance != newWatchUnconfBalance || cachedWatchImmatureBalance != newWatchImmatureBalance || cachedStake != newStake || cachedWatchOnlyStake != newWatchOnlyStake || cachedOfflineBalance != newLockedBalance || cachedOfflineBalance != newOfflineBalance)
     {
         cachedBalance = newBalance;
         cachedUnconfirmedBalance = newUnconfirmedBalance;
@@ -198,8 +204,9 @@ void WalletModel::checkBalanceChanged()
         cachedWatchImmatureBalance = newWatchImmatureBalance;
         cachedWatchOnlyStake = newWatchOnlyStake;
         cachedLockedBalance = newWatchOnlyStake;
+        cachedOfflineBalance = newOfflineBalance;
         Q_EMIT balanceChanged(newBalance, newUnconfirmedBalance, newImmatureBalance, newStake,
-                            newWatchOnlyBalance, newWatchUnconfBalance, newWatchImmatureBalance, newWatchOnlyStake, newLockedBalance);
+                            newWatchOnlyBalance, newWatchUnconfBalance, newWatchImmatureBalance, newWatchOnlyStake, newLockedBalance, newOfflineBalance);
     }
 }
 

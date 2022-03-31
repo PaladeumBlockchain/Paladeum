@@ -2036,18 +2036,18 @@ CAmount CWalletTx::GetCredit(const isminefilter& filter) const
 
 CAmount CWalletTx::GetImmatureCredit(bool fUseCache) const
 {
-    if (IsCoinBase() && GetBlocksToMaturity() > 0 && IsInMainChain())
+    if ((IsCoinBase() || IsCoinStake()) && GetBlocksToMaturity() > 0 && IsInMainChain())
     {
         if (fUseCache && fImmatureCreditCached)
             return nImmatureCreditCached;
         nImmatureCreditCached = pwallet->GetCredit(*this, ISMINE_SPENDABLE);
+        nImmatureCreditCached += pwallet->GetCredit(*this, ISMINE_STAKABLE);
         fImmatureCreditCached = true;
         return nImmatureCreditCached;
     }
 
     return 0;
 }
-
 
 CAmount CWalletTx::GetImmatureStakeCredit(bool fUseCache) const
 {

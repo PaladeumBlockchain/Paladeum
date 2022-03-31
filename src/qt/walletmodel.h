@@ -219,6 +219,7 @@ public:
     CAmount getUnconfirmedBalance() const;
     CAmount getImmatureBalance() const;
     CAmount getLockedBalance() const;
+    CAmount getOfflineBalance() const;
     CAmount getStake() const;
     bool haveWatchOnly() const;
     CAmount getWatchBalance() const;
@@ -343,6 +344,7 @@ private:
     CAmount cachedWatchImmatureBalance;
     CAmount cachedWatchOnlyStake;
     CAmount cachedLockedBalance;
+    CAmount cachedOfflineBalance;
     EncryptionStatus cachedEncryptionStatus;
     int cachedNumBlocks;
 
@@ -355,7 +357,7 @@ private:
 Q_SIGNALS:
     // Signal that balance in wallet changed
     void balanceChanged(const CAmount& balance, const CAmount& unconfirmedBalance, const CAmount& immatureBalance, const CAmount& stake,
-                        const CAmount& watchOnlyBalance, const CAmount& watchUnconfBalance, const CAmount& watchImmatureBalance, const CAmount& watchOnlyStake, const CAmount& lockedBalance);
+                        const CAmount& watchOnlyBalance, const CAmount& watchUnconfBalance, const CAmount& watchImmatureBalance, const CAmount& watchOnlyStake, const CAmount& lockedBalance, const CAmount& offlineBalance);
 
     // Encryption status of wallet changed
     void encryptionStatusChanged(int status);
