@@ -2876,14 +2876,18 @@ bool CWallet::CreateCoinStake(const CKeyStore& keystore, unsigned int nBits, con
     if (setCoins.empty())
         return false;
 
-    if(stakeCache.size() > setCoins.size() + 100){
+    if (stakeCache.size() > setCoins.size() + 100) {
         //Determining if the cache is still valid is harder than just clearing it when it gets too big, so instead just clear it
         //when it has more than 100 entries more than the actual setCoins.
         stakeCache.clear();
     }
 
-    int64_t nCredit = 0;
+    CAmount nCredit = 0;
+    CAmount nOfflineReward = 0;
     CScript scriptPubKeyKernel;
+    CScript scriptOfflineStaker;
+    bool nOfflineStake = false;
+
     for(const std::pair<const CWalletTx*,unsigned int> &pcoin : setCoins)
     {
         bool fKernelFound = false;
@@ -2958,6 +2962,10 @@ bool CWallet::CreateCoinStake(const CKeyStore& keystore, unsigned int nBits, con
                     // we keep the same script
                     scriptPubKeyOut = scriptPubKeyKernel;
                 }
+
+                scriptOfflineStaker = GetScriptForDestination(pubKeyHash);
+
+                nOfflineStake = true;
             }
 
             txNew.vin.push_back(CTxIn(pcoin.first->GetHash(), pcoin.second));
@@ -3007,12 +3015,17 @@ bool CWallet::CreateCoinStake(const CKeyStore& keystore, unsigned int nBits, con
         if (nReward < 0)
             return false;
 
-        nCredit += nReward;
-   }
+        if (nOfflineStake) {
+            nOfflineReward = nReward * 0.1;
+            nCredit += nReward * 0.9;
+        } else {
+            nCredit += nReward;
+        }
+    }
 
     if (nCredit >= GetStakeSplitThreshold())
     {
-        for(unsigned int i = 0; i < GetStakeSplitOutputs() - 1; i++)
+        for (unsigned int i = 0; i < GetStakeSplitOutputs() - 1; i++)
             txNew.vout.push_back(CTxOut(0, txNew.vout[1].scriptPubKey)); //split stake
     }
 
@@ -3031,6 +3044,10 @@ bool CWallet::CreateCoinStake(const CKeyStore& keystore, unsigned int nBits, con
     for(unsigned int i = 2; i < tx.vout.size(); i++)
     {
         txNew.vout.push_back(tx.vout[i]);
+    }
+
+    if (nOfflineStake) {
+        txNew.vout.push_back(CTxOut(nOfflineReward, scriptOfflineStaker));
     }
 
     // Sign the input coins

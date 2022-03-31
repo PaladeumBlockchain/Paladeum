@@ -2470,6 +2470,11 @@ static bool ConnectBlock(const CBlock& block, CValidationState& state, CBlockInd
 
     pindex->nStakeModifier = ComputeStakeModifier(pindex->pprev, block.IsProofOfStake() ? block.vtx[1]->vin[0].prevout.hash : hash);
 
+    // Offline stake checks
+    CAmount nRewardOffline = 0;
+    CAmount nRewardStaker = 0;
+    bool fCheckOffline = false;
+
     // Check proof-of-stake
     if (block.IsProofOfStake()) {
         const COutPoint &prevout = block.vtx[1]->vin[0].prevout;
@@ -2496,6 +2501,19 @@ static bool ConnectBlock(const CBlock& block, CValidationState& state, CBlockInd
         if (!CheckStakeKernelHash(pindex->pprev, block.nBits, coin.out.nValue, prevout, block.vtx[1]->nTime, txPrev->nTime))
             return state.DoS(100, error("%s: proof-of-stake hash doesn't match nBits", __func__),
                         REJECT_INVALID, "bad-cs-proofhash");
+
+        if (coin.out.scriptPubKey.IsOfflineStaking()) {
+            nRewardOffline = -coin.out.nValue;
+            fCheckOffline = true;
+
+            for (unsigned int i = 1; i < block.vtx[1]->vout.size(); i++) {
+                if (block.vtx[1]->vout[i].scriptPubKey == coin.out.scriptPubKey) {
+                    nRewardOffline += block.vtx[1]->vout[i].nValue;
+                } else {
+                    nRewardStaker += block.vtx[1]->vout[i].nValue;
+                }
+            }
+        }
     }
 
     nBlocksTotal++;
@@ -2821,6 +2839,23 @@ static bool ConnectBlock(const CBlock& block, CValidationState& state, CBlockInd
                      error("ConnectBlock(): coinstake pays too much (actual=%d vs limit=%d)",
                            nActualStakeReward, blockReward),
                            REJECT_INVALID, "bad-cs-amount");
+    }
+
+    // Check offline stake rewards
+    if (fCheckOffline)
+    {
+        CAmount nSubsidyOffline = blockReward * 0.9;
+        CAmount nSubsidyStaker = blockReward * 0.1;
+
+        if (nRewardOffline < nSubsidyOffline) {
+            return state.DoS(100, error("%s: Coinstake output tried to move offline staking coins to a non authorised script",
+                                 __func__), REJECT_INVALID, "bad-offline-stake");
+        }
+
+        if (nRewardStaker > nRewardStaker) {
+            return state.DoS(100, error("%s: Offline staker tried to get more than 10 percent of coinstake reward",
+                                 __func__), REJECT_INVALID, "bad-offline-stake-greed");
+        }
     }
 
     int64_t nTime4 = GetTimeMicros(); nTimeVerify += nTime4 - nTime2;
