@@ -168,7 +168,7 @@ public:
         consensus.nStakeTimestampMask = 0xf; // 15
 
         // Fork to enable offline staking and remove the block limiter
-        consensus.offlineStakingFork = std::numeric_limits<int>::max();
+        consensus.offlineStakingFork = 194900;
 
         /**
          * The message start string is designed to be unlikely to occur in normal data.
