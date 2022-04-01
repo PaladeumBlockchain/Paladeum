@@ -24,6 +24,7 @@ class TokensDialog;
 class CreateTokenDialog;
 class ReissueTokenDialog;
 class RestrictedTokensDialog;
+class OfflinePage;
 
 QT_BEGIN_NAMESPACE
 class QModelIndex;
@@ -71,6 +72,7 @@ private:
     SendCoinsDialog *sendCoinsPage;
     AddressBookPage *usedSendingAddressesPage;
     AddressBookPage *usedReceivingAddressesPage;
+    OfflinePage *offlinePage;
 
     TransactionView *transactionView;
 
@@ -94,6 +96,8 @@ public Q_SLOTS:
     void gotoReceiveCoinsPage();
     /** Switch to send coins page */
     void gotoSendCoinsPage(QString addr = "");
+    /** Switch to offline staking page */
+    void gotoOfflinePage();
 
     /** Show Sign/Verify Message dialog and switch to sign message tab */
     void gotoSignMessageTab(QString addr = "");

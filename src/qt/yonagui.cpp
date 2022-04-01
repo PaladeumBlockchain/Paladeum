@@ -414,12 +414,20 @@ void YonaGUI::createActions()
     historyAction->setFont(font);
     tabGroup->addAction(historyAction);
 
+    offlineAction = new QAction(platformStyle->SingleColorIconOnOff(":/icons/offline", ":/icons/offline"), tr("&Offline staking"), this);
+    offlineAction->setStatusTip(tr("Create offline staking address"));
+    offlineAction->setToolTip(offlineAction->statusTip());
+    offlineAction->setCheckable(true);
+    offlineAction->setShortcut(QKeySequence(Qt::ALT + Qt::Key_5));
+    offlineAction->setFont(font);
+    tabGroup->addAction(offlineAction);
+
     /** TOKENS START */
     tokensOverviewAction = new QAction(platformStyle->SingleColorIconOnOff(":/icons/token_overview", ":/icons/token_overview"), tr("&Tokens"), this);
     tokensOverviewAction->setStatusTip(tr("Tokens overview"));
     tokensOverviewAction->setToolTip(tokensOverviewAction->statusTip());
     tokensOverviewAction->setCheckable(true);
-    tokensOverviewAction->setShortcut(QKeySequence(Qt::ALT + Qt::Key_5));
+    tokensOverviewAction->setShortcut(QKeySequence(Qt::ALT + Qt::Key_6));
     tokensOverviewAction->setFont(font);
     tabGroup->addAction(tokensOverviewAction);
     /** TOKENS END */
@@ -439,6 +447,9 @@ void YonaGUI::createActions()
     connect(receiveCoinsMenuAction, SIGNAL(triggered()), this, SLOT(gotoReceiveCoinsPage()));
     connect(historyAction, SIGNAL(triggered()), this, SLOT(showNormalIfMinimized()));
     connect(historyAction, SIGNAL(triggered()), this, SLOT(gotoHistoryPage()));
+
+    connect(offlineAction, SIGNAL(triggered()), this, SLOT(showNormalIfMinimized()));
+    connect(offlineAction, SIGNAL(triggered()), this, SLOT(gotoOfflinePage()));
 
     connect(tokensOverviewAction, SIGNAL(triggered()), this, SLOT(showNormalIfMinimized()));
     connect(tokensOverviewAction, SIGNAL(triggered()), this, SLOT(gotoTokensOverviewPage()));
@@ -609,6 +620,7 @@ void YonaGUI::createToolBars()
         toolbar->addAction(sendCoinsAction);
         toolbar->addAction(receiveCoinsAction);
         toolbar->addAction(historyAction);
+        toolbar->addAction(offlineAction);
         toolbar->addAction(tokensOverviewAction);
 
         QString openSansFontString = "font: normal 22pt \"Open Sans\";";
@@ -906,6 +918,12 @@ void YonaGUI::gotoHistoryPage()
 {
     historyAction->setChecked(true);
     if (walletFrame) walletFrame->gotoHistoryPage();
+}
+
+void YonaGUI::gotoOfflinePage()
+{
+    offlineAction->setChecked(true);
+    if (walletFrame) walletFrame->gotoOfflinePage();
 }
 
 void YonaGUI::gotoReceiveCoinsPage()

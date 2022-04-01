@@ -21,6 +21,7 @@
 #include "transactionview.h"
 #include "walletmodel.h"
 #include "tokensdialog.h"
+#include "offlinepage.h"
 #include "createtokendialog.h"
 #include "reissuetokendialog.h"
 #include "restrictedtokensdialog.h"
@@ -69,6 +70,7 @@ WalletView::WalletView(const PlatformStyle *_platformStyle, QWidget *parent):
     createTokensPage = new CreateTokenDialog(platformStyle);
     manageTokensPage = new ReissueTokenDialog(platformStyle);
     restrictedTokensPage = new RestrictedTokensDialog(platformStyle);
+    offlinePage = new OfflinePage(platformStyle);
 
     usedSendingAddressesPage = new AddressBookPage(platformStyle, AddressBookPage::ForEditing, AddressBookPage::SendingTab, this);
     usedReceivingAddressesPage = new AddressBookPage(platformStyle, AddressBookPage::ForEditing, AddressBookPage::ReceivingTab, this);
@@ -77,6 +79,7 @@ WalletView::WalletView(const PlatformStyle *_platformStyle, QWidget *parent):
     addWidget(transactionsPage);
     addWidget(receiveCoinsPage);
     addWidget(sendCoinsPage);
+    addWidget(offlinePage);
 
     tokensStack = new QStackedWidget(this);
     QVBoxLayout *tokensLayout = new QVBoxLayout();
@@ -213,6 +216,7 @@ void WalletView::setClientModel(ClientModel *_clientModel)
 
     overviewPage->setClientModel(_clientModel);
     sendCoinsPage->setClientModel(_clientModel);
+    offlinePage->setClientModel(_clientModel);
 }
 
 void WalletView::setWalletModel(WalletModel *_walletModel)
@@ -226,6 +230,7 @@ void WalletView::setWalletModel(WalletModel *_walletModel)
     sendCoinsPage->setModel(_walletModel);
     usedReceivingAddressesPage->setModel(_walletModel ? _walletModel->getAddressTableModel() : nullptr);
     usedSendingAddressesPage->setModel(_walletModel ? _walletModel->getAddressTableModel() : nullptr);
+    offlinePage->setWalletModel(_walletModel);
 
     /** TOKENS START */
     tokensPage->setModel(_walletModel);
@@ -319,6 +324,11 @@ void WalletView::gotoSendCoinsPage(QString addr)
 
     if (!addr.isEmpty())
         sendCoinsPage->setAddress(addr);
+}
+
+void WalletView::gotoOfflinePage()
+{
+    setCurrentWidget(offlinePage);
 }
 
 void WalletView::gotoSignMessageTab(QString addr)
