@@ -272,7 +272,7 @@ public:
         consensus.nMinimumChainWork = uint256S("0x");
 
         // By default assume that the signatures in ancestors of this block are valid.
-        consensus.defaultAssumeValid = uint256S("0x0036e8f16d7cef33596faf6040634f03317b7f4139f95ae076d2290727a8b6c0");
+        consensus.defaultAssumeValid = uint256S("0x000674178db328893bcb86f09109fbf4857556fe8b2a26c7d0f73812f45fac02");
 
         // Proof-of-Stake
         consensus.nLastPOWBlock = 1440;
