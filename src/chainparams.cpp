@@ -168,7 +168,7 @@ public:
         consensus.nStakeTimestampMask = 0xf; // 15
 
         // Fork to enable offline staking and remove the block limiter
-        consensus.offlineStakingFork = 194900;
+        consensus.offlineStakingFork = std::numeric_limits<int>::max();
 
         /**
          * The message start string is designed to be unlikely to occur in normal data.
@@ -276,26 +276,26 @@ public:
 
         // Proof-of-Stake
         consensus.nLastPOWBlock = 1440;
-        consensus.nTxMessages = 95000;
+        consensus.nTxMessages = 10;
         consensus.nStakeTimestampMask = 0xf; // 15
 
         // Fork to enable offline staking and remove the block limiter
-        consensus.offlineStakingFork = std::numeric_limits<int>::max();
+        consensus.offlineStakingFork = 10;
 
-        pchMessageStart[0] = 0x79;
-        pchMessageStart[1] = 0x6e;
-        pchMessageStart[2] = 0x61;
-        pchMessageStart[3] = 0x54;
+        pchMessageStart[0] = 0x80;
+        pchMessageStart[1] = 0x7a;
+        pchMessageStart[2] = 0x62;
+        pchMessageStart[3] = 0x55;
         nDefaultPort = 5566;
         nPruneAfterHeight = 1000;
 
-        const char* pszTimestamp = "Two New Bird Species Discovered on Borneo | Jan 31, 2021 Sci-News";
+        const char* pszTimestamp = "Complete Human Genome Sequenced for First Time | Apr 1, 2022 Sci-News";
 
-        genesis = CreateGenesisBlock(pszTimestamp, 1643716321, 2143, 0x1f3fffff, 1, 1 * COIN);
+        genesis = CreateGenesisBlock(pszTimestamp, 1643716321, 2196, 0x1f3fffff, 1, 1 * COIN);
         consensus.hashGenesisBlock = genesis.GetBlockHash();
 
-        assert(consensus.hashGenesisBlock == uint256S("0x0036e8f16d7cef33596faf6040634f03317b7f4139f95ae076d2290727a8b6c0"));
-        assert(genesis.hashMerkleRoot == uint256S("0x118822c3e5222b39c9738b998bb42572499efd6bf7a0128b82fe2cf4a9abbfe8"));
+        assert(consensus.hashGenesisBlock == uint256S("0x000674178db328893bcb86f09109fbf4857556fe8b2a26c7d0f73812f45fac02"));
+        assert(genesis.hashMerkleRoot == uint256S("0x8b52b17e2ac9f12d0714020df8dba6dd6e022e46b5bba918a0dcd29a2bef1f89"));
 
         vFixedSeeds.clear();
         vSeeds.clear();
@@ -303,7 +303,7 @@ public:
         base58Prefixes[PUBKEY_ADDRESS] = std::vector<unsigned char>(1,140);
         base58Prefixes[SCRIPT_ADDRESS] = std::vector<unsigned char>(1,143);
         base58Prefixes[SECRET_KEY] =     std::vector<unsigned char>(1,108);
-        base58Prefixes[OFFLINE_STAKING_ADDRESS] = std::vector<unsigned char>(1,21);
+        base58Prefixes[OFFLINE_STAKING_ADDRESS] = std::vector<unsigned char>(1,22);
         base58Prefixes[EXT_PUBLIC_KEY] = {0x04, 0x35, 0x87, 0xCF};
         base58Prefixes[EXT_SECRET_KEY] = {0x04, 0x35, 0x83, 0x94};
 
