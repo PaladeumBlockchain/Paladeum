@@ -1987,6 +1987,7 @@ CAmount CWalletTx::GetDebit(const isminefilter& filter) const
             debit += nOfflineStakingDebitCached;
         }
     }
+
     return debit;
 }
 

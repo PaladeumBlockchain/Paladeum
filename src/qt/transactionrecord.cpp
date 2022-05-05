@@ -32,8 +32,10 @@ QList<TransactionRecord> TransactionRecord::decomposeTransaction(const CWallet *
 {
     QList<TransactionRecord> parts;
     int64_t nTime = wtx.GetTxTime();
-    CAmount nCredit = wtx.GetCredit(ISMINE_ALL);
-    CAmount nDebit = wtx.GetDebit(ISMINE_ALL);
+
+    CAmount nCredit = wtx.GetCredit((wtx.IsCoinStake() && wtx.tx->vout[1].scriptPubKey.IsOfflineStaking()) ? ISMINE_SPENDABLE : ISMINE_ALL);
+    CAmount nDebit = wtx.GetDebit((wtx.IsCoinStake() && wtx.tx->vout[1].scriptPubKey.IsOfflineStaking()) ? ISMINE_SPENDABLE : ISMINE_ALL);
+
     CAmount nNet = nCredit - nDebit;
     uint256 hash = wtx.GetHash(), hashPrev;
     std::map<std::string, std::string> mapValue = wtx.mapValue;

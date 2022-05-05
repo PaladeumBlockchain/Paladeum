@@ -1319,7 +1319,6 @@ CAmount GetBlockSubsidy(int nHeight, const Consensus::Params& consensusParams)
     return 0.1 * COIN;
 }
 
-
 bool IsInitialBlockDownload()
 {
     // Once this function has returned false, it must remain false.
