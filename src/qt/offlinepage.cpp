@@ -17,12 +17,14 @@ OfflinePage::OfflinePage(const PlatformStyle *platformStyle, QWidget *parent) :
 {
     ui->setupUi(this);
 
-    ui->offlineFrame->setStyleSheet(QString(".QFrame {background-color: %1;}").arg(platformStyle->WidgetBackGroundColor().name()));
+    // ui->offlineFrame->setStyleSheet(QString(".QFrame {background-color: %1;}").arg(platformStyle->WidgetBackGroundColor().name()));
+    ui->labelHeader->setStyleSheet(STRING_LABEL_COLOR);
     ui->labelStaking->setStyleSheet(STRING_LABEL_COLOR);
     ui->labelSpending->setStyleSheet(STRING_LABEL_COLOR);
 
     ui->stakingEdit->setPlaceholderText(QObject::tr("Enter a offline staking address"));
     ui->spendingEdit->setPlaceholderText(QObject::tr("Enter a spending address for offline stake"));
+    ui->resultEdit->setPlaceholderText(QObject::tr("Offline staking address"));
 }
 
 
