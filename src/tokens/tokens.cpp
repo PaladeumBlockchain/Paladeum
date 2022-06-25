@@ -1,5 +1,5 @@
 // Copyright (c) 2017-2019 The Raven Core developers
-// Copyright (c) 2021-2022 The Yona developers
+// Copyright (c) 2021-2022 The Akila developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -79,7 +79,7 @@ static const std::regex QUALIFIER_INDICATOR("^[#][A-Z0-9._]{3,}$"); // Starts wi
 static const std::regex SUB_QUALIFIER_INDICATOR("^#[A-Z0-9._]+\\/#[A-Z0-9._]+$"); // Starts with #
 static const std::regex RESTRICTED_INDICATOR("^[\\$][A-Z0-9._]{3,}$"); // Starts with $
 
-static const std::regex YONA_NAMES("^YONA$|^YONA$|^YONACOIN$");
+static const std::regex AKILA_NAMES("^AKILA$|^AKILA$|^AKILACOIN$");
 
 bool IsRootNameValid(const std::string& name)
 {
@@ -87,7 +87,7 @@ bool IsRootNameValid(const std::string& name)
         && !std::regex_match(name, DOUBLE_PUNCTUATION)
         && !std::regex_match(name, LEADING_PUNCTUATION)
         && !std::regex_match(name, TRAILING_PUNCTUATION)
-        && !std::regex_match(name, YONA_NAMES);
+        && !std::regex_match(name, AKILA_NAMES);
 }
 
 bool IsQualifierNameValid(const std::string& name)
@@ -96,7 +96,7 @@ bool IsQualifierNameValid(const std::string& name)
            && !std::regex_match(name, DOUBLE_PUNCTUATION)
            && !std::regex_match(name, QUALIFIER_LEADING_PUNCTUATION)
            && !std::regex_match(name, TRAILING_PUNCTUATION)
-           && !std::regex_match(name, YONA_NAMES);
+           && !std::regex_match(name, AKILA_NAMES);
 }
 
 bool IsRestrictedNameValid(const std::string& name)
@@ -105,7 +105,7 @@ bool IsRestrictedNameValid(const std::string& name)
            && !std::regex_match(name, DOUBLE_PUNCTUATION)
            && !std::regex_match(name, LEADING_PUNCTUATION)
            && !std::regex_match(name, TRAILING_PUNCTUATION)
-           && !std::regex_match(name, YONA_NAMES);
+           && !std::regex_match(name, AKILA_NAMES);
 }
 
 bool IsSubQualifierNameValid(const std::string& name)
@@ -582,7 +582,7 @@ void CNewToken::ConstructTransaction(CScript& script) const
     vchMessage.push_back(TOKEN_Q); // q
 
     vchMessage.insert(vchMessage.end(), ssToken.begin(), ssToken.end());
-    script << OP_YONA_TOKEN << ToByteVector(vchMessage) << OP_DROP;
+    script << OP_AKILA_TOKEN << ToByteVector(vchMessage) << OP_DROP;
 }
 
 void CNewToken::ConstructOwnerTransaction(CScript& script) const
@@ -597,7 +597,7 @@ void CNewToken::ConstructOwnerTransaction(CScript& script) const
     vchMessage.push_back(TOKEN_O); // o
 
     vchMessage.insert(vchMessage.end(), ssOwner.begin(), ssOwner.end());
-    script << OP_YONA_TOKEN << ToByteVector(vchMessage) << OP_DROP;
+    script << OP_AKILA_TOKEN << ToByteVector(vchMessage) << OP_DROP;
 }
 
 bool TokenFromTransaction(const CTransaction& tx, CNewToken& token, std::string& strAddress)
@@ -974,7 +974,7 @@ bool CTransaction::IsNewToken() const
     // New Token transaction will always have at least three outputs.
     // 1. Owner Token output
     // 2. Issue Token output
-    // 3. YONA Burn Fee
+    // 3. AKILA Burn Fee
     if (vout.size() < 3) {
         return false;
     }
@@ -997,7 +997,7 @@ bool CTransaction::IsNewToken() const
 
 bool CTransaction::VerifyNewUsername(std::string& strError) const
 {
-    // Issuing an username must contain at least 2 CTxOut(Yona Burn Tx, Any Number of other Outputs ..., New Token Tx)
+    // Issuing an username must contain at least 2 CTxOut(Akila Burn Tx, Any Number of other Outputs ..., New Token Tx)
     if (vout.size() < 2) {
         strError  = "bad-txns-issue-vout-size-to-small";
         return false;
@@ -1077,7 +1077,7 @@ bool CTransaction::IsNewUniqueToken() const
 //! Call this function after IsNewUniqueToken
 bool CTransaction::VerifyNewUniqueToken(std::string& strError) const
 {
-    // Must contain at least 3 outpoints (YONA burn, owner change and one or more new unique tokens that share a root (should be in trailing position))
+    // Must contain at least 3 outpoints (AKILA burn, owner change and one or more new unique tokens that share a root (should be in trailing position))
     if (vout.size() < 3) {
         strError  = "bad-txns-unique-vout-size-to-small";
         return false;
@@ -1169,7 +1169,7 @@ bool CTransaction::VerifyNewUniqueToken(std::string& strError) const
 
 //! To be called on CTransactions where IsNewToken returns true
 bool CTransaction::VerifyNewToken(std::string& strError) const {
-    // Issuing an Token must contain at least 3 CTxOut( Yona Burn Tx, Any Number of other Outputs ..., Owner Token Tx, New Token Tx)
+    // Issuing an Token must contain at least 3 CTxOut( Akila Burn Tx, Any Number of other Outputs ..., Owner Token Tx, New Token Tx)
     if (vout.size() < 3) {
         strError = "bad-txns-issue-vout-size-to-small";
         return false;
@@ -1274,7 +1274,7 @@ bool CTransaction::IsNewMsgChannelToken() const
 //! To be called on CTransactions where IsNewToken returns true
 bool CTransaction::VerifyNewMsgChannelToken(std::string &strError) const
 {
-    // Issuing an Token must contain at least 3 CTxOut( Yona Burn Tx, Any Number of other Outputs ..., Owner Token Tx, New Token Tx)
+    // Issuing an Token must contain at least 3 CTxOut( Akila Burn Tx, Any Number of other Outputs ..., Owner Token Tx, New Token Tx)
     if (vout.size() < 3) {
         strError  = "bad-txns-issue-msgchannel-vout-size-to-small";
         return false;
@@ -1361,7 +1361,7 @@ bool CTransaction::IsNewQualifierToken() const
 //! To be called on CTransactions where IsNewQualifierToken returns true
 bool CTransaction::VerifyNewQualfierToken(std::string &strError) const
 {
-    // Issuing an Token must contain at least 2 CTxOut( Yona Burn Tx, New Token Tx, Any Number of other Outputs...)
+    // Issuing an Token must contain at least 2 CTxOut( Akila Burn Tx, New Token Tx, Any Number of other Outputs...)
     if (vout.size() < 2) {
         strError  = "bad-txns-issue-qualifier-vout-size-to-small";
         return false;
@@ -1449,7 +1449,7 @@ bool CTransaction::IsNewRestrictedToken() const
 
 //! To be called on CTransactions where IsNewRestrictedToken returns true
 bool CTransaction::VerifyNewRestrictedToken(std::string& strError) const {
-    // Issuing a restricted token must cointain at least 4 CTxOut(Yona Burn Tx, Token Creation, Root Owner Token Transfer, and CNullTokenTxVerifierString)
+    // Issuing a restricted token must cointain at least 4 CTxOut(Akila Burn Tx, Token Creation, Root Owner Token Transfer, and CNullTokenTxVerifierString)
     if (vout.size() < 4) {
         strError = "bad-txns-issue-restricted-vout-size-to-small";
         return false;
@@ -1578,7 +1578,7 @@ bool CTransaction::IsReissueToken() const
 //! To be called on CTransactions where IsReissueToken returns true
 bool CTransaction::VerifyReissueToken(std::string& strError) const
 {
-    // Reissuing an Token must contain at least 3 CTxOut ( Yona Burn Tx, Any Number of other Outputs ..., Reissue Token Tx, Owner Token Change Tx)
+    // Reissuing an Token must contain at least 3 CTxOut ( Akila Burn Tx, Any Number of other Outputs ..., Reissue Token Tx, Owner Token Change Tx)
     if (vout.size() < 3) {
         strError  = "bad-txns-vout-size-to-small";
         return false;
@@ -1750,7 +1750,7 @@ void CTokenTransfer::ConstructTransaction(CScript& script) const
     vchMessage.push_back(TOKEN_T); // t
 
     vchMessage.insert(vchMessage.end(), ssTransfer.begin(), ssTransfer.end());
-    script << OP_YONA_TOKEN << ToByteVector(vchMessage) << OP_DROP;
+    script << OP_AKILA_TOKEN << ToByteVector(vchMessage) << OP_DROP;
 }
 
 CReissueToken::CReissueToken(const std::string &strTokenName, const CAmount &nAmount, const int &nUnits, const int &nReissuable,
@@ -1781,7 +1781,7 @@ void CReissueToken::ConstructTransaction(CScript& script) const
     vchMessage.push_back(TOKEN_R); // r
 
     vchMessage.insert(vchMessage.end(), ssReissue.begin(), ssReissue.end());
-    script << OP_YONA_TOKEN << ToByteVector(vchMessage) << OP_DROP;
+    script << OP_AKILA_TOKEN << ToByteVector(vchMessage) << OP_DROP;
 }
 
 bool CReissueToken::IsNull() const
@@ -3248,7 +3248,7 @@ bool CheckIssueBurnTx(const CTxOut& txOut, const KnownTokenType& type)
 
 bool CheckReissueBurnTx(const CTxOut& txOut)
 {
-    // Check the first transaction and verify that the correct YONA Amount
+    // Check the first transaction and verify that the correct AKILA Amount
     if (txOut.nValue != GetReissueTokenFeeAmount())
         return false;
 
@@ -3270,7 +3270,7 @@ bool CheckReissueBurnTx(const CTxOut& txOut)
 
 bool CheckIssueDataTx(const CTxOut& txOut)
 {
-    // Verify 'yonaq' is in the transaction
+    // Verify 'akilaq' is in the transaction
     CScript scriptPubKey = txOut.scriptPubKey;
 
     int nStartingIndex = 0;
@@ -3279,7 +3279,7 @@ bool CheckIssueDataTx(const CTxOut& txOut)
 
 bool CheckReissueDataTx(const CTxOut& txOut)
 {
-    // Verify 'yonar' is in the transaction
+    // Verify 'akilar' is in the transaction
     CScript scriptPubKey = txOut.scriptPubKey;
 
     return IsScriptReissueToken(scriptPubKey);
@@ -3287,7 +3287,7 @@ bool CheckReissueDataTx(const CTxOut& txOut)
 
 bool CheckOwnerDataTx(const CTxOut& txOut)
 {
-    // Verify 'yonaq' is in the transaction
+    // Verify 'akilaq' is in the transaction
     CScript scriptPubKey = txOut.scriptPubKey;
 
     return IsScriptOwnerToken(scriptPubKey);
@@ -3295,7 +3295,7 @@ bool CheckOwnerDataTx(const CTxOut& txOut)
 
 bool CheckTransferOwnerTx(const CTxOut& txOut)
 {
-    // Verify 'yonaq' is in the transaction
+    // Verify 'akilaq' is in the transaction
     CScript scriptPubKey = txOut.scriptPubKey;
 
     return IsScriptTransferToken(scriptPubKey);
@@ -4093,7 +4093,7 @@ bool CreateTokenTransaction(CWallet* pwallet, CCoinControl& coinControl, const s
     if (!change_address.empty()) {
         CTxDestination destination = DecodeDestination(change_address);
         if (!IsValidDestination(destination)) {
-            error = std::make_pair(RPC_INVALID_ADDRESS_OR_KEY, std::string("Invalid Yona address: ") + change_address);
+            error = std::make_pair(RPC_INVALID_ADDRESS_OR_KEY, std::string("Invalid Akila address: ") + change_address);
             return false;
         }
     } else {
@@ -4135,7 +4135,7 @@ bool CreateTokenTransaction(CWallet* pwallet, CCoinControl& coinControl, const s
 
     CAmount curBalance = pwallet->GetBalance();
 
-    // Check to make sure the wallet has the YONA required by the burnAmount
+    // Check to make sure the wallet has the AKILA required by the burnAmount
     if (curBalance < burnAmount) {
         error = std::make_pair(RPC_WALLET_INSUFFICIENT_FUNDS, "Insufficient funds");
         return false;
@@ -4259,7 +4259,7 @@ bool CreateReissueTokenTransaction(CWallet* pwallet, CCoinControl& coinControl, 
 
     // Check that validitity of the address
     if (!IsValidDestinationString(address)) {
-        error = std::make_pair(RPC_INVALID_ADDRESS_OR_KEY, std::string("Invalid Yona address: ") + address);
+        error = std::make_pair(RPC_INVALID_ADDRESS_OR_KEY, std::string("Invalid Akila address: ") + address);
         return false;
     }
 
@@ -4267,7 +4267,7 @@ bool CreateReissueTokenTransaction(CWallet* pwallet, CCoinControl& coinControl, 
     if (!change_address.empty()) {
         CTxDestination destination = DecodeDestination(change_address);
         if (!IsValidDestination(destination)) {
-            error = std::make_pair(RPC_INVALID_ADDRESS_OR_KEY, std::string("Invalid Yona address: ") + change_address);
+            error = std::make_pair(RPC_INVALID_ADDRESS_OR_KEY, std::string("Invalid Akila address: ") + change_address);
             return false;
         }
     } else {
@@ -4338,7 +4338,7 @@ bool CreateReissueTokenTransaction(CWallet* pwallet, CCoinControl& coinControl, 
     // Get the current burn amount for issuing an token
     CAmount burnAmount = GetReissueTokenFeeAmount();
 
-    // Check to make sure the wallet has the YONA required by the burnAmount
+    // Check to make sure the wallet has the AKILA required by the burnAmount
     if (curBalance < burnAmount) {
         error = std::make_pair(RPC_WALLET_INSUFFICIENT_FUNDS, "Insufficient funds");
         return false;
@@ -4438,7 +4438,7 @@ bool CreateTransferTokenTransaction(CWallet* pwallet, const CCoinControl& coinCo
     // Check for a balance before processing transfers
     CAmount curBalance = pwallet->GetBalance();
     if (curBalance == 0) {
-        error = std::make_pair(RPC_WALLET_INSUFFICIENT_FUNDS, std::string("This wallet doesn't contain any YONA, transfering an token requires a network fee"));
+        error = std::make_pair(RPC_WALLET_INSUFFICIENT_FUNDS, std::string("This wallet doesn't contain any AKILA, transfering an token requires a network fee"));
         return false;
     }
 
@@ -4458,7 +4458,7 @@ bool CreateTransferTokenTransaction(CWallet* pwallet, const CCoinControl& coinCo
         int64_t expireTime = transfer.first.nExpireTime;
 
         if (!IsValidDestinationString(address)) {
-            error = std::make_pair(RPC_INVALID_ADDRESS_OR_KEY, std::string("Invalid Yona address: ") + address);
+            error = std::make_pair(RPC_INVALID_ADDRESS_OR_KEY, std::string("Invalid Akila address: ") + address);
             return false;
         }
         auto currentActiveTokenCache = GetCurrentTokenCache();
@@ -4521,7 +4521,7 @@ bool CreateTransferTokenTransaction(CWallet* pwallet, const CCoinControl& coinCo
         vecSend.push_back(recipient);
     }
 
-    // If tokenTxData is not nullptr, the user wants to add some OP_YONA_TOKEN data transactions into the transaction
+    // If tokenTxData is not nullptr, the user wants to add some OP_AKILA_TOKEN data transactions into the transaction
     if (nullTokenTxData) {
         std::string strError = "";
         int nAddTagCount = 0;
@@ -4556,7 +4556,7 @@ bool CreateTransferTokenTransaction(CWallet* pwallet, const CCoinControl& coinCo
         }
     }
 
-    // nullGlobalRestiotionData, the user wants to add OP_YONA_TOKEN OP_YONA_TOKEN OP_YONA_TOKENS data transaction to the transaction
+    // nullGlobalRestiotionData, the user wants to add OP_AKILA_TOKEN OP_AKILA_TOKEN OP_AKILA_TOKENS data transaction to the transaction
     if (nullGlobalRestrictionData) {
         std::string strError = "";
         for (auto dataObject : *nullGlobalRestrictionData) {
@@ -4776,7 +4776,7 @@ void CNullTokenTxData::ConstructGlobalRestrictionTransaction(CScript &script) co
 
     std::vector<unsigned char> vchMessage;
     vchMessage.insert(vchMessage.end(), ssTokenTxData.begin(), ssTokenTxData.end());
-    script << OP_YONA_TOKEN << OP_RESERVED << OP_RESERVED << ToByteVector(vchMessage);
+    script << OP_AKILA_TOKEN << OP_RESERVED << OP_RESERVED << ToByteVector(vchMessage);
 }
 
 CNullTokenTxVerifierString::CNullTokenTxVerifierString(const std::string &verifier)
@@ -4792,7 +4792,7 @@ void CNullTokenTxVerifierString::ConstructTransaction(CScript &script) const
 
     std::vector<unsigned char> vchMessage;
     vchMessage.insert(vchMessage.end(), ssTokenTxData.begin(), ssTokenTxData.end());
-    script << OP_YONA_TOKEN << OP_RESERVED << ToByteVector(vchMessage);
+    script << OP_AKILA_TOKEN << OP_RESERVED << ToByteVector(vchMessage);
 }
 
 bool CTokensCache::GetTokenVerifierStringIfExists(const std::string &name, CNullTokenTxVerifierString& verifierString, bool fSkipTempCache)

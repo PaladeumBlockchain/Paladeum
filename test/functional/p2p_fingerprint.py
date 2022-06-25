@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # Copyright (c) 2017 The Bitcoin Core developers
-# Copyright (c) 2017-2020 The Yona developers
+# Copyright (c) 2017-2020 The Akila developers
 # Distributed under the MIT software license, see the accompanying
 # file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -14,10 +14,10 @@ the node should pretend that it does not have it to avoid fingerprinting.
 import time
 from test_framework.blocktools import create_block, create_coinbase
 from test_framework.mininode import CInv, NetworkThread, NodeConn, NodeConnCB, MsgHeaders, MsgBlock, MsgGetdata, MsgGetHeaders, wait_until
-from test_framework.test_framework import YonaTestFramework
+from test_framework.test_framework import AkilaTestFramework
 from test_framework.util import assert_equal, p2p_port
 
-class P2PFingerprintTest(YonaTestFramework):
+class P2PFingerprintTest(AkilaTestFramework):
     def set_test_params(self):
         self.setup_clean_chain = True
         self.num_nodes = 1

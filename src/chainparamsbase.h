@@ -1,18 +1,18 @@
 // Copyright (c) 2014-2015 The Bitcoin Core developers
-// Copyright (c) 2021-2022 The Yona developers
+// Copyright (c) 2021-2022 The Akila developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef YONA_CHAINPARAMSBASE_H
-#define YONA_CHAINPARAMSBASE_H
+#ifndef AKILA_CHAINPARAMSBASE_H
+#define AKILA_CHAINPARAMSBASE_H
 
 #include <memory>
 #include <string>
 #include <vector>
 
 /**
- * CBaseChainParams defines the base parameters (shared between yona-cli and yonad)
- * of a given instance of the Yona system.
+ * CBaseChainParams defines the base parameters (shared between akila-cli and akilad)
+ * of a given instance of the Akila system.
  */
 class CBaseChainParams
 {
@@ -61,4 +61,4 @@ void SelectBaseParams(const std::string& chain);
  */
 std::string ChainNameFromCommandLine();
 
-#endif // YONA_CHAINPARAMSBASE_H
+#endif // AKILA_CHAINPARAMSBASE_H

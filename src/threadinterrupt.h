@@ -1,10 +1,10 @@
 // Copyright (c) 2016 The Bitcoin Core developers
-// Copyright (c) 2021-2022 The Yona developers
+// Copyright (c) 2021-2022 The Akila developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef YONA_THREADINTERRUPT_H
-#define YONA_THREADINTERRUPT_H
+#ifndef AKILA_THREADINTERRUPT_H
+#define AKILA_THREADINTERRUPT_H
 
 #include <atomic>
 #include <chrono>
@@ -32,4 +32,4 @@ private:
     std::atomic<bool> flag;
 };
 
-#endif //YONA_THREADINTERRUPT_H
+#endif //AKILA_THREADINTERRUPT_H

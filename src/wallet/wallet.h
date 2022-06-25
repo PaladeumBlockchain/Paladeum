@@ -1,12 +1,12 @@
 // Copyright (c) 2009-2010 Satoshi Nakamoto
 // Copyright (c) 2009-2016 The Bitcoin Core developers
 // Copyright (c) 2014-2016 The BlackCoin developers
-// Copyright (c) 2021-2022 The Yona developers
+// Copyright (c) 2021-2022 The Akila developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef YONA_WALLET_WALLET_H
-#define YONA_WALLET_WALLET_H
+#ifndef AKILA_WALLET_WALLET_H
+#define AKILA_WALLET_WALLET_H
 
 #include "amount.h"
 #include "policy/feerate.h"
@@ -343,7 +343,7 @@ public:
     unsigned int nTimeSmart;
     /**
      * From me flag is set to 1 for transactions that were created by the wallet
-     * on this yona node, and set to 0 for transactions that were created
+     * on this akila node, and set to 0 for transactions that were created
      * externally and came in through the network or sendrawtransaction RPC.
      */
     bool fFromMe;
@@ -886,7 +886,7 @@ public:
      * populate vCoins with vector of available COutputs, and populates vTokenCoins in fWithTokens is set to true.
      */
     void AvailableCoinsAll(std::vector<COutput>& vCoins, std::map<std::string, std::vector<COutput> >& mapTokenCoins,
-                            bool fGetYONA = true, bool fOnlyTokens = false,
+                            bool fGetAKILA = true, bool fOnlyTokens = false,
                             bool fOnlySafe = true, const CCoinControl *coinControl = nullptr,
                             const CAmount& nMinimumAmount = 1, const CAmount& nMaximumAmount = MAX_MONEY,
                             const CAmount& nMinimumSumAmount = MAX_MONEY, const uint64_t& nMaximumCount = 0,
@@ -909,7 +909,7 @@ public:
                          const uint64_t &nMaximumCount = 0, const int &nMinDepth = 0, const int &nMaxDepth = 9999999) const;
 
     /**
-     * Helper function that calls AvailableCoinsAll, used to receive all coins, Tokens and YONA
+     * Helper function that calls AvailableCoinsAll, used to receive all coins, Tokens and AKILA
      */
     void AvailableCoinsWithTokens(std::vector<COutput> &vCoins, std::map<std::string, std::vector<COutput> > &mapTokenCoins,
                                   bool fOnlySafe = true, const CCoinControl *coinControl = nullptr, const CAmount &nMinimumAmount = 1,
@@ -1381,4 +1381,4 @@ bool CWallet::DummySignTx(CMutableTransaction &txNew, const ContainerType &coins
     return allSigned;
 }
 
-#endif // YONA_WALLET_WALLET_H
+#endif // AKILA_WALLET_WALLET_H

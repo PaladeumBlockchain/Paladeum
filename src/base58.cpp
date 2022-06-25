@@ -1,5 +1,5 @@
 // Copyright (c) 2014-2016 The Bitcoin Core developers
-// Copyright (c) 2021-2022 The Yona developers
+// Copyright (c) 2021-2022 The Akila developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -225,13 +225,13 @@ int CBase58Data::CompareTo(const CBase58Data& b58) const
 namespace
 {
 
-class CYonaAddressVisitor : public boost::static_visitor<bool>
+class CAkilaAddressVisitor : public boost::static_visitor<bool>
 {
 private:
-    CYonaAddress* addr;
+    CAkilaAddress* addr;
 
 public:
-    explicit CYonaAddressVisitor(CYonaAddress* addrIn) : addr(addrIn) {}
+    explicit CAkilaAddressVisitor(CAkilaAddress* addrIn) : addr(addrIn) {}
 
     bool operator()(const CKeyID& id) const { return addr->Set(id); }
     bool operator()(const std::pair<CKeyID, CKeyID>& id) const { return addr->Set(id.first, id.second); }
@@ -241,30 +241,30 @@ public:
 
 } // namespace
 
-bool CYonaAddress::Set(const CKeyID& id)
+bool CAkilaAddress::Set(const CKeyID& id)
 {
     SetData(GetParams().Base58Prefix(CChainParams::PUBKEY_ADDRESS), &id, 20);
     return true;
 }
 
-bool CYonaAddress::Set(const CKeyID& id, const CKeyID& id2)
+bool CAkilaAddress::Set(const CKeyID& id, const CKeyID& id2)
 {
     SetData(GetParams().Base58Prefix(CChainParams::OFFLINE_STAKING_ADDRESS), &id, 20, &id2, 20);
     return true;
 }
 
-bool CYonaAddress::Set(const CScriptID& id)
+bool CAkilaAddress::Set(const CScriptID& id)
 {
     SetData(GetParams().Base58Prefix(CChainParams::SCRIPT_ADDRESS), &id, 20);
     return true;
 }
 
-bool CYonaAddress::Set(const CTxDestination& dest)
+bool CAkilaAddress::Set(const CTxDestination& dest)
 {
-    return boost::apply_visitor(CYonaAddressVisitor(this), dest);
+    return boost::apply_visitor(CAkilaAddressVisitor(this), dest);
 }
 
-bool CYonaAddress::GetSpendingAddress(CYonaAddress &address) const
+bool CAkilaAddress::GetSpendingAddress(CAkilaAddress &address) const
 {
     if(!IsOfflineStakingAddress(GetParams()))
         return false;
@@ -275,7 +275,7 @@ bool CYonaAddress::GetSpendingAddress(CYonaAddress &address) const
     return true;
 }
 
-bool CYonaAddress::GetStakingAddress(CYonaAddress &address) const
+bool CAkilaAddress::GetStakingAddress(CAkilaAddress &address) const
 {
     if (!IsOfflineStakingAddress(GetParams()))
         return false;
@@ -286,12 +286,12 @@ bool CYonaAddress::GetStakingAddress(CYonaAddress &address) const
     return true;
 }
 
-bool CYonaAddress::IsValid() const
+bool CAkilaAddress::IsValid() const
 {
     return IsValid(GetParams());
 }
 
-bool CYonaAddress::IsValid(const CChainParams& params) const
+bool CAkilaAddress::IsValid(const CChainParams& params) const
 {
     if (vchVersion == params.Base58Prefix(CChainParams::OFFLINE_STAKING_ADDRESS))
         return vchData.size() == 40;
@@ -302,12 +302,12 @@ bool CYonaAddress::IsValid(const CChainParams& params) const
     return fCorrectSize && fKnownVersion;
 }
 
-bool CYonaAddress::IsOfflineStakingAddress(const CChainParams& params) const
+bool CAkilaAddress::IsOfflineStakingAddress(const CChainParams& params) const
 {
     return vchVersion == params.Base58Prefix(CChainParams::OFFLINE_STAKING_ADDRESS) && vchData.size() == 40;
 }
 
-CTxDestination CYonaAddress::Get() const
+CTxDestination CAkilaAddress::Get() const
 {
     if (!IsValid())
         return CNoDestination();
@@ -325,7 +325,7 @@ CTxDestination CYonaAddress::Get() const
         return CNoDestination();
 }
 
-bool CYonaAddress::GetKeyID(CKeyID& keyID) const
+bool CAkilaAddress::GetKeyID(CKeyID& keyID) const
 {
     if (!(IsValid() && vchVersion == GetParams().Base58Prefix(CChainParams::PUBKEY_ADDRESS)))
         return false;
@@ -335,7 +335,7 @@ bool CYonaAddress::GetKeyID(CKeyID& keyID) const
     return true;
 }
 
-bool CYonaAddress::GetStakingKeyID(CKeyID& keyID) const
+bool CAkilaAddress::GetStakingKeyID(CKeyID& keyID) const
 {
     if (!(IsValid() && vchVersion == GetParams().Base58Prefix(CChainParams::OFFLINE_STAKING_ADDRESS)))
         return false;
@@ -345,7 +345,7 @@ bool CYonaAddress::GetStakingKeyID(CKeyID& keyID) const
     return true;
 }
 
-bool CYonaAddress::GetSpendingKeyID(CKeyID& keyID) const
+bool CAkilaAddress::GetSpendingKeyID(CKeyID& keyID) const
 {
     if (!(IsValid() && vchVersion == GetParams().Base58Prefix(CChainParams::OFFLINE_STAKING_ADDRESS)))
         return false;
@@ -355,7 +355,7 @@ bool CYonaAddress::GetSpendingKeyID(CKeyID& keyID) const
     return true;
 }
 
-bool CYonaAddress::GetIndexKey(uint160& hashBytes, int& type) const
+bool CAkilaAddress::GetIndexKey(uint160& hashBytes, int& type) const
 {
     if (!IsValid()) {
         return false;
@@ -376,7 +376,7 @@ bool CYonaAddress::GetIndexKey(uint160& hashBytes, int& type) const
     return false;
 }
 
-void CYonaSecret::SetKey(const CKey& vchSecret)
+void CAkilaSecret::SetKey(const CKey& vchSecret)
 {
     assert(vchSecret.IsValid());
     SetData(GetParams().Base58Prefix(CChainParams::SECRET_KEY), vchSecret.begin(), vchSecret.size());
@@ -384,7 +384,7 @@ void CYonaSecret::SetKey(const CKey& vchSecret)
         vchData.push_back(1);
 }
 
-CKey CYonaSecret::GetKey()
+CKey CAkilaSecret::GetKey()
 {
     CKey ret;
     assert(vchData.size() >= 32);
@@ -392,41 +392,41 @@ CKey CYonaSecret::GetKey()
     return ret;
 }
 
-bool CYonaSecret::IsValid() const
+bool CAkilaSecret::IsValid() const
 {
     bool fExpectedFormat = vchData.size() == 32 || (vchData.size() == 33 && vchData[32] == 1);
     bool fCorrectVersion = vchVersion == GetParams().Base58Prefix(CChainParams::SECRET_KEY);
     return fExpectedFormat && fCorrectVersion;
 }
 
-bool CYonaSecret::SetString(const char* pszSecret)
+bool CAkilaSecret::SetString(const char* pszSecret)
 {
     return CBase58Data::SetString(pszSecret) && IsValid();
 }
 
-bool CYonaSecret::SetString(const std::string& strSecret)
+bool CAkilaSecret::SetString(const std::string& strSecret)
 {
     return SetString(strSecret.c_str());
 }
 
 std::string EncodeDestination(const CTxDestination& dest)
 {
-    CYonaAddress addr(dest);
+    CAkilaAddress addr(dest);
     if (!addr.IsValid()) return "";
     return addr.ToString();
 }
 
 CTxDestination DecodeDestination(const std::string& str)
 {
-    return CYonaAddress(str).Get();
+    return CAkilaAddress(str).Get();
 }
 
 bool IsValidDestinationString(const std::string& str, const CChainParams& params)
 {
-    return CYonaAddress(str).IsValid(params);
+    return CAkilaAddress(str).IsValid(params);
 }
 
 bool IsValidDestinationString(const std::string& str)
 {
-    return CYonaAddress(str).IsValid();
+    return CAkilaAddress(str).IsValid();
 }

@@ -1,11 +1,11 @@
 // Copyright (c) 2009-2010 Satoshi Nakamoto
 // Copyright (c) 2009-2016 The Bitcoin Core developers
-// Copyright (c) 2021-2022 The Yona developers
+// Copyright (c) 2021-2022 The Akila developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef YONA_SCRIPT_SCRIPT_ERROR_H
-#define YONA_SCRIPT_SCRIPT_ERROR_H
+#ifndef AKILA_SCRIPT_SCRIPT_ERROR_H
+#define AKILA_SCRIPT_SCRIPT_ERROR_H
 
 typedef enum ScriptError_t
 {
@@ -72,4 +72,4 @@ typedef enum ScriptError_t
 
 const char* ScriptErrorString(const ScriptError error);
 
-#endif // YONA_SCRIPT_SCRIPT_ERROR_H
+#endif // AKILA_SCRIPT_SCRIPT_ERROR_H

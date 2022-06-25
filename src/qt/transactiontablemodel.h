@@ -1,12 +1,12 @@
 // Copyright (c) 2011-2016 The Bitcoin Core developers
-// Copyright (c) 2021-2022 The Yona developers
+// Copyright (c) 2021-2022 The Akila developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef YONA_QT_TRANSACTIONTABLEMODEL_H
-#define YONA_QT_TRANSACTIONTABLEMODEL_H
+#ifndef AKILA_QT_TRANSACTIONTABLEMODEL_H
+#define AKILA_QT_TRANSACTIONTABLEMODEL_H
 
-#include "yonaunits.h"
+#include "akilaunits.h"
 
 #include <QAbstractTableModel>
 #include <QStringList>
@@ -74,7 +74,7 @@ public:
         StatusRole,
         /** Unprocessed icon */
         RawDecorationRole,
-        /** YONA or name of an token */
+        /** AKILA or name of an token */
         TokenNameRole,
     };
 
@@ -102,7 +102,7 @@ private:
     QString formatTxDate(const TransactionRecord *wtx) const;
     QString formatTxType(const TransactionRecord *wtx) const;
     QString formatTxToAddress(const TransactionRecord *wtx, bool tooltip) const;
-    QString formatTxAmount(const TransactionRecord *wtx, bool showUnconfirmed=true, YonaUnits::SeparatorStyle separators=YonaUnits::separatorStandard) const;
+    QString formatTxAmount(const TransactionRecord *wtx, bool showUnconfirmed=true, AkilaUnits::SeparatorStyle separators=AkilaUnits::separatorStandard) const;
     QString formatTooltip(const TransactionRecord *rec) const;
     QVariant txStatusDecoration(const TransactionRecord *wtx) const;
     QVariant txWatchonlyDecoration(const TransactionRecord *wtx) const;
@@ -121,4 +121,4 @@ public Q_SLOTS:
     friend class TransactionTablePriv;
 };
 
-#endif // YONA_QT_TRANSACTIONTABLEMODEL_H
+#endif // AKILA_QT_TRANSACTIONTABLEMODEL_H

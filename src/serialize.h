@@ -1,11 +1,11 @@
 // Copyright (c) 2009-2010 Satoshi Nakamoto
 // Copyright (c) 2009-2016 The Bitcoin Core developers
-// Copyright (c) 2021-2022 The Yona developers
+// Copyright (c) 2021-2022 The Akila developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef YONA_SERIALIZE_H
-#define YONA_SERIALIZE_H
+#ifndef AKILA_SERIALIZE_H
+#define AKILA_SERIALIZE_H
 
 #include "compat/endian.h"
 
@@ -975,4 +975,4 @@ size_t GetSerializeSize(const S& s, const T& t)
     return (CSizeComputer(s.GetType(), s.GetVersion()) << t).size();
 }
 
-#endif // YONA_SERIALIZE_H
+#endif // AKILA_SERIALIZE_H

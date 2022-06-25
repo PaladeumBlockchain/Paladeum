@@ -1,11 +1,11 @@
 // Copyright (c) 2009-2010 Satoshi Nakamoto
 // Copyright (c) 2009-2016 The Bitcoin Core developers
-// Copyright (c) 2021-2022 The Yona developers
+// Copyright (c) 2021-2022 The Akila developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef YONA_MERKLEBLOCK_H
-#define YONA_MERKLEBLOCK_H
+#ifndef AKILA_MERKLEBLOCK_H
+#define AKILA_MERKLEBLOCK_H
 
 #include "serialize.h"
 #include "uint256.h"
@@ -165,4 +165,4 @@ private:
     CMerkleBlock(const CBlock& block, CBloomFilter* filter, const std::set<uint256>* txids);
 };
 
-#endif // YONA_MERKLEBLOCK_H
+#endif // AKILA_MERKLEBLOCK_H

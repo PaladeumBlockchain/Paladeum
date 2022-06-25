@@ -1,11 +1,11 @@
-// Copyright (c) 2021-2022 The Yona developers
+// Copyright (c) 2021-2022 The Akila developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
 #include "restrictedfreezeaddress.h"
 #include "ui_restrictedfreezeaddress.h"
 
-#include "yonaunits.h"
+#include "akilaunits.h"
 #include "clientmodel.h"
 #include "guiconstants.h"
 #include "guiutil.h"

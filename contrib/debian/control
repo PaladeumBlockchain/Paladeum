@@ -1,4 +1,4 @@
-Source: yona
+Source: akila
 Section: utils
 Priority: optional
 Maintainer: Matt Corallo <matt@mattcorallo.com>
@@ -26,45 +26,45 @@ Build-Depends: debhelper,
  python,
  libzmq3-dev
 Standards-Version: 3.9.2
-Homepage: https://yonacoin.org/
-Vcs-Git: git://github.com/YonaProject/Yonacoin.git
-Vcs-Browser: https://github.com/YonaProject/Yonacoin
+Homepage: https://akilacoin.org/
+Vcs-Git: git://github.com/AkilaProject/Akilacoin.git
+Vcs-Browser: https://github.com/AkilaProject/Akilacoin
 
-Package: yonad
+Package: akilad
 Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends}
 Description: peer-to-peer network based digital currency - daemon
- Yona is a free open source peer-to-peer electronic cash system that
+ Akila is a free open source peer-to-peer electronic cash system that
  is completely decentralized, without the need for a central server or
  trusted parties.  Users hold the crypto keys to their own money and
  transact directly with each other, with the help of a P2P network to
  check for double-spending.
  .
- This package provides the daemon, yonad, and the CLI tool
- yona-cli to interact with the daemon.
+ This package provides the daemon, akilad, and the CLI tool
+ akila-cli to interact with the daemon.
 
-Package: yona-qt
+Package: akila-qt
 Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends}
 Description: peer-to-peer network based digital currency - Qt GUI
- Yona is a free open source peer-to-peer electronic cash system that
+ Akila is a free open source peer-to-peer electronic cash system that
  is completely decentralized, without the need for a central server or
  trusted parties.  Users hold the crypto keys to their own money and
  transact directly with each other, with the help of a P2P network to
  check for double-spending.
  .
- This package provides Yona-Qt, a GUI for Yona based on Qt.
+ This package provides Akila-Qt, a GUI for Akila based on Qt.
 
-Package: yona-tx
+Package: akila-tx
 Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends}
 Description: peer-to-peer digital currency - standalone transaction tool
- Yona is a free open source peer-to-peer electronic cash system that
+ Akila is a free open source peer-to-peer electronic cash system that
  is completely decentralized, without the need for a central server or
  trusted parties.  Users hold the crypto keys to their own money and
  transact directly with each other, with the help of a P2P network to
  check for double-spending.
  .
- This package provides yona-tx, a command-line transaction creation
- tool which can be used without a yona daemon.  Some means of
+ This package provides akila-tx, a command-line transaction creation
+ tool which can be used without a akila daemon.  Some means of
  exchanging minimal transaction data with peers is still required.

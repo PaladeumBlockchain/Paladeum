@@ -1,11 +1,11 @@
 // Copyright (c) 2009-2010 Satoshi Nakamoto
 // Copyright (c) 2009-2017 The Bitcoin Core developers
-// Copyright (c) 2021-2022 The Yona developers
+// Copyright (c) 2021-2022 The Akila developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef YONA_WALLET_FEES_H
-#define YONA_WALLET_FEES_H
+#ifndef AKILA_WALLET_FEES_H
+#define AKILA_WALLET_FEES_H
 
 #include "amount.h"
 
@@ -32,4 +32,4 @@ CAmount GetMinimumFee(unsigned int nTxBytes, const CCoinControl& coin_control, c
  */
 CFeeRate GetDiscardRate(const CBlockPolicyEstimator& estimator);
 
-#endif // YONA_WALLET_FEES_H
+#endif // AKILA_WALLET_FEES_H

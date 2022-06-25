@@ -1,0 +1,33 @@
+# /etc/conf.d/akilad: config file for /etc/init.d/akilad
+
+# Config file location
+#AKILAD_CONFIGFILE="/etc/akila/akila.conf"
+
+# What directory to write pidfile to?  (created and owned by $AKILAD_USER)
+#AKILAD_PIDDIR="/var/run/akilad"
+
+# What filename to give the pidfile
+#AKILAD_PIDFILE="${AKILAD_PIDDIR}/akilad.pid"
+
+# Where to write akilad data (be mindful that the blockchain is large)
+#AKILAD_DATADIR="/var/lib/akilad"
+
+# User and group to own akilad process
+#AKILAD_USER="akila"
+#AKILAD_GROUP="akila"
+
+# Path to akilad executable
+#AKILAD_BIN="/usr/bin/akilad"
+
+# Nice value to run akilad under
+#AKILAD_NICE=0
+
+# Additional options (avoid -conf and -datadir, use flags above)
+#AKILAD_OPTS=""
+
+# The timeout in seconds OpenRC will wait for akilad to terminate
+# after a SIGTERM has been raised.
+# Note that this will be mapped as argument to start-stop-daemon's
+# '--retry' option, which means you can specify a retry schedule
+# here. For more information see man 8 start-stop-daemon.
+AKILAD_SIGTERM_TIMEOUT=60

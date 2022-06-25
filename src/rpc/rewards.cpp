@@ -1,4 +1,4 @@
-// Copyright (c) 2021-2022 The Yona developers
+// Copyright (c) 2021-2022 The Akila developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -294,7 +294,7 @@ UniValue distributereward(const JSONRPCRequest& request) {
                 "\nArguments:\n"
                 "1. \"token_name\"                 (string, required) The reward will be distributed all owners of this token\n"
                 "2. \"snapshot_height\"            (number, required) The block height of the ownership snapshot\n"
-                "3. \"distribution_token_name\"    (string, required) The name of the token that will be distributed, or YONA\n"
+                "3. \"distribution_token_name\"    (string, required) The name of the token that will be distributed, or AKILA\n"
                 "4. \"gross_distribution_amount\"  (number, required) The amount of the distribution token that will be split amongst all owners\n"
                 "5. \"message\"                    (string, optional, default="") Message attached to transaction. \n"
                 "6. \"exception_addresses\"        (string, optional) Ownership addresses that should be excluded\n"
@@ -319,10 +319,10 @@ UniValue distributereward(const JSONRPCRequest& request) {
                 "}\n"
 
                 "\nExamples:\n"
-                + HelpExampleCli("distributereward", "\"TRONCO\" 12345 \"YONA\" 1000")
+                + HelpExampleCli("distributereward", "\"TRONCO\" 12345 \"AKILA\" 1000")
                 + HelpExampleCli("distributereward", "\"PHATSTACKS\" 12345 \"DIVIDENDS\" 1000 \"message\" \"mwN7xC3yomYdvJuVXkVC7ymY9wNBjWNduD,n4Rf18edydDaRBh7t6gHUbuByLbWEoWUTg\"")
                 + HelpExampleRpc("distributereward", "\"TRONCO\" 34987 \"DIVIDENDS\" 100000")
-                + HelpExampleRpc("distributereward", "\"PHATSTACKS\" 34987 \"YONA\" 100000 \"message\" \"mwN7xC3yomYdvJuVXkVC7ymY9wNBjWNduD,n4Rf18edydDaRBh7t6gHUbuByLbWEoWUTg\"")
+                + HelpExampleRpc("distributereward", "\"PHATSTACKS\" 34987 \"AKILA\" 100000 \"message\" \"mwN7xC3yomYdvJuVXkVC7ymY9wNBjWNduD,n4Rf18edydDaRBh7t6gHUbuByLbWEoWUTg\"")
         );
 
     if (!fTokenIndex) {
@@ -346,7 +346,7 @@ UniValue distributereward(const JSONRPCRequest& request) {
     std::string token_name(request.params[0].get_str());
     int snapshot_height = request.params[1].get_int();
     std::string distribution_token_name(request.params[2].get_str());
-    CAmount distribution_amount = AmountFromValue(request.params[3], (distribution_token_name == "YONA"));
+    CAmount distribution_amount = AmountFromValue(request.params[3], (distribution_token_name == "AKILA"));
     
     std::string message;
     if (request.params.size() > 4) {
@@ -362,7 +362,7 @@ UniValue distributereward(const JSONRPCRequest& request) {
     if (request.params.size() > 6) {
         change_address = request.params[6].get_str();
         if (!change_address.empty() && !IsValidDestinationString(change_address))
-            throw JSONRPCError(RPC_INVALID_PARAMETER, std::string("Invalid change address: Use a valid YONA address"));
+            throw JSONRPCError(RPC_INVALID_PARAMETER, std::string("Invalid change address: Use a valid AKILA address"));
     }
 
     KnownTokenType ownershipKnownTokenType;
@@ -378,7 +378,7 @@ UniValue distributereward(const JSONRPCRequest& request) {
         throw JSONRPCError(RPC_INVALID_PARAMETER, std::string("Invalid snapshot_height: block height should be less than or equal to the current active chain height"));
     }
 
-    if (distribution_token_name != "YONA") {
+    if (distribution_token_name != "AKILA") {
         if (!IsTokenNameValid(distribution_token_name, distributionKnownTokenType))
             throw JSONRPCError(RPC_INVALID_PARAMETER, std::string("Invalid distribution_token_name: Please use a valid token name"));
 
@@ -432,15 +432,15 @@ UniValue getdistributestatus(const JSONRPCRequest& request) {
                 "\nArguments:\n"
                 "1. \"token_name\"                 (string, required) The reward will be distributed all owners of this token\n"
                 "2. \"snapshot_height\"            (number, required) The block height of the ownership snapshot\n"
-                "3. \"distribution_token_name\"    (string, required) The name of the token that will be distributed, or YONA\n"
+                "3. \"distribution_token_name\"    (string, required) The name of the token that will be distributed, or AKILA\n"
                 "4. \"gross_distribution_amount\"  (number, required) The amount of the distribution token that will be split amongst all owners\n"
                 "5. \"exception_addresses\"        (string, optional) Ownership addresses that should be excluded\n"
 
                 "\nExamples:\n"
-                + HelpExampleCli("getdistributestatus", "\"TRONCO\" 12345 \"YONA\" 1000")
+                + HelpExampleCli("getdistributestatus", "\"TRONCO\" 12345 \"AKILA\" 1000")
                 + HelpExampleCli("getdistributestatus", "\"PHATSTACKS\" 12345 \"DIVIDENDS\" 1000 \"mwN7xC3yomYdvJuVXkVC7ymY9wNBjWNduD,n4Rf18edydDaRBh7t6gHUbuByLbWEoWUTg\"")
                 + HelpExampleRpc("getdistributestatus", "\"TRONCO\" 34987 \"DIVIDENDS\" 100000")
-                + HelpExampleRpc("getdistributestatus", "\"PHATSTACKS\" 34987 \"YONA\" 100000 \"mwN7xC3yomYdvJuVXkVC7ymY9wNBjWNduD,n4Rf18edydDaRBh7t6gHUbuByLbWEoWUTg\"")
+                + HelpExampleRpc("getdistributestatus", "\"PHATSTACKS\" 34987 \"AKILA\" 100000 \"mwN7xC3yomYdvJuVXkVC7ymY9wNBjWNduD,n4Rf18edydDaRBh7t6gHUbuByLbWEoWUTg\"")
         );
 
     if (!fTokenIndex) {
@@ -453,7 +453,7 @@ UniValue getdistributestatus(const JSONRPCRequest& request) {
     std::string token_name(request.params[0].get_str());
     int snapshot_height = request.params[1].get_int();
     std::string distribution_token_name(request.params[2].get_str());
-    CAmount distribution_amount = AmountFromValue(request.params[3], (distribution_token_name == "YONA"));
+    CAmount distribution_amount = AmountFromValue(request.params[3], (distribution_token_name == "AKILA"));
     std::string exception_addresses;
     if (request.params.size() > 4) {
         exception_addresses = request.params[4].get_str();

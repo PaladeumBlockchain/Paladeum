@@ -1,7 +1,7 @@
 
 #include "tokens/tokens.h"
 #include <boost/test/unit_test.hpp>
-#include <test/test_yona.h>
+#include <test/test_akila.h>
 
 BOOST_FIXTURE_TEST_SUITE(cache_tests, BasicTestingSetup)
 

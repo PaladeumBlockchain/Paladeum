@@ -1,10 +1,10 @@
 Format: http://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
-Upstream-Name: Yonacoin
-Source: https://github.com/YonaProject/Yonacoin
+Upstream-Name: Akilacoin
+Source: https://github.com/AkilaProject/Akilacoin
 
 Files: *
 Copyright: 2009-2017, Bitcoin Core Developers
-           2017-2020, Yona Core Developers
+           2017-2020, Akila Core Developers
 License: Expat
 Comment: The Bitcoin Core Developers encompasses the current developers listed on bitcoin.org,
          as well as the numerous contributors to the project.
@@ -77,10 +77,10 @@ License: Expat
 Comment: Modifications of Stephan Hutchings Typicons
 
 Files: src/qt/res/icons/about.png
-       src/qt/res/icons/yona.*
-       share/pixmaps/yona*
-       src/qt/res/src/yona.svg
-Copyright: The Yona Core Developers
+       src/qt/res/icons/akila.*
+       share/pixmaps/akila*
+       src/qt/res/src/akila.svg
+Copyright: The Akila Core Developers
 License: public-domain
 
 

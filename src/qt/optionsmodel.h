@@ -1,10 +1,10 @@
 // Copyright (c) 2011-2016 The Bitcoin Core developers
-// Copyright (c) 2021-2022 The Yona developers
+// Copyright (c) 2021-2022 The Akila developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef YONA_QT_OPTIONSMODEL_H
-#define YONA_QT_OPTIONSMODEL_H
+#ifndef AKILA_QT_OPTIONSMODEL_H
+#define AKILA_QT_OPTIONSMODEL_H
 
 #include "amount.h"
 
@@ -14,7 +14,7 @@ QT_BEGIN_NAMESPACE
 class QNetworkProxy;
 QT_END_NAMESPACE
 
-/** Interface from Qt to configuration data structure for Yona client.
+/** Interface from Qt to configuration data structure for Akila client.
    To Qt, the options are presented as a list with the different options
    laid out vertically.
    This can be changed to a tree once the settings become sufficiently
@@ -39,7 +39,7 @@ public:
         ProxyUseTor,            // bool
         ProxyIPTor,             // QString
         ProxyPortTor,           // int
-        DisplayUnit,            // YonaUnits::Unit
+        DisplayUnit,            // AkilaUnits::Unit
         ThirdPartyTxUrls,       // QString
         IpfsUrl,                // QString
         Language,               // QString
@@ -108,4 +108,4 @@ Q_SIGNALS:
     void hideTrayIconChanged(bool);
 };
 
-#endif // YONA_QT_OPTIONSMODEL_H
+#endif // AKILA_QT_OPTIONSMODEL_H

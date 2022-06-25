@@ -1,10 +1,10 @@
 // Copyright (c) 2012-2015 The Bitcoin Core developers
-// Copyright (c) 2021-2022 The Yona developers
+// Copyright (c) 2021-2022 The Akila developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef YONA_CHECKQUEUE_H
-#define YONA_CHECKQUEUE_H
+#ifndef AKILA_CHECKQUEUE_H
+#define AKILA_CHECKQUEUE_H
 
 #include "sync.h"
 
@@ -215,4 +215,4 @@ public:
     }
 };
 
-#endif // YONA_CHECKQUEUE_H
+#endif // AKILA_CHECKQUEUE_H

@@ -1,10 +1,10 @@
 // Copyright (c) 2009-2016 The Bitcoin Core developers
-// Copyright (c) 2021-2022 The Yona developers
+// Copyright (c) 2021-2022 The Akila developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef YONA_CHECKPOINTS_H
-#define YONA_CHECKPOINTS_H
+#ifndef AKILA_CHECKPOINTS_H
+#define AKILA_CHECKPOINTS_H
 
 #include "uint256.h"
 
@@ -28,4 +28,4 @@ CBlockIndex* GetLastCheckpoint(const CCheckpointData& data);
 
 } //namespace Checkpoints
 
-#endif // YONA_CHECKPOINTS_H
+#endif // AKILA_CHECKPOINTS_H

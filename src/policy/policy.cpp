@@ -1,7 +1,7 @@
 // Copyright (c) 2009-2010 Satoshi Nakamoto
 // Copyright (c) 2009-2016 The Bitcoin Core developers
 // Copyright (c) 2014-2016 The BlackCoin developers
-// Copyright (c) 2021-2022 The Yona developers
+// Copyright (c) 2021-2022 The Akila developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -164,9 +164,9 @@ bool IsStandardTx(const CTransaction& tx, std::string& reason, const bool witnes
         return false;
     }
 
-    // only one hundred OP_YONA_TOKEN txout is permitted
+    // only one hundred OP_AKILA_TOKEN txout is permitted
     if (nTokenDataOut > 100) {
-        reason = "tomany-op-yona-token";
+        reason = "tomany-op-akila-token";
         return false;
     }
 

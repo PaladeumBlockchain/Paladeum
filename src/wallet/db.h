@@ -1,11 +1,11 @@
 // Copyright (c) 2009-2010 Satoshi Nakamoto
 // Copyright (c) 2009-2016 The Bitcoin Core developers
-// Copyright (c) 2021-2022 The Yona developers
+// Copyright (c) 2021-2022 The Akila developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef YONA_WALLET_DB_H
-#define YONA_WALLET_DB_H
+#ifndef AKILA_WALLET_DB_H
+#define AKILA_WALLET_DB_H
 
 #include "clientversion.h"
 #include "fs.h"
@@ -369,4 +369,4 @@ public:
     bool static Rewrite(CWalletDBWrapper& dbw, const char* pszSkip = nullptr);
 };
 
-#endif // YONA_WALLET_DB_H
+#endif // AKILA_WALLET_DB_H

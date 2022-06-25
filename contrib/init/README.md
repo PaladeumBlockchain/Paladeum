@@ -1,11 +1,11 @@
 Sample configuration files for:
 ```
-SystemD: yonad.service
-Upstart: yonad.conf
-OpenRC:  yonad.openrc
-         yonad.openrcconf
-CentOS:  yonad.init
-OS X:    org.yona.yonad.plist
+SystemD: akilad.service
+Upstart: akilad.conf
+OpenRC:  akilad.openrc
+         akilad.openrcconf
+CentOS:  akilad.init
+OS X:    org.akila.akilad.plist
 ```
 have been made available to assist packagers in creating node packages here.
 

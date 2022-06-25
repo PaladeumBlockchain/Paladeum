@@ -1,10 +1,10 @@
 // Copyright (c) 2011-2016 The Bitcoin Core developers
-// Copyright (c) 2021-2022 The Yona developers
+// Copyright (c) 2021-2022 The Akila developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef YONA_WALLET_COINCONTROL_H
-#define YONA_WALLET_COINCONTROL_H
+#ifndef AKILA_WALLET_COINCONTROL_H
+#define AKILA_WALLET_COINCONTROL_H
 
 #include "policy/feerate.h"
 #include "policy/fees.h"
@@ -130,4 +130,4 @@ private:
     std::set<COutPoint> setTokensSelected;
 };
 
-#endif // YONA_WALLET_COINCONTROL_H
+#endif // AKILA_WALLET_COINCONTROL_H

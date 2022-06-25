@@ -1,10 +1,10 @@
 // Copyright (c) 2016 The Bitcoin Core developers
-// Copyright (c) 2021-2022 The Yona developers
+// Copyright (c) 2021-2022 The Akila developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef YONA_SUPPORT_EVENTS_H
-#define YONA_SUPPORT_EVENTS_H
+#ifndef AKILA_SUPPORT_EVENTS_H
+#define AKILA_SUPPORT_EVENTS_H
 
 #include <ios>
 #include <memory>
@@ -54,4 +54,4 @@ inline raii_evhttp_connection obtain_evhttp_connection_base(struct event_base* b
     return result;
 }
 
-#endif // YONA_SUPPORT_EVENTS_H
+#endif // AKILA_SUPPORT_EVENTS_H

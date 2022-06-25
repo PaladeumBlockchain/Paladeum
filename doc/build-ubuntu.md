@@ -1,4 +1,4 @@
-Build instructions for Yonacoin 
+Build instructions for Akilacoin 
 =================================
 
 This will install most of the dependencies from ubuntu.
@@ -89,12 +89,12 @@ protobuf-compiler
 
 Directory structure
 ------------------
-Yonacoin sources in `$HOME/src`
+Akilacoin sources in `$HOME/src`
 
 Berkeley DB will be installed to `$HOME/src/db4`
 
 
-Yonacoin
+Akilacoin
 ------------------
 
 Start in $HOME
@@ -105,11 +105,11 @@ Make the directory for sources and go into it.
 
 `cd src`
 
-__Download Yonacoin source.__
+__Download Akilacoin source.__
 
-`git clone https://github.com/YonaProject/Yonacoin`
+`git clone https://github.com/AkilaProject/Akilacoin`
 
-`cd Yonacoin`
+`cd Akilacoin`
 
 `git checkout develop` # this checks out the develop branch.
 
@@ -130,11 +130,11 @@ _Adjust to own needs. This will install the binaries to `/usr/local/bin`_
 
 `make -j8`  # 8 for 8 build threads, adjust to fit your setup.
 
-You can now start yona-qt from the build directory.
+You can now start akila-qt from the build directory.
 
-`src/qt/yona-qt`
+`src/qt/akila-qt`
 
-yonad and yona-cli are in `src/`
+akilad and akila-cli are in `src/`
 
 
 __Optional:__

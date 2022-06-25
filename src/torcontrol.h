@@ -1,13 +1,13 @@
 // Copyright (c) 2015 The Bitcoin Core developers
-// Copyright (c) 2021-2022 The Yona developers
+// Copyright (c) 2021-2022 The Akila developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
 /**
  * Functionality for communicating with Tor.
  */
-#ifndef YONA_TORCONTROL_H
-#define YONA_TORCONTROL_H
+#ifndef AKILA_TORCONTROL_H
+#define AKILA_TORCONTROL_H
 
 #include "scheduler.h"
 
@@ -18,4 +18,4 @@ void StartTorControl(boost::thread_group& threadGroup, CScheduler& scheduler);
 void InterruptTorControl();
 void StopTorControl();
 
-#endif /* YONA_TORCONTROL_H */
+#endif /* AKILA_TORCONTROL_H */

@@ -1,10 +1,10 @@
 // Copyright (c) 2017 The Bitcoin Core developers
-// Copyright (c) 2021-2022 The Yona developers
+// Copyright (c) 2021-2022 The Akila developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef YONA_FS_H
-#define YONA_FS_H
+#ifndef AKILA_FS_H
+#define AKILA_FS_H
 
 #include <stdio.h>
 #include <string>
@@ -25,4 +25,4 @@ namespace fsbridge {
     FILE *freopen(const fs::path& p, const char *mode, FILE *stream);
 };
 
-#endif // YONA_FS_H
+#endif // AKILA_FS_H

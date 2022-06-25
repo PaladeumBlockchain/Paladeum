@@ -33,27 +33,27 @@ RUN apt-get update && \
 	libzmq3-dev libminiupnpc-dev libdb4.8-dev libdb4.8++-dev && \
 	apt-get clean
 
-#Build Yonacoin from source
-COPY . /home/yona/build/Yonacoin/
-WORKDIR /home/yona/build/Yonacoin
+#Build Akilacoin from source
+COPY . /home/akila/build/Akilacoin/
+WORKDIR /home/akila/build/Akilacoin
 RUN ./autogen.sh && ./configure --disable-tests --with-gui=no && make
 
 FROM base AS final
 
 #Add our service account user
-RUN useradd -ms /bin/bash yona && \
-	mkdir /var/lib/yona && \
-	chown yona:yona /var/lib/yona && \
-	ln -s /var/lib/yona /home/yona/.yona && \
-	chown -h yona:yona /home/yona/.yona
+RUN useradd -ms /bin/bash akila && \
+	mkdir /var/lib/akila && \
+	chown akila:akila /var/lib/akila && \
+	ln -s /var/lib/akila /home/akila/.akila && \
+	chown -h akila:akila /home/akila/.akila
 
-VOLUME /var/lib/yona
+VOLUME /var/lib/akila
 
 #Copy the compiled binaries from the build
-COPY --from=build /home/yona/build/Yonacoin/src/yonad /usr/local/bin/yonad
-COPY --from=build /home/yona/build/Yonacoin/src/yona-cli /usr/local/bin/yona-cli
+COPY --from=build /home/akila/build/Akilacoin/src/akilad /usr/local/bin/akilad
+COPY --from=build /home/akila/build/Akilacoin/src/akila-cli /usr/local/bin/akila-cli
 
-WORKDIR /home/yona
-USER yona
+WORKDIR /home/akila
+USER akila
 
-CMD /usr/local/bin/yonad -datadir=/var/lib/yona -printtoconsole -onlynet=ipv4
+CMD /usr/local/bin/akilad -datadir=/var/lib/akila -printtoconsole -onlynet=ipv4

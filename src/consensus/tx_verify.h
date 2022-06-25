@@ -1,10 +1,10 @@
 // Copyright (c) 2017-2017 The Bitcoin Core developers
-// Copyright (c) 2021-2022 The Yona developers
+// Copyright (c) 2021-2022 The Akila developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef YONA_CONSENSUS_TX_VERIFY_H
-#define YONA_CONSENSUS_TX_VERIFY_H
+#ifndef AKILA_CONSENSUS_TX_VERIFY_H
+#define AKILA_CONSENSUS_TX_VERIFY_H
 
 #include "amount.h"
 
@@ -90,4 +90,4 @@ bool EvaluateSequenceLocks(const CBlockIndex& block, std::pair<int, int64_t> loc
  */
 bool SequenceLocks(const CTransaction &tx, int flags, std::vector<int>* prevHeights, const CBlockIndex& block);
 
-#endif // YONA_CONSENSUS_TX_VERIFY_H
+#endif // AKILA_CONSENSUS_TX_VERIFY_H

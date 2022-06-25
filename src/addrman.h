@@ -1,11 +1,11 @@
 // Copyright (c) 2012 Pieter Wuille
 // Copyright (c) 2012-2016 The Bitcoin Core developers
-// Copyright (c) 2021-2022 The Yona developers
+// Copyright (c) 2021-2022 The Akila developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef YONA_ADDRMAN_H
-#define YONA_ADDRMAN_H
+#ifndef AKILA_ADDRMAN_H
+#define AKILA_ADDRMAN_H
 
 #include "netaddress.h"
 #include "protocol.h"
@@ -603,4 +603,4 @@ public:
 
 };
 
-#endif // YONA_ADDRMAN_H
+#endif // AKILA_ADDRMAN_H

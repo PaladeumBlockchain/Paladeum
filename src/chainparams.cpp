@@ -1,6 +1,6 @@
 // Copyright (c) 2010 Satoshi Nakamoto
 // Copyright (c) 2009-2016 The Bitcoin Core developers
-// Copyright (c) 2021-2022 The Yona developers
+// Copyright (c) 2021-2022 The Akila developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -216,7 +216,7 @@ public:
             0
         };
 
-        /** YONA Start **/
+        /** AKILA Start **/
         // Fee Amounts
         nIssueTokenFeeAmount = 10 * COIN;
         nReissueTokenFeeAmount = 2 * COIN;
@@ -238,7 +238,7 @@ public:
 
         // BIP44 cointype
         nExtCoinType = 1;
-        /** YONA End **/
+        /** AKILA End **/
     }
 };
 
@@ -307,7 +307,7 @@ public:
         base58Prefixes[EXT_PUBLIC_KEY] = {0x04, 0x35, 0x87, 0xCF};
         base58Prefixes[EXT_SECRET_KEY] = {0x04, 0x35, 0x83, 0x94};
 
-        // Yona BIP44 cointype in testnet
+        // Akila BIP44 cointype in testnet
         nExtCoinType = 1;
 
         vFixedSeeds = std::vector<SeedSpec6>(pnSeed6_test, pnSeed6_test + ARRAYLEN(pnSeed6_test));
@@ -329,7 +329,7 @@ public:
             0
         };
 
-        /** YONA Start **/
+        /** AKILA Start **/
         // Fee Amounts
         nIssueTokenFeeAmount = 10 * COIN;
         nReissueTokenFeeAmount = 2 * COIN;
@@ -348,7 +348,7 @@ public:
         nMaxReorganizationDepth = 180; // 180 at 20 seconds block timespan is +/- 60 minutes.
         nMinReorganizationPeers = 4;
         nMinReorganizationAge = 60 * 60 * 12; // 12 hours
-        /** YONA End **/
+        /** AKILA End **/
     }
 };
 
@@ -432,10 +432,10 @@ public:
         base58Prefixes[EXT_PUBLIC_KEY] = {0x04, 0x35, 0x87, 0xCF};
         base58Prefixes[EXT_SECRET_KEY] = {0x04, 0x35, 0x83, 0x94};
 
-        // Yona BIP44 cointype in regtest
+        // Akila BIP44 cointype in regtest
         nExtCoinType = 1;
 
-        /** YONA Start **/
+        /** AKILA Start **/
         // Fee Amounts
         nIssueTokenFeeAmount = 10 * COIN;
         nReissueTokenFeeAmount = 2 * COIN;
@@ -458,7 +458,7 @@ public:
         // TODO, we need to figure out what to do with this for regtest. This effects the unit tests
         // For now we can use a timestamp very far away
         // If you are looking to test the kawpow hashing function in regtest. You will need to change this number
-        /** YONA End **/
+        /** AKILA End **/
     }
 };
 

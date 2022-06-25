@@ -1,6 +1,6 @@
 // Copyright (c) 2009-2010 Satoshi Nakamoto
 // Copyright (c) 2009-2015 The Bitcoin Core developers
-// Copyright (c) 2021-2022 The Yona developers
+// Copyright (c) 2021-2022 The Akila developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -12,8 +12,8 @@
  * - E-mail usually won't line-break if there's no punctuation to break at.
  * - Double-clicking selects the whole string as one word if it's all alphanumeric.
  */
-#ifndef YONA_BASE58_H
-#define YONA_BASE58_H
+#ifndef AKILA_BASE58_H
+#define AKILA_BASE58_H
 
 #include "chainparams.h"
 #include "key.h"
@@ -95,13 +95,13 @@ public:
     bool operator< (const CBase58Data& b58) const { return CompareTo(b58) <  0; }
     bool operator> (const CBase58Data& b58) const { return CompareTo(b58) >  0; }
 };
-/** base58-encoded Yona addresses.
+/** base58-encoded Akila addresses.
  * Public-key-hash-addresses have version 0 (or 111 testnet).
  * The data vector contains RIPEMD160(SHA256(pubkey)), where pubkey is the serialized public key.
  * Script-hash-addresses have version 5 (or 196 testnet).
  * The data vector contains RIPEMD160(SHA256(cscript)), where cscript is the serialized redemption script.
  */
-class CYonaAddress : public CBase58Data {
+class CAkilaAddress : public CBase58Data {
 public:
     bool Set(const CKeyID &id);
     bool Set(const CKeyID &id, const CKeyID &id2);
@@ -111,11 +111,11 @@ public:
     bool IsValid(const CChainParams &params) const;
     bool IsOfflineStakingAddress(const CChainParams& params) const;
 
-    CYonaAddress() {}
-    CYonaAddress(const CTxDestination &dest) { Set(dest); }
-    CYonaAddress(const CKeyID &id, const CKeyID &id2) { Set(id, id2); }
-    CYonaAddress(const std::string& strAddress) { SetString(strAddress); }
-    CYonaAddress(const char* pszAddress) { SetString(pszAddress); }
+    CAkilaAddress() {}
+    CAkilaAddress(const CTxDestination &dest) { Set(dest); }
+    CAkilaAddress(const CKeyID &id, const CKeyID &id2) { Set(id, id2); }
+    CAkilaAddress(const std::string& strAddress) { SetString(strAddress); }
+    CAkilaAddress(const char* pszAddress) { SetString(pszAddress); }
 
     CTxDestination Get() const;
     bool GetKeyID(CKeyID &keyID) const;
@@ -123,14 +123,14 @@ public:
     bool GetSpendingKeyID(CKeyID &keyID) const;
     bool GetIndexKey(uint160& hashBytes, int& type) const;
 
-    bool GetStakingAddress(CYonaAddress &address) const;
-    bool GetSpendingAddress(CYonaAddress &address) const;
+    bool GetStakingAddress(CAkilaAddress &address) const;
+    bool GetSpendingAddress(CAkilaAddress &address) const;
 };
 
 /**
  * A base58-encoded secret key
  */
-class CYonaSecret : public CBase58Data
+class CAkilaSecret : public CBase58Data
 {
 public:
     void SetKey(const CKey& vchSecret);
@@ -139,11 +139,11 @@ public:
     bool SetString(const char* pszSecret);
     bool SetString(const std::string& strSecret);
 
-    CYonaSecret(const CKey& vchSecret) { SetKey(vchSecret); }
-    CYonaSecret() {}
+    CAkilaSecret(const CKey& vchSecret) { SetKey(vchSecret); }
+    CAkilaSecret() {}
 };
 
-template<typename K, int Size, CChainParams::Base58Type Type> class CYonaExtKeyBase : public CBase58Data
+template<typename K, int Size, CChainParams::Base58Type Type> class CAkilaExtKeyBase : public CBase58Data
 {
 public:
     void SetKey(const K &key) {
@@ -161,23 +161,23 @@ public:
         return ret;
     }
 
-    CYonaExtKeyBase(const K &key) {
+    CAkilaExtKeyBase(const K &key) {
         SetKey(key);
     }
 
-    CYonaExtKeyBase(const std::string& strBase58c) {
+    CAkilaExtKeyBase(const std::string& strBase58c) {
         SetString(strBase58c.c_str(), GetParams().Base58Prefix(Type).size());
     }
 
-    CYonaExtKeyBase() {}
+    CAkilaExtKeyBase() {}
 };
 
-typedef CYonaExtKeyBase<CExtKey, BIP32_EXTKEY_SIZE, CChainParams::EXT_SECRET_KEY> CYonaExtKey;
-typedef CYonaExtKeyBase<CExtPubKey, BIP32_EXTKEY_SIZE, CChainParams::EXT_PUBLIC_KEY> CYonaExtPubKey;
+typedef CAkilaExtKeyBase<CExtKey, BIP32_EXTKEY_SIZE, CChainParams::EXT_SECRET_KEY> CAkilaExtKey;
+typedef CAkilaExtKeyBase<CExtPubKey, BIP32_EXTKEY_SIZE, CChainParams::EXT_PUBLIC_KEY> CAkilaExtPubKey;
 
 std::string EncodeDestination(const CTxDestination& dest);
 CTxDestination DecodeDestination(const std::string& str);
 bool IsValidDestinationString(const std::string& str);
 bool IsValidDestinationString(const std::string& str, const CChainParams& params);
 
-#endif // YONA_BASE58_H
+#endif // AKILA_BASE58_H

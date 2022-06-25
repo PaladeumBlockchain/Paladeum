@@ -2,15 +2,15 @@
 // Copyright (c) 2009-2016 The Bitcoin Core developers
 // Copyright (c) 2017-2019 The Raven Core developers
 // Copyright (c) 2014-2016 The BlackCoin developers
-// Copyright (c) 2021-2022 The Yona developers
+// Copyright (c) 2021-2022 The Akila developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef YONA_VALIDATION_H
-#define YONA_VALIDATION_H
+#ifndef AKILA_VALIDATION_H
+#define AKILA_VALIDATION_H
 
 #if defined(HAVE_CONFIG_H)
-#include "config/yona-config.h"
+#include "config/akila-config.h"
 #endif
 
 #include "amount.h"
@@ -141,7 +141,7 @@ static const unsigned int INVENTORY_BROADCAST_MAX = 7 * INVENTORY_BROADCAST_INTE
 static const unsigned int AVG_FEEFILTER_BROADCAST_INTERVAL = 10 * 60;
 /** Maximum feefilter broadcast delay after significant change. */
 static const unsigned int MAX_FEEFILTER_CHANGE_DELAY = 5 * 60;
-/** Block download timeout base, expressed in millionths of the block interval (i.e. 10 min) */ // TODO Should we change this for yona, with 1 minutes block intervals?
+/** Block download timeout base, expressed in millionths of the block interval (i.e. 10 min) */ // TODO Should we change this for akila, with 1 minutes block intervals?
 static const int64_t BLOCK_DOWNLOAD_TIMEOUT_BASE = 1000000;
 /** Additional block download timeout per parallel downloading peer (i.e. 5 min) */
 static const int64_t BLOCK_DOWNLOAD_TIMEOUT_PER_PEER = 500000;
@@ -615,4 +615,4 @@ bool AreRestrictedTokensDeployed();
 CTokensCache* GetCurrentTokenCache();
 /** TOKENS END */
 
-#endif // YONA_VALIDATION_H
+#endif // AKILA_VALIDATION_H

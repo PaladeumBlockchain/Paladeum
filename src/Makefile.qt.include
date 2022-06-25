@@ -1,98 +1,98 @@
 # Copyright (c) 2013-2016 The Bitcoin Core developers
-# Copyright (c) 2021-2022 The Yona developers
+# Copyright (c) 2021-2022 The Akila developers
 # Distributed under the MIT software license, see the accompanying
 # file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-bin_PROGRAMS += qt/yona-qt
-EXTRA_LIBRARIES += qt/libyonaqt.a
+bin_PROGRAMS += qt/akila-qt
+EXTRA_LIBRARIES += qt/libakilaqt.a
 
-# yona qt core #
+# akila qt core #
 QT_TS = \
-  qt/locale/yona_af.ts \
-  qt/locale/yona_af_ZA.ts \
-  qt/locale/yona_ar.ts \
-  qt/locale/yona_be_BY.ts \
-  qt/locale/yona_bg_BG.ts \
-  qt/locale/yona_bg.ts \
-  qt/locale/yona_ca_ES.ts \
-  qt/locale/yona_ca.ts \
-  qt/locale/yona_ca@valencia.ts \
-  qt/locale/yona_cs.ts \
-  qt/locale/yona_cy.ts \
-  qt/locale/yona_da.ts \
-  qt/locale/yona_de.ts \
-  qt/locale/yona_el_GR.ts \
-  qt/locale/yona_el.ts \
-  qt/locale/yona_en_GB.ts \
-  qt/locale/yona_en.ts \
-  qt/locale/yona_eo.ts \
-  qt/locale/yona_es_AR.ts \
-  qt/locale/yona_es_CL.ts \
-  qt/locale/yona_es_CO.ts \
-  qt/locale/yona_es_DO.ts \
-  qt/locale/yona_es_ES.ts \
-  qt/locale/yona_es_MX.ts \
-  qt/locale/yona_es.ts \
-  qt/locale/yona_es_UY.ts \
-  qt/locale/yona_es_VE.ts \
-  qt/locale/yona_et_EE.ts \
-  qt/locale/yona_et.ts \
-  qt/locale/yona_eu_ES.ts \
-  qt/locale/yona_fa_IR.ts \
-  qt/locale/yona_fa.ts \
-  qt/locale/yona_fi.ts \
-  qt/locale/yona_fr_CA.ts \
-  qt/locale/yona_fr_FR.ts \
-  qt/locale/yona_fr.ts \
-  qt/locale/yona_gl.ts \
-  qt/locale/yona_he.ts \
-  qt/locale/yona_hi_IN.ts \
-  qt/locale/yona_hr.ts \
-  qt/locale/yona_hu.ts \
-  qt/locale/yona_id_ID.ts \
-  qt/locale/yona_it_IT.ts \
-  qt/locale/yona_it.ts \
-  qt/locale/yona_ja.ts \
-  qt/locale/yona_ka.ts \
-  qt/locale/yona_kk_KZ.ts \
-  qt/locale/yona_ko_KR.ts \
-  qt/locale/yona_ku_IQ.ts \
-  qt/locale/yona_ky.ts \
-  qt/locale/yona_la.ts \
-  qt/locale/yona_lt.ts \
-  qt/locale/yona_lv_LV.ts \
-  qt/locale/yona_mk_MK.ts \
-  qt/locale/yona_mn.ts \
-  qt/locale/yona_ms_MY.ts \
-  qt/locale/yona_nb.ts \
-  qt/locale/yona_ne.ts \
-  qt/locale/yona_nl.ts \
-  qt/locale/yona_pl.ts \
-  qt/locale/yona_pt_BR.ts \
-  qt/locale/yona_pt_PT.ts \
-  qt/locale/yona_ro_RO.ts \
-  qt/locale/yona_ro.ts \
-  qt/locale/yona_ru_RU.ts \
-  qt/locale/yona_ru.ts \
-  qt/locale/yona_sk.ts \
-  qt/locale/yona_sl_SI.ts \
-  qt/locale/yona_sq.ts \
-  qt/locale/yona_sr@latin.ts \
-  qt/locale/yona_sr.ts \
-  qt/locale/yona_sv.ts \
-  qt/locale/yona_ta.ts \
-  qt/locale/yona_th_TH.ts \
-  qt/locale/yona_tr_TR.ts \
-  qt/locale/yona_tr.ts \
-  qt/locale/yona_uk.ts \
-  qt/locale/yona_ur_PK.ts \
-  qt/locale/yona_uz@Cyrl.ts \
-  qt/locale/yona_vi.ts \
-  qt/locale/yona_vi_VN.ts \
-  qt/locale/yona_zh_CN.ts \
-  qt/locale/yona_zh_HK.ts \
-  qt/locale/yona_zh.ts \
-  qt/locale/yona_zh_TW.ts
+  qt/locale/akila_af.ts \
+  qt/locale/akila_af_ZA.ts \
+  qt/locale/akila_ar.ts \
+  qt/locale/akila_be_BY.ts \
+  qt/locale/akila_bg_BG.ts \
+  qt/locale/akila_bg.ts \
+  qt/locale/akila_ca_ES.ts \
+  qt/locale/akila_ca.ts \
+  qt/locale/akila_ca@valencia.ts \
+  qt/locale/akila_cs.ts \
+  qt/locale/akila_cy.ts \
+  qt/locale/akila_da.ts \
+  qt/locale/akila_de.ts \
+  qt/locale/akila_el_GR.ts \
+  qt/locale/akila_el.ts \
+  qt/locale/akila_en_GB.ts \
+  qt/locale/akila_en.ts \
+  qt/locale/akila_eo.ts \
+  qt/locale/akila_es_AR.ts \
+  qt/locale/akila_es_CL.ts \
+  qt/locale/akila_es_CO.ts \
+  qt/locale/akila_es_DO.ts \
+  qt/locale/akila_es_ES.ts \
+  qt/locale/akila_es_MX.ts \
+  qt/locale/akila_es.ts \
+  qt/locale/akila_es_UY.ts \
+  qt/locale/akila_es_VE.ts \
+  qt/locale/akila_et_EE.ts \
+  qt/locale/akila_et.ts \
+  qt/locale/akila_eu_ES.ts \
+  qt/locale/akila_fa_IR.ts \
+  qt/locale/akila_fa.ts \
+  qt/locale/akila_fi.ts \
+  qt/locale/akila_fr_CA.ts \
+  qt/locale/akila_fr_FR.ts \
+  qt/locale/akila_fr.ts \
+  qt/locale/akila_gl.ts \
+  qt/locale/akila_he.ts \
+  qt/locale/akila_hi_IN.ts \
+  qt/locale/akila_hr.ts \
+  qt/locale/akila_hu.ts \
+  qt/locale/akila_id_ID.ts \
+  qt/locale/akila_it_IT.ts \
+  qt/locale/akila_it.ts \
+  qt/locale/akila_ja.ts \
+  qt/locale/akila_ka.ts \
+  qt/locale/akila_kk_KZ.ts \
+  qt/locale/akila_ko_KR.ts \
+  qt/locale/akila_ku_IQ.ts \
+  qt/locale/akila_ky.ts \
+  qt/locale/akila_la.ts \
+  qt/locale/akila_lt.ts \
+  qt/locale/akila_lv_LV.ts \
+  qt/locale/akila_mk_MK.ts \
+  qt/locale/akila_mn.ts \
+  qt/locale/akila_ms_MY.ts \
+  qt/locale/akila_nb.ts \
+  qt/locale/akila_ne.ts \
+  qt/locale/akila_nl.ts \
+  qt/locale/akila_pl.ts \
+  qt/locale/akila_pt_BR.ts \
+  qt/locale/akila_pt_PT.ts \
+  qt/locale/akila_ro_RO.ts \
+  qt/locale/akila_ro.ts \
+  qt/locale/akila_ru_RU.ts \
+  qt/locale/akila_ru.ts \
+  qt/locale/akila_sk.ts \
+  qt/locale/akila_sl_SI.ts \
+  qt/locale/akila_sq.ts \
+  qt/locale/akila_sr@latin.ts \
+  qt/locale/akila_sr.ts \
+  qt/locale/akila_sv.ts \
+  qt/locale/akila_ta.ts \
+  qt/locale/akila_th_TH.ts \
+  qt/locale/akila_tr_TR.ts \
+  qt/locale/akila_tr.ts \
+  qt/locale/akila_uk.ts \
+  qt/locale/akila_ur_PK.ts \
+  qt/locale/akila_uz@Cyrl.ts \
+  qt/locale/akila_vi.ts \
+  qt/locale/akila_vi_VN.ts \
+  qt/locale/akila_zh_CN.ts \
+  qt/locale/akila_zh_HK.ts \
+  qt/locale/akila_zh.ts \
+  qt/locale/akila_zh_TW.ts
 
 QT_FORMS_UI = \
   qt/forms/addressbookpage.ui \
@@ -133,10 +133,10 @@ QT_MOC_CPP = \
   qt/moc_tokencontroltreewidget.cpp \
   qt/moc_tokenfilterproxy.cpp \
   qt/moc_bantablemodel.cpp \
-  qt/moc_yonaaddressvalidator.cpp \
-  qt/moc_yonaamountfield.cpp \
-  qt/moc_yonagui.cpp \
-  qt/moc_yonaunits.cpp \
+  qt/moc_akilaaddressvalidator.cpp \
+  qt/moc_akilaamountfield.cpp \
+  qt/moc_akilagui.cpp \
+  qt/moc_akilaunits.cpp \
   qt/moc_callback.cpp \
   qt/moc_clientmodel.cpp \
   qt/moc_coincontroldialog.cpp \
@@ -188,28 +188,28 @@ QT_MOC_CPP = \
   qt/moc_sendtokensentry.cpp \
   qt/moc_mnemonicdialog.cpp
 
-YONA_MM = \
+AKILA_MM = \
   qt/macdockiconhandler.mm \
   qt/macnotificationhandler.mm
 
 QT_MOC = \
-  qt/yona.moc \
-  qt/yonaamountfield.moc \
+  qt/akila.moc \
+  qt/akilaamountfield.moc \
   qt/callback.moc \
   qt/intro.moc \
   qt/overviewpage.moc \
   qt/rpcconsole.moc
 
-QT_QRC_CPP = qt/qrc_yona.cpp
-QT_QRC = qt/yona.qrc
-QT_QRC_LOCALE_CPP = qt/qrc_yona_locale.cpp
-QT_QRC_LOCALE = qt/yona_locale.qrc
+QT_QRC_CPP = qt/qrc_akila.cpp
+QT_QRC = qt/akila.qrc
+QT_QRC_LOCALE_CPP = qt/qrc_akila_locale.cpp
+QT_QRC_LOCALE = qt/akila_locale.qrc
 
 PROTOBUF_CC = qt/paymentrequest.pb.cc
 PROTOBUF_H = qt/paymentrequest.pb.h
 PROTOBUF_PROTO = qt/paymentrequest.proto
 
-YONA_QT_H = \
+AKILA_QT_H = \
   qt/addressbookpage.h \
   qt/addresstablemodel.h \
   qt/askpassphrasedialog.h \
@@ -220,10 +220,10 @@ YONA_QT_H = \
   qt/tokensdialog.h \
   qt/createtokendialog.h \
   qt/bantablemodel.h \
-  qt/yonaaddressvalidator.h \
-  qt/yonaamountfield.h \
-  qt/yonagui.h \
-  qt/yonaunits.h \
+  qt/akilaaddressvalidator.h \
+  qt/akilaamountfield.h \
+  qt/akilagui.h \
+  qt/akilaunits.h \
   qt/callback.h \
   qt/clientmodel.h \
   qt/coincontroldialog.h \
@@ -292,11 +292,11 @@ RES_ICONS = \
   qt/res/icons/token_overview.png \
   qt/res/icons/token_manage.png \
   qt/res/icons/token_transfer.png \
-  qt/res/icons/yonacointext.png \
-  qt/res/icons/yona.ico \
-  qt/res/icons/yona_testnet.ico \
-  qt/res/icons/yona.png \
-  qt/res/icons/yona_white.png \
+  qt/res/icons/akilacointext.png \
+  qt/res/icons/akila.ico \
+  qt/res/icons/akila_testnet.ico \
+  qt/res/icons/akila.png \
+  qt/res/icons/akila_white.png \
   qt/res/icons/chevron.png \
   qt/res/icons/clock1.png \
   qt/res/icons/clock2.png \
@@ -387,12 +387,12 @@ RES_ICONS = \
   qt/res/fonts/OpenSans-SemiBoldItalic.ttf
 
 
-YONA_QT_BASE_CPP = \
+AKILA_QT_BASE_CPP = \
   qt/bantablemodel.cpp \
-  qt/yonaaddressvalidator.cpp \
-  qt/yonaamountfield.cpp \
-  qt/yonagui.cpp \
-  qt/yonaunits.cpp \
+  qt/akilaaddressvalidator.cpp \
+  qt/akilaamountfield.cpp \
+  qt/akilagui.cpp \
+  qt/akilaunits.cpp \
   qt/clientmodel.cpp \
   qt/csvmodelwriter.cpp \
   qt/darkstyle.cpp \
@@ -414,9 +414,9 @@ YONA_QT_BASE_CPP = \
   qt/trafficgraphwidget.cpp \
   qt/utilitydialog.cpp
 
-YONA_QT_WINDOWS_CPP = qt/winshutdownmonitor.cpp
+AKILA_QT_WINDOWS_CPP = qt/winshutdownmonitor.cpp
 
-YONA_QT_WALLET_CPP = \
+AKILA_QT_WALLET_CPP = \
   qt/addressbookpage.cpp \
   qt/addresstablemodel.cpp \
   qt/askpassphrasedialog.cpp \
@@ -457,31 +457,31 @@ YONA_QT_WALLET_CPP = \
   qt/walletview.cpp \
   qt/mnemonicdialog.cpp
 
-YONA_QT_CPP = $(YONA_QT_BASE_CPP)
+AKILA_QT_CPP = $(AKILA_QT_BASE_CPP)
 if TARGET_WINDOWS
-YONA_QT_CPP += $(YONA_QT_WINDOWS_CPP)
+AKILA_QT_CPP += $(AKILA_QT_WINDOWS_CPP)
 endif
 if ENABLE_WALLET
-YONA_QT_CPP += $(YONA_QT_WALLET_CPP)
+AKILA_QT_CPP += $(AKILA_QT_WALLET_CPP)
 endif
 
 RES_IMAGES = 
 
 RES_MOVIES = $(wildcard $(srcdir)/qt/res/movies/spinner-*.png)
 
-YONA_RC = qt/res/yona-qt-res.rc
+AKILA_RC = qt/res/akila-qt-res.rc
 
-YONA_QT_INCLUDES = -I$(builddir)/qt -I$(srcdir)/qt -I$(srcdir)/qt/forms \
+AKILA_QT_INCLUDES = -I$(builddir)/qt -I$(srcdir)/qt -I$(srcdir)/qt/forms \
   -I$(builddir)/qt/forms -DQT_NO_KEYWORDS
 
-qt_libyonaqt_a_CPPFLAGS = $(AM_CPPFLAGS) $(YONA_INCLUDES) $(YONA_QT_INCLUDES) \
+qt_libakilaqt_a_CPPFLAGS = $(AM_CPPFLAGS) $(AKILA_INCLUDES) $(AKILA_QT_INCLUDES) \
   $(QT_INCLUDES) $(QT_DBUS_INCLUDES) $(PROTOBUF_CFLAGS) $(QR_CFLAGS)
-qt_libyonaqt_a_CXXFLAGS = $(AM_CXXFLAGS) $(QT_PIE_FLAGS)
+qt_libakilaqt_a_CXXFLAGS = $(AM_CXXFLAGS) $(QT_PIE_FLAGS)
 
-qt_libyonaqt_a_SOURCES = $(YONA_QT_CPP) $(YONA_QT_H) $(QT_FORMS_UI) \
+qt_libakilaqt_a_SOURCES = $(AKILA_QT_CPP) $(AKILA_QT_H) $(QT_FORMS_UI) \
   $(QT_QRC) $(QT_QRC_LOCALE) $(QT_TS) $(PROTOBUF_PROTO) $(RES_ICONS) $(RES_IMAGES) $(RES_MOVIES)
 
-nodist_qt_libyonaqt_a_SOURCES = $(QT_MOC_CPP) $(QT_MOC) $(PROTOBUF_CC) \
+nodist_qt_libakilaqt_a_SOURCES = $(QT_MOC_CPP) $(QT_MOC) $(PROTOBUF_CC) \
   $(PROTOBUF_H) $(QT_QRC_CPP) $(QT_QRC_LOCALE_CPP)
 
 # forms/foo.h -> forms/ui_foo.h
@@ -490,71 +490,71 @@ QT_FORMS_H=$(join $(dir $(QT_FORMS_UI)),$(addprefix ui_, $(notdir $(QT_FORMS_UI:
 # Most files will depend on the forms and moc files as includes. Generate them
 # before anything else.
 $(QT_MOC): $(QT_FORMS_H)
-$(qt_libyonaqt_a_OBJECTS) $(qt_yona_qt_OBJECTS) : | $(QT_MOC)
+$(qt_libakilaqt_a_OBJECTS) $(qt_akila_qt_OBJECTS) : | $(QT_MOC)
 
 #Generating these with a half-written protobuf header leads to wacky results.
 #This makes sure it's done.
 $(QT_MOC): $(PROTOBUF_H)
 $(QT_MOC_CPP): $(PROTOBUF_H)
 
-# yona-qt binary #
-qt_yona_qt_CPPFLAGS = $(AM_CPPFLAGS) $(YONA_INCLUDES) $(YONA_QT_INCLUDES) \
+# akila-qt binary #
+qt_akila_qt_CPPFLAGS = $(AM_CPPFLAGS) $(AKILA_INCLUDES) $(AKILA_QT_INCLUDES) \
   $(QT_INCLUDES) $(PROTOBUF_CFLAGS) $(QR_CFLAGS)
-qt_yona_qt_CXXFLAGS = $(AM_CXXFLAGS) $(QT_PIE_FLAGS)
+qt_akila_qt_CXXFLAGS = $(AM_CXXFLAGS) $(QT_PIE_FLAGS)
 
-qt_yona_qt_SOURCES = qt/yona.cpp
+qt_akila_qt_SOURCES = qt/akila.cpp
 if TARGET_DARWIN
-  qt_yona_qt_SOURCES += $(YONA_MM)
+  qt_akila_qt_SOURCES += $(AKILA_MM)
 endif
 if TARGET_WINDOWS
-  qt_yona_qt_SOURCES += $(YONA_RC)
+  qt_akila_qt_SOURCES += $(AKILA_RC)
 endif
-qt_yona_qt_LDADD = qt/libyonaqt.a $(LIBYONA_SERVER)
+qt_akila_qt_LDADD = qt/libakilaqt.a $(LIBAKILA_SERVER)
 if ENABLE_WALLET
-qt_yona_qt_LDADD += $(LIBYONA_WALLET)
+qt_akila_qt_LDADD += $(LIBAKILA_WALLET)
 endif
 if ENABLE_ZMQ
-qt_yona_qt_LDADD += $(LIBYONA_ZMQ) $(ZMQ_LIBS)
+qt_akila_qt_LDADD += $(LIBAKILA_ZMQ) $(ZMQ_LIBS)
 endif
-qt_yona_qt_LDADD += $(LIBYONA_CLI) $(LIBYONA_COMMON) $(LIBYONA_UTIL) $(LIBYONA_CONSENSUS) $(LIBYONA_CRYPTO) $(LIBUNIVALUE) $(LIBLEVELDB) $(LIBLEVELDB_SSE42) $(LIBMEMENV) \
+qt_akila_qt_LDADD += $(LIBAKILA_CLI) $(LIBAKILA_COMMON) $(LIBAKILA_UTIL) $(LIBAKILA_CONSENSUS) $(LIBAKILA_CRYPTO) $(LIBUNIVALUE) $(LIBLEVELDB) $(LIBLEVELDB_SSE42) $(LIBMEMENV) \
   $(BOOST_LIBS) $(QT_LIBS) $(QT_DBUS_LIBS) $(QR_LIBS) $(PROTOBUF_LIBS) $(BDB_LIBS) $(SSL_LIBS) $(CRYPTO_LIBS) $(MINIUPNPC_LIBS) $(LIBSECP256K1) \
   $(EVENT_PTHREADS_LIBS) $(EVENT_LIBS)
-qt_yona_qt_LDFLAGS = $(RELDFLAGS) $(AM_LDFLAGS) $(QT_LDFLAGS) $(LIBTOOL_APP_LDFLAGS)
-qt_yona_qt_LIBTOOLFLAGS = --tag CXX
+qt_akila_qt_LDFLAGS = $(RELDFLAGS) $(AM_LDFLAGS) $(QT_LDFLAGS) $(LIBTOOL_APP_LDFLAGS)
+qt_akila_qt_LIBTOOLFLAGS = --tag CXX
 
 #locale/foo.ts -> locale/foo.qm
 QT_QM=$(QT_TS:.ts=.qm)
 
 SECONDARY: $(QT_QM)
 
-$(srcdir)/qt/yonastrings.cpp: $(libyona_server_a_SOURCES) $(libyona_wallet_a_SOURCES) $(libyona_common_a_SOURCES) $(libyona_zmq_a_SOURCES) $(libyona_consensus_a_SOURCES) $(libyona_util_a_SOURCES)
+$(srcdir)/qt/akilastrings.cpp: $(libakila_server_a_SOURCES) $(libakila_wallet_a_SOURCES) $(libakila_common_a_SOURCES) $(libakila_zmq_a_SOURCES) $(libakila_consensus_a_SOURCES) $(libakila_util_a_SOURCES)
 	@test -n $(XGETTEXT) || echo "xgettext is required for updating translations"
 	$(AM_V_GEN) cd $(srcdir); XGETTEXT=$(XGETTEXT) PACKAGE_NAME="$(PACKAGE_NAME)" COPYRIGHT_HOLDERS="$(COPYRIGHT_HOLDERS)" COPYRIGHT_HOLDERS_SUBSTITUTION="$(COPYRIGHT_HOLDERS_SUBSTITUTION)" $(PYTHON) ../share/qt/extract_strings_qt.py $^
 
-translate: $(srcdir)/qt/yonastrings.cpp $(QT_FORMS_UI) $(QT_FORMS_UI) $(YONA_QT_BASE_CPP) qt/yona.cpp $(YONA_QT_WINDOWS_CPP) $(YONA_QT_WALLET_CPP) $(YONA_QT_H) $(YONA_MM)
+translate: $(srcdir)/qt/akilastrings.cpp $(QT_FORMS_UI) $(QT_FORMS_UI) $(AKILA_QT_BASE_CPP) qt/akila.cpp $(AKILA_QT_WINDOWS_CPP) $(AKILA_QT_WALLET_CPP) $(AKILA_QT_H) $(AKILA_MM)
 	@test -n $(LUPDATE) || echo "lupdate is required for updating translations"
-	$(AM_V_GEN) QT_SELECT=$(QT_SELECT) $(LUPDATE) $^ -locations relative -no-obsolete -ts $(srcdir)/qt/locale/yona_en.ts
+	$(AM_V_GEN) QT_SELECT=$(QT_SELECT) $(LUPDATE) $^ -locations relative -no-obsolete -ts $(srcdir)/qt/locale/akila_en.ts
 
 $(QT_QRC_LOCALE_CPP): $(QT_QRC_LOCALE) $(QT_QM)
 	@test -f $(RCC)
 	@cp -f $< $(@D)/temp_$(<F)
-	$(AM_V_GEN) QT_SELECT=$(QT_SELECT) $(RCC) -name yona_locale $(@D)/temp_$(<F) | \
+	$(AM_V_GEN) QT_SELECT=$(QT_SELECT) $(RCC) -name akila_locale $(@D)/temp_$(<F) | \
 	  $(SED) -e '/^\*\*.*Created:/d' -e '/^\*\*.*by:/d' > $@
 	@rm $(@D)/temp_$(<F)
 
 $(QT_QRC_CPP): $(QT_QRC) $(QT_FORMS_H) $(RES_ICONS) $(RES_IMAGES) $(RES_MOVIES) $(PROTOBUF_H)
 	@test -f $(RCC)
-	$(AM_V_GEN) QT_SELECT=$(QT_SELECT) $(RCC) -name yona $< | \
+	$(AM_V_GEN) QT_SELECT=$(QT_SELECT) $(RCC) -name akila $< | \
 	  $(SED) -e '/^\*\*.*Created:/d' -e '/^\*\*.*by:/d' > $@
 
-CLEAN_QT = $(nodist_qt_libyonaqt_a_SOURCES) $(QT_QM) $(QT_FORMS_H) qt/*.gcda qt/*.gcno
+CLEAN_QT = $(nodist_qt_libakilaqt_a_SOURCES) $(QT_QM) $(QT_FORMS_H) qt/*.gcda qt/*.gcno
 
 CLEANFILES += $(CLEAN_QT)
 
-yona_qt_clean: FORCE
-	rm -f $(CLEAN_QT) $(qt_libyonaqt_a_OBJECTS) $(qt_yona_qt_OBJECTS) qt/yona-qt$(EXEEXT) $(LIBYONAQT)
+akila_qt_clean: FORCE
+	rm -f $(CLEAN_QT) $(qt_libakilaqt_a_OBJECTS) $(qt_akila_qt_OBJECTS) qt/akila-qt$(EXEEXT) $(LIBAKILAQT)
 
-yona_qt : qt/yona-qt$(EXEEXT)
+akila_qt : qt/akila-qt$(EXEEXT)
 
 ui_%.h: %.ui
 	@test -f $(UIC)

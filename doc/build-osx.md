@@ -42,17 +42,17 @@ from the root of the repository.
 
 **Note**: You only need Berkeley DB if the wallet is enabled (see [*Disable-wallet mode*](/doc/build-osx.md#disable-wallet-mode)).
 
-## Build Yona Core
+## Build Akila Core
 
-1. Clone the Yona Core source code:
+1. Clone the Akila Core source code:
     ```shell
-    git clone https://github.com/YonaProject/Yonacoin
-    cd Yonacoin
+    git clone https://github.com/AkilaProject/Akilacoin
+    cd Akilacoin
     ```
 
-2.  Build yona-core:
+2.  Build akila-core:
 
-    Configure and build the headless yona binaries as well as the GUI (if Qt is found).
+    Configure and build the headless akila binaries as well as the GUI (if Qt is found).
 
     You can disable the GUI build by passing `--without-gui` to configure.
     ```shell
@@ -72,7 +72,7 @@ from the root of the repository.
     ```
 
 ## `disable-wallet` mode
-When the intention is to run only a P2P node without a wallet, Yona Core may be
+When the intention is to run only a P2P node without a wallet, Akila Core may be
 compiled in `disable-wallet` mode with:
 ```shell
 ./configure --disable-wallet
@@ -83,42 +83,42 @@ In this case there is no dependency on Berkeley DB 4.8 and SQLite.
 Mining is also possible in disable-wallet mode using the `getblocktemplate` RPC call.
 
 ## Running
-Yona Core is now available at `./src/yonad`
+Akila Core is now available at `./src/akilad`
 
 Before running, you may create an empty configuration file:
 ```shell
-mkdir -p "/Users/${USER}/Library/Application Support/Yona"
+mkdir -p "/Users/${USER}/Library/Application Support/Akila"
 
-touch "/Users/${USER}/Library/Application Support/Yona/yona.conf"
+touch "/Users/${USER}/Library/Application Support/Akila/akila.conf"
 
-chmod 600 "/Users/${USER}/Library/Application Support/Yona/yona.conf"
+chmod 600 "/Users/${USER}/Library/Application Support/Akila/akila.conf"
 ```
 
-The first time you run yonad, it will start downloading the blockchain. This process could
+The first time you run akilad, it will start downloading the blockchain. This process could
 take many hours, or even days on slower than average systems.
 
 You can monitor the download process by looking at the debug.log file:
 ```shell
-tail -f $HOME/Library/Application\ Support/Yona/debug.log
+tail -f $HOME/Library/Application\ Support/Akila/debug.log
 ```
 
 Other commands:
 -------
 
-    ./src/yonad -daemon # Starts the yona daemon.
-    ./src/yona-cli --help # Outputs a list of command-line options.
-    ./src/yona-cli help # Outputs a list of RPC commands when the daemon is running.
+    ./src/akilad -daemon # Starts the akila daemon.
+    ./src/akila-cli --help # Outputs a list of command-line options.
+    ./src/akila-cli help # Outputs a list of RPC commands when the daemon is running.
 
 Using Qt Creator as IDE
 ------------------------
-You can use Qt Creator as an IDE, for yona development.
+You can use Qt Creator as an IDE, for akila development.
 Download and install the community edition of [Qt Creator](https://www.qt.io/download/).
 Uncheck everything except Qt Creator during the installation process.
 
 1. Make sure you installed everything through Homebrew mentioned above
 2. Do a proper ./configure --enable-debug
 3. In Qt Creator do "New Project" -> Import Project -> Import Existing Project
-4. Enter "yona-qt" as project name, enter src/qt as location
+4. Enter "akila-qt" as project name, enter src/qt as location
 5. Leave the file selection as it is
 6. Confirm the "summary page"
 7. In the "Projects" tab select "Manage Kits..."

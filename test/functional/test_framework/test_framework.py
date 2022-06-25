@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # Copyright (c) 2014-2016 The Bitcoin Core developers
-# Copyright (c) 2017-2020 The Yona developers
+# Copyright (c) 2017-2020 The Akila developers
 # Distributed under the MIT software license, see the accompanying
 # file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -35,10 +35,10 @@ TEST_EXIT_FAILED = 1
 TEST_EXIT_SKIPPED = 77
 
 
-class YonaTestFramework:
-    """Base class for a yona test script.
+class AkilaTestFramework:
+    """Base class for a akila test script.
 
-    Individual yona test scripts should subclass this class and override the set_test_params() and run_test() methods.
+    Individual akila test scripts should subclass this class and override the set_test_params() and run_test() methods.
 
     Individual tests can also override the following methods to customize the test setup:
 
@@ -68,11 +68,11 @@ class YonaTestFramework:
         parser.add_option("--coveragedir", dest="coveragedir", help="Write tested RPC commands into this directory")
         parser.add_option("--configfile", dest="configfile", help="Location of the test framework config file")
         parser.add_option("--loglevel", dest="loglevel", default="INFO", help="log events at this level and higher to the console. Can be set to DEBUG, INFO, WARNING, ERROR or CRITICAL. Passing --loglevel DEBUG will output all logs to console. Note that logs at all levels are always written to the test_framework.log file in the temporary test directory.")
-        parser.add_option("--nocleanup", dest="nocleanup", default=False, action="store_true", help="Leave yonads and test.* datadir on exit or error")
-        parser.add_option("--noshutdown", dest="noshutdown", default=False, action="store_true", help="Don't stop yonads after the test execution")
+        parser.add_option("--nocleanup", dest="nocleanup", default=False, action="store_true", help="Leave akilads and test.* datadir on exit or error")
+        parser.add_option("--noshutdown", dest="noshutdown", default=False, action="store_true", help="Don't stop akilads after the test execution")
         parser.add_option("--pdbonfailure", dest="pdbonfailure", default=False, action="store_true", help="Attach a python debugger if test fails")
         parser.add_option("--portseed", dest="port_seed", default=os.getpid(), type='int', help="The seed to use for assigning port numbers (default: current process id)")
-        parser.add_option("--srcdir", dest="srcdir", default=os.path.normpath(os.path.dirname(os.path.realpath(__file__)) + "/../../../src"), help="Source directory containing yonad/yona-cli (default: %default)")
+        parser.add_option("--srcdir", dest="srcdir", default=os.path.normpath(os.path.dirname(os.path.realpath(__file__)) + "/../../../src"), help="Source directory containing akilad/akila-cli (default: %default)")
         parser.add_option("--tmpdir", dest="tmpdir", help="Root directory for datadirs")
         parser.add_option("--tracerpc", dest="trace_rpc", default=False, action="store_true", help="Print out all RPC calls as they are made")
 
@@ -135,7 +135,7 @@ class YonaTestFramework:
         else:
             for node in self.nodes:
                 node.cleanup_on_exit = False
-            self.log.info("Note: yonad's were not stopped and may still be running")
+            self.log.info("Note: akilad's were not stopped and may still be running")
 
         if not self.options.nocleanup and not self.options.noshutdown and success != TestStatus.FAILED:
             self.log.info("Cleaning up")
@@ -213,7 +213,7 @@ class YonaTestFramework:
                          stderr=None, mocktime=self.mocktime, coverage_dir=self.options.coveragedir))
 
     def start_node(self, i, extra_args=None, stderr=None):
-        """Start a yonad"""
+        """Start a akilad"""
 
         node = self.nodes[i]
 
@@ -224,7 +224,7 @@ class YonaTestFramework:
             coverage.write_all_rpc_commands(self.options.coveragedir, node.rpc)
 
     def start_nodes(self, extra_args=None):
-        """Start multiple yonads"""
+        """Start multiple akilads"""
 
         if extra_args is None:
             extra_args = [None] * self.num_nodes
@@ -244,12 +244,12 @@ class YonaTestFramework:
                 coverage.write_all_rpc_commands(self.options.coveragedir, node.rpc)
 
     def stop_node(self, i):
-        """Stop a yonad test node"""
+        """Stop a akilad test node"""
         self.nodes[i].stop_node()
         self.nodes[i].wait_until_stopped()
 
     def stop_nodes(self):
-        """Stop multiple yonad test nodes"""
+        """Stop multiple akilad test nodes"""
         for node in self.nodes:
             # Issue RPC to stop nodes
             node.stop_node()
@@ -269,7 +269,7 @@ class YonaTestFramework:
                 self.start_node(i, extra_args, stderr=log_stderr)
                 self.stop_node(i)
             except Exception as e:
-                assert 'yonad exited' in str(e)  # node must have shutdown
+                assert 'akilad exited' in str(e)  # node must have shutdown
                 self.nodes[i].running = False
                 self.nodes[i].process = None
                 if expected_msg is not None:
@@ -279,9 +279,9 @@ class YonaTestFramework:
                         raise AssertionError("Expected error \"" + expected_msg + "\" not found in:\n" + stderr)
             else:
                 if expected_msg is None:
-                    assert_msg = "yonad should have exited with an error"
+                    assert_msg = "akilad should have exited with an error"
                 else:
-                    assert_msg = "yonad should have exited with expected error " + expected_msg
+                    assert_msg = "akilad should have exited with expected error " + expected_msg
                 raise AssertionError(assert_msg)
 
     def wait_for_node_exit(self, i, timeout):
@@ -344,7 +344,7 @@ class YonaTestFramework:
         # User can provide log level as a number or string (eg DEBUG). loglevel was caught as a string, so try to convert it to an int
         ll = int(self.options.loglevel) if self.options.loglevel.isdigit() else self.options.loglevel.upper()
         ch.setLevel(ll)
-        # Format logs the same as yonad's debug.log with microprecision (so log files can be concatenated and sorted)
+        # Format logs the same as akilad's debug.log with microprecision (so log files can be concatenated and sorted)
         formatter = logging.Formatter(fmt='%(asctime)s.%(msecs)03d000 %(name)s (%(levelname)s): %(message)s',
                                       datefmt='%Y-%m-%d %H:%M:%S')
         formatter.converter = time.gmtime
@@ -355,7 +355,7 @@ class YonaTestFramework:
         self.log.addHandler(ch)
 
         if self.options.trace_rpc:
-            rpc_logger = logging.getLogger("YonaRPC")
+            rpc_logger = logging.getLogger("AkilaRPC")
             rpc_logger.setLevel(logging.DEBUG)
             rpc_handler = logging.StreamHandler(sys.stdout)
             rpc_handler.setLevel(logging.DEBUG)
@@ -382,10 +382,10 @@ class YonaTestFramework:
                 if os.path.isdir(os.path.join(self.options.cachedir, "node" + str(i))):
                     shutil.rmtree(os.path.join(self.options.cachedir, "node" + str(i)))
 
-            # Create cache directories, run yonads:
+            # Create cache directories, run akilads:
             for i in range(MAX_NODES):
                 datadir = initialize_data_dir(self.options.cachedir, i)
-                args = [os.getenv("YONAD", "yonad"), "-server", "-keypool=1", "-datadir=" + datadir, "-discover=0"]
+                args = [os.getenv("AKILAD", "akilad"), "-server", "-keypool=1", "-datadir=" + datadir, "-discover=0"]
                 if i > 0:
                     args.append("-connect=127.0.0.1:" + str(p2p_port(0)))
                 self.nodes.append(
@@ -430,7 +430,7 @@ class YonaTestFramework:
             from_dir = os.path.join(self.options.cachedir, "node" + str(i))
             to_dir = os.path.join(self.options.tmpdir, "node" + str(i))
             shutil.copytree(from_dir, to_dir)
-            initialize_data_dir(self.options.tmpdir, i)  # Overwrite port/rpcport in yona.conf
+            initialize_data_dir(self.options.tmpdir, i)  # Overwrite port/rpcport in akila.conf
 
     def _initialize_chain_clean(self):
         """Initialize empty blockchain for use by the test.

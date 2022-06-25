@@ -1,10 +1,10 @@
 // Copyright (c) 2017 The Bitcoin Core developers
-// Copyright (c) 2021-2022 The Yona developers
+// Copyright (c) 2021-2022 The Akila developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef YONA_WALLET_FEEBUMPER_H
-#define YONA_WALLET_FEEBUMPER_H
+#ifndef AKILA_WALLET_FEEBUMPER_H
+#define AKILA_WALLET_FEEBUMPER_H
 
 #include <primitives/transaction.h>
 
@@ -59,4 +59,4 @@ private:
     CAmount nNewFee;
 };
 
-#endif // YONA_WALLET_FEEBUMPER_H
+#endif // AKILA_WALLET_FEEBUMPER_H

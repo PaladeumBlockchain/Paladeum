@@ -1,4 +1,4 @@
-// Copyright (c) 2021-2022 The Yona developers
+// Copyright (c) 2021-2022 The Akila developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -66,7 +66,7 @@ void CheckRestrictedTokenTransferInputs(const CWalletTx& transaction, const std:
 
 std::string TokenActivationWarning()
 {
-    return AreTokensDeployed() ? "" : "\nTHIS COMMAND IS NOT YET ACTIVE!\nhttps://github.com/YonaProject/rips/blob/master/rip-0002.mediawiki\n";
+    return AreTokensDeployed() ? "" : "\nTHIS COMMAND IS NOT YET ACTIVE!\nhttps://github.com/AkilaProject/rips/blob/master/rip-0002.mediawiki\n";
 }
 
 std::string RestrictedActivationWarning()
@@ -153,7 +153,7 @@ UniValue UpdateAddressTag(const JSONRPCRequest &request, const int8_t &flag)
     std::string address = request.params[1].get_str();
     CTxDestination destination = DecodeDestination(address);
     if (!IsValidDestination(destination)) {
-        throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, std::string("Invalid Yona address: ") + address);
+        throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, std::string("Invalid Akila address: ") + address);
     }
 
     // Get the optional change address
@@ -163,7 +163,7 @@ UniValue UpdateAddressTag(const JSONRPCRequest &request, const int8_t &flag)
         if (!change_address.empty()) {
            CTxDestination change_dest = DecodeDestination(change_address);
            if (!IsValidDestination(change_dest)) {
-               throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, std::string("Invalid Yona change address: ") + change_address);
+               throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, std::string("Invalid Akila change address: ") + change_address);
            }
         }
     }
@@ -262,7 +262,7 @@ UniValue UpdateAddressRestriction(const JSONRPCRequest &request, const int8_t &f
     std::string address = request.params[1].get_str();
     CTxDestination destination = DecodeDestination(address);
     if (!IsValidDestination(destination)) {
-        throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, std::string("Invalid Yona address: ") + address);
+        throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, std::string("Invalid Akila address: ") + address);
     }
 
     // Get the optional change address
@@ -272,7 +272,7 @@ UniValue UpdateAddressRestriction(const JSONRPCRequest &request, const int8_t &f
         if (!change_address.empty()) {
            CTxDestination change_dest = DecodeDestination(change_address);
            if (!IsValidDestination(change_dest)) {
-               throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, std::string("Invalid Yona change address: ") + change_address);
+               throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, std::string("Invalid Akila change address: ") + change_address);
            }
         }
     }
@@ -378,7 +378,7 @@ UniValue UpdateGlobalRestrictedToken(const JSONRPCRequest &request, const int8_t
         if (!change_address.empty()) {
            CTxDestination change_dest = DecodeDestination(change_address);
            if (!IsValidDestination(change_dest)) {
-               throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, std::string("Invalid Yona change address: ") + change_address);
+               throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, std::string("Invalid Akila change address: ") + change_address);
            }
         }
     }
@@ -459,7 +459,7 @@ UniValue issue(const JSONRPCRequest& request)
             "1. \"token_name\"            (string, required) a unique name\n"
             "2. \"qty\"                   (numeric, optional, default=1) the number of units to be issued\n"
             "3. \"to_address\"            (string), optional, default=\"\"), address token will be sent to, if it is empty, address will be generated for you\n"
-            "4. \"change_address\"        (string), optional, default=\"\"), address the the yona change will be sent to, if it is empty, change address will be generated for you\n"
+            "4. \"change_address\"        (string), optional, default=\"\"), address the the akila change will be sent to, if it is empty, change address will be generated for you\n"
             "5. \"units\"                 (integer, optional, default=0, min=0, max=8), the number of decimals precision for the token (0 for whole units (\"1\"), 8 for max precision (\"1.00000000\")\n"
             "6. \"reissuable\"            (boolean, optional, default=true (false for unique tokens)), whether future reissuance is allowed\n"
             "7. \"has_ipfs\"              (boolean, optional, default=false), whether ipfs hash is going to be added to the token\n"
@@ -522,7 +522,7 @@ UniValue issue(const JSONRPCRequest& request)
     if (!address.empty()) {
         CTxDestination destination = DecodeDestination(address);
         if (!IsValidDestination(destination)) {
-            throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, std::string("Invalid Yona address: ") + address);
+            throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, std::string("Invalid Akila address: ") + address);
         }
     } else {
         // Create a new address
@@ -551,7 +551,7 @@ UniValue issue(const JSONRPCRequest& request)
             CTxDestination destination = DecodeDestination(change_address);
             if (!IsValidDestination(destination)) {
                 throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY,
-                                   std::string("Invalid Change Address: Invalid Yona address: ") + change_address);
+                                   std::string("Invalid Change Address: Invalid Akila address: ") + change_address);
             }
         }
     }
@@ -635,14 +635,14 @@ UniValue issueunique(const JSONRPCRequest& request)
                 "root_name must be an token you own.\n"
                 "An token will be created for each element of token_tags.\n"
                 "If provided ipfs_hashes must be the same length as token_tags.\n"
-                "Five (5) YONA will be burned for each token created.\n"
+                "Five (5) AKILA will be burned for each token created.\n"
 
                 "\nArguments:\n"
                 "1. \"root_name\"             (string, required) name of the token the unique token(s) are being issued under\n"
                 "2. \"token_tags\"            (array, required) the unique tag for each token which is to be issued\n"
                 "3. \"ipfs_hashes\"           (array, optional) ipfs hashes or txid hashes corresponding to each supplied tag (should be same size as \"token_tags\")\n"
                 "4. \"to_address\"            (string, optional, default=\"\"), address tokens will be sent to, if it is empty, address will be generated for you\n"
-                "5. \"change_address\"        (string, optional, default=\"\"), address the the yona change will be sent to, if it is empty, change address will be generated for you\n"
+                "5. \"change_address\"        (string, optional, default=\"\"), address the the akila change will be sent to, if it is empty, change address will be generated for you\n"
 
                 "\nResult:\n"
                 "\"txid\"                     (string) The transaction id\n"
@@ -692,7 +692,7 @@ UniValue issueunique(const JSONRPCRequest& request)
     if (!address.empty()) {
         CTxDestination destination = DecodeDestination(address);
         if (!IsValidDestination(destination)) {
-            throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, std::string("Invalid Yona address: ") + address);
+            throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, std::string("Invalid Akila address: ") + address);
         }
     } else {
         // Create a new address
@@ -721,7 +721,7 @@ UniValue issueunique(const JSONRPCRequest& request)
         CTxDestination destination = DecodeDestination(changeAddress);
         if (!IsValidDestination(destination)) {
             throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY,
-                               std::string("Invalid Change Address: Invalid Yona address: ") + changeAddress);
+                               std::string("Invalid Change Address: Invalid Akila address: ") + changeAddress);
         }
     }
 
@@ -827,7 +827,7 @@ UniValue registerusername(const JSONRPCRequest& request)
     if (!address.empty()) {
         CTxDestination destination = DecodeDestination(address);
         if (!IsValidDestination(destination)) {
-            throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, std::string("Invalid Yona address: ") + address);
+            throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, std::string("Invalid Akila address: ") + address);
         }
     } else {
         // Create a new address
@@ -893,7 +893,7 @@ UniValue listtokenbalancesbyaddress(const JSONRPCRequest& request)
             "\nReturns a list of all token balances for an address.\n"
 
             "\nArguments:\n"
-            "1. \"address\"                  (string, required) a yona address\n"
+            "1. \"address\"                  (string, required) a akila address\n"
             "2. \"onlytotal\"                (boolean, optional, default=false) when false result is just a list of tokens balances -- when true the result is just a single number representing the number of tokens\n"
             "3. \"count\"                    (integer, optional, default=50000, MAX=50000) truncates results to include only the first _count_ tokens found\n"
             "4. \"start\"                    (integer, optional, default=0) results skip over the first _start_ tokens found (if negative it skips back from the end)\n"
@@ -916,7 +916,7 @@ UniValue listtokenbalancesbyaddress(const JSONRPCRequest& request)
     std::string address = request.params[0].get_str();
     CTxDestination destination = DecodeDestination(address);
     if (!IsValidDestination(destination)) {
-        throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, std::string("Invalid Yona address: ") + address);
+        throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, std::string("Invalid Akila address: ") + address);
     }
 
     bool fOnlyTotal = false;
@@ -1481,7 +1481,7 @@ UniValue transfer(const JSONRPCRequest& request)
                 "5. \"message\"                  (string, optional, default="") Message attached to transaction. \n"
                 "6. \"token_message\"            (string, optional) Once messaging is voted in ipfs hash or txid hash to send along with the transfer\n"
                 "7. \"expire_time\"              (numeric, optional) UTC timestamp of when the message expires\n"
-                "8. \"change_address\"           (string, optional, default = \"\") the transactions YONA change will be sent to this address\n"
+                "8. \"change_address\"           (string, optional, default = \"\") the transactions AKILA change will be sent to this address\n"
                 "9. \"token_change_address\"     (string, optional, default = \"\") the transactions Token change will be sent to this address\n"
 
                 "\nResult:\n"
@@ -1528,7 +1528,7 @@ UniValue transfer(const JSONRPCRequest& request)
 
     CTxDestination to_dest = DecodeDestination(to_address);
     if (!IsValidDestination(to_dest)) {
-        throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, std::string("Invalid Yona address: ") + to_address);
+        throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, std::string("Invalid Akila address: ") + to_address);
     }
 
     std::string message;
@@ -1564,9 +1564,9 @@ UniValue transfer(const JSONRPCRequest& request)
     if (fMessageCheck)
         CheckIPFSTxidMessage(token_message, expireTime);
 
-    std::string yona_change_address = "";
+    std::string akila_change_address = "";
     if (request.params.size() > 7) {
-        yona_change_address = request.params[7].get_str();
+        akila_change_address = request.params[7].get_str();
     }
 
     std::string token_change_address = "";
@@ -1574,9 +1574,9 @@ UniValue transfer(const JSONRPCRequest& request)
         token_change_address = request.params[8].get_str();
     }
 
-    CTxDestination yona_change_dest = DecodeDestination(yona_change_address);
-    if (!yona_change_address.empty() && !IsValidDestination(yona_change_dest))
-        throw JSONRPCError(RPC_INVALID_PARAMETER, std::string("YONA change address must be a valid address. Invalid address: ") + yona_change_address);
+    CTxDestination akila_change_dest = DecodeDestination(akila_change_address);
+    if (!akila_change_address.empty() && !IsValidDestination(akila_change_dest))
+        throw JSONRPCError(RPC_INVALID_PARAMETER, std::string("AKILA change address must be a valid address. Invalid address: ") + akila_change_address);
 
     CTxDestination token_change_dest = DecodeDestination(token_change_address);
     if (!token_change_address.empty() && !IsValidDestination(token_change_dest))
@@ -1593,7 +1593,7 @@ UniValue transfer(const JSONRPCRequest& request)
     CAmount nRequiredFee;
 
     CCoinControl ctrl;
-    ctrl.destChange = yona_change_dest;
+    ctrl.destChange = akila_change_dest;
     ctrl.tokenDestChange = token_change_dest;
 
     // Create the Transaction
@@ -1618,7 +1618,7 @@ UniValue transferfromaddresses(const JSONRPCRequest& request)
 {
     if (request.fHelp || !AreTokensDeployed() || request.params.size() < 4 || request.params.size() > 10)
         throw std::runtime_error(
-            "transferfromaddresses \"token_name\" [\"from_addresses\"] qty \"to_address\" timelock \"message\" \"token_message\" expire_time \"yona_change_address\" \"token_change_address\"\n"
+            "transferfromaddresses \"token_name\" [\"from_addresses\"] qty \"to_address\" timelock \"message\" \"token_message\" expire_time \"akila_change_address\" \"token_change_address\"\n"
             + TokenActivationWarning() +
             "\nTransfer a quantity of an owned token in specific address(es) to a given address"
 
@@ -1631,7 +1631,7 @@ UniValue transferfromaddresses(const JSONRPCRequest& request)
             "6. \"message\"                  (string, optional, default="") Message attached to transaction. \n"
             "7. \"token_message\"            (string, optional) Once messaging is voted in ipfs hash or txid hash to send along with the transfer\n"
             "8. \"expire_time\"              (numeric, optional) UTC timestamp of when the message expires\n"
-            "9. \"yona_change_address\"      (string, optional, default = \"\") the transactions YONA change will be sent to this address\n"
+            "9. \"akila_change_address\"      (string, optional, default = \"\") the transactions AKILA change will be sent to this address\n"
             "10. \"token_change_address\"    (string, optional, default = \"\") the transactions Token change will be sent to this address\n"
 
             "\nResult:\n"
@@ -1719,9 +1719,9 @@ UniValue transferfromaddresses(const JSONRPCRequest& request)
     if (fMessageCheck)
         CheckIPFSTxidMessage(token_message, expireTime);
 
-    std::string yona_change_address = "";
+    std::string akila_change_address = "";
     if (request.params.size() > 8) {
-        yona_change_address = request.params[8].get_str();
+        akila_change_address = request.params[8].get_str();
     }
 
     std::string token_change_address = "";
@@ -1729,9 +1729,9 @@ UniValue transferfromaddresses(const JSONRPCRequest& request)
         token_change_address = request.params[9].get_str();
     }
 
-    CTxDestination yona_change_dest = DecodeDestination(yona_change_address);
-    if (!yona_change_address.empty() && !IsValidDestination(yona_change_dest))
-        throw JSONRPCError(RPC_INVALID_PARAMETER, std::string("YONA change address must be a valid address. Invalid address: ") + yona_change_address);
+    CTxDestination akila_change_dest = DecodeDestination(akila_change_address);
+    if (!akila_change_address.empty() && !IsValidDestination(akila_change_dest))
+        throw JSONRPCError(RPC_INVALID_PARAMETER, std::string("AKILA change address must be a valid address. Invalid address: ") + akila_change_address);
 
     CTxDestination token_change_dest = DecodeDestination(token_change_address);
     if (!token_change_address.empty() && !IsValidDestination(token_change_dest))
@@ -1750,7 +1750,7 @@ UniValue transferfromaddresses(const JSONRPCRequest& request)
     pwallet->AvailableTokens(mapTokenCoins);
 
     // Set the change addresses
-    ctrl.destChange = yona_change_dest;
+    ctrl.destChange = akila_change_dest;
     ctrl.tokenDestChange = token_change_dest;
 
     if (!mapTokenCoins.count(token_name)) {
@@ -1795,7 +1795,7 @@ UniValue transferfromaddress(const JSONRPCRequest& request)
 {
     if (request.fHelp || !AreTokensDeployed() || request.params.size() < 4 || request.params.size() > 10)
         throw std::runtime_error(
-                "transferfromaddress \"token_name\" \"from_address\" qty \"to_address\" timelock \"message\" \"token_message\" expire_time \"yona_change_address\" \"token_change_address\"\n"
+                "transferfromaddress \"token_name\" \"from_address\" qty \"to_address\" timelock \"message\" \"token_message\" expire_time \"akila_change_address\" \"token_change_address\"\n"
                 + TokenActivationWarning() +
                 "\nTransfer a quantity of an owned token in a specific address to a given address"
 
@@ -1808,7 +1808,7 @@ UniValue transferfromaddress(const JSONRPCRequest& request)
                 "6. \"message\"                  (string, optional, default="") Message attached to transaction. \n"
                 "7. \"token_message\"            (string, optional) Once messaging is voted in ipfs hash or txid hash to send along with the transfer\n"
                 "8. \"expire_time\"              (numeric, optional) UTC timestamp of when the message expires\n"
-                "9. \"yona_change_address\"      (string, optional, default = \"\") the transaction YONA change will be sent to this address\n"
+                "9. \"akila_change_address\"      (string, optional, default = \"\") the transaction AKILA change will be sent to this address\n"
                 "10. \"token_change_address\"    (string, optional, default = \"\") the transaction Token change will be sent to this address\n"
 
                 "\nResult:\n"
@@ -1877,9 +1877,9 @@ UniValue transferfromaddress(const JSONRPCRequest& request)
     if (fMessageCheck)
         CheckIPFSTxidMessage(token_message, expireTime);
 
-    std::string yona_change_address = "";
+    std::string akila_change_address = "";
     if (request.params.size() > 8) {
-        yona_change_address = request.params[8].get_str();
+        akila_change_address = request.params[8].get_str();
     }
 
     std::string token_change_address = "";
@@ -1887,9 +1887,9 @@ UniValue transferfromaddress(const JSONRPCRequest& request)
         token_change_address = request.params[9].get_str();
     }
 
-    CTxDestination yona_change_dest = DecodeDestination(yona_change_address);
-    if (!yona_change_address.empty() && !IsValidDestination(yona_change_dest))
-        throw JSONRPCError(RPC_INVALID_PARAMETER, std::string("YONA change address must be a valid address. Invalid address: ") + yona_change_address);
+    CTxDestination akila_change_dest = DecodeDestination(akila_change_address);
+    if (!akila_change_address.empty() && !IsValidDestination(akila_change_dest))
+        throw JSONRPCError(RPC_INVALID_PARAMETER, std::string("AKILA change address must be a valid address. Invalid address: ") + akila_change_address);
 
     CTxDestination token_change_dest = DecodeDestination(token_change_address);
     if (!token_change_address.empty() && !IsValidDestination(token_change_dest))
@@ -1909,7 +1909,7 @@ UniValue transferfromaddress(const JSONRPCRequest& request)
     pwallet->AvailableTokens(mapTokenCoins);
 
     // Set the change addresses
-    ctrl.destChange = yona_change_dest;
+    ctrl.destChange = akila_change_dest;
     ctrl.tokenDestChange = token_change_dest;
 
     if (!mapTokenCoins.count(token_name)) {
@@ -2062,7 +2062,7 @@ UniValue reissue(const JSONRPCRequest& request)
  * Sweep
  *
  * Attempts to sweep from a private key. The default is to sweep all tokens and
- * YONA, but can be limited to either all of the YONA or one token type by passing
+ * AKILA, but can be limited to either all of the AKILA or one token type by passing
  * the optional argument `token_filter`.
  */
 UniValue sweep(const JSONRPCRequest& request)
@@ -2077,17 +2077,17 @@ UniValue sweep(const JSONRPCRequest& request)
     //   arguments then just show the help.
     if (request.fHelp || !AreTokensDeployed() || request.params.size() > 2 || request.params.size() < 1)
         throw std::runtime_error(
-                "sweep \"privkey\" ( \"token_name\" | \"YONA\" ) \n"
+                "sweep \"privkey\" ( \"token_name\" | \"AKILA\" ) \n"
                 + TokenActivationWarning() +
-                "\nCreates a transaction to transfer all YONA, and all Tokens from a given address -- with only the private key as input.\n"
-                "\nDefault to funding from YONA held in the address, fallback to using YONA held in wallet for transaction fee."
-                "\nDefault to sweeping all tokens, but can also all with YONA to sweep only YONA, or to sweep only one token."
+                "\nCreates a transaction to transfer all AKILA, and all Tokens from a given address -- with only the private key as input.\n"
+                "\nDefault to funding from AKILA held in the address, fallback to using AKILA held in wallet for transaction fee."
+                "\nDefault to sweeping all tokens, but can also all with AKILA to sweep only AKILA, or to sweep only one token."
                 "\nThis differs from import because a paper certficate provided with artwork or a one-of-a-kind item can include a paper"
                 " certficate-of-authenticity. Once swept it the paper certificate can be safely discarded as the token is secured by the new address.\n"
 
                 "\nArguments:\n"
                 "1. \"privkey\"               (string, required) private key of addresses from which to sweep\n"
-                "2. \"token_name\"            (string, optional, default=\"\") name of the token to sweep or YONA"
+                "2. \"token_name\"            (string, optional, default=\"\") name of the token to sweep or AKILA"
 
                 "\nResult:\n"
                 "\"txhex\"                    (string) The transaction hash in hex\n"
@@ -2095,18 +2095,18 @@ UniValue sweep(const JSONRPCRequest& request)
                 "\nExamples:\n"
                 + HelpExampleCli("sweep", "\"privkey\"")
                 + HelpExampleRpc("sweep", "\"privkey\" \"TOKEN_NAME\"")
-                + HelpExampleRpc("sweep", "\"privkey\" \"YONA\"")
+                + HelpExampleRpc("sweep", "\"privkey\" \"AKILA\"")
         );
 
     // See whether we should sweep everything or only a specific token
-    // Default is to sweep everything (TODO: Should default be `YONA`?)
+    // Default is to sweep everything (TODO: Should default be `AKILA`?)
     std::string token_name = "";
     if (!request.params[1].isNull()) {
         token_name = request.params[1].get_str();
     }
 
     // Convert the private key to a usable key
-    CYonaSecret secret;
+    CAkilaSecret secret;
     std::string private_key = request.params[0].get_str();
     if (!secret.SetString(private_key)) throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, "Invalid private key encoding");
 
@@ -2163,7 +2163,7 @@ UniValue sweep(const JSONRPCRequest& request)
         throw JSONRPCError(
             RPC_WALLET_INSUFFICIENT_FUNDS,
             tfm::format(
-                "Please add YONA to address '%s' to be able to sweep token '%s'",
+                "Please add AKILA to address '%s' to be able to sweep token '%s'",
                 addr_str,
                 token_name
             )
@@ -2171,21 +2171,21 @@ UniValue sweep(const JSONRPCRequest& request)
     }
 
     // Get two new addresses to sweep into: one for all of the tokens and another
-    //   for the YONA
+    //   for the AKILA
     // TODO: Does generating multiple addresses which may not be used cause a performance hit?
     std::string dest_ast_str = CallRPC("getnewaddress", UniValue(UniValue::VOBJ)).getValStr();
-    std::string dest_yona_str = CallRPC("getnewaddress", UniValue(UniValue::VOBJ)).getValStr();
+    std::string dest_akila_str = CallRPC("getnewaddress", UniValue(UniValue::VOBJ)).getValStr();
 
     // Request the unspent transactions
-    // TODO: Should this be replaced with a call to the api.yonacoin.network?
+    // TODO: Should this be replaced with a call to the api.akilacoin.network?
     // Format of params is as follows:
     // {
     //    addresses: ["PUB ADDR"],
     //    tokenName: "TOKEN NAME"
     // }
     UniValue unspent;
-    UniValue unspent_yona;
-    UniValue unspent_our_yona;
+    UniValue unspent_akila;
+    UniValue unspent_our_akila;
     {
         // Helper method for getting UTXOs from an address of a specific token
         auto get_unspent = [&CallRPC](const std::string& addr, const std::string& token) {
@@ -2203,11 +2203,11 @@ UniValue sweep(const JSONRPCRequest& request)
         // Get the specified token UTXOs
         unspent = get_unspent(addr_str, token_name);
 
-        // We also get just the unspent YONA from the swept address for potential fee funding
-        unspent_yona = get_unspent(addr_str, YONA);
+        // We also get just the unspent AKILA from the swept address for potential fee funding
+        unspent_akila = get_unspent(addr_str, AKILA);
 
-        // Get our unspent YONA for funding if the swept address does not have enough
-        unspent_our_yona = CallRPC("listunspent", UniValue(UniValue::VNULL));
+        // Get our unspent AKILA for funding if the swept address does not have enough
+        unspent_our_akila = CallRPC("listunspent", UniValue(UniValue::VNULL));
     }
 
     // Short out if there is nothing to sweep
@@ -2222,7 +2222,7 @@ UniValue sweep(const JSONRPCRequest& request)
         UniValue create_input = UniValue(UniValue::VARR);
         UniValue create_dest = UniValue(UniValue::VOBJ);
 
-        // Keep track of how much more YONA we will need from either the swept
+        // Keep track of how much more AKILA we will need from either the swept
         //   address or our own wallet.
         // TODO: I think that there is a more accurate way to calculate the fee,
         //   as just always using the min transaction fee seems wrong.
@@ -2244,11 +2244,11 @@ UniValue sweep(const JSONRPCRequest& request)
                 throw JSONRPCError(RPC_DESERIALIZATION_ERROR, "Invalid amount in UTXOs!");
             }
 
-            // Subtract from the fee if YONA is being added to the list of inputs and
+            // Subtract from the fee if AKILA is being added to the list of inputs and
             //   subtract from the total sent.
-            // Note: We do this because this allows for any YONA being swept to pay
+            // Note: We do this because this allows for any AKILA being swept to pay
             //   the fee rather than our own address.
-            if (fee_left != 0 && curr_token_name == YONA) {
+            if (fee_left != 0 && curr_token_name == AKILA) {
                 CAmount fee_diff = fee_left - curr_amount;
 
                 fee_paid_by_us += (fee_diff > 0) ? curr_amount : fee_left;
@@ -2266,20 +2266,20 @@ UniValue sweep(const JSONRPCRequest& request)
         }
 
         // If we still have some fee left, then try to fund from the swept address
-        //   first (assumming we haven't swept for YONA or everything [which includes YONA])
+        //   first (assumming we haven't swept for AKILA or everything [which includes AKILA])
         //   and then try to fund from our own wallets. Since we checked above
         //   if the balances worked out, then there is no way it will fail here.
         if (fee_left != 0) {
             if (
-                (token_name != YONA && token_name != "") && // We haven't already considered YONA in our sweep above
+                (token_name != AKILA && token_name != "") && // We haven't already considered AKILA in our sweep above
                 swept_balance != 0                         // We have funds to try
             ) {
                 // Add as many UTXOs as needed until we either run out or successfully
                 //   fund the transaction
-                for (size_t i = 0; i != unspent_yona.size() && fee_left != 0; ++i) {
+                for (size_t i = 0; i != unspent_akila.size() && fee_left != 0; ++i) {
                     UniValue current_input = UniValue(UniValue::VOBJ);
 
-                    const UniValue& current = unspent_yona[i];
+                    const UniValue& current = unspent_akila[i];
                     CAmount curr_amount;
 
                     // Parse the amount safely
@@ -2309,10 +2309,10 @@ UniValue sweep(const JSONRPCRequest& request)
             if (fee_left != 0) {
                 // Add as many UTXOs as needed until we either run out or successfully
                 //   fund the transaction
-                for (size_t i = 0; i != unspent_our_yona.size() && fee_left != 0; ++i) {
+                for (size_t i = 0; i != unspent_our_akila.size() && fee_left != 0; ++i) {
                     UniValue current_input = UniValue(UniValue::VOBJ);
 
-                    const UniValue& current = unspent_our_yona[i];
+                    const UniValue& current = unspent_our_akila[i];
                     CAmount curr_amount = AmountFromValue(current["amount"]);
                     bool is_safe = current["safe"].getBool();
 
@@ -2326,7 +2326,7 @@ UniValue sweep(const JSONRPCRequest& request)
                     create_input.push_back(current_input);
 
                     // Add it to the totals
-                    token_totals[YONA] += curr_amount;
+                    token_totals[AKILA] += curr_amount;
 
                     // Add our private key to the transaction for signing
                     UniValue utxo_nested = UniValue(UniValue::VARR);
@@ -2356,7 +2356,7 @@ UniValue sweep(const JSONRPCRequest& request)
         // {
         //     "DESTINATION ADDRESS": {
         //         "transfer": {
-        //             "YONA": Total YONA to sweep,
+        //             "AKILA": Total AKILA to sweep,
         //             "Example Token": Total Token count,
         //             ...
         //         }
@@ -2367,19 +2367,19 @@ UniValue sweep(const JSONRPCRequest& request)
             std::string curr_token_name = it.first;
             CAmount curr_amount = it.second;
 
-            // We skip YONA here becuase we need to send that to another of our addresses
-            if (curr_token_name == YONA) continue;
+            // We skip AKILA here becuase we need to send that to another of our addresses
+            if (curr_token_name == AKILA) continue;
 
             curr_transfer.pushKV(curr_token_name, ValueFromAmount(curr_amount));
         }
 
-        // Add the YONA output, if available
-        if (token_totals.find(YONA) != token_totals.end()) {
-            CAmount yona_amount = token_totals[YONA] - fee_paid_by_us;
+        // Add the AKILA output, if available
+        if (token_totals.find(AKILA) != token_totals.end()) {
+            CAmount akila_amount = token_totals[AKILA] - fee_paid_by_us;
 
-            // Only add YONA to the output if there is some left over after the fee
-            if (yona_amount != 0) {
-                create_dest.pushKV(dest_yona_str, ValueFromAmount(yona_amount));
+            // Only add AKILA to the output if there is some left over after the fee
+            if (akila_amount != 0) {
+                create_dest.pushKV(dest_akila_str, ValueFromAmount(akila_amount));
             }
         }
 
@@ -2823,7 +2823,7 @@ UniValue listtagsforaddress(const JSONRPCRequest &request)
     // Check to make sure the given from address is valid
     CTxDestination dest = DecodeDestination(address);
     if (!IsValidDestination(dest))
-        throw JSONRPCError(RPC_INVALID_PARAMETER, std::string("Not valid YONA address: ") + address);
+        throw JSONRPCError(RPC_INVALID_PARAMETER, std::string("Not valid AKILA address: ") + address);
 
     std::vector<std::string> qualifiers;
 
@@ -2916,7 +2916,7 @@ UniValue listaddressrestrictions(const JSONRPCRequest& request)
     // Check to make sure the given from address is valid
     CTxDestination dest = DecodeDestination(address);
     if (!IsValidDestination(dest))
-        throw JSONRPCError(RPC_INVALID_PARAMETER, std::string("Not valid YONA address: ") + address);
+        throw JSONRPCError(RPC_INVALID_PARAMETER, std::string("Not valid AKILA address: ") + address);
 
     std::vector<std::string> restrictions;
 
@@ -3013,7 +3013,7 @@ UniValue checkaddresstag(const JSONRPCRequest& request)
                 "\nChecks to see if an address has the given tag\n"
 
                 "\nArguments:\n"
-                "1. \"address\"          (string, required) the YONA address to search\n"
+                "1. \"address\"          (string, required) the AKILA address to search\n"
                 "1. \"tag_name\"         (string, required) the tag to search\n"
 
                 "\nResult:\n"
@@ -3040,7 +3040,7 @@ UniValue checkaddresstag(const JSONRPCRequest& request)
     // Check to make sure the given from address is valid
     CTxDestination dest = DecodeDestination(address);
     if (!IsValidDestination(dest))
-        throw JSONRPCError(RPC_INVALID_PARAMETER, std::string("Not valid YONA address: ") + address);
+        throw JSONRPCError(RPC_INVALID_PARAMETER, std::string("Not valid AKILA address: ") + address);
 
     return ptokens->CheckForAddressQualifier(qualifier_name, address);
 }
@@ -3054,7 +3054,7 @@ UniValue checkaddressrestriction(const JSONRPCRequest& request)
                 "\nChecks to see if an address has been frozen by the given restricted token\n"
 
                 "\nArguments:\n"
-                "1. \"address\"          (string, required) the YONA address to search\n"
+                "1. \"address\"          (string, required) the AKILA address to search\n"
                 "1. \"restricted_name\"   (string, required) the restricted token to search\n"
 
                 "\nResult:\n"
@@ -3080,7 +3080,7 @@ UniValue checkaddressrestriction(const JSONRPCRequest& request)
     // Check to make sure the given from address is valid
     CTxDestination dest = DecodeDestination(address);
     if (!IsValidDestination(dest))
-        throw JSONRPCError(RPC_INVALID_PARAMETER, std::string("Not valid YONA address: ") + address);
+        throw JSONRPCError(RPC_INVALID_PARAMETER, std::string("Not valid AKILA address: ") + address);
 
     return ptokens->CheckForAddressRestriction(restricted_name, address);
 }
@@ -3137,7 +3137,7 @@ UniValue issuequalifiertoken(const JSONRPCRequest& request)
                 "1. \"token_name\"            (string, required) a unique name\n"
                 "2. \"qty\"                   (numeric, optional, default=1) the number of units to be issued\n"
                 "3. \"to_address\"            (string), optional, default=\"\"), address token will be sent to, if it is empty, address will be generated for you\n"
-                "4. \"change_address\"        (string), optional, default=\"\"), address the the yona change will be sent to, if it is empty, change address will be generated for you\n"
+                "4. \"change_address\"        (string), optional, default=\"\"), address the the akila change will be sent to, if it is empty, change address will be generated for you\n"
                 "5. \"has_ipfs\"              (boolean, optional, default=false), whether ipfs hash is going to be added to the token\n"
                 "6. \"ipfs_hash\"             (string, optional but required if has_ipfs = 1), an ipfs hash or a txid hash once messaging is activated\n"
 
@@ -3197,7 +3197,7 @@ UniValue issuequalifiertoken(const JSONRPCRequest& request)
     if (!address.empty()) {
         CTxDestination destination = DecodeDestination(address);
         if (!IsValidDestination(destination)) {
-            throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, std::string("Invalid Yona address: ") + address);
+            throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, std::string("Invalid Akila address: ") + address);
         }
     } else {
         // Create a new address
@@ -3226,7 +3226,7 @@ UniValue issuequalifiertoken(const JSONRPCRequest& request)
             CTxDestination destination = DecodeDestination(change_address);
             if (!IsValidDestination(destination)) {
                 throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY,
-                                   std::string("Invalid Change Address: Invalid Yona address: ") + change_address);
+                                   std::string("Invalid Change Address: Invalid Akila address: ") + change_address);
             }
         }
     }
@@ -3301,7 +3301,7 @@ UniValue issuerestrictedtoken(const JSONRPCRequest& request)
                 "2. \"qty\"                   (numeric, required) the quantity of the token to be issued\n"
                 "3. \"verifier\"              (string, required) the verifier string that will be evaluated when restricted token transfers are made\n"
                 "4. \"to_address\"            (string, required) address token will be sent to, this address must meet the verifier string requirements\n"
-                "5. \"change_address\"        (string, optional, default=\"\") address that the yona change will be sent to, if it is empty, change address will be generated for you\n"
+                "5. \"change_address\"        (string, optional, default=\"\") address that the akila change will be sent to, if it is empty, change address will be generated for you\n"
                 "6. \"units\"                 (integer, optional, default=0, min=0, max=8) the number of decimals precision for the token (0 for whole units (\"1\"), 8 for max precision (\"1.00000000\")\n"
                 "7. \"reissuable\"            (boolean, optional, default=true (false for unique tokens)) whether future reissuance is allowed\n"
                 "8. \"has_ipfs\"              (boolean, optional, default=false) whether an ipfs hash or txid hash is going to be added to the token\n"
@@ -3357,7 +3357,7 @@ UniValue issuerestrictedtoken(const JSONRPCRequest& request)
     // Validate the address
     CTxDestination destination = DecodeDestination(to_address);
     if (!IsValidDestination(destination)) {
-        throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, std::string("Invalid Yona address: ") + to_address);
+        throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, std::string("Invalid Akila address: ") + to_address);
     }
 
 
@@ -3376,7 +3376,7 @@ UniValue issuerestrictedtoken(const JSONRPCRequest& request)
         CTxDestination destination = DecodeDestination(change_address);
         if (!IsValidDestination(destination)) {
             throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY,
-                               std::string("Invalid Change Address: Invalid Yona address: ") + change_address);
+                               std::string("Invalid Change Address: Invalid Akila address: ") + change_address);
         }
     }
 
@@ -3467,7 +3467,7 @@ UniValue reissuerestrictedtoken(const JSONRPCRequest& request)
                 "3. \"to_address\"            (string, required) address token will be sent to, this address must meet the verifier string requirements\n"
                 "4. \"change_verifier\"       (boolean, optional, default=false) if the verifier string will get changed\n"
                 "5. \"new_verifier\"          (string, optional, default=\"\") the new verifier string that will be evaluated when restricted token transfers are made\n"
-                "6. \"change_address\"        (string, optional, default=\"\") address that the yona change will be sent to, if it is empty, change address will be generated for you\n"
+                "6. \"change_address\"        (string, optional, default=\"\") address that the akila change will be sent to, if it is empty, change address will be generated for you\n"
                 "7. \"new_units\"             (numeric, optional, default=-1) the new units that will be associated with the token\n"
                 "8. \"reissuable\"            (boolean, optional, default=true (false for unique tokens)) whether future reissuance is allowed\n"
                 "9. \"new_ipfs\"              (string, optional, default=\"\") whether to update the current ipfs hash or txid once messaging is active\n"
@@ -3519,7 +3519,7 @@ UniValue reissuerestrictedtoken(const JSONRPCRequest& request)
 
     CTxDestination to_dest = DecodeDestination(to_address);
     if (!IsValidDestination(to_dest)) {
-        throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, std::string("Invalid Yona address: ") + to_address);
+        throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, std::string("Invalid Akila address: ") + to_address);
     }
 
     bool fChangeVerifier = false;
@@ -3536,7 +3536,7 @@ UniValue reissuerestrictedtoken(const JSONRPCRequest& request)
         CTxDestination change_dest = DecodeDestination(change_address);
         if (!IsValidDestination(change_dest)) {
             throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY,
-                               std::string("Invalid Change Address: Invalid Yona address: ") + change_address);
+                               std::string("Invalid Change Address: Invalid Akila address: ") + change_address);
         }
     }
 
@@ -3660,7 +3660,7 @@ UniValue transferqualifier(const JSONRPCRequest& request)
     std::string to_address = request.params[2].get_str();
     CTxDestination to_dest = DecodeDestination(to_address);
     if (!IsValidDestination(to_dest)) {
-        throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, std::string("Invalid Yona address: ") + to_address);
+        throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, std::string("Invalid Akila address: ") + to_address);
     }
 
     std::string change_address = "";
@@ -3669,7 +3669,7 @@ UniValue transferqualifier(const JSONRPCRequest& request)
 
         CTxDestination change_dest = DecodeDestination(change_address);
         if (!IsValidDestination(change_dest)) {
-            throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, std::string("Invalid Yona address: ") + change_address);
+            throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, std::string("Invalid Akila address: ") + change_address);
         }
     }
 
@@ -3895,8 +3895,8 @@ static const CRPCCommand commands[] =
     { "tokens",   "gettokendata",               &gettokendata,               {"token_name"}},
     { "tokens",   "listaddressesbytoken",       &listaddressesbytoken,       {"token_name", "onlytotal", "count", "start"}},
 #ifdef ENABLE_WALLET
-    { "tokens",   "transferfromaddress",        &transferfromaddress,        {"token_name", "from_address", "qty", "to_address", "timelock", "message", "token_message", "expire_time", "yona_change_address", "token_change_address"}},
-    { "tokens",   "transferfromaddresses",      &transferfromaddresses,      {"token_name", "from_addresses", "qty", "to_address", "timelock", "message", "token_message", "expire_time", "yona_change_address", "token_change_address"}},
+    { "tokens",   "transferfromaddress",        &transferfromaddress,        {"token_name", "from_address", "qty", "to_address", "timelock", "message", "token_message", "expire_time", "akila_change_address", "token_change_address"}},
+    { "tokens",   "transferfromaddresses",      &transferfromaddresses,      {"token_name", "from_addresses", "qty", "to_address", "timelock", "message", "token_message", "expire_time", "akila_change_address", "token_change_address"}},
     { "tokens",   "transfer",                   &transfer,                   {"token_name", "qty", "to_address", "timelock", "message", "token_message", "expire_time", "change_address", "token_change_address"}},
     { "tokens",   "reissue",                    &reissue,                    {"token_name", "qty", "to_address", "change_address", "reissuable", "new_units", "new_ipfs"}},
     { "tokens",   "sweep",                      &sweep,                      {"privkey", "token_name"}},

@@ -1,10 +1,10 @@
 // Copyright (c) 2015-2016 The Bitcoin Core developers
-// Copyright (c) 2021-2022 The Yona developers
+// Copyright (c) 2021-2022 The Akila developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef YONA_HTTPSERVER_H
-#define YONA_HTTPSERVER_H
+#ifndef AKILA_HTTPSERVER_H
+#define AKILA_HTTPSERVER_H
 
 #include <string>
 #include <stdint.h>
@@ -151,4 +151,4 @@ private:
 
 std::string urlDecode(const std::string &urlEncoded);
 
-#endif // YONA_HTTPSERVER_H
+#endif // AKILA_HTTPSERVER_H

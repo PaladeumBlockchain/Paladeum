@@ -1,17 +1,17 @@
 dist_man1_MANS=
 
-if BUILD_YONAD
-  dist_man1_MANS+=yonad.1
+if BUILD_AKILAD
+  dist_man1_MANS+=akilad.1
 endif
 
 if ENABLE_QT
-  dist_man1_MANS+=yona-qt.1
+  dist_man1_MANS+=akila-qt.1
 endif
 
-if BUILD_YONA_CLI
-  dist_man1_MANS+=yona-cli.1
+if BUILD_AKILA_CLI
+  dist_man1_MANS+=akila-cli.1
 endif
 
-if BUILD_YONA_TX
-  dist_man1_MANS+=yona-tx.1
+if BUILD_AKILA_TX
+  dist_man1_MANS+=akila-tx.1
 endif

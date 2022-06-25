@@ -1,0 +1,13 @@
+[Desktop Entry]
+Encoding=UTF-8
+Name=Akila Core
+Comment=Connect to the Akila P2P Network
+Comment[de]=Verbinde mit dem Akila peer-to-peer Netzwerk
+Comment[fr]=Akila, monnaie virtuelle cryptographique pair à pair
+Comment[tr]=Akila, eşten eşe kriptografik sanal para birimi
+Exec=akila-qt %u
+Terminal=false
+Type=Application
+Icon=akila128
+MimeType=x-scheme-handler/akila;
+Categories=Office;Finance;

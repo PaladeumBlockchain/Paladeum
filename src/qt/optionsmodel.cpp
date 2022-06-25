@@ -1,15 +1,15 @@
 // Copyright (c) 2011-2016 The Bitcoin Core developers
-// Copyright (c) 2021-2022 The Yona developers
+// Copyright (c) 2021-2022 The Akila developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
 #if defined(HAVE_CONFIG_H)
-#include "config/yona-config.h"
+#include "config/akila-config.h"
 #endif
 
 #include "optionsmodel.h"
 
-#include "yonaunits.h"
+#include "akilaunits.h"
 #include "guiutil.h"
 #include "amount.h"
 #include "init.h"
@@ -72,7 +72,7 @@ void OptionsModel::Init(bool resetSettings)
 
     // Display
     if (!settings.contains("nDisplayUnit"))
-        settings.setValue("nDisplayUnit", YonaUnits::YONA);
+        settings.setValue("nDisplayUnit", AkilaUnits::AKILA);
     nDisplayUnit = settings.value("nDisplayUnit").toInt();
 
     if (!settings.contains("strThirdPartyTxUrls"))

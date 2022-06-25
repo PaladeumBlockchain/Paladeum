@@ -1,5 +1,5 @@
 # Copyright (c) 2013-2016 The Bitcoin Core developers
-# Copyright (c) 2021-2022 The Yona developers
+# Copyright (c) 2021-2022 The Akila developers
 # Distributed under the MIT software license, see the accompanying
 # file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -19,28 +19,28 @@ else
 LIBUNIVALUE = $(UNIVALUE_LIBS)
 endif
 
-YONA_INCLUDES=-I$(builddir) -I$(builddir)/obj $(BDB_CPPFLAGS) $(BOOST_CPPFLAGS) $(LEVELDB_CPPFLAGS) $(CRYPTO_CFLAGS) $(SSL_CFLAGS)
+AKILA_INCLUDES=-I$(builddir) -I$(builddir)/obj $(BDB_CPPFLAGS) $(BOOST_CPPFLAGS) $(LEVELDB_CPPFLAGS) $(CRYPTO_CFLAGS) $(SSL_CFLAGS)
 
-YONA_INCLUDES += -I$(srcdir)/secp256k1/include
-YONA_INCLUDES += $(UNIVALUE_CFLAGS)
+AKILA_INCLUDES += -I$(srcdir)/secp256k1/include
+AKILA_INCLUDES += $(UNIVALUE_CFLAGS)
 
-LIBYONA_SERVER=libyona_server.a
-LIBYONA_COMMON=libyona_common.a
-LIBYONA_CONSENSUS=libyona_consensus.a
-LIBYONA_CLI=libyona_cli.a
-LIBYONA_UTIL=libyona_util.a
-LIBYONA_CRYPTO=crypto/libyona_crypto.a
-LIBYONAQT=qt/libyonaqt.a
+LIBAKILA_SERVER=libakila_server.a
+LIBAKILA_COMMON=libakila_common.a
+LIBAKILA_CONSENSUS=libakila_consensus.a
+LIBAKILA_CLI=libakila_cli.a
+LIBAKILA_UTIL=libakila_util.a
+LIBAKILA_CRYPTO=crypto/libakila_crypto.a
+LIBAKILAQT=qt/libakilaqt.a
 LIBSECP256K1=secp256k1/libsecp256k1.la
 
 if ENABLE_ZMQ
-LIBYONA_ZMQ=libyona_zmq.a
+LIBAKILA_ZMQ=libakila_zmq.a
 endif
-if BUILD_YONA_LIBS
-LIBYONACONSENSUS=libyonaconsensus.la
+if BUILD_AKILA_LIBS
+LIBAKILACONSENSUS=libakilaconsensus.la
 endif
 if ENABLE_WALLET
-LIBYONA_WALLET=libyona_wallet.a
+LIBAKILA_WALLET=libakila_wallet.a
 endif
 
 $(LIBSECP256K1): $(wildcard secp256k1/src/*) $(wildcard secp256k1/include/*)
@@ -49,37 +49,37 @@ $(LIBSECP256K1): $(wildcard secp256k1/src/*) $(wildcard secp256k1/include/*)
 # Make is not made aware of per-object dependencies to avoid limiting building parallelization
 # But to build the less dependent modules first, we manually select their order here:
 EXTRA_LIBRARIES += \
-  $(LIBYONA_CRYPTO) \
-  $(LIBYONA_UTIL) \
-  $(LIBYONA_COMMON) \
-  $(LIBYONA_CONSENSUS) \
-  $(LIBYONA_SERVER) \
-  $(LIBYONA_CLI) \
-  $(LIBYONA_WALLET) \
-  $(LIBYONA_ZMQ)
+  $(LIBAKILA_CRYPTO) \
+  $(LIBAKILA_UTIL) \
+  $(LIBAKILA_COMMON) \
+  $(LIBAKILA_CONSENSUS) \
+  $(LIBAKILA_SERVER) \
+  $(LIBAKILA_CLI) \
+  $(LIBAKILA_WALLET) \
+  $(LIBAKILA_ZMQ)
 
-lib_LTLIBRARIES = $(LIBYONACONSENSUS)
+lib_LTLIBRARIES = $(LIBAKILACONSENSUS)
 
 bin_PROGRAMS =
 noinst_PROGRAMS =
 TESTS =
 BENCHMARKS =
 
-if BUILD_YONAD
-  bin_PROGRAMS += yonad
+if BUILD_AKILAD
+  bin_PROGRAMS += akilad
 endif
 
-if BUILD_YONA_CLI
-  bin_PROGRAMS += yona-cli
+if BUILD_AKILA_CLI
+  bin_PROGRAMS += akila-cli
 endif
 
-if BUILD_YONA_TX
-  bin_PROGRAMS += yona-tx
+if BUILD_AKILA_TX
+  bin_PROGRAMS += akila-tx
 endif
 
 .PHONY: FORCE check-symbols check-security
-# yona core #
-YONA_CORE_H = \
+# akila core #
+AKILA_CORE_H = \
   addrdb.h \
   addressindex.h \
   spentindex.h \
@@ -198,12 +198,12 @@ obj/build.h: FORCE
 	@$(MKDIR_P) $(builddir)/obj
 	@$(top_srcdir)/share/genbuild.sh "$(abs_top_builddir)/src/obj/build.h" \
 	  "$(abs_top_srcdir)"
-libyona_util_a-clientversion.$(OBJEXT): obj/build.h
+libakila_util_a-clientversion.$(OBJEXT): obj/build.h
 
-# server: shared between yonad and yona-qt
-libyona_server_a_CPPFLAGS = $(AM_CPPFLAGS) $(YONA_INCLUDES) $(MINIUPNPC_CPPFLAGS) $(EVENT_CFLAGS) $(EVENT_PTHREADS_CFLAGS)
-libyona_server_a_CXXFLAGS = $(AM_CXXFLAGS) $(PIE_FLAGS)
-libyona_server_a_SOURCES = \
+# server: shared between akilad and akila-qt
+libakila_server_a_CPPFLAGS = $(AM_CPPFLAGS) $(AKILA_INCLUDES) $(MINIUPNPC_CPPFLAGS) $(EVENT_CFLAGS) $(EVENT_PTHREADS_CFLAGS)
+libakila_server_a_CXXFLAGS = $(AM_CXXFLAGS) $(PIE_FLAGS)
+libakila_server_a_SOURCES = \
   addrdb.cpp \
   addrman.cpp \
   bloom.cpp \
@@ -256,23 +256,23 @@ libyona_server_a_SOURCES = \
   validation.cpp \
   validationinterface.cpp \
   versionbits.cpp \
-  $(YONA_CORE_H)
+  $(AKILA_CORE_H)
 
 if ENABLE_ZMQ
-libyona_zmq_a_CPPFLAGS = $(YONA_INCLUDES) $(ZMQ_CFLAGS)
-libyona_zmq_a_CXXFLAGS = $(AM_CXXFLAGS) $(PIE_FLAGS)
-libyona_zmq_a_SOURCES = \
+libakila_zmq_a_CPPFLAGS = $(AKILA_INCLUDES) $(ZMQ_CFLAGS)
+libakila_zmq_a_CXXFLAGS = $(AM_CXXFLAGS) $(PIE_FLAGS)
+libakila_zmq_a_SOURCES = \
   zmq/zmqabstractnotifier.cpp \
   zmq/zmqnotificationinterface.cpp \
   zmq/zmqpublishnotifier.cpp
 endif
 
 
-# wallet: shared between yonad and yona-qt, but only linked
+# wallet: shared between akilad and akila-qt, but only linked
 # when wallet enabled
-libyona_wallet_a_CPPFLAGS = $(AM_CPPFLAGS) $(YONA_INCLUDES)
-libyona_wallet_a_CXXFLAGS = $(AM_CXXFLAGS) $(PIE_FLAGS)
-libyona_wallet_a_SOURCES = \
+libakila_wallet_a_CPPFLAGS = $(AM_CPPFLAGS) $(AKILA_INCLUDES)
+libakila_wallet_a_CXXFLAGS = $(AM_CXXFLAGS) $(PIE_FLAGS)
+libakila_wallet_a_SOURCES = \
   wallet/crypter.cpp \
   wallet/db.cpp \
   wallet/feebumper.cpp \
@@ -283,12 +283,12 @@ libyona_wallet_a_SOURCES = \
   wallet/wallet.cpp \
   wallet/walletdb.cpp \
   wallet/bip39.cpp \
-  $(YONA_CORE_H)
+  $(AKILA_CORE_H)
 
 # crypto primitives library
-crypto_libyona_crypto_a_CPPFLAGS = $(AM_CPPFLAGS)
-crypto_libyona_crypto_a_CXXFLAGS = $(AM_CXXFLAGS) $(PIE_FLAGS)
-crypto_libyona_crypto_a_SOURCES = \
+crypto_libakila_crypto_a_CPPFLAGS = $(AM_CPPFLAGS)
+crypto_libakila_crypto_a_CXXFLAGS = $(AM_CXXFLAGS) $(PIE_FLAGS)
+crypto_libakila_crypto_a_SOURCES = \
   crypto/aes.cpp \
   crypto/aes.h \
   crypto/chacha20.h \
@@ -310,13 +310,13 @@ crypto_libyona_crypto_a_SOURCES = \
   crypto/blake2b.h
 
 if USE_ASM
-crypto_libyona_crypto_a_SOURCES += crypto/sha256_sse4.cpp
+crypto_libakila_crypto_a_SOURCES += crypto/sha256_sse4.cpp
 endif
 
 # consensus: shared between all executables that validate any consensus rules.
-libyona_consensus_a_CPPFLAGS = $(AM_CPPFLAGS) $(YONA_INCLUDES)
-libyona_consensus_a_CXXFLAGS = $(AM_CXXFLAGS) $(PIE_FLAGS)
-libyona_consensus_a_SOURCES = \
+libakila_consensus_a_CPPFLAGS = $(AM_CPPFLAGS) $(AKILA_INCLUDES)
+libakila_consensus_a_CXXFLAGS = $(AM_CXXFLAGS) $(PIE_FLAGS)
+libakila_consensus_a_SOURCES = \
   amount.h \
   arith_uint256.cpp \
   arith_uint256.h \
@@ -333,7 +333,7 @@ libyona_consensus_a_SOURCES = \
   primitives/transaction.h \
   pubkey.cpp \
   pubkey.h \
-  script/yonaconsensus.cpp \
+  script/akilaconsensus.cpp \
   script/interpreter.cpp \
   script/interpreter.h \
   script/script.cpp \
@@ -351,12 +351,12 @@ libyona_consensus_a_SOURCES = \
   version.h \
   LibBoolEE.cpp \
   LibBoolEE.h \
-  $(YONA_CORE_H)
+  $(AKILA_CORE_H)
 
-# common: shared between yonad, and yona-qt and non-server tools
-libyona_common_a_CPPFLAGS = $(AM_CPPFLAGS) $(YONA_INCLUDES)
-libyona_common_a_CXXFLAGS = $(AM_CXXFLAGS) $(PIE_FLAGS)
-libyona_common_a_SOURCES = \
+# common: shared between akilad, and akila-qt and non-server tools
+libakila_common_a_CPPFLAGS = $(AM_CPPFLAGS) $(AKILA_INCLUDES)
+libakila_common_a_CXXFLAGS = $(AM_CXXFLAGS) $(PIE_FLAGS)
+libakila_common_a_SOURCES = \
   base58.cpp \
   chainparams.cpp \
   coins.cpp \
@@ -373,14 +373,14 @@ libyona_common_a_SOURCES = \
   script/sign.cpp \
   script/standard.cpp \
   warnings.cpp \
-  $(YONA_CORE_H)
+  $(AKILA_CORE_H)
 
 # util: shared between all executables.
 # This library *must* be included to make sure that the glibc
 # backward-compatibility objects and their sanity checks are linked.
-libyona_util_a_CPPFLAGS = $(AM_CPPFLAGS) $(YONA_INCLUDES)
-libyona_util_a_CXXFLAGS = $(AM_CXXFLAGS) $(PIE_FLAGS)
-libyona_util_a_SOURCES = \
+libakila_util_a_CPPFLAGS = $(AM_CPPFLAGS) $(AKILA_INCLUDES)
+libakila_util_a_CXXFLAGS = $(AM_CXXFLAGS) $(PIE_FLAGS)
+libakila_util_a_SOURCES = \
   support/lockedpool.cpp \
   chainparamsbase.cpp \
   clientversion.cpp \
@@ -396,102 +396,102 @@ libyona_util_a_SOURCES = \
   utilmoneystr.cpp \
   utilstrencodings.cpp \
   utiltime.cpp \
-  $(YONA_CORE_H)
+  $(AKILA_CORE_H)
 
 if GLIBC_BACK_COMPAT
-libyona_util_a_SOURCES += compat/glibc_compat.cpp
+libakila_util_a_SOURCES += compat/glibc_compat.cpp
 AM_LDFLAGS += $(COMPAT_LDFLAGS)
 endif
 
-# cli: shared between yona-cli and yona-qt
-libyona_cli_a_CPPFLAGS = $(AM_CPPFLAGS) $(YONA_INCLUDES)
-libyona_cli_a_CXXFLAGS = $(AM_CXXFLAGS) $(PIE_FLAGS)
-libyona_cli_a_SOURCES = \
+# cli: shared between akila-cli and akila-qt
+libakila_cli_a_CPPFLAGS = $(AM_CPPFLAGS) $(AKILA_INCLUDES)
+libakila_cli_a_CXXFLAGS = $(AM_CXXFLAGS) $(PIE_FLAGS)
+libakila_cli_a_SOURCES = \
   rpc/client.cpp \
-  $(YONA_CORE_H)
+  $(AKILA_CORE_H)
 
-nodist_libyona_util_a_SOURCES = $(srcdir)/obj/build.h
+nodist_libakila_util_a_SOURCES = $(srcdir)/obj/build.h
 #
 
-# yonad binary #
-yonad_SOURCES = yonad.cpp
-yonad_CPPFLAGS = $(AM_CPPFLAGS) $(YONA_INCLUDES)
-yonad_CXXFLAGS = $(AM_CXXFLAGS) $(PIE_FLAGS)
-yonad_LDFLAGS = $(RELDFLAGS) $(AM_LDFLAGS) $(LIBTOOL_APP_LDFLAGS)
+# akilad binary #
+akilad_SOURCES = akilad.cpp
+akilad_CPPFLAGS = $(AM_CPPFLAGS) $(AKILA_INCLUDES)
+akilad_CXXFLAGS = $(AM_CXXFLAGS) $(PIE_FLAGS)
+akilad_LDFLAGS = $(RELDFLAGS) $(AM_LDFLAGS) $(LIBTOOL_APP_LDFLAGS)
 
 if TARGET_WINDOWS
-yonad_SOURCES += yonad-res.rc
+akilad_SOURCES += akilad-res.rc
 endif
 
-yonad_LDADD = \
-  $(LIBYONA_SERVER) \
-  $(LIBYONA_COMMON) \
+akilad_LDADD = \
+  $(LIBAKILA_SERVER) \
+  $(LIBAKILA_COMMON) \
   $(LIBUNIVALUE) \
-  $(LIBYONA_UTIL) \
-  $(LIBYONA_WALLET) \
-  $(LIBYONA_ZMQ) \
-  $(LIBYONA_CONSENSUS) \
-  $(LIBYONA_CRYPTO) \
+  $(LIBAKILA_UTIL) \
+  $(LIBAKILA_WALLET) \
+  $(LIBAKILA_ZMQ) \
+  $(LIBAKILA_CONSENSUS) \
+  $(LIBAKILA_CRYPTO) \
   $(LIBLEVELDB) \
   $(LIBLEVELDB_SSE42) \
   $(LIBMEMENV) \
   $(LIBSECP256K1)
 
-yonad_LDADD += $(BOOST_LIBS) $(BDB_LIBS) $(SSL_LIBS) $(CRYPTO_LIBS) $(MINIUPNPC_LIBS) $(EVENT_PTHREADS_LIBS) $(EVENT_LIBS) $(ZMQ_LIBS)
+akilad_LDADD += $(BOOST_LIBS) $(BDB_LIBS) $(SSL_LIBS) $(CRYPTO_LIBS) $(MINIUPNPC_LIBS) $(EVENT_PTHREADS_LIBS) $(EVENT_LIBS) $(ZMQ_LIBS)
 
-# yona-cli binary #
-yona_cli_SOURCES = yona-cli.cpp
-yona_cli_CPPFLAGS = $(AM_CPPFLAGS) $(YONA_INCLUDES) $(EVENT_CFLAGS)
-yona_cli_CXXFLAGS = $(AM_CXXFLAGS) $(PIE_FLAGS)
-yona_cli_LDFLAGS = $(RELDFLAGS) $(AM_LDFLAGS) $(LIBTOOL_APP_LDFLAGS)
+# akila-cli binary #
+akila_cli_SOURCES = akila-cli.cpp
+akila_cli_CPPFLAGS = $(AM_CPPFLAGS) $(AKILA_INCLUDES) $(EVENT_CFLAGS)
+akila_cli_CXXFLAGS = $(AM_CXXFLAGS) $(PIE_FLAGS)
+akila_cli_LDFLAGS = $(RELDFLAGS) $(AM_LDFLAGS) $(LIBTOOL_APP_LDFLAGS)
 
 if TARGET_WINDOWS
-yona_cli_SOURCES += yona-cli-res.rc
+akila_cli_SOURCES += akila-cli-res.rc
 endif
 
-yona_cli_LDADD = \
-  $(LIBYONA_CLI) \
+akila_cli_LDADD = \
+  $(LIBAKILA_CLI) \
   $(LIBUNIVALUE) \
-  $(LIBYONA_UTIL) \
-  $(LIBYONA_CRYPTO)
+  $(LIBAKILA_UTIL) \
+  $(LIBAKILA_CRYPTO)
 
-yona_cli_LDADD += $(BOOST_LIBS) $(SSL_LIBS) $(CRYPTO_LIBS) $(EVENT_LIBS)
+akila_cli_LDADD += $(BOOST_LIBS) $(SSL_LIBS) $(CRYPTO_LIBS) $(EVENT_LIBS)
 #
 
-# yona-tx binary #
-yona_tx_SOURCES = yona-tx.cpp
-yona_tx_CPPFLAGS = $(AM_CPPFLAGS) $(YONA_INCLUDES)
-yona_tx_CXXFLAGS = $(AM_CXXFLAGS) $(PIE_FLAGS)
-yona_tx_LDFLAGS = $(RELDFLAGS) $(AM_LDFLAGS) $(LIBTOOL_APP_LDFLAGS)
+# akila-tx binary #
+akila_tx_SOURCES = akila-tx.cpp
+akila_tx_CPPFLAGS = $(AM_CPPFLAGS) $(AKILA_INCLUDES)
+akila_tx_CXXFLAGS = $(AM_CXXFLAGS) $(PIE_FLAGS)
+akila_tx_LDFLAGS = $(RELDFLAGS) $(AM_LDFLAGS) $(LIBTOOL_APP_LDFLAGS)
 
 if TARGET_WINDOWS
-yona_tx_SOURCES += yona-tx-res.rc
+akila_tx_SOURCES += akila-tx-res.rc
 endif
 
-yona_tx_LDADD = \
+akila_tx_LDADD = \
   $(LIBUNIVALUE) \
-  $(LIBYONA_COMMON) \
-  $(LIBYONA_UTIL) \
-  $(LIBYONA_CONSENSUS) \
-  $(LIBYONA_CRYPTO) \
+  $(LIBAKILA_COMMON) \
+  $(LIBAKILA_UTIL) \
+  $(LIBAKILA_CONSENSUS) \
+  $(LIBAKILA_CRYPTO) \
   $(LIBSECP256K1)
 
-yona_tx_LDADD += $(BOOST_LIBS) $(CRYPTO_LIBS)
+akila_tx_LDADD += $(BOOST_LIBS) $(CRYPTO_LIBS)
 #
 
-# yonaconsensus library #
-if BUILD_YONA_LIBS
-include_HEADERS = script/yonaconsensus.h
-libyonaconsensus_la_SOURCES = $(crypto_libyona_crypto_a_SOURCES) $(libyona_consensus_a_SOURCES)
+# akilaconsensus library #
+if BUILD_AKILA_LIBS
+include_HEADERS = script/akilaconsensus.h
+libakilaconsensus_la_SOURCES = $(crypto_libakila_crypto_a_SOURCES) $(libakila_consensus_a_SOURCES)
 
 if GLIBC_BACK_COMPAT
-  libyonaconsensus_la_SOURCES += compat/glibc_compat.cpp
+  libakilaconsensus_la_SOURCES += compat/glibc_compat.cpp
 endif
 
-libyonaconsensus_la_LDFLAGS = $(AM_LDFLAGS) -no-undefined $(RELDFLAGS)
-libyonaconsensus_la_LIBADD = $(LIBSECP256K1) $(BOOST_LIBS)
-libyonaconsensus_la_CPPFLAGS = $(AM_CPPFLAGS) -I$(builddir)/obj -I$(srcdir)/secp256k1/include -DBUILD_YONA_INTERNAL
-libyonaconsensus_la_CXXFLAGS = $(AM_CXXFLAGS) $(PIE_FLAGS)
+libakilaconsensus_la_LDFLAGS = $(AM_LDFLAGS) -no-undefined $(RELDFLAGS)
+libakilaconsensus_la_LIBADD = $(LIBSECP256K1) $(BOOST_LIBS)
+libakilaconsensus_la_CPPFLAGS = $(AM_CPPFLAGS) -I$(builddir)/obj -I$(srcdir)/secp256k1/include -DBUILD_AKILA_INTERNAL
+libakilaconsensus_la_CXXFLAGS = $(AM_CXXFLAGS) $(PIE_FLAGS)
 
 endif
 #
@@ -521,12 +521,12 @@ CLEANFILES += obj/build.h
 EXTRA_DIST = $(CTAES_DIST)
 
 
-config/yona-config.h: config/stamp-h1
+config/akila-config.h: config/stamp-h1
 	@$(MAKE) -C $(top_builddir) $(subdir)/$(@)
-config/stamp-h1: $(top_srcdir)/$(subdir)/config/yona-config.h.in $(top_builddir)/config.status
+config/stamp-h1: $(top_srcdir)/$(subdir)/config/akila-config.h.in $(top_builddir)/config.status
 	$(AM_V_at)$(MAKE) -C $(top_builddir) $(subdir)/$(@)
-$(top_srcdir)/$(subdir)/config/yona-config.h.in:  $(am__configure_deps)
-	$(AM_V_at)$(MAKE) -C $(top_srcdir) $(subdir)/config/yona-config.h.in
+$(top_srcdir)/$(subdir)/config/akila-config.h.in:  $(am__configure_deps)
+	$(AM_V_at)$(MAKE) -C $(top_srcdir) $(subdir)/config/akila-config.h.in
 
 clean-local:
 	-$(MAKE) -C secp256k1 clean

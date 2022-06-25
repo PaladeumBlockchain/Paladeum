@@ -2,12 +2,12 @@
 // Copyright (c) 2009-2016 The Bitcoin Core developers
 // Copyright (c) 2017-2019 The Raven Core developers
 // Copyright (c) 2014-2016 The BlackCoin developers
-// Copyright (c) 2021-2022 The Yona developers
+// Copyright (c) 2021-2022 The Akila developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef YONA_SCRIPT_INTERPRETER_H
-#define YONA_SCRIPT_INTERPRETER_H
+#ifndef AKILA_SCRIPT_INTERPRETER_H
+#define AKILA_SCRIPT_INTERPRETER_H
 
 #include "script_error.h"
 #include "primitives/transaction.h"
@@ -210,4 +210,4 @@ bool VerifyScript(const CScript &scriptSig, const CScript &scriptPubKey, const C
 
 size_t CountWitnessSigOps(const CScript &scriptSig, const CScript &scriptPubKey, const CScriptWitness *witness, unsigned int flags);
 
-#endif // YONA_SCRIPT_INTERPRETER_H
+#endif // AKILA_SCRIPT_INTERPRETER_H

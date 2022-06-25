@@ -1,11 +1,11 @@
 // Copyright (c) 2009-2010 Satoshi Nakamoto
 // Copyright (c) 2009-2016 The Bitcoin Core developers
-// Copyright (c) 2021-2022 The Yona developers
+// Copyright (c) 2021-2022 The Akila developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef YONA_NET_PROCESSING_H
-#define YONA_NET_PROCESSING_H
+#ifndef AKILA_NET_PROCESSING_H
+#define AKILA_NET_PROCESSING_H
 
 #include "net.h"
 #include "validationinterface.h"
@@ -82,4 +82,4 @@ bool GetNodeStateStats(NodeId nodeid, CNodeStateStats &stats);
 /** Increase a node's misbehavior score. */
 void Misbehaving(NodeId nodeid, int howmuch);
 
-#endif // YONA_NET_PROCESSING_H
+#endif // AKILA_NET_PROCESSING_H

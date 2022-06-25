@@ -1,10 +1,10 @@
 // Copyright (c) 2011-2016 The Bitcoin Core developers
-// Copyright (c) 2021-2022 The Yona developers
+// Copyright (c) 2021-2022 The Akila developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef YONA_QT_GUIUTIL_H
-#define YONA_QT_GUIUTIL_H
+#ifndef AKILA_QT_GUIUTIL_H
+#define AKILA_QT_GUIUTIL_H
 
 #include "amount.h"
 #include "fs.h"
@@ -31,7 +31,7 @@ class QWidget;
 class QGraphicsDropShadowEffect;
 QT_END_NAMESPACE
 
-/** Utility functions used by the Yona Qt UI.
+/** Utility functions used by the Akila Qt UI.
  */
 namespace GUIUtil
 {
@@ -57,10 +57,10 @@ namespace GUIUtil
     void setupAddressWidget(QValidatedLineEdit *widget, QWidget *parent);
     void setupAmountWidget(QLineEdit *widget, QWidget *parent);
 
-    // Parse "yona:" URI into recipient object, return true on successful parsing
-    bool parseYonaURI(const QUrl &uri, SendCoinsRecipient *out);
-    bool parseYonaURI(QString uri, SendCoinsRecipient *out);
-    QString formatYonaURI(const SendCoinsRecipient &info);
+    // Parse "akila:" URI into recipient object, return true on successful parsing
+    bool parseAkilaURI(const QUrl &uri, SendCoinsRecipient *out);
+    bool parseAkilaURI(QString uri, SendCoinsRecipient *out);
+    QString formatAkilaURI(const SendCoinsRecipient &info);
 
     // Returns true if given address+amount meets "dust" definition
     bool isDust(const QString& address, const CAmount& amount);
@@ -127,7 +127,7 @@ namespace GUIUtil
     void openDebugLogfile();
 
     // Open the config file
-    bool openYonaConf();
+    bool openAkilaConf();
 
     // Replace invalid default fonts with known good ones
     void SubstituteFonts(const QString& language);
@@ -309,4 +309,4 @@ namespace GUIUtil
 
 } // namespace GUIUtil
 
-#endif // YONA_QT_GUIUTIL_H
+#endif // AKILA_QT_GUIUTIL_H

@@ -1,4 +1,4 @@
-Build instructions for Yonacoin 
+Build instructions for Akilacoin 
 =================================
 FreeBSD 13.0
 ---------------------------------
@@ -25,12 +25,12 @@ libqrencode for QR Code support.
 
 Directory structure
 ------------------
-Yonacoin sources in `$HOME/src`
+Akilacoin sources in `$HOME/src`
 
 Berkeley DB will be installed to `$HOME/src/db4`
 
 
-Yonacoin
+Akilacoin
 ------------------
 
 Start in $HOME
@@ -41,11 +41,11 @@ Make the directory for sources and go into it.
 
 `cd src`
 
-__Download Yonacoin source.__
+__Download Akilacoin source.__
 
-`git clone https://github.com/YonaProject/Yonacoin`
+`git clone https://github.com/AkilaProject/Akilacoin`
 
-`cd Yonacoin`
+`cd Akilacoin`
 
 `git checkout develop` # this checks out the develop branch.
 
@@ -68,11 +68,11 @@ _Adjust to own needs. `--prefix=/usr/local` will install the binaries to `/usr/l
 
 `gmake -j8`  # 8 for 8 build threads, adjust to fit your setup.
 
-You can now start yona-qt from the build directory.
+You can now start akila-qt from the build directory.
 
-`src/qt/yona-qt`
+`src/qt/akila-qt`
 
-yonad and yona-cli are in `src/`
+akilad and akila-cli are in `src/`
 
 
 __Optional:__

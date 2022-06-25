@@ -1,12 +1,12 @@
 // Copyright (c) 2011-2016 The Bitcoin Core developers
-// Copyright (c) 2021-2022 The Yona developers
+// Copyright (c) 2021-2022 The Akila developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
 #include "guiutil.h"
 
-#include "yonaaddressvalidator.h"
-#include "yonaunits.h"
+#include "akilaaddressvalidator.h"
+#include "akilaunits.h"
 #include "qvalidatedlineedit.h"
 #include "walletmodel.h"
 
@@ -205,11 +205,11 @@ void setupAddressWidget(QValidatedLineEdit *widget, QWidget *parent)
 #if QT_VERSION >= 0x040700
     // We don't want translators to use own addresses in translations
     // and this is the only place, where this address is supplied.
-    widget->setPlaceholderText(QObject::tr("Enter a Yona address (e.g. %1)").arg(
+    widget->setPlaceholderText(QObject::tr("Enter a Akila address (e.g. %1)").arg(
         QString::fromStdString(DummyAddress(GetParams()))));
 #endif
-    widget->setValidator(new YonaAddressEntryValidator(parent));
-    widget->setCheckValidator(new YonaAddressCheckValidator(parent));
+    widget->setValidator(new AkilaAddressEntryValidator(parent));
+    widget->setCheckValidator(new AkilaAddressCheckValidator(parent));
 }
 
 void setupAmountWidget(QLineEdit *widget, QWidget *parent)
@@ -221,10 +221,10 @@ void setupAmountWidget(QLineEdit *widget, QWidget *parent)
     widget->setAlignment(Qt::AlignRight|Qt::AlignVCenter);
 }
 
-bool parseYonaURI(const QUrl &uri, SendCoinsRecipient *out)
+bool parseAkilaURI(const QUrl &uri, SendCoinsRecipient *out)
 {
-    // return if URI is not valid or is no yona: URI
-    if(!uri.isValid() || uri.scheme() != QString("yona"))
+    // return if URI is not valid or is no akila: URI
+    if(!uri.isValid() || uri.scheme() != QString("akila"))
         return false;
 
     SendCoinsRecipient rv;
@@ -264,7 +264,7 @@ bool parseYonaURI(const QUrl &uri, SendCoinsRecipient *out)
         {
             if(!i->second.isEmpty())
             {
-                if(!YonaUnits::parse(YonaUnits::YONA, i->second, &rv.amount))
+                if(!AkilaUnits::parse(AkilaUnits::AKILA, i->second, &rv.amount))
                 {
                     return false;
                 }
@@ -282,28 +282,28 @@ bool parseYonaURI(const QUrl &uri, SendCoinsRecipient *out)
     return true;
 }
 
-bool parseYonaURI(QString uri, SendCoinsRecipient *out)
+bool parseAkilaURI(QString uri, SendCoinsRecipient *out)
 {
-    // Convert yona:// to yona:
+    // Convert akila:// to akila:
     //
-    //    Cannot handle this later, because yona:// will cause Qt to see the part after // as host,
+    //    Cannot handle this later, because akila:// will cause Qt to see the part after // as host,
     //    which will lower-case it (and thus invalidate the address).
-    if(uri.startsWith("yona://", Qt::CaseInsensitive))
+    if(uri.startsWith("akila://", Qt::CaseInsensitive))
     {
-        uri.replace(0, 10, "yona:");
+        uri.replace(0, 10, "akila:");
     }
     QUrl uriInstance(uri);
-    return parseYonaURI(uriInstance, out);
+    return parseAkilaURI(uriInstance, out);
 }
 
-QString formatYonaURI(const SendCoinsRecipient &info)
+QString formatAkilaURI(const SendCoinsRecipient &info)
 {
-    QString ret = QString("yona:%1").arg(info.address);
+    QString ret = QString("akila:%1").arg(info.address);
     int paramCount = 0;
 
     if (info.amount)
     {
-        ret += QString("?amount=%1").arg(YonaUnits::format(YonaUnits::YONA, info.amount, false, YonaUnits::separatorNever));
+        ret += QString("?amount=%1").arg(AkilaUnits::format(AkilaUnits::AKILA, info.amount, false, AkilaUnits::separatorNever));
         paramCount++;
     }
 
@@ -493,9 +493,9 @@ void openDebugLogfile()
         QDesktopServices::openUrl(QUrl::fromLocalFile(boostPathToQString(pathDebug)));
 }
 
-bool openYonaConf()
+bool openAkilaConf()
 {
-    boost::filesystem::path pathConfig = GetConfigFile(YONA_CONF_FILENAME);
+    boost::filesystem::path pathConfig = GetConfigFile(AKILA_CONF_FILENAME);
 
     /* Create the file */
     boost::filesystem::ofstream configFile(pathConfig, std::ios_base::app);
@@ -505,7 +505,7 @@ bool openYonaConf()
     
     configFile.close();
     
-    /* Open yona.conf with the associated application */
+    /* Open akila.conf with the associated application */
     return QDesktopServices::openUrl(QUrl::fromLocalFile(boostPathToQString(pathConfig)));
 }
 
@@ -714,15 +714,15 @@ fs::path static StartupShortcutPath()
 {
     std::string chain = ChainNameFromCommandLine();
     if (chain == CBaseChainParams::MAIN)
-        return GetSpecialFolderPath(CSIDL_STARTUP) / "Yona.lnk";
+        return GetSpecialFolderPath(CSIDL_STARTUP) / "Akila.lnk";
     if (chain == CBaseChainParams::TESTNET) // Remove this special case when CBaseChainParams::TESTNET = "testnet4"
-        return GetSpecialFolderPath(CSIDL_STARTUP) / "Yona (testnet).lnk";
-    return GetSpecialFolderPath(CSIDL_STARTUP) / strprintf("Yona (%s).lnk", chain);
+        return GetSpecialFolderPath(CSIDL_STARTUP) / "Akila (testnet).lnk";
+    return GetSpecialFolderPath(CSIDL_STARTUP) / strprintf("Akila (%s).lnk", chain);
 }
 
 bool GetStartOnSystemStartup()
 {
-    // check for Yona*.lnk
+    // check for Akila*.lnk
     return fs::exists(StartupShortcutPath());
 }
 
@@ -812,8 +812,8 @@ fs::path static GetAutostartFilePath()
 {
     std::string chain = ChainNameFromCommandLine();
     if (chain == CBaseChainParams::MAIN)
-        return GetAutostartDir() / "yona.desktop";
-    return GetAutostartDir() / strprintf("yona-%s.lnk", chain);
+        return GetAutostartDir() / "akila.desktop";
+    return GetAutostartDir() / strprintf("akila-%s.lnk", chain);
 }
 
 bool GetStartOnSystemStartup()
@@ -853,13 +853,13 @@ bool SetStartOnSystemStartup(bool fAutoStart)
         if (!optionFile.good())
             return false;
         std::string chain = ChainNameFromCommandLine();
-        // Write a yona.desktop file to the autostart directory:
+        // Write a akila.desktop file to the autostart directory:
         optionFile << "[Desktop Entry]\n";
         optionFile << "Type=Application\n";
         if (chain == CBaseChainParams::MAIN)
-            optionFile << "Name=Yona\n";
+            optionFile << "Name=Akila\n";
         else
-            optionFile << strprintf("Name=Yona (%s)\n", chain);
+            optionFile << strprintf("Name=Akila (%s)\n", chain);
         optionFile << "Exec=" << pszExePath << strprintf(" -min -testnet=%d -regtest=%d\n", gArgs.GetBoolArg("-testnet", false), gArgs.GetBoolArg("-regtest", false));
         optionFile << "Terminal=false\n";
         optionFile << "Hidden=false\n";
@@ -885,7 +885,7 @@ LSSharedFileListItemRef findStartupItemInList(LSSharedFileListRef list, CFURLRef
         return nullptr;
     }
     
-    // loop through the list of startup items and try to find the yona app
+    // loop through the list of startup items and try to find the akila app
     for(int i = 0; i < CFArrayGetCount(listSnapshot); i++) {
         LSSharedFileListItemRef item = (LSSharedFileListItemRef)CFArrayGetValueAtIndex(listSnapshot, i);
         UInt32 resolutionFlags = kLSSharedFileListNoUserInteraction | kLSSharedFileListDoNotMountVolumes;
@@ -919,38 +919,38 @@ LSSharedFileListItemRef findStartupItemInList(LSSharedFileListRef list, CFURLRef
 
 bool GetStartOnSystemStartup()
 {
-    CFURLRef yonaAppUrl = CFBundleCopyBundleURL(CFBundleGetMainBundle());
-    if (yonaAppUrl == nullptr) {
+    CFURLRef akilaAppUrl = CFBundleCopyBundleURL(CFBundleGetMainBundle());
+    if (akilaAppUrl == nullptr) {
         return false;
     }
     
     LSSharedFileListRef loginItems = LSSharedFileListCreate(nullptr, kLSSharedFileListSessionLoginItems, nullptr);
-    LSSharedFileListItemRef foundItem = findStartupItemInList(loginItems, yonaAppUrl);
+    LSSharedFileListItemRef foundItem = findStartupItemInList(loginItems, akilaAppUrl);
 
-    CFRelease(yonaAppUrl);
+    CFRelease(akilaAppUrl);
     return !!foundItem; // return boolified object
 }
 
 bool SetStartOnSystemStartup(bool fAutoStart)
 {
-    CFURLRef yonaAppUrl = CFBundleCopyBundleURL(CFBundleGetMainBundle());
-    if (yonaAppUrl == nullptr) {
+    CFURLRef akilaAppUrl = CFBundleCopyBundleURL(CFBundleGetMainBundle());
+    if (akilaAppUrl == nullptr) {
         return false;
     }
     
     LSSharedFileListRef loginItems = LSSharedFileListCreate(nullptr, kLSSharedFileListSessionLoginItems, nullptr);
-    LSSharedFileListItemRef foundItem = findStartupItemInList(loginItems, yonaAppUrl);
+    LSSharedFileListItemRef foundItem = findStartupItemInList(loginItems, akilaAppUrl);
 
     if(fAutoStart && !foundItem) {
-        // add yona app to startup item list
-        LSSharedFileListInsertItemURL(loginItems, kLSSharedFileListItemBeforeFirst, nullptr, nullptr, yonaAppUrl, nullptr, nullptr);
+        // add akila app to startup item list
+        LSSharedFileListInsertItemURL(loginItems, kLSSharedFileListItemBeforeFirst, nullptr, nullptr, akilaAppUrl, nullptr, nullptr);
     }
     else if(!fAutoStart && foundItem) {
         // remove item
         LSSharedFileListItemRemove(loginItems, foundItem);
     }
     
-    CFRelease(yonaAppUrl);
+    CFRelease(akilaAppUrl);
     return true;
 }
 #pragma GCC diagnostic pop

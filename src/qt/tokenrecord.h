@@ -1,10 +1,10 @@
 // Copyright (c) 2011-2016 The Bitcoin Core developers
-// Copyright (c) 2021-2022 The Yona developers
+// Copyright (c) 2021-2022 The Akila developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef YONA_QT_TOKENRECORD_H
-#define YONA_QT_TOKENRECORD_H
+#ifndef AKILA_QT_TOKENRECORD_H
+#define AKILA_QT_TOKENRECORD_H
 
 #include "math.h"
 #include "amount.h"
@@ -54,4 +54,4 @@ public:
 
 };
 
-#endif // YONA_QT_TOKENRECORD_H
+#endif // AKILA_QT_TOKENRECORD_H

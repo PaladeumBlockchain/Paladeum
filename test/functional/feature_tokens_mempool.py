@@ -1,22 +1,22 @@
 #!/usr/bin/env python3
 # Copyright (c) 2017 The Bitcoin Core developers
-# Copyright (c) 2017-2020 The Yona developers
+# Copyright (c) 2017-2020 The Akila developers
 # Distributed under the MIT software license, see the accompanying
 # file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
 """Testing token mempool use cases"""
 
-from test_framework.test_framework import YonaTestFramework
+from test_framework.test_framework import AkilaTestFramework
 from test_framework.util import assert_equal, disconnect_all_nodes, connect_all_nodes_bi
 
-class TokenMempoolTest(YonaTestFramework):
+class TokenMempoolTest(AkilaTestFramework):
     def set_test_params(self):
         self.setup_clean_chain = True
         self.num_nodes = 2
 
 
     def activate_tokens(self):
-        self.log.info("Generating YONA and activating tokens...")
+        self.log.info("Generating AKILA and activating tokens...")
         n0, n1 = self.nodes[0], self.nodes[1]
 
         n0.generate(1)

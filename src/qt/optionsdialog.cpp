@@ -1,16 +1,16 @@
 // Copyright (c) 2011-2016 The Bitcoin Core developers
-// Copyright (c) 2021-2022 The Yona developers
+// Copyright (c) 2021-2022 The Akila developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
 #if defined(HAVE_CONFIG_H)
-#include "config/yona-config.h"
+#include "config/akila-config.h"
 #endif
 
 #include "optionsdialog.h"
 #include "ui_optionsdialog.h"
 
-#include "yonaunits.h"
+#include "akilaunits.h"
 #include "guiutil.h"
 #include "optionsmodel.h"
 #include "guiconstants.h" // for DEFAULT_IPFS_VIEWER and DEFAULT_THIRD_PARTY_BROWSERS
@@ -75,10 +75,10 @@ OptionsDialog::OptionsDialog(QWidget *parent, bool enableWallet) :
     /* Display elements init */
     QDir translations(":translations");
 
-    ui->yonaAtStartup->setToolTip(ui->yonaAtStartup->toolTip().arg(tr(PACKAGE_NAME)));
-    ui->yonaAtStartup->setText(ui->yonaAtStartup->text().arg(tr(PACKAGE_NAME)));
+    ui->akilaAtStartup->setToolTip(ui->akilaAtStartup->toolTip().arg(tr(PACKAGE_NAME)));
+    ui->akilaAtStartup->setText(ui->akilaAtStartup->text().arg(tr(PACKAGE_NAME)));
 
-    ui->openYonaConfButton->setToolTip(ui->openYonaConfButton->toolTip().arg(tr(PACKAGE_NAME)));
+    ui->openAkilaConfButton->setToolTip(ui->openAkilaConfButton->toolTip().arg(tr(PACKAGE_NAME)));
 
     ui->lang->setToolTip(ui->lang->toolTip().arg(tr(PACKAGE_NAME)));
     ui->lang->addItem(QString("(") + tr("default") + QString(")"), QVariant(""));
@@ -113,7 +113,7 @@ OptionsDialog::OptionsDialog(QWidget *parent, bool enableWallet) :
     ui->ipfsUrl->setPlaceholderText(DEFAULT_IPFS_VIEWER);
 #endif
 
-    ui->unit->setModel(new YonaUnits(this));
+    ui->unit->setModel(new AkilaUnits(this));
 
     /* Widget-to-option mapper */
     mapper = new QDataWidgetMapper(this);
@@ -178,7 +178,7 @@ void OptionsDialog::setModel(OptionsModel *_model)
 void OptionsDialog::setMapper()
 {
     /* Main */
-    mapper->addMapping(ui->yonaAtStartup, OptionsModel::StartAtStartup);
+    mapper->addMapping(ui->akilaAtStartup, OptionsModel::StartAtStartup);
     mapper->addMapping(ui->threadsScriptVerif, OptionsModel::ThreadsScriptVerif);
     mapper->addMapping(ui->databaseCache, OptionsModel::DatabaseCache);
 
@@ -243,7 +243,7 @@ void OptionsDialog::on_ipfsUrlReset_clicked()
     ui->ipfsUrl->setText(DEFAULT_IPFS_VIEWER);
 }
 
-void OptionsDialog::on_openYonaConfButton_clicked()
+void OptionsDialog::on_openAkilaConfButton_clicked()
 {
     /* explain the purpose of the config file */
     QMessageBox::information(this, tr("Configuration options"),
@@ -251,7 +251,7 @@ void OptionsDialog::on_openYonaConfButton_clicked()
            "Additionally, any command-line options will override this configuration file."));
 
     /* show an error if there was some problem opening the file */
-    if (!GUIUtil::openYonaConf())
+    if (!GUIUtil::openAkilaConf())
         QMessageBox::critical(this, tr("Error"), tr("The configuration file could not be opened."));
 }
 

@@ -1,10 +1,10 @@
-// Copyright (c) 2021-2022 The Yona developers
+// Copyright (c) 2021-2022 The Akila developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
 #include <tokens/tokens.h>
 
-#include <test/test_yona.h>
+#include <test/test_akila.h>
 
 #include <boost/test/unit_test.hpp>
 #include "core_write.cpp"
@@ -47,20 +47,20 @@ BOOST_FIXTURE_TEST_SUITE(token_tests, BasicTestingSetup)
         BOOST_CHECK(!IsTokenNameValid("A._BC", type));
         BOOST_CHECK(!IsTokenNameValid("AB_.C", type));
 
-        //- Versions of YONACOIN NOT allowed
-        BOOST_CHECK(!IsTokenNameValid("YONA", type));
-        BOOST_CHECK(!IsTokenNameValid("YONA", type));
-        BOOST_CHECK(!IsTokenNameValid("YONACOIN", type));
+        //- Versions of AKILACOIN NOT allowed
+        BOOST_CHECK(!IsTokenNameValid("AKILA", type));
+        BOOST_CHECK(!IsTokenNameValid("AKILA", type));
+        BOOST_CHECK(!IsTokenNameValid("AKILACOIN", type));
 
-        //- Versions of YONACOIN ALLOWED
-        BOOST_CHECK(IsTokenNameValid("YONA.COIN", type));
-        BOOST_CHECK(IsTokenNameValid("YONA_COIN", type));
-        BOOST_CHECK(IsTokenNameValid("YONASPYDER", type));
-        BOOST_CHECK(IsTokenNameValid("SPYDERYONA", type));
-        BOOST_CHECK(IsTokenNameValid("YONASPYDER", type));
-        BOOST_CHECK(IsTokenNameValid("SPYDEYONA", type));
-        BOOST_CHECK(IsTokenNameValid("BLACK_YONAS", type));
-        BOOST_CHECK(IsTokenNameValid("SEYONAOT", type));
+        //- Versions of AKILACOIN ALLOWED
+        BOOST_CHECK(IsTokenNameValid("AKILA.COIN", type));
+        BOOST_CHECK(IsTokenNameValid("AKILA_COIN", type));
+        BOOST_CHECK(IsTokenNameValid("AKILASPYDER", type));
+        BOOST_CHECK(IsTokenNameValid("SPYDERAKILA", type));
+        BOOST_CHECK(IsTokenNameValid("AKILASPYDER", type));
+        BOOST_CHECK(IsTokenNameValid("SPYDEAKILA", type));
+        BOOST_CHECK(IsTokenNameValid("BLACK_AKILAS", type));
+        BOOST_CHECK(IsTokenNameValid("SEAKILAOT", type));
 
         // subs
         BOOST_CHECK(IsTokenNameValid("ABC/A", type));
@@ -227,7 +227,7 @@ BOOST_FIXTURE_TEST_SUITE(token_tests, BasicTestingSetup)
         SelectParams(CBaseChainParams::MAIN);
 
         // Create the token scriptPubKey
-        CTokenTransfer token("YONA", 1000);
+        CTokenTransfer token("AKILA", 1000);
         CScript scriptPubKey = GetScriptForDestination(DecodeDestination(GetParams().GlobalFeeAddress()));
         token.ConstructTransaction(scriptPubKey);
 
@@ -248,7 +248,7 @@ BOOST_FIXTURE_TEST_SUITE(token_tests, BasicTestingSetup)
         SelectParams(CBaseChainParams::MAIN);
 
         // Create the token scriptPubKey
-        CNewToken token("YONA", 1000, 8, 1, 0, "");
+        CNewToken token("AKILA", 1000, 8, 1, 0, "");
         CScript scriptPubKey = GetScriptForDestination(DecodeDestination(GetParams().GlobalFeeAddress()));
         token.ConstructTransaction(scriptPubKey);
 

@@ -1,11 +1,11 @@
 // Copyright (c) 2009-2010 Satoshi Nakamoto
 // Copyright (c) 2009-2016 The Bitcoin Core developers
-// Copyright (c) 2021-2022 The Yona developers
+// Copyright (c) 2021-2022 The Akila developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef YONA_CHAINPARAMS_H
-#define YONA_CHAINPARAMS_H
+#ifndef AKILA_CHAINPARAMS_H
+#define AKILA_CHAINPARAMS_H
 
 #include "chainparamsbase.h"
 #include "consensus/params.h"
@@ -40,7 +40,7 @@ struct ChainTxData {
 
 /**
  * CChainParams defines various tweakable parameters of a given instance of the
- * Yona system. There are three: the main network on which people trade goods
+ * Akila system. There are three: the main network on which people trade goods
  * and services, the public test network which gets reset from time to time and
  * a regression test mode which is intended for private networks only. It has
  * minimal difficulty to ensure that blocks can be found instantly.
@@ -91,7 +91,7 @@ public:
     bool BIP66();
     bool CSVEnabled() const;
 
-    /** YONA Start **/
+    /** AKILA Start **/
     const CAmount& IssueTokenFeeAmount() const { return nIssueTokenFeeAmount; }
     const CAmount& ReissueTokenFeeAmount() const { return nReissueTokenFeeAmount; }
     const CAmount& IssueSubTokenFeeAmount() const { return nIssueSubTokenFeeAmount; }
@@ -124,7 +124,7 @@ public:
     int MaxReorganizationDepth() const { return nMaxReorganizationDepth; }
     int MinReorganizationPeers() const { return nMinReorganizationPeers; }
     int MinReorganizationAge() const { return nMinReorganizationAge; }
-    /** YONA End **/
+    /** AKILA End **/
 
 protected:
     CChainParams() {}
@@ -146,7 +146,7 @@ protected:
     CCheckpointData checkpointData;
     ChainTxData chainTxData;
 
-    /** YONA Start **/
+    /** AKILA Start **/
     // Fee Amounts
     CAmount nIssueTokenFeeAmount;
     CAmount nReissueTokenFeeAmount;
@@ -165,7 +165,7 @@ protected:
     int nMaxReorganizationDepth;
     int nMinReorganizationPeers;
     int nMinReorganizationAge;
-    /** YONA End **/
+    /** AKILA End **/
 };
 
 /**
@@ -202,4 +202,4 @@ void TurnOffBIP66();
 
 void TurnOffCSV();
 
-#endif // YONA_CHAINPARAMS_H
+#endif // AKILA_CHAINPARAMS_H

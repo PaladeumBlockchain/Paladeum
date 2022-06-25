@@ -1,4 +1,4 @@
-#include "yonaunits.h"
+#include "akilaunits.h"
 
 #include <QAbstractTableModel>
 #include <QStringList>
@@ -53,7 +53,7 @@ public:
                 TxPlainTextRole,
         /** Unprocessed icon */
                 RawDecorationRole,
-        /** YONA or name of an token */
+        /** AKILA or name of an token */
                 TokenNameRole,
     };
 

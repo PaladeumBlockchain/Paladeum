@@ -1,12 +1,12 @@
 // Copyright (c) 2009-2010 Satoshi Nakamoto
 // Copyright (c) 2009-2016 The Bitcoin Core developers
 // Copyright (c) 2014-2016 The BlackCoin developers
-// Copyright (c) 2021-2022 The Yona developers
+// Copyright (c) 2021-2022 The Akila developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef YONA_CHAIN_H
-#define YONA_CHAIN_H
+#ifndef AKILA_CHAIN_H
+#define AKILA_CHAIN_H
 
 #include "arith_uint256.h"
 #include "primitives/block.h"
@@ -522,4 +522,4 @@ public:
 
 const CBlockIndex* GetLastBlockIndex(const CBlockIndex* pindex, bool fProofOfStake);
 
-#endif // YONA_CHAIN_H
+#endif // AKILA_CHAIN_H

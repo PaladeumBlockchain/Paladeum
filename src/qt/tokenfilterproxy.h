@@ -1,9 +1,9 @@
-// Copyright (c) 2021-2022 The Yona developers
+// Copyright (c) 2021-2022 The Akila developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef YONACOIN_TOKENFILTERPROXY_H
-#define YONACOIN_TOKENFILTERPROXY_H
+#ifndef AKILACOIN_TOKENFILTERPROXY_H
+#define AKILACOIN_TOKENFILTERPROXY_H
 
 #include <QSortFilterProxyModel>
 
@@ -24,4 +24,4 @@ private:
 };
 
 
-#endif //YONACOIN_TOKENFILTERPROXY_H
+#endif //AKILACOIN_TOKENFILTERPROXY_H

@@ -1,5 +1,5 @@
 // Copyright (c) 2013-2015 The Bitcoin Core developers
-// Copyright (c) 2021-2022 The Yona developers
+// Copyright (c) 2021-2022 The Akila developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -10,7 +10,7 @@
 #include "uint256.h"
 #include "util.h"
 #include "utilstrencodings.h"
-#include "test/test_yona.h"
+#include "test/test_akila.h"
 
 #include <string>
 #include <vector>
@@ -106,20 +106,20 @@ void RunTest(const TestVector &test)
         pubkey.Encode(data);
 
         // Test private key
-        CYonaExtKey b58key;
+        CAkilaExtKey b58key;
         b58key.SetKey(key);
         BOOST_CHECK(b58key.ToString() == derive.prv);
 
-        CYonaExtKey b58keyDecodeCheck(derive.prv);
+        CAkilaExtKey b58keyDecodeCheck(derive.prv);
         CExtKey checkKey = b58keyDecodeCheck.GetKey();
         assert(checkKey == key); //ensure a base58 decoded key also matches
 
         // Test public key
-        CYonaExtPubKey b58pubkey;
+        CAkilaExtPubKey b58pubkey;
         b58pubkey.SetKey(pubkey);
         BOOST_CHECK(b58pubkey.ToString() == derive.pub);
 
-        CYonaExtPubKey b58PubkeyDecodeCheck(derive.pub);
+        CAkilaExtPubKey b58PubkeyDecodeCheck(derive.pub);
         CExtPubKey checkPubKey = b58PubkeyDecodeCheck.GetKey();
         assert(checkPubKey == pubkey); //ensure a base58 decoded pubkey also matches
 

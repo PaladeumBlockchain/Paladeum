@@ -1,18 +1,18 @@
 #!/usr/bin/env python3
 # Copyright (c) 2014-2016 The Bitcoin Core developers
-# Copyright (c) 2017-2020 The Yona developers
+# Copyright (c) 2017-2020 The Akila developers
 # Distributed under the MIT software license, see the accompanying
 # file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-"""Test running yonad with the -rpcbind and -rpcallowip options."""
+"""Test running akilad with the -rpcbind and -rpcallowip options."""
 
 import socket
 import sys
-from test_framework.test_framework import YonaTestFramework, SkipTest
+from test_framework.test_framework import AkilaTestFramework, SkipTest
 from test_framework.util import assert_equal, get_rpc_proxy, rpc_url, get_datadir_path, rpc_port, assert_raises_rpc_error
 from test_framework.netutil import addr_to_hex, get_bind_addrs, all_interfaces
 
-class RPCBindTest(YonaTestFramework):
+class RPCBindTest(AkilaTestFramework):
     def set_test_params(self):
         self.setup_clean_chain = True
         self.num_nodes = 1

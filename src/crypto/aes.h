@@ -1,12 +1,12 @@
 // Copyright (c) 2015-2016 The Bitcoin Core developers
-// Copyright (c) 2021-2022 The Yona developers
+// Copyright (c) 2021-2022 The Akila developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 //
 // C++ wrapper around ctaes, a constant-time AES implementation
 
-#ifndef YONA_CRYPTO_AES_H
-#define YONA_CRYPTO_AES_H
+#ifndef AKILA_CRYPTO_AES_H
+#define AKILA_CRYPTO_AES_H
 
 extern "C" {
 #include "crypto/ctaes/ctaes.h"
@@ -116,4 +116,4 @@ private:
     unsigned char iv[AES_BLOCKSIZE];
 };
 
-#endif // YONA_CRYPTO_AES_H
+#endif // AKILA_CRYPTO_AES_H

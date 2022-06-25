@@ -1,11 +1,11 @@
 // Copyright (c) 2009-2010 Satoshi Nakamoto
 // Copyright (c) 2009-2016 The Bitcoin Core developers
-// Copyright (c) 2021-2022 The Yona developers
+// Copyright (c) 2021-2022 The Akila developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef YONA_SYNC_H
-#define YONA_SYNC_H
+#ifndef AKILA_SYNC_H
+#define AKILA_SYNC_H
 
 #include "threadsafety.h"
 
@@ -287,4 +287,4 @@ public:
     }
 };
 
-#endif // YONA_SYNC_H
+#endif // AKILA_SYNC_H

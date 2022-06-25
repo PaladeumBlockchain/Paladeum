@@ -1,10 +1,10 @@
 // Copyright (c) 2015 The Bitcoin Core developers
-// Copyright (c) 2021-2022 The Yona developers
+// Copyright (c) 2021-2022 The Akila developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef YONA_MERKLE
-#define YONA_MERKLE
+#ifndef AKILA_MERKLE
+#define AKILA_MERKLE
 
 #include <stdint.h>
 #include <vector>

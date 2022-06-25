@@ -1,5 +1,5 @@
 // Copyright (c) 2011-2016 The Bitcoin Core developers
-// Copyright (c) 2021-2022 The Yona developers
+// Copyright (c) 2021-2022 The Akila developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 #include "sendtokensentry.h"
@@ -54,9 +54,9 @@ SendTokensEntry::SendTokensEntry(const PlatformStyle *_platformStyle, const QStr
     ui->txMessageEdit->setPlaceholderText(tr("Enter a transaction message (optional)"));
 #endif
 
-    // normal yona address field
+    // normal akila address field
     GUIUtil::setupAddressWidget(ui->payTo, this);
-    // just a label for displaying yona address(es)
+    // just a label for displaying akila address(es)
     ui->payTo_is->setFont(GUIUtil::fixedPitchFont());
 
     // Connect signals

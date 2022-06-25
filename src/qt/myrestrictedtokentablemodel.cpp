@@ -1,5 +1,5 @@
 // Copyright (c) 2011-2016 The Bitcoin Core developers
-// Copyright (c) 2021-2022 The Yona developers
+// Copyright (c) 2021-2022 The Akila developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -455,7 +455,7 @@ QVariant MyRestrictedTokensTableModel::headerData(int section, Qt::Orientation o
                 case ToAddress:
                     return tr("User-defined intent/purpose of the transaction.");
                 case TokenName:
-                    return tr("The token (or YONA) removed or added to balance.");
+                    return tr("The token (or AKILA) removed or added to balance.");
             }
         }
     }

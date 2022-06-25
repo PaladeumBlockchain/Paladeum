@@ -1,10 +1,10 @@
 // Copyright (c) 2011-2015 The Bitcoin Core developers
-// Copyright (c) 2021-2022 The Yona developers
+// Copyright (c) 2021-2022 The Akila developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef YONA_QT_ADDRESSTABLEMODEL_H
-#define YONA_QT_ADDRESSTABLEMODEL_H
+#ifndef AKILA_QT_ADDRESSTABLEMODEL_H
+#define AKILA_QT_ADDRESSTABLEMODEL_H
 
 #include <QAbstractTableModel>
 #include <QStringList>
@@ -27,7 +27,7 @@ public:
 
     enum ColumnIndex {
         Label = 0,   /**< User specified label */
-        Address = 1  /**< Yona address */
+        Address = 1  /**< Akila address */
     };
 
     enum RoleIndex {
@@ -93,4 +93,4 @@ public Q_SLOTS:
     friend class AddressTablePriv;
 };
 
-#endif // YONA_QT_ADDRESSTABLEMODEL_H
+#endif // AKILA_QT_ADDRESSTABLEMODEL_H

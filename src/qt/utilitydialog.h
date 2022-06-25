@@ -1,15 +1,15 @@
 // Copyright (c) 2011-2016 The Bitcoin Core developers
-// Copyright (c) 2021-2022 The Yona developers
+// Copyright (c) 2021-2022 The Akila developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef YONA_QT_UTILITYDIALOG_H
-#define YONA_QT_UTILITYDIALOG_H
+#ifndef AKILA_QT_UTILITYDIALOG_H
+#define AKILA_QT_UTILITYDIALOG_H
 
 #include <QDialog>
 #include <QObject>
 
-class YonaGUI;
+class AkilaGUI;
 
 namespace Ui {
     class HelpMessageDialog;
@@ -43,11 +43,11 @@ class ShutdownWindow : public QWidget
 
 public:
     explicit ShutdownWindow(QWidget *parent=nullptr, Qt::WindowFlags f=Qt::Widget);
-    static QWidget *showShutdownWindow(YonaGUI *window);
+    static QWidget *showShutdownWindow(AkilaGUI *window);
 
 protected:
     void closeEvent(QCloseEvent *event);
 };
 
 
-#endif // YONA_QT_UTILITYDIALOG_H
+#endif // AKILA_QT_UTILITYDIALOG_H

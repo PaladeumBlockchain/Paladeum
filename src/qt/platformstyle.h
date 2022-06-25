@@ -1,10 +1,10 @@
 // Copyright (c) 2015 The Bitcoin Core developers
-// Copyright (c) 2021-2022 The Yona developers
+// Copyright (c) 2021-2022 The Akila developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef YONA_QT_PLATFORMSTYLE_H
-#define YONA_QT_PLATFORMSTYLE_H
+#ifndef AKILA_QT_PLATFORMSTYLE_H
+#define AKILA_QT_PLATFORMSTYLE_H
 
 #include <QIcon>
 #include <QPixmap>
@@ -79,5 +79,5 @@ private:
     /* ... more to come later */
 };
 
-#endif // YONA_QT_PLATFORMSTYLE_H
+#endif // AKILA_QT_PLATFORMSTYLE_H
 

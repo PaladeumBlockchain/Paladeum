@@ -8,20 +8,20 @@ EXPOSE $PORT
 
 RUN apt-get update && apt-get install -y bash net-tools && apt-get clean
 
-RUN useradd -ms /bin/bash yona
+RUN useradd -ms /bin/bash akila
 
-RUN mkdir /etc/yona
+RUN mkdir /etc/akila
 
-RUN mkdir /var/lib/yona
+RUN mkdir /var/lib/akila
 
-RUN chown yona:yona /etc/yona /var/lib/yona
+RUN chown akila:akila /etc/akila /var/lib/akila
 
-WORKDIR /home/yona
+WORKDIR /home/akila
 
-COPY --chown=yona:yona linux64/* /home/yona/
+COPY --chown=akila:akila linux64/* /home/akila/
 
-COPY --chown=yona:yona run.sh /home/yona/
+COPY --chown=akila:akila run.sh /home/akila/
 
-USER yona
+USER akila
 
-CMD ["/home/yona/run.sh"]
+CMD ["/home/akila/run.sh"]

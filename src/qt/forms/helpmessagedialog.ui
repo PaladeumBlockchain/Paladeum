@@ -52,7 +52,7 @@
         </size>
        </property>
        <property name="pixmap">
-        <pixmap resource="../yona.qrc">:/icons/yona</pixmap>
+        <pixmap resource="../akila.qrc">:/icons/akila</pixmap>
        </property>
        <property name="scaledContents">
         <bool>true</bool>
@@ -150,7 +150,7 @@
   </layout>
  </widget>
  <resources>
-  <include location="../yona.qrc"/>
+  <include location="../akila.qrc"/>
  </resources>
  <connections>
   <connection>

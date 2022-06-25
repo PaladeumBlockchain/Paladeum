@@ -1,5 +1,5 @@
 // Copyright (c) 2011-2016 The Bitcoin Core developers
-// Copyright (c) 2021-2022 The Yona developers
+// Copyright (c) 2021-2022 The Akila developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -7,7 +7,7 @@
 
 #include "addressbookpage.h"
 #include "askpassphrasedialog.h"
-#include "yonagui.h"
+#include "akilagui.h"
 #include "clientmodel.h"
 #include "guiutil.h"
 #include "optionsmodel.h"
@@ -86,7 +86,7 @@ WalletView::WalletView(const PlatformStyle *_platformStyle, QWidget *parent):
     QActionGroup *tabGroup = new QActionGroup(this);
 
     QAction *transferTokenAction = new QAction(platformStyle->SingleColorIconOnOff(":/icons/token_transfer", ":/icons/token_transfer"), tr("&Transfer Tokens"), this);
-    transferTokenAction->setStatusTip(tr("Transfer tokens to YONA addresses"));
+    transferTokenAction->setStatusTip(tr("Transfer tokens to AKILA addresses"));
     transferTokenAction->setToolTip(transferTokenAction->statusTip());
     transferTokenAction->setCheckable(true);
     tabGroup->addAction(transferTokenAction);
@@ -174,7 +174,7 @@ WalletView::~WalletView()
 {
 }
 
-void WalletView::setYonaGUI(YonaGUI *gui)
+void WalletView::setAkilaGUI(AkilaGUI *gui)
 {
     if (gui)
     {
@@ -248,7 +248,7 @@ void WalletView::setWalletModel(WalletModel *_walletModel)
         updateEncryptionStatus();
 
         // update HD status
-        Q_EMIT hdEnabledStatusChanged(_walletModel->hd44Enabled() ? YonaGUI::HD44_ENABLED : _walletModel->hdEnabled() ? YonaGUI::HD_ENABLED : YonaGUI::HD_DISABLED);
+        Q_EMIT hdEnabledStatusChanged(_walletModel->hd44Enabled() ? AkilaGUI::HD44_ENABLED : _walletModel->hdEnabled() ? AkilaGUI::HD_ENABLED : AkilaGUI::HD_DISABLED);
 
         // Balloon pop-up for new transaction
         connect(_walletModel->getTransactionTableModel(), SIGNAL(rowsInserted(QModelIndex,int,int)),

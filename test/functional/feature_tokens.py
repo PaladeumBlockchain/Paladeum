@@ -1,25 +1,25 @@
 #!/usr/bin/env python3
 # Copyright (c) 2017 The Bitcoin Core developers
-# Copyright (c) 2017-2020 The Yona developers
+# Copyright (c) 2017-2020 The Akila developers
 # Distributed under the MIT software license, see the accompanying
 # file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
 """Testing token use cases"""
 
-from test_framework.test_framework import YonaTestFramework
+from test_framework.test_framework import AkilaTestFramework
 from test_framework.util import assert_equal, assert_is_hash_string, assert_does_not_contain_key, assert_raises_rpc_error, JSONRPCException, Decimal
 
 import string
 
 
-class TokenTest(YonaTestFramework):
+class TokenTest(AkilaTestFramework):
     def set_test_params(self):
         self.setup_clean_chain = True
         self.num_nodes = 3
         self.extra_args = [['-tokenindex'], ['-tokenindex'], ['-tokenindex']]
 
     def activate_tokens(self):
-        self.log.info("Generating YONA for node[0] and activating tokens...")
+        self.log.info("Generating AKILA for node[0] and activating tokens...")
         n0 = self.nodes[0]
 
         n0.generate(1)
@@ -136,13 +136,13 @@ class TokenTest(YonaTestFramework):
         assert_equal(n0.listtokenbalancesbyaddress(address0)["MY_TOKEN"], 2000)
 
         self.log.info("Checking listtokens()...")
-        n0.issue("YONA1", 1000)
-        n0.issue("YONA2", 1000)
-        n0.issue("YONA3", 1000)
+        n0.issue("AKILA1", 1000)
+        n0.issue("AKILA2", 1000)
+        n0.issue("AKILA3", 1000)
         n0.generate(1)
         self.sync_all()
 
-        n0.listtokens(token="YONA*", verbose=False, count=2, start=-2)
+        n0.listtokens(token="AKILA*", verbose=False, count=2, start=-2)
 
         self.log.info("Creating some sub-tokens...")
         n0.issue(token_name="MY_TOKEN/SUB1", qty=1000, to_address=address0, change_address=address0, units=4, reissuable=True, has_ipfs=True, ipfs_hash=ipfs_hash)
@@ -161,10 +161,10 @@ class TokenTest(YonaTestFramework):
         assert_equal(tokendata["has_ipfs"], 1)
         assert_equal(tokendata["ipfs_hash"], ipfs_hash)
 
-        yona_tokens = n0.listtokens(token="YONA*", verbose=False, count=2, start=-2)
-        assert_equal(len(yona_tokens), 2)
-        assert_equal(yona_tokens[0], "YONA2")
-        assert_equal(yona_tokens[1], "YONA3")
+        akila_tokens = n0.listtokens(token="AKILA*", verbose=False, count=2, start=-2)
+        assert_equal(len(akila_tokens), 2)
+        assert_equal(akila_tokens[0], "AKILA2")
+        assert_equal(akila_tokens[1], "AKILA3")
         self.sync_all()
 
     def issue_param_checks(self):

@@ -1,6 +1,6 @@
 ### TestGen ###
 
-Utilities to generate test vectors for the data-driven Yona tests.
+Utilities to generate test vectors for the data-driven Akila tests.
 
 Usage: 
 

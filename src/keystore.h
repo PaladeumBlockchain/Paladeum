@@ -1,11 +1,11 @@
 // Copyright (c) 2009-2010 Satoshi Nakamoto
 // Copyright (c) 2009-2015 The Bitcoin Core developers
-// Copyright (c) 2021-2022 The Yona developers
+// Copyright (c) 2021-2022 The Akila developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef YONA_KEYSTORE_H
-#define YONA_KEYSTORE_H
+#ifndef AKILA_KEYSTORE_H
+#define AKILA_KEYSTORE_H
 
 #include "key.h"
 #include "pubkey.h"
@@ -117,4 +117,4 @@ public:
 typedef std::vector<unsigned char, secure_allocator<unsigned char> > CKeyingMaterial;
 typedef std::map<CKeyID, std::pair<CPubKey, std::vector<unsigned char> > > CryptedKeyMap;
 
-#endif // YONA_KEYSTORE_H
+#endif // AKILA_KEYSTORE_H

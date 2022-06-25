@@ -1,0 +1,11 @@
+[Protocol]
+exec=akila-qt '%u'
+protocol=akila
+input=none
+output=none
+helper=true
+listing=
+reading=false
+writing=false
+makedir=false
+deleting=false

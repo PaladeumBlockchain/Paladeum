@@ -1,10 +1,10 @@
 // Copyright (c) 2017-2019 The Raven Core developers
-// Copyright (c) 2021-2022 The Yona developers
+// Copyright (c) 2021-2022 The Akila developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef YONACOIN_NEWTOKEN_H
-#define YONACOIN_NEWTOKEN_H
+#ifndef AKILACOIN_NEWTOKEN_H
+#define AKILACOIN_NEWTOKEN_H
 
 #include <string>
 #include <sstream>
@@ -685,4 +685,4 @@ private:
     size_t maxSize;
 };
 
-#endif //YONACOIN_NEWTOKEN_H
+#endif //AKILACOIN_NEWTOKEN_H

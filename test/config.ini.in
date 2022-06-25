@@ -1,10 +1,10 @@
 # Copyright (c) 2013-2016 The Bitcoin Core developers
-# Copyright (c) 2017-2019 The Yona developers
+# Copyright (c) 2017-2019 The Akila developers
 # Distributed under the MIT software license, see the accompanying
 # file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
 # These environment variables are set by the build process and read by
-# test/functional/test_runner.py and test/util/yona-util-test.py
+# test/functional/test_runner.py and test/util/akila-util-test.py
 
 [environment]
 SRCDIR=@abs_top_srcdir@
@@ -14,6 +14,6 @@ EXEEXT=@EXEEXT@
 [components]
 # Which components are enabled. These are commented out by `configure` if they were disabled when running config.
 @ENABLE_WALLET_TRUE@ENABLE_WALLET=true
-@BUILD_YONA_CLI_TRUE@ENABLE_UTILS=true
-@BUILD_YONAD_TRUE@ENABLE_YONAD=true
+@BUILD_AKILA_CLI_TRUE@ENABLE_UTILS=true
+@BUILD_AKILAD_TRUE@ENABLE_AKILAD=true
 @ENABLE_ZMQ_TRUE@ENABLE_ZMQ=true

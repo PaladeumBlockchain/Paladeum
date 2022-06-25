@@ -1,10 +1,10 @@
 // Copyright (c) 2011-2016 The Bitcoin Core developers
-// Copyright (c) 2021-2022 The Yona developers
+// Copyright (c) 2021-2022 The Akila developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef YONA_QT_TOKENTABLEMODEL_H
-#define YONA_QT_TOKENTABLEMODEL_H
+#ifndef AKILA_QT_TOKENTABLEMODEL_H
+#define AKILA_QT_TOKENTABLEMODEL_H
 
 #include "amount.h"
 
@@ -38,13 +38,13 @@ public:
     enum RoleIndex {
         /** Net amount of transaction */
             AmountRole = 100,
-        /** YONA or name of an token */
+        /** AKILA or name of an token */
             TokenNameRole = 101,
         /** Formatted amount, without brackets when unconfirmed */
             FormattedAmountRole = 102,
         /** AdministratorRole */
             AdministratorRole = 103,
-        /** YONA or name of an token */
+        /** AKILA or name of an token */
             TokenIPFSHashRole = 104,
         /** IPFS Decoration Role */
             TokenIPFSHashDecorationRole = 105,
@@ -72,4 +72,4 @@ private:
     friend class TokenTablePriv;
 };
 
-#endif // YONA_QT_TOKENTABLEMODEL_H
+#endif // AKILA_QT_TOKENTABLEMODEL_H

@@ -1,15 +1,15 @@
 #!/usr/bin/env python3
 # Copyright (c) 2014-2016 The Bitcoin Core developers
-# Copyright (c) 2017-2020 The Yona developers
+# Copyright (c) 2017-2020 The Akila developers
 # Distributed under the MIT software license, see the accompanying
 # file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
 """Test gettxoutproof and verifytxoutproof RPCs."""
 
-from test_framework.test_framework import YonaTestFramework
+from test_framework.test_framework import AkilaTestFramework
 from test_framework.util import connect_nodes, assert_equal, assert_raises_rpc_error
 
-class MerkleBlockTest(YonaTestFramework):
+class MerkleBlockTest(AkilaTestFramework):
     def set_test_params(self):
         self.num_nodes = 4
         self.setup_clean_chain = True

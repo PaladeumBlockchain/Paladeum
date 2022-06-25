@@ -1,0 +1,8 @@
+/usr/bin/akila-cli		--	gen_context(system_u:object_r:akila_exec_t,s0)
+/usr/sbin/akilad		--	gen_context(system_u:object_r:akila_exec_t,s0)
+/usr/lib(64)?/akila/akilad		--	gen_context(system_u:object_r:akila_exec_t,s0)
+
+/etc/akila(/.*)?		gen_context(system_u:object_r:akila_conf_t,s0)
+/var/lib/akila(/.*)?		gen_context(system_u:object_r:akila_var_lib_t,s0)
+
+(/var)?/run/akilad(/.*)?   gen_context(system_u:object_r:akila_var_run_t,s0)

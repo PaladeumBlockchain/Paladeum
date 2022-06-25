@@ -1,5 +1,5 @@
 // Copyright (c) 2011-2014 The Bitcoin Core developers
-// Copyright (c) 2021-2022 The Yona developers
+// Copyright (c) 2021-2022 The Akila developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -17,7 +17,7 @@ OpenURIDialog::OpenURIDialog(QWidget *parent) :
 {
     ui->setupUi(this);
 #if QT_VERSION >= 0x040700
-    ui->uriEdit->setPlaceholderText("yona:");
+    ui->uriEdit->setPlaceholderText("akila:");
 #endif
 }
 
@@ -34,7 +34,7 @@ QString OpenURIDialog::getURI()
 void OpenURIDialog::accept()
 {
     SendCoinsRecipient rcp;
-    if(GUIUtil::parseYonaURI(getURI(), &rcp))
+    if(GUIUtil::parseAkilaURI(getURI(), &rcp))
     {
         /* Only accept value URIs */
         QDialog::accept();
@@ -49,5 +49,5 @@ void OpenURIDialog::on_selectFileButton_clicked()
     if(filename.isEmpty())
         return;
     QUrl fileUri = QUrl::fromLocalFile(filename);
-    ui->uriEdit->setText("yona:?r=" + QUrl::toPercentEncoding(fileUri.toString()));
+    ui->uriEdit->setText("akila:?r=" + QUrl::toPercentEncoding(fileUri.toString()));
 }

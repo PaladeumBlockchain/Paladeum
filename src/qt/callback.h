@@ -1,5 +1,5 @@
-#ifndef YONA_QT_CALLBACK_H
-#define YONA_QT_CALLBACK_H
+#ifndef AKILA_QT_CALLBACK_H
+#define AKILA_QT_CALLBACK_H
 
 #include <QObject>
 
@@ -27,4 +27,4 @@ FunctionCallback<F>* makeCallback(F f)
     return new FunctionCallback<F>(std::move(f));
 }
 
-#endif // YONA_QT_CALLBACK_H
+#endif // AKILA_QT_CALLBACK_H

@@ -1,10 +1,10 @@
 // Copyright (c) 2016 The Bitcoin Core developers
-// Copyright (c) 2021-2022 The Yona developers
+// Copyright (c) 2021-2022 The Akila developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef YONA_SUPPORT_LOCKEDPOOL_H
-#define YONA_SUPPORT_LOCKEDPOOL_H
+#ifndef AKILA_SUPPORT_LOCKEDPOOL_H
+#define AKILA_SUPPORT_LOCKEDPOOL_H
 
 #include <stdint.h>
 #include <list>
@@ -229,4 +229,4 @@ private:
     static std::once_flag init_flag;
 };
 
-#endif // YONA_SUPPORT_LOCKEDPOOL_H
+#endif // AKILA_SUPPORT_LOCKEDPOOL_H

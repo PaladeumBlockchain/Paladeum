@@ -1,11 +1,11 @@
 // Copyright (c) 2009-2010 Satoshi Nakamoto
 // Copyright (c) 2009-2016 The Bitcoin Core developers
-// Copyright (c) 2021-2022 The Yona developers
+// Copyright (c) 2021-2022 The Akila developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
 #if defined(HAVE_CONFIG_H)
-#include "config/yona-config.h"
+#include "config/akila-config.h"
 #endif
 
 #include "util.h"
@@ -88,8 +88,8 @@
 // Application startup time (used for uptime calculation)
 const int64_t nStartupTime = GetTime();
 
-const char *const YONA_CONF_FILENAME = "yona.conf";
-const char *const YONA_PID_FILENAME = "yonad.pid";
+const char *const AKILA_CONF_FILENAME = "akila.conf";
+const char *const AKILA_PID_FILENAME = "akilad.pid";
 
 ArgsManager gArgs;
 bool fPrintToConsole = false;
@@ -530,7 +530,7 @@ static std::string FormatException(const std::exception *pex, const char *pszThr
     char pszModule[MAX_PATH] = "";
     GetModuleFileNameA(nullptr, pszModule, sizeof(pszModule));
 #else
-    const char *pszModule = "yona";
+    const char *pszModule = "akila";
 #endif
     if (pex)
         return strprintf(
@@ -549,13 +549,13 @@ void PrintExceptionContinue(const std::exception *pex, const char *pszThread)
 
 fs::path GetDefaultDataDir()
 {
-    // Windows < Vista: C:\Documents and Settings\Username\Application Data\Yona
-    // Windows >= Vista: C:\Users\Username\AppData\Roaming\Yona
-    // Mac: ~/Library/Application Support/Yona
-    // Unix: ~/.yona
+    // Windows < Vista: C:\Documents and Settings\Username\Application Data\Akila
+    // Windows >= Vista: C:\Users\Username\AppData\Roaming\Akila
+    // Mac: ~/Library/Application Support/Akila
+    // Unix: ~/.akila
 #ifdef WIN32
     // Windows
-    return GetSpecialFolderPath(CSIDL_APPDATA) / "Yona";
+    return GetSpecialFolderPath(CSIDL_APPDATA) / "Akila";
 #else
     fs::path pathRet;
     char *pszHome = getenv("HOME");
@@ -565,10 +565,10 @@ fs::path GetDefaultDataDir()
         pathRet = fs::path(pszHome);
 #ifdef MAC_OSX
     // Mac
-    return pathRet / "Library/Application Support/Yona";
+    return pathRet / "Library/Application Support/Akila";
 #else
     // Unix
-    return pathRet / ".yona";
+    return pathRet / ".akila";
 #endif
 #endif
 }
@@ -630,7 +630,7 @@ void ArgsManager::ReadConfigFile(const std::string &confPath)
 {
     fs::ifstream streamConfig(GetConfigFile(confPath));
     if (!streamConfig.good())
-        return; // No yona.conf file is OK
+        return; // No akila.conf file is OK
 
     {
         LOCK(cs_args);
@@ -639,7 +639,7 @@ void ArgsManager::ReadConfigFile(const std::string &confPath)
 
         for (boost::program_options::detail::config_file_iterator it(streamConfig, setOptions), end; it != end; ++it)
         {
-            // Don't overwrite existing settings so command line settings override yona.conf
+            // Don't overwrite existing settings so command line settings override akila.conf
             std::string strKey = std::string("-") + it->string_key;
             std::string strValue = it->value[0];
             InterpretNegativeSetting(strKey, strValue);
@@ -656,7 +656,7 @@ void ArgsManager::ReadConfigFile(const std::string &confPath)
 
 fs::path GetPidFile()
 {
-    fs::path pathPidFile(gArgs.GetArg("-pid", YONA_PID_FILENAME));
+    fs::path pathPidFile(gArgs.GetArg("-pid", AKILA_PID_FILENAME));
     if (!pathPidFile.is_complete()) pathPidFile = GetDataDir() / pathPidFile;
     return pathPidFile;
 }
@@ -927,9 +927,9 @@ std::string CopyrightHolders(const std::string &strPrefix)
     std::string strCopyrightHolders = strPrefix + strprintf(_(COPYRIGHT_HOLDERS), _(COPYRIGHT_HOLDERS_SUBSTITUTION));
 
     // Check for untranslated substitution to make sure AokChain Core copyright is not removed by accident
-    if (strprintf(COPYRIGHT_HOLDERS, COPYRIGHT_HOLDERS_SUBSTITUTION).find("Yona") == std::string::npos)
+    if (strprintf(COPYRIGHT_HOLDERS, COPYRIGHT_HOLDERS_SUBSTITUTION).find("Akila") == std::string::npos)
     {
-        strCopyrightHolders += "\n" + strPrefix + "Yona Developers";
+        strCopyrightHolders += "\n" + strPrefix + "Akila Developers";
     }
     return strCopyrightHolders;
 }

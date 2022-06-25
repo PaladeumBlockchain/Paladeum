@@ -1,15 +1,15 @@
-Yonacoin Core
+Akilacoin Core
 ==============
 
 Setup
 ---------------------
-Yonacoin Core is the original Yonacoin client and it builds the backbone of the network. It downloads and, by default, stores the entire history of Yonacoin transactions; depending on the speed of your computer and network connection, the synchronization process is typically complete in under an hour.
+Akilacoin Core is the original Akilacoin client and it builds the backbone of the network. It downloads and, by default, stores the entire history of Akilacoin transactions; depending on the speed of your computer and network connection, the synchronization process is typically complete in under an hour.
 
-To download compiled binaries of the Yonacoin Core and wallet, visit the [GitHub release page](https://github.com/YonaProject/Yonacoin/releases).
+To download compiled binaries of the Akilacoin Core and wallet, visit the [GitHub release page](https://github.com/AkilaProject/Akilacoin/releases).
 
 Running
 ---------------------
-The following are some helpful notes on how to run Yonacoin on your native platform.
+The following are some helpful notes on how to run Akilacoin on your native platform.
 
 ### Linux
 
@@ -17,15 +17,15 @@ The following are some helpful notes on how to run Yonacoin on your native platf
 
 2) Install distribution-specific dependencies listed below.
 
-3) Run the GUI wallet or only the Yonacoin core deamon
+3) Run the GUI wallet or only the Akilacoin core deamon
 
    a. GUI wallet:
 
-   `./yona-qt`
+   `./akila-qt`
 
    b. Core deamon:
 
-   `./yonad -deamon`
+   `./akilad -deamon`
 
 #### Ubuntu 16.04, 17.04/17.10 and 18.04
 
@@ -70,15 +70,15 @@ The GUI wallet requires the QR Code encoding library and Google's data interchan
 
 ### OS X
 
-1) Download Yona-Qt.dmg.
+1) Download Akila-Qt.dmg.
 
 2) Double click the DMG to mount it.
 
-3) Drag Yona Core icon to the Applications Folder
+3) Drag Akila Core icon to the Applications Folder
 
 ![alt tag](https://i.imgur.com/GLhBFUV.png)
 
-4) Open the Applications folder and Launch Yona Core. The client will begin synchronizing with the network.
+4) Open the Applications folder and Launch Akila Core. The client will begin synchronizing with the network.
 
 ![alt tag](https://i.imgur.com/v3962qo.png)
 
@@ -86,67 +86,67 @@ Note: You may get the follow error on first launch:
 ```
 Dyld Error Message:
   Library not loaded: @loader_path/libboost_system-mt.dylib
-  Referenced from: /Applications/Yona-Qt.app/Contents/Frameworks/libboost_thread-mt.dylib
+  Referenced from: /Applications/Akila-Qt.app/Contents/Frameworks/libboost_thread-mt.dylib
   Reason: image not found
 ```
-To resolve, you will need to copy libboost_system.dylib to libboost_system-mt.dylib in the /Applications/Yona-Qt.app/Contents/Frameworks folder
+To resolve, you will need to copy libboost_system.dylib to libboost_system-mt.dylib in the /Applications/Akila-Qt.app/Contents/Frameworks folder
 
 ### Windows
 
 1) Download windows-x86_64.zip and unpack executables to desired folder.
 
-2) Double click the yona-qt.exe to launch it.
+2) Double click the akila-qt.exe to launch it.
 
 ### Need Help?
 
-- See the documentation at the [Yonacoin Wiki](https://yona.wiki/wiki/Yonacoin_Wiki)
+- See the documentation at the [Akilacoin Wiki](https://akila.wiki/wiki/Akilacoin_Wiki)
 for help and more information.
-- Ask for help on [Discord](https://discord.gg/DUkcBst), [Telegram](https://t.me/YonacoinDev) or [Reddit](https://www.reddit.com/r/Yonacoin/).
+- Ask for help on [Discord](https://discord.gg/DUkcBst), [Telegram](https://t.me/AkilacoinDev) or [Reddit](https://www.reddit.com/r/Akilacoin/).
 
 Building from source
 ---------------------
-The following are developer notes on how to build the Yonacoin core software on your native platform. They are not complete guides, but include notes on the necessary libraries, compile flags, etc.
+The following are developer notes on how to build the Akilacoin core software on your native platform. They are not complete guides, but include notes on the necessary libraries, compile flags, etc.
 
-- [Dependencies](https://github.com/YonaProject/Yonacoin/tree/master/doc/dependencies.md)
-- [OS X Build Notes](https://github.com/YonaProject/Yonacoin/tree/master/doc/build-osx.md)
-- [Unix Build Notes](https://github.com/YonaProject/Yonacoin/tree/master/doc/build-unix.md)
-- [Windows Build Notes](https://github.com/YonaProject/Yonacoin/tree/master/doc/build-windows.md)
-- [OpenBSD Build Notes](https://github.com/YonaProject/Yonacoin/tree/master/doc/build-openbsd.md)
-- [Gitian Building Guide](https://github.com/YonaProject/Yonacoin/tree/master/doc/gitian-building.md)
+- [Dependencies](https://github.com/AkilaProject/Akilacoin/tree/master/doc/dependencies.md)
+- [OS X Build Notes](https://github.com/AkilaProject/Akilacoin/tree/master/doc/build-osx.md)
+- [Unix Build Notes](https://github.com/AkilaProject/Akilacoin/tree/master/doc/build-unix.md)
+- [Windows Build Notes](https://github.com/AkilaProject/Akilacoin/tree/master/doc/build-windows.md)
+- [OpenBSD Build Notes](https://github.com/AkilaProject/Akilacoin/tree/master/doc/build-openbsd.md)
+- [Gitian Building Guide](https://github.com/AkilaProject/Akilacoin/tree/master/doc/gitian-building.md)
 
 Development
 ---------------------
-Yonacoin repo's [root README](https://github.com/YonaProject/Yonacoin/blob/master/README.md) contains relevant information on the development process and automated testing.
+Akilacoin repo's [root README](https://github.com/AkilaProject/Akilacoin/blob/master/README.md) contains relevant information on the development process and automated testing.
 
-- [Developer Notes](https://github.com/YonaProject/Yonacoin/blob/master/doc/developer-notes.md)
-- [Release Notes](https://github.com/YonaProject/Yonacoin/blob/master/doc/release-notes.md)
-- [Release Process](https://github.com/YonaProject/Yonacoin/blob/master/doc/release-process.md)
-- [Source Code Documentation (External Link)](https://dev.visucore.com/yona/doxygen/) -- 2018-05-11 -- Broken link
-- [Translation Process](https://github.com/YonaProject/Yonacoin/blob/master/doc/translation_process.md)
-- [Translation Strings Policy](https://github.com/YonaProject/Yonacoin/blob/master/doc/translation_strings_policy.md)
-- [Travis CI](https://github.com/YonaProject/Yonacoin/blob/master/doc/travis-ci.md)
-- [Unauthenticated REST Interface](https://github.com/YonaProject/Yonacoin/blob/master/doc/REST-interface.md)
-- [Shared Libraries](https://github.com/YonaProject/Yonacoin/blob/master/doc/shared-libraries.md)
-- [BIPS](https://github.com/YonaProject/Yonacoin/blob/master/doc/bips.md)
-- [Dnsseed Policy](https://github.com/YonaProject/Yonacoin/blob/master/doc/dnsseed-policy.md)
-- [Benchmarking](https://github.com/YonaProject/Yonacoin/blob/master/doc/benchmarking.md)
+- [Developer Notes](https://github.com/AkilaProject/Akilacoin/blob/master/doc/developer-notes.md)
+- [Release Notes](https://github.com/AkilaProject/Akilacoin/blob/master/doc/release-notes.md)
+- [Release Process](https://github.com/AkilaProject/Akilacoin/blob/master/doc/release-process.md)
+- [Source Code Documentation (External Link)](https://dev.visucore.com/akila/doxygen/) -- 2018-05-11 -- Broken link
+- [Translation Process](https://github.com/AkilaProject/Akilacoin/blob/master/doc/translation_process.md)
+- [Translation Strings Policy](https://github.com/AkilaProject/Akilacoin/blob/master/doc/translation_strings_policy.md)
+- [Travis CI](https://github.com/AkilaProject/Akilacoin/blob/master/doc/travis-ci.md)
+- [Unauthenticated REST Interface](https://github.com/AkilaProject/Akilacoin/blob/master/doc/REST-interface.md)
+- [Shared Libraries](https://github.com/AkilaProject/Akilacoin/blob/master/doc/shared-libraries.md)
+- [BIPS](https://github.com/AkilaProject/Akilacoin/blob/master/doc/bips.md)
+- [Dnsseed Policy](https://github.com/AkilaProject/Akilacoin/blob/master/doc/dnsseed-policy.md)
+- [Benchmarking](https://github.com/AkilaProject/Akilacoin/blob/master/doc/benchmarking.md)
 
 ### Resources
-- Discuss on chat [Discord](https://discord.gg/jn6uhur), [Telegram](https://t.me/YonacoinDev) or [Reddit](https://www.reddit.com/r/Yonacoin/).
-- Find out more on the [Yonacoin Wiki](https://yona.wiki/wiki/Yonacoin_Wiki)
-- Visit the project home [Yonacoin.org](https://yonacoin.org)
+- Discuss on chat [Discord](https://discord.gg/jn6uhur), [Telegram](https://t.me/AkilacoinDev) or [Reddit](https://www.reddit.com/r/Akilacoin/).
+- Find out more on the [Akilacoin Wiki](https://akila.wiki/wiki/Akilacoin_Wiki)
+- Visit the project home [Akilacoin.org](https://akilacoin.org)
 
 ### Miscellaneous
-- [Tokens Attribution](https://github.com/YonaProject/Yonacoin/blob/master/doc/tokens-attribution.md)
-- [Files](https://github.com/YonaProject/Yonacoin/blob/master/doc/files.md)
-- [Fuzz-testing](https://github.com/YonaProject/Yonacoin/blob/master/doc/fuzzing.md)
-- [Reduce Traffic](https://github.com/YonaProject/Yonacoin/blob/master/doc/reduce-traffic.md)
-- [Tor Support](https://github.com/YonaProject/Yonacoin/blob/master/doc/tor.md)
-- [Init Scripts (systemd/upstart/openrc)](https://github.com/YonaProject/Yonacoin/blob/master/doc/init.md)
-- [ZMQ](https://github.com/YonaProject/Yonacoin/blob/master/doc/zmq.md)
+- [Tokens Attribution](https://github.com/AkilaProject/Akilacoin/blob/master/doc/tokens-attribution.md)
+- [Files](https://github.com/AkilaProject/Akilacoin/blob/master/doc/files.md)
+- [Fuzz-testing](https://github.com/AkilaProject/Akilacoin/blob/master/doc/fuzzing.md)
+- [Reduce Traffic](https://github.com/AkilaProject/Akilacoin/blob/master/doc/reduce-traffic.md)
+- [Tor Support](https://github.com/AkilaProject/Akilacoin/blob/master/doc/tor.md)
+- [Init Scripts (systemd/upstart/openrc)](https://github.com/AkilaProject/Akilacoin/blob/master/doc/init.md)
+- [ZMQ](https://github.com/AkilaProject/Akilacoin/blob/master/doc/zmq.md)
 
 License
 ---------------------
-Distributed under the [MIT software license](https://github.com/YonaProject/Yonacoin/blob/master/COPYING).
+Distributed under the [MIT software license](https://github.com/AkilaProject/Akilacoin/blob/master/COPYING).
 This product includes software developed by the OpenSSL Project for use in the [OpenSSL Toolkit](https://www.openssl.org/). This product includes
 cryptographic software written by Eric Young ([eay@cryptsoft.com](mailto:eay@cryptsoft.com)), and UPnP software written by Thomas Bernard.

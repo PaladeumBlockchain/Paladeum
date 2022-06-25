@@ -1,7 +1,7 @@
 // Copyright (c) 2009-2010 Satoshi Nakamoto
 // Copyright (c) 2009-2016 The Bitcoin Core developers
 // Copyright (c) 2014-2016 The BlackCoin developers
-// Copyright (c) 2021-2022 The Yona developers
+// Copyright (c) 2021-2022 The Akila developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -2526,7 +2526,7 @@ void CWallet::AvailableCoinsWithTokens(std::vector<COutput> &vCoins, std::map<st
     AvailableCoinsAll(vCoins, mapTokenCoins, true, AreTokensDeployed(), fOnlySafe, coinControl, nMinimumAmount, nMaximumAmount, nMinimumSumAmount, nMaximumCount, nMinDepth, nMaxDepth);
 }
 
-void CWallet::AvailableCoinsAll(std::vector<COutput>& vCoins, std::map<std::string, std::vector<COutput> >& mapTokenCoins, bool fGetYONA, bool fGetTokens, bool fOnlySafe, const CCoinControl *coinControl, const CAmount& nMinimumAmount, const CAmount& nMaximumAmount, const CAmount& nMinimumSumAmount, const uint64_t& nMaximumCount, const int& nMinDepth, const int& nMaxDepth, bool fLockedTokens) const {
+void CWallet::AvailableCoinsAll(std::vector<COutput>& vCoins, std::map<std::string, std::vector<COutput> >& mapTokenCoins, bool fGetAKILA, bool fGetTokens, bool fOnlySafe, const CCoinControl *coinControl, const CAmount& nMinimumAmount, const CAmount& nMaximumAmount, const CAmount& nMinimumSumAmount, const uint64_t& nMaximumCount, const int& nMinDepth, const int& nMaxDepth, bool fLockedTokens) const {
     vCoins.clear();
 
     {
@@ -2535,7 +2535,7 @@ void CWallet::AvailableCoinsAll(std::vector<COutput>& vCoins, std::map<std::stri
         CAmount nTotal = 0;
 
         /** TOKENS START */
-        bool fYONALimitHit = false;
+        bool fAKILALimitHit = false;
         // A set of the hashes that have already been used
         std::set<uint256> usedMempoolHashes;
 
@@ -2684,11 +2684,11 @@ void CWallet::AvailableCoinsAll(std::vector<COutput>& vCoins, std::map<std::stri
                     }
                 }
 
-                if (fGetYONA) { // Looking for YONA Tx OutPoints Only
-                    if (fYONALimitHit) // We hit our limit
+                if (fGetAKILA) { // Looking for AKILA Tx OutPoints Only
+                    if (fAKILALimitHit) // We hit our limit
                         continue;
 
-                    // We only want YONA OutPoints. Don't include Token OutPoints
+                    // We only want AKILA OutPoints. Don't include Token OutPoints
                     if (isTokenScript)
                         continue;
 
@@ -2699,13 +2699,13 @@ void CWallet::AvailableCoinsAll(std::vector<COutput>& vCoins, std::map<std::stri
                         nTotal += pcoin->tx->vout[i].nValue;
 
                         if (nTotal >= nMinimumSumAmount) {
-                            fYONALimitHit = true;
+                            fAKILALimitHit = true;
                         }
                     }
 
                     // Checks the maximum number of UTXO's.
                     if (nMaximumCount > 0 && vCoins.size() >= nMaximumCount) {
-                        fYONALimitHit = true;
+                        fAKILALimitHit = true;
                     }
                     continue;
                 }
@@ -3908,7 +3908,7 @@ bool CWallet::CreateTransactionAll(const std::vector<CRecipient>& vecSend, CWall
             /** TOKENS END */
             // Create change script that will be used if we need change
             // TODO: pass in scriptChange instead of reservekey so
-            // change transaction isn't always pay-to-yona-address
+            // change transaction isn't always pay-to-akila-address
             CScript scriptChange;
             CScript tokenScriptChange;
 
@@ -3962,7 +3962,7 @@ bool CWallet::CreateTransactionAll(const std::vector<CRecipient>& vecSend, CWall
                     CTxOut txout(recipient.nAmount, recipient.scriptPubKey);
 
                     /** TOKENS START */
-                    // Check to see if you need to make an token data outpoint OP_YONA_TOKEN data
+                    // Check to see if you need to make an token data outpoint OP_AKILA_TOKEN data
                     if (recipient.scriptPubKey.IsNullTokenTxDataScript()) {
                         assert(txout.nValue == 0);
                         txNew.vout.push_back(txout);

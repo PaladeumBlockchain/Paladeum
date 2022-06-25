@@ -1,0 +1,92 @@
+#!/sbin/runscript
+
+# backward compatibility for existing gentoo layout 
+#
+if [ -d "/var/lib/akila/.akila" ]; then
+	AKILAD_DEFAULT_DATADIR="/var/lib/akila/.akila"
+else
+	AKILAD_DEFAULT_DATADIR="/var/lib/akilad"
+fi
+
+AKILAD_CONFIGFILE=${AKILAD_CONFIGFILE:-/etc/akila/akila.conf}
+AKILAD_PIDDIR=${AKILAD_PIDDIR:-/var/run/akilad}
+AKILAD_PIDFILE=${AKILAD_PIDFILE:-${AKILAD_PIDDIR}/akilad.pid}
+AKILAD_DATADIR=${AKILAD_DATADIR:-${AKILAD_DEFAULT_DATADIR}}
+AKILAD_USER=${AKILAD_USER:-${AKILA_USER:-akila}}
+AKILAD_GROUP=${AKILAD_GROUP:-akila}
+AKILAD_BIN=${AKILAD_BIN:-/usr/bin/akilad}
+AKILAD_NICE=${AKILAD_NICE:-${NICELEVEL:-0}}
+AKILAD_OPTS="${AKILAD_OPTS:-${AKILA_OPTS}}"
+
+name="Akila Core Daemon"
+description="Akila cryptocurrency P2P network daemon"
+
+command="/usr/bin/akilad"
+command_args="-pid=\"${AKILAD_PIDFILE}\" \
+		-conf=\"${AKILAD_CONFIGFILE}\" \
+		-datadir=\"${AKILAD_DATADIR}\" \
+		-daemon \
+		${AKILAD_OPTS}"
+
+required_files="${AKILAD_CONFIGFILE}"
+start_stop_daemon_args="-u ${AKILAD_USER} \
+			-N ${AKILAD_NICE} -w 2000"
+pidfile="${AKILAD_PIDFILE}"
+
+# The retry schedule to use when stopping the daemon. Could be either
+# a timeout in seconds or multiple signal/timeout pairs (like
+# "SIGKILL/180 SIGTERM/300")
+retry="${AKILAD_SIGTERM_TIMEOUT}"
+
+depend() {
+	need localmount net
+}
+
+# verify
+# 1) that the datadir exists and is writable (or create it)
+# 2) that a directory for the pid exists and is writable
+# 3) ownership and permissions on the config file
+start_pre() {
+	checkpath \
+	-d \
+	--mode 0750 \
+	--owner "${AKILAD_USER}:${AKILAD_GROUP}" \
+	"${AKILAD_DATADIR}"
+
+	checkpath \
+	-d \
+	--mode 0755 \
+	--owner "${AKILAD_USER}:${AKILAD_GROUP}" \
+	"${AKILAD_PIDDIR}"
+
+	checkpath -f \
+	-o ${AKILAD_USER}:${AKILAD_GROUP} \
+	-m 0660 \
+	${AKILAD_CONFIGFILE}
+
+	checkconfig || return 1
+}
+
+checkconfig()
+{
+	if ! grep -qs '^rpcpassword=' "${AKILAD_CONFIGFILE}" ; then
+		eerror ""
+		eerror "ERROR: You must set a secure rpcpassword to run akilad."
+		eerror "The setting must appear in ${AKILAD_CONFIGFILE}"
+		eerror ""
+		eerror "This password is security critical to securing wallets "
+		eerror "and must not be the same as the rpcuser setting."
+		eerror "You can generate a suitable random password using the following "
+		eerror "command from the shell:"
+		eerror ""
+		eerror "bash -c 'tr -dc a-zA-Z0-9 < /dev/urandom | head -c32 && echo'"
+		eerror ""
+		eerror "It is recommended that you also set alertnotify so you are "
+		eerror "notified of problems:"
+		eerror ""
+		eerror "ie: alertnotify=echo %%s | mail -s \"Akila Alert\"" \
+			"admin@foo.com"
+		eerror ""
+		return 1
+	fi
+}

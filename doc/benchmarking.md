@@ -1,11 +1,11 @@
 Benchmarking
 ============
 
-Yonacoin has an internal benchmarking framework, with benchmarks
+Akilacoin has an internal benchmarking framework, with benchmarks
 for cryptographic algorithms such as SHA1, SHA256, SHA512 and RIPEMD160. As well as the rolling bloom filter.
 
-After compiling yona-core, the benchmarks can be run with:
-`src/bench/bench_yona`
+After compiling akila-core, the benchmarks can be run with:
+`src/bench/bench_akila`
 
 The output will look similar to:
 ```

@@ -1,10 +1,10 @@
 // Copyright (c) 2012-2016 The Bitcoin Core developers
-// Copyright (c) 2021-2022 The Yona developers
+// Copyright (c) 2021-2022 The Akila developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef YONA_LIMITEDMAP_H
-#define YONA_LIMITEDMAP_H
+#ifndef AKILA_LIMITEDMAP_H
+#define AKILA_LIMITEDMAP_H
 
 #include <assert.h>
 #include <map>
@@ -98,4 +98,4 @@ public:
     }
 };
 
-#endif // YONA_LIMITEDMAP_H
+#endif // AKILA_LIMITEDMAP_H

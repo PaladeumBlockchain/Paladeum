@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # Copyright (c) 2014-2016 The Bitcoin Core developers
-# Copyright (c) 2017-2020 The Yona developers
+# Copyright (c) 2017-2020 The Akila developers
 # Distributed under the MIT software license, see the accompanying
 # file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -13,7 +13,7 @@ forward all unrecognized arguments onto the individual test scripts.
 Functional tests are disabled on Windows by default. Use --force to run them anyway.
 
 For a description of arguments recognized by test scripts, see
-`test/functional/test_framework/test_framework.py:YonaTestFramework.main`.
+`test/functional/test_framework/test_framework.py:AkilaTestFramework.main`.
 
 
 """
@@ -152,7 +152,7 @@ BASE_SCRIPTS= [
     'feature_notifications.py',
     'rpc_net.py',
     'rpc_misc.py',
-    'interface_yona_cli.py',
+    'interface_akila_cli.py',
     'mempool_resurrect.py',
     'rpc_signrawtransaction.py',
     'wallet_resendtransactions.py',
@@ -254,7 +254,7 @@ def main():
     logging.basicConfig(format='%(message)s', level=logging_level)
 
     # Create base test directory
-    tmpdir = "%s/yona_test_runner_%s" % (args.tmpdirprefix, datetime.datetime.now().strftime("%Y%m%d_%H%M%S"))
+    tmpdir = "%s/akila_test_runner_%s" % (args.tmpdirprefix, datetime.datetime.now().strftime("%Y%m%d_%H%M%S"))
     os.makedirs(tmpdir)
     logging.debug("Temporary test directory at %s" % tmpdir)
 
@@ -265,12 +265,12 @@ def main():
         print("Tests currently disabled on Windows by default. Use --force option to enable")
         sys.exit(0)
 
-    # Check that the build was configured with wallet, utils, and yonad
+    # Check that the build was configured with wallet, utils, and akilad
     enable_wallet = config["components"].getboolean("ENABLE_WALLET")
     enable_cli = config["components"].getboolean("ENABLE_UTILS")
-    enable_yonad = config["components"].getboolean("ENABLE_YONAD")
-    if not (enable_wallet and enable_cli and enable_yonad):
-        print("No functional tests to run. Wallet, utils, and yonad must all be enabled")
+    enable_akilad = config["components"].getboolean("ENABLE_AKILAD")
+    if not (enable_wallet and enable_cli and enable_akilad):
+        print("No functional tests to run. Wallet, utils, and akilad must all be enabled")
         print("Rerun `configure` with --enable-wallet, --with-cli and --with-daemon and rerun make")
         sys.exit(0)
 
@@ -362,12 +362,12 @@ def main():
 
 
 def run_tests(test_list, src_dir, build_dir, exeext, tmpdir, use_term_control, jobs=1, enable_coverage=False, args=None, combined_logs_len=0, failfast=False, last_loop=False):
-    # Warn if yonad is already running (unix only)
+    # Warn if akilad is already running (unix only)
     if args is None:
         args = []
     try:
-        if subprocess.check_output(["pidof", "yonad"]) is not None:
-            print("%sWARNING!%s There is already a yonad process running on this system. Tests may fail unexpectedly due to resource contention!" % (BOLD[1], BOLD[0]))
+        if subprocess.check_output(["pidof", "akilad"]) is not None:
+            print("%sWARNING!%s There is already a akilad process running on this system. Tests may fail unexpectedly due to resource contention!" % (BOLD[1], BOLD[0]))
     except (OSError, subprocess.SubprocessError):
         pass
 
@@ -377,9 +377,9 @@ def run_tests(test_list, src_dir, build_dir, exeext, tmpdir, use_term_control, j
         print("%sWARNING!%s There is a cache directory here: %s. If tests fail unexpectedly, try deleting the cache directory." % (BOLD[1], BOLD[0], cache_dir))
 
     #Set env vars
-    if "YONAD" not in os.environ:
-        os.environ["YONAD"] = build_dir + '/src/yonad' + exeext
-        os.environ["YONACLI"] = build_dir + '/src/yona-cli' + exeext
+    if "AKILAD" not in os.environ:
+        os.environ["AKILAD"] = build_dir + '/src/akilad' + exeext
+        os.environ["AKILACLI"] = build_dir + '/src/akila-cli' + exeext
 
     tests_dir = src_dir + '/test/functional/'
 
@@ -668,7 +668,7 @@ class RPCCoverage:
     Coverage calculation works by having each test script subprocess write
     coverage files into a particular directory. These files contain the RPC
     commands invoked during testing, as well as a complete listing of RPC
-    commands per `yona-cli help` (`rpc_interface.txt`).
+    commands per `akila-cli help` (`rpc_interface.txt`).
 
     After all tests complete, the commands run are combined and diff'd against
     the complete list to calculate uncovered RPC commands.

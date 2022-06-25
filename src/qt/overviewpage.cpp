@@ -1,12 +1,12 @@
 // Copyright (c) 2011-2016 The Bitcoin Core developers
-// Copyright (c) 2021-2022 The Yona developers
+// Copyright (c) 2021-2022 The Akila developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
 #include "overviewpage.h"
 #include "ui_overviewpage.h"
 
-#include "yonaunits.h"
+#include "akilaunits.h"
 #include "clientmodel.h"
 #include "guiconstants.h"
 #include "guiutil.h"
@@ -46,7 +46,7 @@ class TxViewDelegate : public QAbstractItemDelegate
     Q_OBJECT
 public:
     explicit TxViewDelegate(const PlatformStyle *_platformStyle, QObject *parent=nullptr):
-        QAbstractItemDelegate(parent), unit(YonaUnits::YONA),
+        QAbstractItemDelegate(parent), unit(AkilaUnits::AKILA),
         platformStyle(_platformStyle)
     {
 
@@ -155,7 +155,7 @@ class TokenViewDelegate : public QAbstractItemDelegate
 Q_OBJECT
 public:
     explicit TokenViewDelegate(const PlatformStyle *_platformStyle, QObject *parent=nullptr):
-            QAbstractItemDelegate(parent), unit(YonaUnits::YONA),
+            QAbstractItemDelegate(parent), unit(AkilaUnits::AKILA),
             platformStyle(_platformStyle)
     {
 
@@ -295,7 +295,7 @@ public:
 
 };
 #include "overviewpage.moc"
-#include "yonagui.h"
+#include "akilagui.h"
 #include <QFontDatabase>
 
 OverviewPage::OverviewPage(const PlatformStyle *platformStyle, QWidget *parent) :
@@ -368,7 +368,7 @@ OverviewPage::OverviewPage(const PlatformStyle *platformStyle, QWidget *parent) 
 
     /** Update the labels colors */
     ui->tokenBalanceLabel->setStyleSheet(STRING_LABEL_COLOR);
-    ui->yonaBalancesLabel->setStyleSheet(STRING_LABEL_COLOR);
+    ui->akilaBalancesLabel->setStyleSheet(STRING_LABEL_COLOR);
     ui->labelStakeText->setStyleSheet(STRING_LABEL_COLOR);
     ui->labelOfflineText->setStyleSheet(STRING_LABEL_COLOR);
     ui->labelBalanceText->setStyleSheet(STRING_LABEL_COLOR);
@@ -380,7 +380,7 @@ OverviewPage::OverviewPage(const PlatformStyle *platformStyle, QWidget *parent) 
     ui->recentTransactionsLabel->setStyleSheet(STRING_LABEL_COLOR);
 
     /** Update the labels font */
-    ui->yonaBalancesLabel->setFont(GUIUtil::getTopLabelFont());
+    ui->akilaBalancesLabel->setFont(GUIUtil::getTopLabelFont());
     ui->tokenBalanceLabel->setFont(GUIUtil::getTopLabelFont());
     ui->recentTransactionsLabel->setFont(GUIUtil::getTopLabelFont());
 
@@ -572,17 +572,17 @@ void OverviewPage::setBalance(const CAmount& balance, const CAmount& unconfirmed
     currentWatchOnlyStake = watchOnlyStake;
     currentLockedBalance = lockedBalance;
 
-    ui->labelBalance->setText(YonaUnits::formatWithUnit(unit, balance, false, YonaUnits::separatorAlways));
-    ui->labelUnconfirmed->setText(YonaUnits::formatWithUnit(unit, unconfirmedBalance + lockedBalance, false, YonaUnits::separatorAlways));
-    ui->labelImmature->setText(YonaUnits::formatWithUnit(unit, immatureBalance, false, YonaUnits::separatorAlways));
-    ui->labelTotal->setText(YonaUnits::formatWithUnit(unit, balance + unconfirmedBalance + immatureBalance, false, YonaUnits::separatorAlways));
-    ui->labelStake->setText(YonaUnits::formatWithUnit(unit, stake, false, YonaUnits::separatorAlways));
-    ui->labelOffline->setText(YonaUnits::formatWithUnit(unit, offline, false, YonaUnits::separatorAlways));
-    ui->labelTotal->setText(YonaUnits::formatWithUnit(unit, balance + unconfirmedBalance + immatureBalance + lockedBalance, false, YonaUnits::separatorAlways));
-    ui->labelWatchAvailable->setText(YonaUnits::formatWithUnit(unit, watchOnlyBalance, false, YonaUnits::separatorAlways));
-    ui->labelWatchPending->setText(YonaUnits::formatWithUnit(unit, watchUnconfBalance, false, YonaUnits::separatorAlways));
-    ui->labelWatchImmature->setText(YonaUnits::formatWithUnit(unit, watchImmatureBalance, false, YonaUnits::separatorAlways));
-    ui->labelWatchTotal->setText(YonaUnits::formatWithUnit(unit, watchOnlyBalance + watchUnconfBalance + watchImmatureBalance + watchOnlyStake, false, YonaUnits::separatorAlways));
+    ui->labelBalance->setText(AkilaUnits::formatWithUnit(unit, balance, false, AkilaUnits::separatorAlways));
+    ui->labelUnconfirmed->setText(AkilaUnits::formatWithUnit(unit, unconfirmedBalance + lockedBalance, false, AkilaUnits::separatorAlways));
+    ui->labelImmature->setText(AkilaUnits::formatWithUnit(unit, immatureBalance, false, AkilaUnits::separatorAlways));
+    ui->labelTotal->setText(AkilaUnits::formatWithUnit(unit, balance + unconfirmedBalance + immatureBalance, false, AkilaUnits::separatorAlways));
+    ui->labelStake->setText(AkilaUnits::formatWithUnit(unit, stake, false, AkilaUnits::separatorAlways));
+    ui->labelOffline->setText(AkilaUnits::formatWithUnit(unit, offline, false, AkilaUnits::separatorAlways));
+    ui->labelTotal->setText(AkilaUnits::formatWithUnit(unit, balance + unconfirmedBalance + immatureBalance + lockedBalance, false, AkilaUnits::separatorAlways));
+    ui->labelWatchAvailable->setText(AkilaUnits::formatWithUnit(unit, watchOnlyBalance, false, AkilaUnits::separatorAlways));
+    ui->labelWatchPending->setText(AkilaUnits::formatWithUnit(unit, watchUnconfBalance, false, AkilaUnits::separatorAlways));
+    ui->labelWatchImmature->setText(AkilaUnits::formatWithUnit(unit, watchImmatureBalance, false, AkilaUnits::separatorAlways));
+    ui->labelWatchTotal->setText(AkilaUnits::formatWithUnit(unit, watchOnlyBalance + watchUnconfBalance + watchImmatureBalance + watchOnlyStake, false, AkilaUnits::separatorAlways));
 
     // only show immature (newly mined) balance if it's non-zero, so as not to complicate things
     // for the non-mining users
@@ -669,7 +669,7 @@ void OverviewPage::setWalletModel(WalletModel *model)
         connect(model, SIGNAL(notifyWatchonlyChanged(bool)), this, SLOT(updateWatchOnlyLabels(bool)));
     }
 
-    // update the display unit, to not use the default ("YONA")
+    // update the display unit, to not use the default ("AKILA")
     updateDisplayUnit();
 }
 
@@ -718,7 +718,7 @@ void OverviewPage::showTokens()
         ui->tokenBalanceLabel->hide();
         ui->labelTokenStatus->hide();
 
-        // This keeps the YONA balance grid from expanding and looking terrible when token balance is hidden
+        // This keeps the AKILA balance grid from expanding and looking terrible when token balance is hidden
         ui->tokenVerticalSpaceWidget->show();
         ui->tokenVerticalSpaceWidget2->show();
     }

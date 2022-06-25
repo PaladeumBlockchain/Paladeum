@@ -1,0 +1,6 @@
+usr/local/bin/akila-qt usr/bin
+share/pixmaps/akila32.xpm usr/share/pixmaps
+share/pixmaps/akila16.xpm usr/share/pixmaps
+share/pixmaps/akila128.png usr/share/pixmaps
+debian/akila-qt.desktop usr/share/applications
+debian/akila-qt.protocol usr/share/kde4/services/

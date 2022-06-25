@@ -1,11 +1,11 @@
 // Copyright (c) 2009-2010 Satoshi Nakamoto
 // Copyright (c) 2009-2016 The Bitcoin Core developers
-// Copyright (c) 2021-2022 The Yona developers
+// Copyright (c) 2021-2022 The Akila developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef YONA_SCRIPT_SIGN_H
-#define YONA_SCRIPT_SIGN_H
+#ifndef AKILA_SCRIPT_SIGN_H
+#define AKILA_SCRIPT_SIGN_H
 
 #include "script/interpreter.h"
 #include "coins.h"
@@ -84,4 +84,4 @@ SignatureData CombineSignatures(const CScript& scriptPubKey, const BaseSignature
 SignatureData DataFromTransaction(const CMutableTransaction& tx, unsigned int nIn);
 void UpdateTransaction(CMutableTransaction& tx, unsigned int nIn, const SignatureData& data);
 
-#endif // YONA_SCRIPT_SIGN_H
+#endif // AKILA_SCRIPT_SIGN_H

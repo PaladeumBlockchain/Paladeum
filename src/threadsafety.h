@@ -1,11 +1,11 @@
 // Copyright (c) 2009-2010 Satoshi Nakamoto
 // Copyright (c) 2009-2014 The Bitcoin Core developers
-// Copyright (c) 2021-2022 The Yona developers
+// Copyright (c) 2021-2022 The Akila developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef YONA_THREADSAFETY_H
-#define YONA_THREADSAFETY_H
+#ifndef AKILA_THREADSAFETY_H
+#define AKILA_THREADSAFETY_H
 
 #ifdef __clang__
 // TL;DR Add GUARDED_BY(mutex) to member variables. The others are
@@ -53,4 +53,4 @@
 #define NO_THREAD_SAFETY_ANALYSIS
 #endif // __GNUC__
 
-#endif // YONA_THREADSAFETY_H
+#endif // AKILA_THREADSAFETY_H

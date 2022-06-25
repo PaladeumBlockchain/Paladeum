@@ -1,6 +1,6 @@
 // Automatically generated file. Do not modify.
-#ifndef YONA_UNIVALUE_UNIVALUE_ESCAPES_H
-#define YONA_UNIVALUE_UNIVALUE_ESCAPES_H
+#ifndef AKILA_UNIVALUE_UNIVALUE_ESCAPES_H
+#define AKILA_UNIVALUE_UNIVALUE_ESCAPES_H
 static const char *escapes[256] = {
 	"\\u0000",
 	"\\u0001",
@@ -259,4 +259,4 @@ static const char *escapes[256] = {
 	NULL,
 	NULL,
 };
-#endif // YONA_UNIVALUE_UNIVALUE_ESCAPES_H
+#endif // AKILA_UNIVALUE_UNIVALUE_ESCAPES_H

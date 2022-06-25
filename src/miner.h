@@ -1,12 +1,12 @@
 // Copyright (c) 2009-2010 Satoshi Nakamoto
 // Copyright (c) 2009-2016 The Bitcoin Core developers
 // Copyright (c) 2014-2016 The BlackCoin developers
-// Copyright (c) 2021-2022 The Yona developers
+// Copyright (c) 2021-2022 The Akila developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef YONA_MINER_H
-#define YONA_MINER_H
+#ifndef AKILA_MINER_H
+#define AKILA_MINER_H
 
 #include "primitives/block.h"
 #include "txmempool.h"
@@ -238,4 +238,4 @@ bool SignBlock(std::shared_ptr<CBlock> pblock, CWallet& wallet, const CAmount& n
 
 bool CheckFirstCoinstakeOutput(const CBlock& block);
 
-#endif // YONA_MINER_H
+#endif // AKILA_MINER_H

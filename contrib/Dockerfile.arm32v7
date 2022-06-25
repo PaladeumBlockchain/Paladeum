@@ -6,18 +6,18 @@ EXPOSE $RPCPORT
 
 EXPOSE $PORT
 
-RUN useradd -ms /bin/bash yona
+RUN useradd -ms /bin/bash akila
 
-RUN mkdir /etc/yona
+RUN mkdir /etc/akila
 
-RUN mkdir /var/lib/yona
+RUN mkdir /var/lib/akila
 
-RUN chown yona:yona /etc/yona /var/lib/yona
+RUN chown akila:akila /etc/akila /var/lib/akila
 
-WORKDIR /home/yona
+WORKDIR /home/akila
 
-COPY --chown=yona:yona linux64/* ./run.sh /home/yona/
+COPY --chown=akila:akila linux64/* ./run.sh /home/akila/
 
-USER yona
+USER akila
 
-CMD ["/home/yona/run.sh"]
+CMD ["/home/akila/run.sh"]

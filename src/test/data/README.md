@@ -1,7 +1,7 @@
 Description
 ------------
 
-This directory contains data-driven tests for various aspects of Yona.
+This directory contains data-driven tests for various aspects of Akila.
 
 License
 --------
