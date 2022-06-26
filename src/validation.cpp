@@ -2463,7 +2463,7 @@ static bool ConnectBlock(const CBlock& block, CValidationState& state, CBlockInd
         return true;
     }
 
-    if (block.nBits != GetNextTargetRequired(pindex->pprev, &block, block.IsProofOfStake(), chainparams.GetConsensus())) {
+    if (block.nBits != GetNextWorkRequired(pindex->pprev, chainparams.GetConsensus(), block.IsProofOfStake())) {
         return state.DoS(100, false, REJECT_INVALID, "bad-diffbits", false, "incorrect proof of work");
     }
 
@@ -4381,7 +4381,7 @@ static bool ContextualCheckBlockHeader(const CBlock& block, CValidationState& st
 
     // Check proof of work
     const Consensus::Params& consensusParams = params.GetConsensus();
-    if (chainActive.Height() > consensusParams.nLastPOWBlock && nHeight > consensusParams.nLastPOWBlock && block.nBits != GetNextTargetRequired(pindexPrev, &block, true, consensusParams))
+    if (block.nBits != GetNextWorkRequired(pindexPrev, consensusParams, block.IsProofOfStake()))
         return state.DoS(100, false, REJECT_INVALID, "bad-diffbits", false, "incorrect proof of work");
 
     // Check against checkpoints
