@@ -221,7 +221,10 @@ public:
     uint256 hashMerkleRoot;
     uint32_t nTime;
     uint32_t nBits;
-    uint32_t nNonce;
+    
+    // KAWPOW
+    uint64_t nNonce64;
+    uint256 mix_hash;
 
     //! (memory only) Sequential id assigned to distinguish order in which blocks are received.
     int32_t nSequenceId;
@@ -250,7 +253,10 @@ public:
         hashMerkleRoot = uint256();
         nTime          = 0;
         nBits          = 0;
-        nNonce         = 0;
+        
+        // KAWPOW
+        nNonce64       = 0;
+        mix_hash       = uint256();
     }
 
     CBlockIndex()
@@ -266,7 +272,11 @@ public:
         hashMerkleRoot = block.hashMerkleRoot;
         nTime          = block.nTime;
         nBits          = block.nBits;
-        nNonce         = block.nNonce;
+        
+        // KAWPOW
+        nHeight        = block.nHeight;
+        nNonce64       = block.nNonce64;
+        mix_hash       = block.mix_hash;
     }
 
     CDiskBlockPos GetBlockPos() const {
@@ -296,7 +306,12 @@ public:
         block.hashMerkleRoot = hashMerkleRoot;
         block.nTime          = nTime;
         block.nBits          = nBits;
-        block.nNonce         = nNonce;
+
+        // KAWPOW
+        block.nHeight        = nHeight;
+        block.nNonce64       = nNonce64;
+        block.mix_hash       = mix_hash;
+
         return block;
     }
 
@@ -307,7 +322,8 @@ public:
 
     uint256 GetWorkHash() const
     {
-        return GetBlockHeader().GetWorkHash();
+        uint256 mix_hash_work;
+        return GetBlockHeader().GetWorkHash(mix_hash_work);
     }
 
     int64_t GetBlockTime() const
@@ -445,7 +461,10 @@ public:
         READWRITE(hashMerkleRoot);
         READWRITE(nTime);
         READWRITE(nBits);
-        READWRITE(nNonce);
+        
+        // KAWPOW
+        READWRITE(nNonce64);
+        READWRITE(mix_hash);
     }
 
     uint256 GetIndexHash() const

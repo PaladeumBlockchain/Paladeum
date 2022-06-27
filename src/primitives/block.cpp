@@ -34,32 +34,49 @@ uint256 CBlockHeader::GetIndexHash() const
     return SerializeHash(*this);
 }
 
-uint256 CBlockHeader::GetWorkHash() const
+uint256 CBlockHeader::GetWorkHash(uint256& mix_hash) const
 {
-    return blake2b(BEGIN(nVersion), END(nNonce));
+    // return blake2b(BEGIN(nVersion), END(nNonce));
+    return KAWPOWHash(*this, mix_hash);
+}
+
+/**
+ * @brief This takes a block header, removes the nNonce64 and the mixHash. Then performs a serialized hash of it SHA256D.
+ * This will be used as the input to the KAAAWWWPOW hashing function
+ * @note Only to be called and used on KAAAWWWPOW block headers
+ */
+uint256 CBlockHeader::GetKAWPOWHeaderHash() const
+{
+    CKAWPOWInput input{*this};
+
+    return SerializeHash(input);
 }
 
 std::string CBlockHeader::ToString() const
 {
+    uint256 mix_hash;
     std::stringstream s;
-    s << strprintf("CBlock(hash=%s, ver=0x%08x, hashPrevBlock=%s, hashMerkleRoot=%s, nTime=%u, nBits=%08x, nNonce=%u)\n",
+
+    s << strprintf("CBlock(index_hash=%s, work_hash=%s, nHeight=%u, ver=0x%08x, hashPrevBlock=%s, hashMerkleRoot=%s, nTime=%u, nBits=%08x, nNonce64=%u)\n",
                    GetIndexHash().ToString(),
+                   GetWorkHash(mix_hash).ToString(),
+                   nHeight,
                    nVersion,
                    hashPrevBlock.ToString(),
                    hashMerkleRoot.ToString(),
-                   nTime, nBits, nNonce);
+                   nTime, nBits, nNonce64);
     return s.str();
 }
 
 std::string CBlock::ToString() const
 {
     std::stringstream s;
-    s << strprintf("CBlock(hash=%s, ver=0x%08x, hashPrevBlock=%s, hashMerkleRoot=%s, nTime=%u, nBits=%08x, nNonce=%u, vtx=%u)\n",
+    s << strprintf("CBlock(hash=%s, ver=0x%08x, hashPrevBlock=%s, hashMerkleRoot=%s, nTime=%u, nBits=%08x, nNonce64=%u, vtx=%u)\n",
         GetIndexHash().ToString(),
         nVersion,
         hashPrevBlock.ToString(),
         hashMerkleRoot.ToString(),
-        nTime, nBits, nNonce,
+        nTime, nBits, nNonce64,
         vtx.size());
     for (const auto& tx : vtx) {
         s << "  " << tx->ToString() << "\n";

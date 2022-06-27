@@ -26,23 +26,25 @@ void GenesisGenerator(CBlock genesis) {
 
     while(true)
     {
-        hash = genesis.GetIndexHash();
+        uint256 mix_hash;
+        hash = genesis.GetWorkHash(mix_hash);
         if (UintToArith256(hash) <= bnTarget)
             break;
-        if ((genesis.nNonce & 0xFFF) == 0)
+        if ((genesis.nNonce64 & 0xFFF) == 0)
         {
-            printf("nonce %08X: hash = %s (target = %s)\n", genesis.nNonce, hash.ToString().c_str(), bnTarget.ToString().c_str());
+            printf("nonce %08llX: hash = %s (target = %s)\n", genesis.nNonce64, hash.ToString().c_str(), bnTarget.ToString().c_str());
         }
-        ++genesis.nNonce;
-        if (genesis.nNonce == 0)
+        ++genesis.nNonce64;
+        if (genesis.nNonce64 == 0)
         {
             printf("NONCE WRAPPED, incrementing time\n");
             ++genesis.nTime;
         }
     }
 
-    printf("block.nNonce = %u \n", genesis.nNonce);
+    printf("block.nNonce64 = %llu \n", genesis.nNonce64);
     printf("block.GetIndexHash = %s\n", genesis.GetIndexHash().ToString().c_str());
+    printf("block.GetWorkHash = %s\n", hash.ToString().c_str());
     printf("block.MerkleRoot = %s \n", genesis.hashMerkleRoot.ToString().c_str());
 }
 
@@ -60,7 +62,7 @@ static CBlock CreateGenesisBlock(const char* pszTimestamp, const CScript& genesi
     CBlock genesis;
     genesis.nTime    = nTime;
     genesis.nBits    = nBits;
-    genesis.nNonce   = nNonce;
+    genesis.nNonce64   = nNonce;
     genesis.nVersion = nVersion;
     genesis.vtx.push_back(MakeTransactionRef(std::move(txNew)));
     genesis.hashPrevBlock.SetNull();
@@ -255,7 +257,7 @@ public:
         consensus.nSegwitEnabled = false;
         consensus.nCSVEnabled = true;
         consensus.powLimit = uint256S("003fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff");
-        consensus.posLimit = uint256S("0000000000ffffffffffffffffffffffffffffffffffffffffffffffffffffff");
+        consensus.posLimit = uint256S("003fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff");
         consensus.nTargetTimespan = 1000;
         consensus.nTargetSpacing = 20;
         consensus.fDiffNoRetargeting = false;
@@ -291,11 +293,11 @@ public:
 
         const char* pszTimestamp = "Complete Human Genome Sequenced for First Time | Apr 1, 2022 Sci-News";
 
-        genesis = CreateGenesisBlock(pszTimestamp, 1643716321, 2196, 0x1f3fffff, 1, 1 * COIN);
+        genesis = CreateGenesisBlock(pszTimestamp, 1656336395, 1578, 0x1f3fffff, 1, 1 * COIN);
         consensus.hashGenesisBlock = genesis.GetIndexHash();
 
-        assert(consensus.hashGenesisBlock == uint256S("0x000674178db328893bcb86f09109fbf4857556fe8b2a26c7d0f73812f45fac02"));
-        assert(genesis.hashMerkleRoot == uint256S("0x8b52b17e2ac9f12d0714020df8dba6dd6e022e46b5bba918a0dcd29a2bef1f89"));
+        assert(consensus.hashGenesisBlock == uint256S("0x4f22dafdde80289f20ff858b9fbad148f5ebd8a7e55027f70f27e9d1edea9f45"));
+        assert(genesis.hashMerkleRoot == uint256S("0xa121a4e1d9762f26cc46f1b3bc69ef0961920f14ac62ac21bbcffa28de94c87d"));
 
         vFixedSeeds.clear();
         vSeeds.clear();

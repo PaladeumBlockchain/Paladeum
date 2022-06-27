@@ -5,10 +5,15 @@
 
 #ifndef AKILA_RPC_BLOCKCHAIN_H
 #define AKILA_RPC_BLOCKCHAIN_H
+#include <map>
+#include <string>
 
 class CBlock;
 class CBlockIndex;
 class UniValue;
+
+// To be used by local rpc GPU mining only
+extern std::map<std::string, CBlock> mapKAWBlockTemplates;
 
 /**
  * Get the difficulty of the net wrt to the given block index, or the chain tip if

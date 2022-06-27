@@ -15,11 +15,15 @@
 #include "uint256.h"
 #include "version.h"
 
+#include <crypto/ethash/helpers.hpp>
+
 #include <vector>
 
 extern "C" {
 #include <crypto/blake2b.h>
 } // "C"
+
+class CBlockHeader;
 
 typedef uint256 ChainCode;
 
@@ -321,6 +325,8 @@ inline uint256 blake2b(const T* pbegin, const T* pend)
 
     return hash;
 }
+
+uint256 KAWPOWHash(const CBlockHeader& blockHeader, uint256& mix_hash);
 
 #endif // AKILA_HASH_H
 

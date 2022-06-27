@@ -19,13 +19,13 @@
 
 
 // ppcoin: find last block index up to pindex
-const CBlockIndex* GetLastBlockIndex(const CBlockIndex* pindex, bool fProofOfStake)
-{
-    //CBlockIndex will be updated with information about the proof type later
-    while (pindex && pindex->pprev && (pindex->IsProofOfStake() != fProofOfStake))
-        pindex = pindex->pprev;
-    return pindex;
-}
+// const CBlockIndex* GetLastBlockIndex(const CBlockIndex* pindex, bool fProofOfStake)
+// {
+//     //CBlockIndex will be updated with information about the proof type later
+//     while (pindex && pindex->pprev && (pindex->IsProofOfStake() != fProofOfStake))
+//         pindex = pindex->pprev;
+//     return pindex;
+// }
 
 inline arith_uint256 GetLimit(const Consensus::Params& params, bool fProofOfStake)
 {

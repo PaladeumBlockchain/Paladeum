@@ -1294,7 +1294,9 @@ bool ReadBlockFromDisk(CBlock& block, const CDiskBlockPos& pos, const Consensus:
     }
 
     // Check the header
-    if (block.IsProofOfWork() && !CheckProofOfWork(block.GetWorkHash(), block.nBits, consensusParams))
+    
+    uint256 mix_hash;
+    if (block.IsProofOfWork() && !CheckProofOfWork(block.GetWorkHash(mix_hash), block.nBits, consensusParams))
         return error("ReadBlockFromDisk: Errors in block header at %s", pos.ToString());
 
     return true;
@@ -4154,8 +4156,15 @@ static bool CheckBlockHeader(const CBlockHeader& block, CValidationState& state,
     }
 
     // Check proof of work matches claimed amount
-    if (fCheckPOW && !CheckProofOfWork(block.GetWorkHash(), block.nBits, consensusParams))
+    uint256 mix_hash;
+    if (fCheckPOW && !CheckProofOfWork(block.GetWorkHash(mix_hash), block.nBits, consensusParams)) {
+        std::cout << "\n\n" << block.ToString() << "\n\n";
         return state.DoS(50, false, REJECT_INVALID, "high-hash", false, "proof of work failed");
+    }
+
+    if (fCheckPOW && block.nHeight > 0 && mix_hash != block.mix_hash) {
+        return state.DoS(50, false, REJECT_INVALID, "invalid-mix-hash", false, "mix_hash validity failed");
+    }
 
     // Check timestamp
     if (block.GetBlockTime() > FutureDrift(GetAdjustedTime()))
@@ -4175,7 +4184,7 @@ bool CheckBlock(const CBlock& block, CValidationState& state, const uint256& has
     // Check that the header is valid (particularly PoW).  This is mostly
     // redundant with the call in AcceptBlockHeader.
     if (!CheckBlockHeader(block, state, consensusParams, (block.IsProofOfWork() && fCheckPOW)))
-        return false;
+        return error("%s: Consensus::CheckBlockHeader: %s", __func__, FormatStateMessage(state));
 
     // Check the merkle root.
     if (fCheckMerkleRoot) {
