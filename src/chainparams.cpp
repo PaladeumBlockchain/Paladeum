@@ -165,7 +165,6 @@ public:
         consensus.defaultAssumeValid = uint256S("0x0020f74ccfaddbcbbc71041ed0ce985e9b89701847c6b4a824f0a44cdd95e0f5"); // Block 1186833
 
         // Proof-of-Stake
-        consensus.nLastPOWBlock = 1440;
         consensus.nTxMessages = std::numeric_limits<int>::max();
         consensus.nStakeTimestampMask = 0xf; // 15
 
@@ -259,7 +258,7 @@ public:
         consensus.powLimit = uint256S("003fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff");
         consensus.posLimit = uint256S("003fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff");
         consensus.nTargetTimespan = 1000;
-        consensus.nTargetSpacing = 20;
+        consensus.nTargetSpacing = 25 * 2; // * 2 is needed for hybrid PoW/PoS (actual block time will be 25)
         consensus.fDiffNoRetargeting = false;
         consensus.fDiffAllowMinDifficultyBlocks = false;
         consensus.nRuleChangeActivationThreshold = 1310; // Approx 65% for testchains
@@ -274,10 +273,9 @@ public:
         consensus.nMinimumChainWork = uint256S("0x");
 
         // By default assume that the signatures in ancestors of this block are valid.
-        consensus.defaultAssumeValid = uint256S("0x000674178db328893bcb86f09109fbf4857556fe8b2a26c7d0f73812f45fac02");
+        consensus.defaultAssumeValid = uint256S("0x4f22dafdde80289f20ff858b9fbad148f5ebd8a7e55027f70f27e9d1edea9f45");
 
         // Proof-of-Stake
-        consensus.nLastPOWBlock = 1440;
         consensus.nTxMessages = 10;
         consensus.nStakeTimestampMask = 0xf; // 15
 
@@ -387,17 +385,16 @@ public:
         consensus.defaultAssumeValid = uint256S("0x00");
 
         // Proof-of-Stake
-        consensus.nLastPOWBlock = 1440;
         consensus.nTxMessages = 10;
         consensus.nStakeTimestampMask = 0xf; // 15
 
         // Fork to enable offline staking and remove the block limiter
         consensus.offlineStakingFork = 0;
 
-        pchMessageStart[0] = 0x79;
-        pchMessageStart[1] = 0x6e;
-        pchMessageStart[2] = 0x61;
-        pchMessageStart[3] = 0x54;
+        pchMessageStart[0] = 0x80;
+        pchMessageStart[1] = 0x6a;
+        pchMessageStart[2] = 0x62;
+        pchMessageStart[3] = 0x52;
         nDefaultPort = 5566;
         nPruneAfterHeight = 1000;
 
@@ -427,7 +424,7 @@ public:
             0
         };
 
-        base58Prefixes[PUBKEY_ADDRESS] = std::vector<unsigned char>(1,111);
+        base58Prefixes[PUBKEY_ADDRESS] = std::vector<unsigned char>(1,83);
         base58Prefixes[SCRIPT_ADDRESS] = std::vector<unsigned char>(1,196);
         base58Prefixes[SECRET_KEY] =     std::vector<unsigned char>(1,239);
         base58Prefixes[OFFLINE_STAKING_ADDRESS] = std::vector<unsigned char>(1,21);

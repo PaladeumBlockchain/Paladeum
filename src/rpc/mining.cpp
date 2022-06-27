@@ -519,9 +519,6 @@ UniValue getblocktemplate(const JSONRPCRequest& request)
     if (IsInitialBlockDownload() && !gArgs.GetBoolArg("-bypassdownload", false))
         throw JSONRPCError(RPC_CLIENT_IN_INITIAL_DOWNLOAD, "Akila is downloading blocks...");
 
-    if (chainActive.Tip()->nHeight > GetParams().GetConsensus().nLastPOWBlock)
-        throw JSONRPCError(RPC_MISC_ERROR, "No more PoW blocks");
-
     static unsigned int nTransactionsUpdatedLast;
 
     if (!lpval.isNull())

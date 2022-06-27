@@ -2466,7 +2466,7 @@ static bool ConnectBlock(const CBlock& block, CValidationState& state, CBlockInd
     }
 
     if (block.nBits != GetNextWorkRequired(pindex->pprev, chainparams.GetConsensus(), block.IsProofOfStake())) {
-        return state.DoS(100, false, REJECT_INVALID, "bad-diffbits", false, "incorrect proof of work");
+        return state.DoS(100, false, REJECT_INVALID, "bad-diffbits", false, "incorrect difficulty value");
     }
 
     pindex->nStakeModifier = ComputeStakeModifier(pindex->pprev, block.IsProofOfStake() ? block.vtx[1]->vin[0].prevout.hash : hash);
@@ -3413,6 +3413,7 @@ bool static ConnectTip(CValidationState& state, const CChainParams& chainparams,
         if (!rv) {
             if (state.IsInvalid())
                 InvalidBlockFound(pindexNew, state);
+
             return error("ConnectTip(): ConnectBlock %s failed", pindexNew->GetIndexHash().ToString());
         }
         int64_t nTimeConnectDone = GetTimeMicros();
@@ -4158,7 +4159,6 @@ static bool CheckBlockHeader(const CBlockHeader& block, CValidationState& state,
     // Check proof of work matches claimed amount
     uint256 mix_hash;
     if (fCheckPOW && !CheckProofOfWork(block.GetWorkHash(mix_hash), block.nBits, consensusParams)) {
-        std::cout << "\n\n" << block.ToString() << "\n\n";
         return state.DoS(50, false, REJECT_INVALID, "high-hash", false, "proof of work failed");
     }
 
@@ -4365,7 +4365,7 @@ std::vector<unsigned char> GenerateCoinbaseCommitment(CBlock& block, const CBloc
 /** Context-dependent validity checks.
  *  By "context", we mean only the previous block headers, but not the UTXO
  *  set; UTXO-related validity checks are done in ConnectBlock(). */
-static bool ContextualCheckBlockHeader(const CBlock& block, CValidationState& state, const CChainParams& params, const CBlockIndex* pindexPrev, int64_t nAdjustedTime, const uint256& hash)
+static bool ContextualCheckBlockHeader(const CBlockHeader& block, CValidationState& state, const CChainParams& params, const CBlockIndex* pindexPrev, int64_t nAdjustedTime, const uint256& hash)
 {
     assert(pindexPrev != nullptr);
     const int nHeight = pindexPrev->nHeight + 1;
@@ -4388,11 +4388,6 @@ static bool ContextualCheckBlockHeader(const CBlock& block, CValidationState& st
     if (hash == params.GetConsensus().hashGenesisBlock)
         return true;
 
-    // Check proof of work
-    const Consensus::Params& consensusParams = params.GetConsensus();
-    if (block.nBits != GetNextWorkRequired(pindexPrev, consensusParams, block.IsProofOfStake()))
-        return state.DoS(100, false, REJECT_INVALID, "bad-diffbits", false, "incorrect proof of work");
-
     // Check against checkpoints
     if (fCheckpointsEnabled) {
         // Don't accept any forks from the main chain prior to last checkpoint.
@@ -4414,7 +4409,9 @@ static bool ContextualCheckBlockHeader(const CBlock& block, CValidationState& st
     if (block.GetBlockTime() > FutureDrift(nAdjustedTime))
         return state.Invalid(false, REJECT_INVALID, "time-too-new", "block timestamp too far in the future");
 
-    if (nHeight > consensusParams.nLastPOWBlock && !CheckStakeBlockTimestamp(block.GetBlockTime()))
+    // ToDo: check this?
+    // if (nHeight > consensusParams.nLastPOWBlock && !CheckStakeBlockTimestamp(block.GetBlockTime()))
+    if (!CheckStakeBlockTimestamp(block.GetBlockTime()))
         return state.DoS(100, error("%s: incorrect pos block timestamp", __func__),
                          REJECT_INVALID, "bad-pos-time");
 
@@ -4431,9 +4428,6 @@ static bool ContextualCheckBlockHeader(const CBlock& block, CValidationState& st
 static bool ContextualCheckBlock(const CBlock& block, CValidationState& state, const Consensus::Params& consensusParams, const CBlockIndex* pindexPrev, CTokensCache* tokenCache)
 {
     const int nHeight = pindexPrev == nullptr ? 0 : pindexPrev->nHeight + 1;
-
-    if (block.IsProofOfWork() && nHeight > consensusParams.nLastPOWBlock)
-        return state.DoS(100, false, REJECT_INVALID, "bad-pow-height", false, "non-reject proof-of-work at height");
 
     int64_t nLockTimeCutoff = block.GetBlockTime();
 
@@ -4521,8 +4515,9 @@ bool AcceptBlockHeader(const CBlockHeader& block, CValidationState& state, const
             return true;
         }
 
-        if (!CheckBlockHeader(block, state, chainparams.GetConsensus()))
+        if (!CheckBlockHeader(block, state, chainparams.GetConsensus(), false)) {
             return error("%s: Consensus::CheckBlockHeader: %s, %s", __func__, hash.ToString(), FormatStateMessage(state));
+        }
 
         // Get prev block index
         CBlockIndex* pindexPrev = nullptr;
@@ -4532,8 +4527,9 @@ bool AcceptBlockHeader(const CBlockHeader& block, CValidationState& state, const
         pindexPrev = (*mi).second;
         if (pindexPrev->nStatus & BLOCK_FAILED_MASK)
             return state.DoS(100, error("%s: prev block invalid", __func__), REJECT_INVALID, "bad-prevblk");
-        if (!ContextualCheckBlockHeader(block, state, chainparams, pindexPrev, GetAdjustedTime(), hash))
+        if (!ContextualCheckBlockHeader(block, state, chainparams, pindexPrev, GetAdjustedTime(), hash)) {
             return error("%s: Consensus::ContextualCheckBlockHeader: %s, %s", __func__, hash.ToString(), FormatStateMessage(state));
+        }
 
         if (!pindexPrev->IsValid(BLOCK_VALID_SCRIPTS)) {
             for (const CBlockIndex* failedit : g_failed_blocks) {
@@ -4553,8 +4549,9 @@ bool AcceptBlockHeader(const CBlockHeader& block, CValidationState& state, const
     if (pindex == nullptr)
         pindex = AddToBlockIndex(block, hash);
 
-    if (pindex->nHeight > chainparams.GetConsensus().nLastPOWBlock)
-        pindex->SetProofOfStake();
+    // ToDo: fix this?
+    // if (pindex->nNonce64 == 0)
+    //     pindex->SetProofOfStake();
 
     if (ppindex)
         *ppindex = pindex;

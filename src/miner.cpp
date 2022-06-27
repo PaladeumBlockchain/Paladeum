@@ -726,7 +726,7 @@ std::unique_ptr<CBlockTemplate> BlockAssembler::CreateNewBlock(const CScript& sc
     
     pblocktemplate->vTxSigOpsCost[0] = WITNESS_SCALE_FACTOR * GetLegacySigOpCount(*pblock->vtx[0]);
 
-    pblock->nBits = GetNextWorkRequired(pindexPrev, chainparams.GetConsensus(), pblock->IsProofOfStake());
+    pblock->nBits = GetNextWorkRequired(pindexPrev, chainparams.GetConsensus(), fProofOfStake);
 
     CValidationState state;
     if (!fProofOfStake && !TestBlockValidity(state, chainparams, *pblock, pindexPrev, false, false)) {

@@ -54,13 +54,9 @@ uint256 CBlockHeader::GetKAWPOWHeaderHash() const
 
 std::string CBlockHeader::ToString() const
 {
-    uint256 mix_hash;
     std::stringstream s;
-
-    s << strprintf("CBlock(index_hash=%s, work_hash=%s, nHeight=%u, ver=0x%08x, hashPrevBlock=%s, hashMerkleRoot=%s, nTime=%u, nBits=%08x, nNonce64=%u)\n",
+    s << strprintf("CBlock(index_hash=%s, ver=0x%08x, hashPrevBlock=%s, hashMerkleRoot=%s, nTime=%u, nBits=%08x, nNonce64=%u)\n",
                    GetIndexHash().ToString(),
-                   GetWorkHash(mix_hash).ToString(),
-                   nHeight,
                    nVersion,
                    hashPrevBlock.ToString(),
                    hashMerkleRoot.ToString(),

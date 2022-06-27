@@ -63,7 +63,6 @@ struct Params {
     /** Proof of work parameters */
     uint256 powLimit;
     uint256 posLimit;
-    int nLastPOWBlock;
     int nTxMessages;
     bool fDiffNoRetargeting;
     bool fDiffAllowMinDifficultyBlocks;
