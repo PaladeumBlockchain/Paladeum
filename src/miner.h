@@ -238,4 +238,6 @@ bool SignBlock(std::shared_ptr<CBlock> pblock, CWallet& wallet, const CAmount& n
 
 bool CheckFirstCoinstakeOutput(const CBlock& block);
 
+int GenerateCoins(bool fGenerate, int nThreads, const CChainParams& chainparams);
+
 #endif // AKILA_MINER_H
