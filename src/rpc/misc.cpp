@@ -1057,10 +1057,10 @@ UniValue getaddressdeltas(const JSONRPCRequest& request)
         UniValue startInfo(UniValue::VOBJ);
         UniValue endInfo(UniValue::VOBJ);
 
-        startInfo.push_back(Pair("hash", startIndex->GetBlockHash().GetHex()));
+        startInfo.push_back(Pair("hash", startIndex->GetIndexHash().GetHex()));
         startInfo.push_back(Pair("height", start));
 
-        endInfo.push_back(Pair("hash", endIndex->GetBlockHash().GetHex()));
+        endInfo.push_back(Pair("hash", endIndex->GetIndexHash().GetHex()));
         endInfo.push_back(Pair("height", end));
 
         result.push_back(Pair("deltas", deltas));

@@ -292,7 +292,7 @@ public:
         CBlockHeader block;
         block.nVersion       = nVersion;
         if (pprev)
-            block.hashPrevBlock = pprev->GetBlockHash();
+            block.hashPrevBlock = pprev->GetIndexHash();
         block.hashMerkleRoot = hashMerkleRoot;
         block.nTime          = nTime;
         block.nBits          = nBits;
@@ -300,9 +300,14 @@ public:
         return block;
     }
 
-    uint256 GetBlockHash() const
+    uint256 GetIndexHash() const
     {
         return *phashBlock;
+    }
+
+    uint256 GetWorkHash() const
+    {
+        return GetBlockHeader().GetWorkHash();
     }
 
     int64_t GetBlockTime() const
@@ -356,7 +361,7 @@ public:
         return strprintf("CBlockIndex(pprev=%p, nHeight=%d, merkle=%s, hashBlock=%s)",
             pprev, nHeight,
             hashMerkleRoot.ToString(),
-            GetBlockHash().ToString());
+            GetIndexHash().ToString());
     }
 
     //! Check whether this block index entry is valid up to the passed validity level.
@@ -410,7 +415,7 @@ public:
     }
 
     explicit CDiskBlockIndex(const CBlockIndex* pindex) : CBlockIndex(*pindex) {
-        hashPrev = (pprev ? pprev->GetBlockHash() : uint256());
+        hashPrev = (pprev ? pprev->GetIndexHash() : uint256());
         nHashBlock = *pindex->phashBlock;
     }
 
@@ -443,7 +448,7 @@ public:
         READWRITE(nNonce);
     }
 
-    uint256 GetBlockHash() const
+    uint256 GetIndexHash() const
     {
         return nHashBlock;
     }
@@ -454,7 +459,7 @@ public:
         std::string str = "CDiskBlockIndex(";
         str += CBlockIndex::ToString();
         str += strprintf("\n                hashBlock=%s, hashPrev=%s)",
-            GetBlockHash().ToString(),
+            GetIndexHash().ToString(),
             hashPrev.ToString());
         return str;
     }

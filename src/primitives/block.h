@@ -76,7 +76,9 @@ public:
         return (nBits == 0);
     }
 
-    uint256 GetBlockHash() const;
+    uint256 GetIndexHash() const;
+
+    uint256 GetWorkHash() const;
 
     std::string ToString() const;
 

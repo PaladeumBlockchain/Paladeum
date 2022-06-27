@@ -121,7 +121,7 @@ double GetPoSKernelPS()
 UniValue blockheaderToJSON(const CBlockIndex* blockindex)
 {
     UniValue result(UniValue::VOBJ);
-    result.push_back(Pair("hash", blockindex->GetBlockHash().GetHex()));
+    result.push_back(Pair("hash", blockindex->GetIndexHash().GetHex()));
     int confirmations = -1;
     // Only report confirmations if the block is on the main chain
     if (chainActive.Contains(blockindex))
@@ -142,17 +142,17 @@ UniValue blockheaderToJSON(const CBlockIndex* blockindex)
     result.pushKV("flags", blockindex->IsProofOfStake()? "proof-of-stake" : "proof-of-work");
 
     if (blockindex->pprev)
-        result.push_back(Pair("previousblockhash", blockindex->pprev->GetBlockHash().GetHex()));
+        result.push_back(Pair("previousblockhash", blockindex->pprev->GetIndexHash().GetHex()));
     CBlockIndex *pnext = chainActive.Next(blockindex);
     if (pnext)
-        result.push_back(Pair("nextblockhash", pnext->GetBlockHash().GetHex()));
+        result.push_back(Pair("nextblockhash", pnext->GetIndexHash().GetHex()));
     return result;
 }
 
 UniValue blockToDeltasJSON(const CBlock& block, const CBlockIndex* blockindex)
 {
     UniValue result(UniValue::VOBJ);
-    result.push_back(Pair("hash", block.GetBlockHash().GetHex()));
+    result.push_back(Pair("hash", block.GetIndexHash().GetHex()));
     int confirmations = -1;
     // Only report confirmations if the block is on the main chain
     if (chainActive.Contains(blockindex)) {
@@ -254,17 +254,17 @@ UniValue blockToDeltasJSON(const CBlock& block, const CBlockIndex* blockindex)
     result.pushKV("modifier", blockindex->nStakeModifier.GetHex());
 
     if (blockindex->pprev)
-        result.push_back(Pair("previousblockhash", blockindex->pprev->GetBlockHash().GetHex()));
+        result.push_back(Pair("previousblockhash", blockindex->pprev->GetIndexHash().GetHex()));
     CBlockIndex *pnext = chainActive.Next(blockindex);
     if (pnext)
-        result.push_back(Pair("nextblockhash", pnext->GetBlockHash().GetHex()));
+        result.push_back(Pair("nextblockhash", pnext->GetIndexHash().GetHex()));
     return result;
 }
 
 UniValue blockToJSON(const CBlock& block, const CBlockIndex* blockindex, bool txDetails)
 {
     UniValue result(UniValue::VOBJ);
-    result.push_back(Pair("hash", blockindex->GetBlockHash().GetHex()));
+    result.push_back(Pair("hash", blockindex->GetIndexHash().GetHex()));
     int confirmations = -1;
     // Only report confirmations if the block is on the main chain
     if (chainActive.Contains(blockindex))
@@ -300,10 +300,10 @@ UniValue blockToJSON(const CBlock& block, const CBlockIndex* blockindex, bool tx
     result.pushKV("flags", blockindex->IsProofOfStake()? "proof-of-stake" : "proof-of-work");
 
     if (blockindex->pprev)
-        result.push_back(Pair("previousblockhash", blockindex->pprev->GetBlockHash().GetHex()));
+        result.push_back(Pair("previousblockhash", blockindex->pprev->GetIndexHash().GetHex()));
     CBlockIndex *pnext = chainActive.Next(blockindex);
     if (pnext)
-        result.push_back(Pair("nextblockhash", pnext->GetBlockHash().GetHex()));
+        result.push_back(Pair("nextblockhash", pnext->GetIndexHash().GetHex()));
     return result;
 }
 
@@ -338,14 +338,14 @@ UniValue getbestblockhash(const JSONRPCRequest& request)
         );
 
     LOCK(cs_main);
-    return chainActive.Tip()->GetBlockHash().GetHex();
+    return chainActive.Tip()->GetIndexHash().GetHex();
 }
 
 void RPCNotifyBlockChange(bool ibd, const CBlockIndex * pindex)
 {
     if(pindex) {
         std::lock_guard<std::mutex> lock(cs_blockchange);
-        latestblock.hash = pindex->GetBlockHash();
+        latestblock.hash = pindex->GetIndexHash();
         latestblock.height = pindex->nHeight;
     }
     cond_blockchange.notify_all();
@@ -786,11 +786,11 @@ UniValue getblockdeltas(const JSONRPCRequest& request)
     return blockToDeltasJSON(block, pblockindex);
 }
 
-UniValue getblockhashes(const JSONRPCRequest& request)
+UniValue GetIndexHashes(const JSONRPCRequest& request)
 {
     if (request.fHelp || request.params.size() < 2)
         throw std::runtime_error(
-            "getblockhashes timestamp\n"
+            "GetIndexHashes timestamp\n"
             "\nReturns array of hashes of blocks within the timestamp range provided.\n"
             "\nArguments:\n"
             "1. high         (numeric, required) The newer block timestamp\n"
@@ -811,9 +811,9 @@ UniValue getblockhashes(const JSONRPCRequest& request)
             "  }\n"
             "]\n"
             "\nExamples:\n"
-            + HelpExampleCli("getblockhashes", "1231614698 1231024505")
-            + HelpExampleRpc("getblockhashes", "1231614698, 1231024505")
-            + HelpExampleCli("getblockhashes", "1231614698 1231024505 '{\"noOrphans\":false, \"logicalTimes\":true}'")
+            + HelpExampleCli("GetIndexHashes", "1231614698 1231024505")
+            + HelpExampleRpc("GetIndexHashes", "1231614698, 1231024505")
+            + HelpExampleCli("GetIndexHashes", "1231614698 1231024505 '{\"noOrphans\":false, \"logicalTimes\":true}'")
             );
 
     unsigned int high = request.params[0].get_int();
@@ -859,19 +859,19 @@ UniValue getblockhashes(const JSONRPCRequest& request)
     return result;
 }
 
-UniValue getblockhash(const JSONRPCRequest& request)
+UniValue GetIndexHash(const JSONRPCRequest& request)
 {
     if (request.fHelp || request.params.size() != 1)
         throw std::runtime_error(
-            "getblockhash height\n"
+            "GetIndexHash height\n"
             "\nReturns hash of block in best-block-chain at height provided.\n"
             "\nArguments:\n"
             "1. height         (numeric, required) The height index\n"
             "\nResult:\n"
             "\"hash\"         (string) The block hash\n"
             "\nExamples:\n"
-            + HelpExampleCli("getblockhash", "1000")
-            + HelpExampleRpc("getblockhash", "1000")
+            + HelpExampleCli("GetIndexHash", "1000")
+            + HelpExampleRpc("GetIndexHash", "1000")
         );
 
     LOCK(cs_main);
@@ -881,7 +881,7 @@ UniValue getblockhash(const JSONRPCRequest& request)
         throw JSONRPCError(RPC_INVALID_PARAMETER, "Block height out of range");
 
     CBlockIndex* pblockindex = chainActive[nHeight];
-    return pblockindex->GetBlockHash().GetHex();
+    return pblockindex->GetIndexHash().GetHex();
 }
 
 UniValue getblockheader(const JSONRPCRequest& request)
@@ -1260,7 +1260,7 @@ UniValue gettxout(const JSONRPCRequest& request)
 
     BlockMap::iterator it = mapBlockIndex.find(pcoinsTip->GetBestBlock());
     CBlockIndex *pindex = it->second;
-    ret.push_back(Pair("bestblock", pindex->GetBlockHash().GetHex()));
+    ret.push_back(Pair("bestblock", pindex->GetIndexHash().GetHex()));
     if (coin.nHeight == MEMPOOL_HEIGHT) {
         ret.push_back(Pair("confirmations", 0));
     } else {
@@ -1432,7 +1432,7 @@ UniValue getblockchaininfo(const JSONRPCRequest& request)
     obj.push_back(Pair("chain", GetParams().NetworkIDString()));
     obj.push_back(Pair("blocks",                (int)chainActive.Height()));
     obj.push_back(Pair("headers",               pindexBestHeader ? pindexBestHeader->nHeight : -1));
-    obj.push_back(Pair("bestblockhash",         chainActive.Tip()->GetBlockHash().GetHex()));
+    obj.push_back(Pair("bestblockhash",         chainActive.Tip()->GetIndexHash().GetHex()));
     obj.push_back(Pair("difficulty",            (double)GetDifficulty()));
     obj.push_back(Pair("mediantime",            (int64_t)chainActive.Tip()->GetMedianTimePast()));
     obj.push_back(Pair("verificationprogress",  GuessVerificationProgress(GetParams().TxData(), chainActive.Tip())));
@@ -1866,8 +1866,8 @@ static const CRPCCommand commands[] =
     { "blockchain",         "getblockcount",          &getblockcount,          {} },
     { "blockchain",         "getblock",               &getblock,               {"blockhash","verbosity|verbose"} },
     { "blockchain",         "getblockdeltas",         &getblockdeltas,         {} },
-    { "blockchain",         "getblockhashes",         &getblockhashes,         {} },
-    { "blockchain",         "getblockhash",           &getblockhash,           {"height"} },
+    { "blockchain",         "GetIndexHashes",         &GetIndexHashes,         {} },
+    { "blockchain",         "GetIndexHash",           &GetIndexHash,           {"height"} },
     { "blockchain",         "getblockheader",         &getblockheader,         {"blockhash","verbose"} },
     { "blockchain",         "getchaintips",           &getchaintips,           {} },
     { "blockchain",         "getdifficulty",          &getdifficulty,          {} },

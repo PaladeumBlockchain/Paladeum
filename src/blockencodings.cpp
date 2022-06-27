@@ -165,7 +165,7 @@ ReadStatus PartiallyDownloadedBlock::InitData(const CBlockHeaderAndShortTxIDs& c
     }
 
     LogPrint(BCLog::CMPCTBLOCK, "Initialized PartiallyDownloadedBlock for block %s using a cmpctblock of size %lu\n",
-             cmpctblock.header.GetBlockHash().ToString(), GetSerializeSize(cmpctblock, SER_NETWORK, PROTOCOL_VERSION));
+             cmpctblock.header.GetIndexHash().ToString(), GetSerializeSize(cmpctblock, SER_NETWORK, PROTOCOL_VERSION));
 
     return READ_STATUS_OK;
 }
@@ -178,7 +178,7 @@ bool PartiallyDownloadedBlock::IsTxAvailable(size_t index) const {
 
 ReadStatus PartiallyDownloadedBlock::FillBlock(CBlock& block, const std::vector<CTransactionRef>& vtx_missing) {
     assert(!header.IsNull());
-    uint256 hash = header.GetBlockHash();
+    uint256 hash = header.GetIndexHash();
     block = header;
     block.vchBlockSig = vchBlockSig;
     block.vtx.resize(txn_available.size());
@@ -201,7 +201,7 @@ ReadStatus PartiallyDownloadedBlock::FillBlock(CBlock& block, const std::vector<
         return READ_STATUS_INVALID;
 
     CValidationState state;
-    if (!CheckBlock(block, state, block.GetBlockHash(), GetParams().GetConsensus())) {
+    if (!CheckBlock(block, state, block.GetIndexHash(), GetParams().GetConsensus())) {
         // TODO: We really want to just check merkle tree manually here,
         // but that is expensive, and CheckBlock caches a block's
         // "checked-status" (in the CBlock?). CBlock should be able to

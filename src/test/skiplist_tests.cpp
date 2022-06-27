@@ -65,7 +65,7 @@ BOOST_FIXTURE_TEST_SUITE(skiplist_tests, BasicTestingSetup)
             vBlocksMain[i].pprev = i ? &vBlocksMain[i - 1] : nullptr;
             vBlocksMain[i].phashBlock = &vHashMain[i];
             vBlocksMain[i].BuildSkip();
-            BOOST_CHECK_EQUAL((int) UintToArith256(vBlocksMain[i].GetBlockHash()).GetLow64(), vBlocksMain[i].nHeight);
+            BOOST_CHECK_EQUAL((int) UintToArith256(vBlocksMain[i].GetIndexHash()).GetLow64(), vBlocksMain[i].nHeight);
             BOOST_CHECK(vBlocksMain[i].pprev == nullptr || vBlocksMain[i].nHeight == vBlocksMain[i].pprev->nHeight + 1);
         }
 
@@ -80,7 +80,7 @@ BOOST_FIXTURE_TEST_SUITE(skiplist_tests, BasicTestingSetup)
             vBlocksSide[i].pprev = i ? &vBlocksSide[i - 1] : (vBlocksMain.data() + 49999);
             vBlocksSide[i].phashBlock = &vHashSide[i];
             vBlocksSide[i].BuildSkip();
-            BOOST_CHECK_EQUAL((int) UintToArith256(vBlocksSide[i].GetBlockHash()).GetLow64(), vBlocksSide[i].nHeight);
+            BOOST_CHECK_EQUAL((int) UintToArith256(vBlocksSide[i].GetIndexHash()).GetLow64(), vBlocksSide[i].nHeight);
             BOOST_CHECK(vBlocksSide[i].pprev == nullptr || vBlocksSide[i].nHeight == vBlocksSide[i].pprev->nHeight + 1);
         }
 
@@ -96,8 +96,8 @@ BOOST_FIXTURE_TEST_SUITE(skiplist_tests, BasicTestingSetup)
             CBlockLocator locator = chain.GetLocator(tip);
 
             // The first result must be the block itself, the last one must be genesis.
-            BOOST_CHECK(locator.vHave.front() == tip->GetBlockHash());
-            BOOST_CHECK(locator.vHave.back() == vBlocksMain[0].GetBlockHash());
+            BOOST_CHECK(locator.vHave.front() == tip->GetIndexHash());
+            BOOST_CHECK(locator.vHave.back() == vBlocksMain[0].GetIndexHash());
 
             // Entries 1 through 11 (inclusive) go back one step each.
             for (unsigned int i = 1; i < 12 && i < locator.vHave.size() - 1; i++)

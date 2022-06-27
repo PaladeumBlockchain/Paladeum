@@ -138,7 +138,7 @@ bool SignBlock(std::shared_ptr<CBlock> pblock, CWallet& wallet, const CAmount& n
             }
 
             // append a signature to our block and ensure that is LowS
-            return key.Sign(pblock->GetBlockHash(), pblock->vchBlockSig);
+            return key.Sign(pblock->GetIndexHash(), pblock->vchBlockSig);
         }
     }
 
@@ -475,7 +475,7 @@ void IncrementExtraNonce(CBlock* pblock, const CBlockIndex* pindexPrev, unsigned
 bool CheckStake(const std::shared_ptr<const CBlock> pblock, CWallet& wallet)
 {
     uint256 proofHash, hashTarget;
-    uint256 hashBlock = pblock->GetBlockHash();
+    uint256 hashBlock = pblock->GetIndexHash();
 
     if(!pblock->IsProofOfStake())
         return error("CheckStake() : %s is not a proof-of-stake block", hashBlock.GetHex());
@@ -493,7 +493,7 @@ bool CheckStake(const std::shared_ptr<const CBlock> pblock, CWallet& wallet)
     // Found a solution
     {
         LOCK(cs_main);
-        if (pblock->hashPrevBlock != chainActive.Tip()->GetBlockHash())
+        if (pblock->hashPrevBlock != chainActive.Tip()->GetIndexHash())
             return error("CheckStake() : generated block is stale");
 
         LOCK(wallet.cs_wallet);
@@ -505,7 +505,7 @@ bool CheckStake(const std::shared_ptr<const CBlock> pblock, CWallet& wallet)
 
         // Process this block the same as if we had received it from another node
         bool fNewBlock = false;
-        uint256 hash = pblock->GetBlockHash();
+        uint256 hash = pblock->GetIndexHash();
         if (!ProcessNewBlock(GetParams(), pblock, true, &fNewBlock, hash))
             return error("CheckStake() : ProcessBlock, block not accepted");
     }
@@ -570,7 +570,7 @@ void ThreadStakeMiner(CWallet *pwallet)
                 // Increase priority so we can build the full PoS block ASAP to ensure the timestamp doesn't expire
                 SetThreadPriority(THREAD_PRIORITY_ABOVE_NORMAL);
 
-                LogPrintf("Successfully signed block, now trying to check it: %s\n", pblock->GetBlockHash().ToString());
+                LogPrintf("Successfully signed block, now trying to check it: %s\n", pblock->GetIndexHash().ToString());
 
                 // Check timestamps
                 if (pblock->GetBlockTime() <= pindexPrev->GetBlockTime() ||
@@ -716,7 +716,7 @@ std::unique_ptr<CBlockTemplate> BlockAssembler::CreateNewBlock(const CScript& sc
         *pTotalFees = nFees;
 
     // Fill in header
-    pblock->hashPrevBlock  = pindexPrev->GetBlockHash();
+    pblock->hashPrevBlock  = pindexPrev->GetIndexHash();
 
     if (!fProofOfStake) {
         UpdateTime(pblock, chainparams.GetConsensus(), pindexPrev);

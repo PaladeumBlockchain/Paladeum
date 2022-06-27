@@ -30,7 +30,7 @@ CBlockLocator CChain::GetLocator(const CBlockIndex *pindex) const {
     if (!pindex)
         pindex = Tip();
     while (pindex) {
-        vHave.push_back(pindex->GetBlockHash());
+        vHave.push_back(pindex->GetIndexHash());
         // Stop when we have added the genesis block.
         if (pindex->nHeight == 0)
             break;

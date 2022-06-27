@@ -339,7 +339,7 @@ BOOST_FIXTURE_TEST_SUITE(miner_tests, TestingSetup)
             std::shared_ptr<const CBlock> shared_pblock = std::make_shared<const CBlock>(*pblock);
             //BOOST_TEST_MESSAGE("Before process block");
             BOOST_CHECK(ProcessNewBlock(chainparams, shared_pblock, true, nullptr));
-            pblock->hashPrevBlock = pblock->GetBlockHash();
+            pblock->hashPrevBlock = pblock->GetIndexHash();
         }
 
 //   while(true) {
@@ -386,7 +386,7 @@ BOOST_FIXTURE_TEST_SUITE(miner_tests, TestingSetup)
 //		  //  std::shared_ptr<const CBlock> shared_pblock = std::make_shared<const CBlock>(*pblock);
 //		  //  bool processBlock = ProcessNewBlock(chainparams, shared_pblock, true, nullptr);
 //		 //   BOOST_CHECK(ProcessNewBlock(chainparams, shared_pblock, true, nullptr));
-//			pblock->hashPrevBlock = pblock->GetBlockHash();
+//			pblock->hashPrevBlock = pblock->GetIndexHash();
 //	}
 
 
@@ -525,7 +525,7 @@ BOOST_FIXTURE_TEST_SUITE(miner_tests, TestingSetup)
             CBlockIndex *prev = chainActive.Tip();
             CBlockIndex *next = new CBlockIndex();
             next->phashBlock = new uint256(InsecureRand256());
-            pcoinsTip->SetBestBlock(next->GetBlockHash());
+            pcoinsTip->SetBestBlock(next->GetIndexHash());
             next->pprev = prev;
             next->nHeight = prev->nHeight + 1;
             next->BuildSkip();
@@ -538,7 +538,7 @@ BOOST_FIXTURE_TEST_SUITE(miner_tests, TestingSetup)
             CBlockIndex *prev = chainActive.Tip();
             CBlockIndex *next = new CBlockIndex();
             next->phashBlock = new uint256(InsecureRand256());
-            pcoinsTip->SetBestBlock(next->GetBlockHash());
+            pcoinsTip->SetBestBlock(next->GetIndexHash());
             next->pprev = prev;
             next->nHeight = prev->nHeight + 1;
             next->BuildSkip();
@@ -550,7 +550,7 @@ BOOST_FIXTURE_TEST_SUITE(miner_tests, TestingSetup)
         {
             CBlockIndex *del = chainActive.Tip();
             chainActive.SetTip(del->pprev);
-            pcoinsTip->SetBestBlock(del->pprev->GetBlockHash());
+            pcoinsTip->SetBestBlock(del->pprev->GetIndexHash());
             delete del->phashBlock;
             delete del;
         }

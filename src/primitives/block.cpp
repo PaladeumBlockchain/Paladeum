@@ -29,9 +29,13 @@ void BlockNetwork::SetNetwork(const std::string& net)
     }
 }
 
-uint256 CBlockHeader::GetBlockHash() const
+uint256 CBlockHeader::GetIndexHash() const
 {
-    // return SerializeHash(*this);
+    return SerializeHash(*this);
+}
+
+uint256 CBlockHeader::GetWorkHash() const
+{
     return blake2b(BEGIN(nVersion), END(nNonce));
 }
 
@@ -39,7 +43,7 @@ std::string CBlockHeader::ToString() const
 {
     std::stringstream s;
     s << strprintf("CBlock(hash=%s, ver=0x%08x, hashPrevBlock=%s, hashMerkleRoot=%s, nTime=%u, nBits=%08x, nNonce=%u)\n",
-                   GetBlockHash().ToString(),
+                   GetIndexHash().ToString(),
                    nVersion,
                    hashPrevBlock.ToString(),
                    hashMerkleRoot.ToString(),
@@ -51,7 +55,7 @@ std::string CBlock::ToString() const
 {
     std::stringstream s;
     s << strprintf("CBlock(hash=%s, ver=0x%08x, hashPrevBlock=%s, hashMerkleRoot=%s, nTime=%u, nBits=%08x, nNonce=%u, vtx=%u)\n",
-        GetBlockHash().ToString(),
+        GetIndexHash().ToString(),
         nVersion,
         hashPrevBlock.ToString(),
         hashMerkleRoot.ToString(),

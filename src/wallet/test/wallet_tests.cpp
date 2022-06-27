@@ -535,7 +535,7 @@ BOOST_FIXTURE_TEST_SUITE(wallet_tests, WalletTestingSetup)
         CWallet wallet;
         CWalletTx wtx(&wallet, MakeTransactionRef(coinbaseTxns.back()));
         LOCK2(cs_main, wallet.cs_wallet);
-        wtx.hashBlock = chainActive.Tip()->GetBlockHash();
+        wtx.hashBlock = chainActive.Tip()->GetIndexHash();
         wtx.nIndex = 0;
 
         // Call GetImmatureCredit() once before adding the key to the wallet to

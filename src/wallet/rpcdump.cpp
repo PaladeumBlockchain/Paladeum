@@ -324,7 +324,7 @@ UniValue importprunedfunds(const JSONRPCRequest& request)
 
         LOCK(cs_main);
 
-        if (!mapBlockIndex.count(merkleBlock.header.GetBlockHash()) || !chainActive.Contains(mapBlockIndex[merkleBlock.header.GetBlockHash()]))
+        if (!mapBlockIndex.count(merkleBlock.header.GetIndexHash()) || !chainActive.Contains(mapBlockIndex[merkleBlock.header.GetIndexHash()]))
             throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, "Block not found in chain");
 
         std::vector<uint256>::const_iterator it;
@@ -339,7 +339,7 @@ UniValue importprunedfunds(const JSONRPCRequest& request)
     }
 
     wtx.nIndex = txnIndex;
-    wtx.hashBlock = merkleBlock.header.GetBlockHash();
+    wtx.hashBlock = merkleBlock.header.GetIndexHash();
 
     LOCK2(cs_main, pwallet->cs_wallet);
 
@@ -661,7 +661,7 @@ UniValue dumpwallet(const JSONRPCRequest& request)
     // produce output
     file << strprintf("# Wallet dump created by Akila %s\n", CLIENT_BUILD);
     file << strprintf("# * Created on %s\n", EncodeDumpTime(GetTime()));
-    file << strprintf("# * Best block at time of backup was %i (%s),\n", chainActive.Height(), chainActive.Tip()->GetBlockHash().ToString());
+    file << strprintf("# * Best block at time of backup was %i (%s),\n", chainActive.Height(), chainActive.Tip()->GetIndexHash().ToString());
     file << strprintf("#   mined on %s\n", EncodeDumpTime(chainActive.Tip()->GetBlockTime()));
     file << "\n";
 

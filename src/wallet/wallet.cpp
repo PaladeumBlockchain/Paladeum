@@ -1180,8 +1180,8 @@ bool CWallet::AddToWalletIfInvolvingMe(const CTransactionRef& ptx, const CBlockI
                 std::pair<TxSpends::const_iterator, TxSpends::const_iterator> range = mapTxSpends.equal_range(txin.prevout);
                 while (range.first != range.second) {
                     if (range.first->second != tx.GetHash()) {
-                        LogPrintf("Transaction %s (in block %s) conflicts with wallet transaction %s (both spend %s:%i)\n", tx.GetHash().ToString(), pIndex->GetBlockHash().ToString(), range.first->second.ToString(), range.first->first.hash.ToString(), range.first->first.n);
-                        MarkConflicted(pIndex->GetBlockHash(), range.first->second);
+                        LogPrintf("Transaction %s (in block %s) conflicts with wallet transaction %s (both spend %s:%i)\n", tx.GetHash().ToString(), pIndex->GetIndexHash().ToString(), range.first->second.ToString(), range.first->first.hash.ToString(), range.first->first.n);
+                        MarkConflicted(pIndex->GetIndexHash(), range.first->second);
                     }
                     range.first++;
                 }
@@ -5561,7 +5561,7 @@ CWalletKey::CWalletKey(int64_t nExpires)
 void CMerkleTx::SetMerkleBranch(const CBlockIndex* pindex, int posInBlock)
 {
     // Update the tx's hashBlock
-    hashBlock = pindex->GetBlockHash();
+    hashBlock = pindex->GetIndexHash();
 
     // set the position of the transaction in the block
     nIndex = posInBlock;
