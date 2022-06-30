@@ -859,19 +859,19 @@ UniValue GetIndexHashes(const JSONRPCRequest& request)
     return result;
 }
 
-UniValue GetIndexHash(const JSONRPCRequest& request)
+UniValue getblockhash(const JSONRPCRequest& request)
 {
     if (request.fHelp || request.params.size() != 1)
         throw std::runtime_error(
-            "GetIndexHash height\n"
+            "getblockhash height\n"
             "\nReturns hash of block in best-block-chain at height provided.\n"
             "\nArguments:\n"
             "1. height         (numeric, required) The height index\n"
             "\nResult:\n"
             "\"hash\"         (string) The block hash\n"
             "\nExamples:\n"
-            + HelpExampleCli("GetIndexHash", "1000")
-            + HelpExampleRpc("GetIndexHash", "1000")
+            + HelpExampleCli("getblockhash", "1000")
+            + HelpExampleRpc("getblockhash", "1000")
         );
 
     LOCK(cs_main);
@@ -1867,7 +1867,7 @@ static const CRPCCommand commands[] =
     { "blockchain",         "getblock",               &getblock,               {"blockhash","verbosity|verbose"} },
     { "blockchain",         "getblockdeltas",         &getblockdeltas,         {} },
     { "blockchain",         "GetIndexHashes",         &GetIndexHashes,         {} },
-    { "blockchain",         "GetIndexHash",           &GetIndexHash,           {"height"} },
+    { "blockchain",         "getblockhash",           &getblockhash,           {"height"} },
     { "blockchain",         "getblockheader",         &getblockheader,         {"blockhash","verbose"} },
     { "blockchain",         "getchaintips",           &getchaintips,           {} },
     { "blockchain",         "getdifficulty",          &getdifficulty,          {} },
