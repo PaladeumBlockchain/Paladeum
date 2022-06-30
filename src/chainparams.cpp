@@ -233,9 +233,7 @@ public:
         // Global Burn Address
         strTokenFeeAddress = "yWZtsXxhbfUEbfHF5M7Lw2tuZPjA17MF46";
 
-        nMaxReorganizationDepth = 180; // 180 at 20 seconds block timespan is +/- 60 minutes.
-        nMinReorganizationPeers = 4;
-        nMinReorganizationAge = 60 * 60 * 12; // 12 hours
+        nMaxReorganizationDepth = 1080; // ~6 hours.
 
         // BIP44 cointype
         nExtCoinType = 1;
@@ -346,9 +344,8 @@ public:
         // Testing only: GyhJmCZok1F4WL3cYJW5SGchN1AYB8JAvmdT5cW78zrn5J5vUYQi
         strTokenFeeAddress = "aduSDWoFAU6as6kudkKJZYY4NcxjSostmg";
 
-        nMaxReorganizationDepth = 180; // 180 at 20 seconds block timespan is +/- 60 minutes.
-        nMinReorganizationPeers = 4;
-        nMinReorganizationAge = 60 * 60 * 12; // 12 hours
+        nMaxReorganizationDepth = 1080; // ~6 hours.
+
         /** AKILA End **/
     }
 };
@@ -452,8 +449,6 @@ public:
         strTokenFeeAddress = "mmbbmGLSeCpR9VhGp2JMXVkf7xkbjtcEET";
 
         nMaxReorganizationDepth = 60; // 60 at 1 minute block timespan is +/- 60 minutes.
-        nMinReorganizationPeers = 4;
-        nMinReorganizationAge = 60 * 60 * 12; // 12 hours
 
         // TODO, we need to figure out what to do with this for regtest. This effects the unit tests
         // For now we can use a timestamp very far away

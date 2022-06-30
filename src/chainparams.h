@@ -122,8 +122,6 @@ public:
     }
 
     int MaxReorganizationDepth() const { return nMaxReorganizationDepth; }
-    int MinReorganizationPeers() const { return nMinReorganizationPeers; }
-    int MinReorganizationAge() const { return nMinReorganizationAge; }
     /** AKILA End **/
 
 protected:
@@ -163,8 +161,6 @@ protected:
     std::string strTokenFeeAddress;
 
     int nMaxReorganizationDepth;
-    int nMinReorganizationPeers;
-    int nMinReorganizationAge;
     /** AKILA End **/
 };
 

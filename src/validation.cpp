@@ -4368,19 +4368,14 @@ static bool ContextualCheckBlockHeader(const CBlockHeader& block, CValidationSta
     assert(pindexPrev != nullptr);
     const int nHeight = pindexPrev->nHeight + 1;
 
-    //If this is a reorg, check that it is not too deep
     int nMaxReorgDepth = gArgs.GetArg("-maxreorg", GetParams().MaxReorganizationDepth());
-    int nMinReorgPeers = gArgs.GetArg("-minreorgpeers", GetParams().MinReorganizationPeers());
-    int nMinReorgAge = gArgs.GetArg("-minreorgage", GetParams().MinReorganizationAge());
-    bool fGreaterThanMaxReorg = (chainActive.Height() - (nHeight - 1)) >= nMaxReorgDepth;
-    if (fGreaterThanMaxReorg && g_connman) {
-        int nCurrentNodeCount = g_connman->GetNodeCount(CConnman::CONNECTIONS_ALL);
-        bool bIsCurrentChainCaughtUp = (GetTime() - chainActive.Tip()->nTime) <= nMinReorgAge;
-        if ((nCurrentNodeCount >= nMinReorgPeers) && bIsCurrentChainCaughtUp)
-            return state.DoS(10,
-                             error("%s: forked chain older than max reorganization depth (height %d), with connections (count %d), and caught up with active chain (%s)",
-                                   __func__, nHeight, nCurrentNodeCount, bIsCurrentChainCaughtUp ? "true" : "false"),
-                             REJECT_MAXREORGDEPTH, "bad-fork-prior-to-maxreorgdepth");
+    bool fGreaterThanMaxReorg = chainActive.Height() - (nHeight - 1) >= nMaxReorgDepth;
+
+    if (fGreaterThanMaxReorg) {
+        return state.DoS(25,
+            error("%s: forked chain older than max reorganization depth (height %d)",__func__, nHeight),
+            REJECT_MAXREORGDEPTH, "bad-fork-prior-to-maxreorgdepth"
+        );
     }
 
     if (hash == params.GetConsensus().hashGenesisBlock)
