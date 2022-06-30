@@ -79,11 +79,11 @@ unsigned int GetNextWorkRequired(const CBlockIndex* pindexLast, const Consensus:
     int64_t nActualTimespan = pindexLastMatchingProof->GetBlockTime() - pindex->GetBlockTime();
     int64_t nTargetTimespan = nDgwPastBlocks * params.nTargetSpacing;
 
-    // if (nActualTimespan < nTargetTimespan / 3)
-    //     nActualTimespan = nTargetTimespan / 3;
+    if (nActualTimespan < nTargetTimespan / 3)
+        nActualTimespan = nTargetTimespan / 3;
 
-    // if (nActualTimespan > nTargetTimespan * 3)
-    //     nActualTimespan = nTargetTimespan * 3;
+    if (nActualTimespan > nTargetTimespan * 3)
+        nActualTimespan = nTargetTimespan * 3;
 
     // Retarget
     bnNew *= nActualTimespan;
