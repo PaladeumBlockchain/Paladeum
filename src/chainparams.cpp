@@ -254,7 +254,7 @@ public:
         consensus.nSegwitEnabled = false;
         consensus.nCSVEnabled = true;
         consensus.powLimit = uint256S("003fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff");
-        consensus.posLimit = uint256S("003fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff");
+        consensus.posLimit = uint256S("00000000ffffffffffffffffffffffffffffffffffffffffffffffffffffffff");
         consensus.nTargetTimespan = 25;
         consensus.nTargetSpacing = 25 * 2; // * 2 is needed for hybrid PoW/PoS (actual block time will be 25)
         consensus.fDiffNoRetargeting = false;
