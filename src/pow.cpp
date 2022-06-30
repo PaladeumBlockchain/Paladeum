@@ -43,7 +43,7 @@ unsigned int GetNextWorkRequired(const CBlockIndex* pindexLast, const Consensus:
     const CBlockIndex *pindex = pindexLast;
     const CBlockIndex* pindexLastMatchingProof = nullptr;
     arith_uint256 bnPastTargetAvg = 0;
-    unsigned int nDgwPastBlocks = 15;
+    unsigned int nDgwPastBlocks = 30;
 
     // make sure we have at least (nPastBlocks + 1) blocks, otherwise just return powLimit
     if (!pindexLast || pindexLast->nHeight < nDgwPastBlocks)
@@ -78,12 +78,6 @@ unsigned int GetNextWorkRequired(const CBlockIndex* pindexLast, const Consensus:
 
     int64_t nActualTimespan = pindexLastMatchingProof->GetBlockTime() - pindex->GetBlockTime();
     int64_t nTargetTimespan = nDgwPastBlocks * params.nTargetSpacing;
-
-    if (nActualTimespan < nTargetTimespan / 3)
-        nActualTimespan = nTargetTimespan / 3;
-
-    if (nActualTimespan > nTargetTimespan * 3)
-        nActualTimespan = nTargetTimespan * 3;
 
     // Retarget
     bnNew *= nActualTimespan;
