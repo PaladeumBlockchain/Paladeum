@@ -257,7 +257,7 @@ public:
         consensus.nCSVEnabled = true;
         consensus.powLimit = uint256S("003fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff");
         consensus.posLimit = uint256S("003fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff");
-        consensus.nTargetTimespan = 1000;
+        consensus.nTargetTimespan = 25;
         consensus.nTargetSpacing = 25 * 2; // * 2 is needed for hybrid PoW/PoS (actual block time will be 25)
         consensus.fDiffNoRetargeting = false;
         consensus.fDiffAllowMinDifficultyBlocks = false;
@@ -273,7 +273,7 @@ public:
         consensus.nMinimumChainWork = uint256S("0x");
 
         // By default assume that the signatures in ancestors of this block are valid.
-        consensus.defaultAssumeValid = uint256S("0x4f22dafdde80289f20ff858b9fbad148f5ebd8a7e55027f70f27e9d1edea9f45");
+        consensus.defaultAssumeValid = uint256S("0x356fa4873a18832e58c4dee0480c8846dc1a145e7935f7f66c0cd0b39bbf2768");
 
         // Proof-of-Stake
         consensus.nTxMessages = 10;
@@ -282,28 +282,28 @@ public:
         // Fork to enable offline staking and remove the block limiter
         consensus.offlineStakingFork = 10;
 
-        pchMessageStart[0] = 0x80;
-        pchMessageStart[1] = 0x7a;
-        pchMessageStart[2] = 0x62;
-        pchMessageStart[3] = 0x55;
-        nDefaultPort = 5566;
+        pchMessageStart[0] = 0xa1;
+        pchMessageStart[1] = 0xb2;
+        pchMessageStart[2] = 0xc3;
+        pchMessageStart[3] = 0xd4;
+        nDefaultPort = 17992;
         nPruneAfterHeight = 1000;
 
-        const char* pszTimestamp = "Complete Human Genome Sequenced for First Time | Apr 1, 2022 Sci-News";
+        const char* pszTimestamp = "Mars Express Orbiter’s Instrument Gets Major Software Upgrade | Jun 29, 2022 Sci-News";
 
-        genesis = CreateGenesisBlock(pszTimestamp, 1656336395, 1578, 0x1f3fffff, 1, 1 * COIN);
+        genesis = CreateGenesisBlock(pszTimestamp, 1656336395, 1662, 0x1f3fffff, 1, 1 * COIN);
         consensus.hashGenesisBlock = genesis.GetIndexHash();
 
-        assert(consensus.hashGenesisBlock == uint256S("0x4f22dafdde80289f20ff858b9fbad148f5ebd8a7e55027f70f27e9d1edea9f45"));
-        assert(genesis.hashMerkleRoot == uint256S("0xa121a4e1d9762f26cc46f1b3bc69ef0961920f14ac62ac21bbcffa28de94c87d"));
+        assert(consensus.hashGenesisBlock == uint256S("0x356fa4873a18832e58c4dee0480c8846dc1a145e7935f7f66c0cd0b39bbf2768"));
+        assert(genesis.hashMerkleRoot == uint256S("0x0cb152079a81842c8ee3c7607af49e9dbfd2ed91a7ac7de83783ff2c563186b6"));
 
         vFixedSeeds.clear();
         vSeeds.clear();
 
-        base58Prefixes[PUBKEY_ADDRESS] = std::vector<unsigned char>(1,140);
-        base58Prefixes[SCRIPT_ADDRESS] = std::vector<unsigned char>(1,143);
+        base58Prefixes[PUBKEY_ADDRESS] = std::vector<unsigned char>(1,83);
+        base58Prefixes[SCRIPT_ADDRESS] = std::vector<unsigned char>(1,125);
         base58Prefixes[SECRET_KEY] =     std::vector<unsigned char>(1,108);
-        base58Prefixes[OFFLINE_STAKING_ADDRESS] = std::vector<unsigned char>(1,22);
+        base58Prefixes[OFFLINE_STAKING_ADDRESS] = std::vector<unsigned char>(1,115);
         base58Prefixes[EXT_PUBLIC_KEY] = {0x04, 0x35, 0x87, 0xCF};
         base58Prefixes[EXT_SECRET_KEY] = {0x04, 0x35, 0x83, 0x94};
 
@@ -343,7 +343,8 @@ public:
         nAddNullQualifierTagFeeAmount = 0.01 * COIN;
 
         // Global Burn Address
-        strTokenFeeAddress = "yWZtsXxhbfUEbfHF5M7Lw2tuZPjA17MF46";
+        // Testing only: GyhJmCZok1F4WL3cYJW5SGchN1AYB8JAvmdT5cW78zrn5J5vUYQi
+        strTokenFeeAddress = "aduSDWoFAU6as6kudkKJZYY4NcxjSostmg";
 
         nMaxReorganizationDepth = 180; // 180 at 20 seconds block timespan is +/- 60 minutes.
         nMinReorganizationPeers = 4;
