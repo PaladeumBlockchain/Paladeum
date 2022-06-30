@@ -48,7 +48,7 @@ void GenesisGenerator(CBlock genesis) {
     printf("block.MerkleRoot = %s \n", genesis.hashMerkleRoot.ToString().c_str());
 }
 
-static CBlock CreateGenesisBlock(const char* pszTimestamp, const CScript& genesisOutputScript, uint32_t nTime, uint32_t nNonce, uint32_t nBits, int32_t nVersion, const CAmount& genesisReward)
+static CBlock CreateGenesisBlock(const char* pszTimestamp, const CScript& genesisOutputScript, uint32_t nTime, uint64_t nNonce64, uint32_t nBits, int32_t nVersion, const CAmount& genesisReward)
 {
     CMutableTransaction txNew;
     txNew.nVersion = 1;
@@ -62,7 +62,7 @@ static CBlock CreateGenesisBlock(const char* pszTimestamp, const CScript& genesi
     CBlock genesis;
     genesis.nTime    = nTime;
     genesis.nBits    = nBits;
-    genesis.nNonce64   = nNonce;
+    genesis.nNonce64   = nNonce64;
     genesis.nVersion = nVersion;
     genesis.vtx.push_back(MakeTransactionRef(std::move(txNew)));
     genesis.hashPrevBlock.SetNull();
@@ -75,10 +75,10 @@ static CBlock CreateGenesisBlock(const char* pszTimestamp, const CScript& genesi
  * transaction cannot be spent since it did not originally exist in the
  * database.
  */
-static CBlock CreateGenesisBlock(const char* pszTimestamp, uint32_t nTime, uint32_t nNonce, uint32_t nBits, int32_t nVersion, const CAmount& genesisReward)
+static CBlock CreateGenesisBlock(const char* pszTimestamp, uint32_t nTime, uint64_t nNonce64, uint32_t nBits, int32_t nVersion, const CAmount& genesisReward)
 {
     const CScript genesisOutputScript = CScript() << ParseHex("04678afdb0fe5548271967f1a67130b7105cd6a828e03909a67962e0ea1f61deb649f6bc3f4cef38c4f35504e51ec112de5c384df7ba0b8d578a4c702b6bf11d5f") << OP_CHECKSIG;
-    return CreateGenesisBlock(pszTimestamp, genesisOutputScript, nTime, nNonce, nBits, nVersion, genesisReward);
+    return CreateGenesisBlock(pszTimestamp, genesisOutputScript, nTime, nNonce64, nBits, nVersion, genesisReward);
 }
 
 void CChainParams::UpdateVersionBitsParameters(Consensus::DeploymentPos d, int64_t nStartTime, int64_t nTimeout)
