@@ -43,7 +43,7 @@ unsigned int GetNextWorkRequired(const CBlockIndex* pindexLast, const Consensus:
     const CBlockIndex *pindex = pindexLast;
     const CBlockIndex* pindexLastMatchingProof = nullptr;
     arith_uint256 bnPastTargetAvg = 0;
-    unsigned int nDgwPastBlocks = 30;
+    unsigned int nDgwPastBlocks = 15;
 
     // make sure we have at least (nPastBlocks + 1) blocks, otherwise just return powLimit
     if (!pindexLast || pindexLast->nHeight < nDgwPastBlocks)
