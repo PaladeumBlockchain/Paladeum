@@ -292,7 +292,6 @@ RES_ICONS = \
   qt/res/icons/token_overview.png \
   qt/res/icons/token_manage.png \
   qt/res/icons/token_transfer.png \
-  qt/res/icons/akilacointext.png \
   qt/res/icons/akila.ico \
   qt/res/icons/akila_testnet.ico \
   qt/res/icons/akila.png \

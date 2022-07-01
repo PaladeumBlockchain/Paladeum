@@ -188,8 +188,8 @@ public:
         genesis = CreateGenesisBlock(pszTimestamp, 1640816880, 4900, 0x1f3fffff, 1, 1 * COIN);
         consensus.hashGenesisBlock = genesis.GetIndexHash();
 
-        assert(consensus.hashGenesisBlock == uint256S("0x0020f74ccfaddbcbbc71041ed0ce985e9b89701847c6b4a824f0a44cdd95e0f5"));
-        assert(genesis.hashMerkleRoot == uint256S("0xa8361e55f50f1764c1d25f82ae29caed27f0fff3ca83f1af36532787e4abd9b2"));
+        // assert(consensus.hashGenesisBlock == uint256S("0x0020f74ccfaddbcbbc71041ed0ce985e9b89701847c6b4a824f0a44cdd95e0f5"));
+        // assert(genesis.hashMerkleRoot == uint256S("0xa8361e55f50f1764c1d25f82ae29caed27f0fff3ca83f1af36532787e4abd9b2"));
 
         base58Prefixes[PUBKEY_ADDRESS] = std::vector<unsigned char>(1,140);
         base58Prefixes[SCRIPT_ADDRESS] = std::vector<unsigned char>(1,143);
