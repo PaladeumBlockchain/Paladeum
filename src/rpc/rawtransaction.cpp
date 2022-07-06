@@ -2232,12 +2232,40 @@ UniValue testmempoolaccept(const JSONRPCRequest& request)
     return result;
 }
 
+UniValue decoderawblock(const JSONRPCRequest& request)
+{
+    if (request.fHelp || request.params.size() != 1)
+        throw std::runtime_error(
+                "decoderawblock \"hexstring\"\n"
+                "\nReturn a block.ToString() of raw block hex\n"
+
+                "\nArguments:\n"
+                "1. \"hex\"      (string, required) The block hex string\n"
+                "\nResult:\n"
+                "\nExamples:\n"
+                + HelpExampleCli("decoderawblock", "\"hexstring\"")
+                + HelpExampleRpc("decoderawblock", "\"hexstring\"")
+        );
+
+    LOCK(cs_main);
+    // RPCTypeCheck(params, boost::assign::list_of(UniValue::VSTR));
+    RPCTypeCheck(request.params, {UniValue::VSTR});
+
+    CBlock block;
+
+    if (!DecodeHexBlk(block, request.params[0].get_str()))
+        throw JSONRPCError(RPC_DESERIALIZATION_ERROR, "Block decode failed");
+
+    return block.ToString();
+}
+
 static const CRPCCommand commands[] =
 { //  category              name                      actor (function)         argNames
   //  --------------------- ------------------------  -----------------------  ----------
     { "rawtransactions",    "getrawtransaction",      &getrawtransaction,      {"txid","verbose"} },
     { "rawtransactions",    "createrawtransaction",   &createrawtransaction,   {"inputs","outputs","locktime"} },
     { "rawtransactions",    "decoderawtransaction",   &decoderawtransaction,   {"hexstring"} },
+    { "rawtransactions",    "decoderawblock",         &decoderawblock,         {"rawblock"}  },
     { "rawtransactions",    "decodescript",           &decodescript,           {"hexstring"} },
     { "rawtransactions",    "sendrawtransaction",     &sendrawtransaction,     {"hexstring","allowhighfees"} },
     { "rawtransactions",    "combinerawtransaction",  &combinerawtransaction,  {"txs"} },
