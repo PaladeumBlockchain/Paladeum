@@ -132,8 +132,7 @@ public:
     inline void SerializationOp(Stream& s, Operation ser_action) {
         READWRITE(*(CBlockHeader*)this);
         READWRITE(vtx);
-        if (vtx.size() > 1 && vtx[1]->IsCoinStake())
-            READWRITE(vchBlockSig);
+        READWRITE(vchBlockSig);
     }
 
     void SetNull()
