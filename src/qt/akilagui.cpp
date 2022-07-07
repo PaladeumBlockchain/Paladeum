@@ -414,20 +414,21 @@ void AkilaGUI::createActions()
     historyAction->setFont(font);
     tabGroup->addAction(historyAction);
 
-    offlineAction = new QAction(platformStyle->SingleColorIconOnOff(":/icons/offline", ":/icons/offline"), tr("&Offline staking"), this);
-    offlineAction->setStatusTip(tr("Create offline staking address"));
-    offlineAction->setToolTip(offlineAction->statusTip());
-    offlineAction->setCheckable(true);
-    offlineAction->setShortcut(QKeySequence(Qt::ALT + Qt::Key_5));
-    offlineAction->setFont(font);
-    tabGroup->addAction(offlineAction);
+    // offlineAction = new QAction(platformStyle->SingleColorIconOnOff(":/icons/offline", ":/icons/offline"), tr("&Offline staking"), this);
+    // offlineAction->setStatusTip(tr("Create offline staking address"));
+    // offlineAction->setToolTip(offlineAction->statusTip());
+    // offlineAction->setCheckable(true);
+    // offlineAction->setShortcut(QKeySequence(Qt::ALT + Qt::Key_5));
+    // offlineAction->setFont(font);
+    // tabGroup->addAction(offlineAction);
 
     /** TOKENS START */
     tokensOverviewAction = new QAction(platformStyle->SingleColorIconOnOff(":/icons/token_overview", ":/icons/token_overview"), tr("&Tokens"), this);
     tokensOverviewAction->setStatusTip(tr("Tokens overview"));
     tokensOverviewAction->setToolTip(tokensOverviewAction->statusTip());
     tokensOverviewAction->setCheckable(true);
-    tokensOverviewAction->setShortcut(QKeySequence(Qt::ALT + Qt::Key_6));
+    // tokensOverviewAction->setShortcut(QKeySequence(Qt::ALT + Qt::Key_6));
+    tokensOverviewAction->setShortcut(QKeySequence(Qt::ALT + Qt::Key_5));
     tokensOverviewAction->setFont(font);
     tabGroup->addAction(tokensOverviewAction);
     /** TOKENS END */
