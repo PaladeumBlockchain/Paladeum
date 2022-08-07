@@ -1,25 +1,25 @@
 #!/usr/bin/env python3
 # Copyright (c) 2017 The Bitcoin Core developers
-# Copyright (c) 2017-2020 The Akila developers
+# Copyright (c) 2017-2020 The Paladeum developers
 # Distributed under the MIT software license, see the accompanying
 # file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
 """Testing token use cases"""
 
-from test_framework.test_framework import AkilaTestFramework
+from test_framework.test_framework import PaladeumTestFramework
 from test_framework.util import assert_equal, assert_is_hash_string, assert_does_not_contain_key, assert_raises_rpc_error, JSONRPCException, Decimal
 
 import string
 
 
-class TokenTest(AkilaTestFramework):
+class TokenTest(PaladeumTestFramework):
     def set_test_params(self):
         self.setup_clean_chain = True
         self.num_nodes = 3
         self.extra_args = [['-tokenindex'], ['-tokenindex'], ['-tokenindex']]
 
     def activate_p2sh_tokens(self):
-        self.log.info("Generating AKILA for node[0] and activating tokens...")
+        self.log.info("Generating PLD for node[0] and activating tokens...")
         n0 = self.nodes[0]
 
         n0.generate(1)
@@ -97,18 +97,18 @@ class TokenTest(AkilaTestFramework):
         issued_scriptPubKey = tx_data['vout'][tx_index]['scriptPubKey']['hex']
 
         # Building createrawtransaction data
-        akila_destination_address = n0.getnewaddress()
+        paladeum_destination_address = n0.getnewaddress()
 
-        self.log.info("Get AKILA for tx fee()...")
-        unspent_akila_inputs = n0.listunspent(100)[0]
+        self.log.info("Get PLD for tx fee()...")
+        unspent_paladeum_inputs = n0.listunspent(100)[0]
 
         self.log.info("Get private key for unspent input")
-        unspent_akila_private_key = n0.dumpprivkey(unspent_akila_inputs['address'])
+        unspent_paladeum_private_key = n0.dumpprivkey(unspent_paladeum_inputs['address'])
 
-        self.log.info("Building akila tx input...")
-        akila_tx_input = {
-            'txid' : unspent_akila_inputs['txid'],
-            'vout' : unspent_akila_inputs['vout']
+        self.log.info("Building paladeum tx input...")
+        paladeum_tx_input = {
+            'txid' : unspent_paladeum_inputs['txid'],
+            'vout' : unspent_paladeum_inputs['vout']
         }
 
         self.log.info("Building token tx input...")
@@ -119,7 +119,7 @@ class TokenTest(AkilaTestFramework):
 
         self.log.info("Building destination tx input...")
         destination_tx_data = {
-            akila_destination_address : unspent_akila_inputs['amount'] - 1,
+            paladeum_destination_address : unspent_paladeum_inputs['amount'] - 1,
             first_address : {
                 'transfer' : {
                     token_name : 1000
@@ -129,15 +129,15 @@ class TokenTest(AkilaTestFramework):
 
         # Create data for signrawtransaction()
         self.log.info("Calling createrawtransaction()...")
-        create_raw_hex = n0.createrawtransaction([akila_tx_input, token_tx_input], destination_tx_data)
+        create_raw_hex = n0.createrawtransaction([paladeum_tx_input, token_tx_input], destination_tx_data)
 
         prev_tx_data = [
             {
-                'txid' : akila_tx_input['txid'],
-                'vout' : akila_tx_input['vout'],
-                'scriptPubKey' : unspent_akila_inputs['scriptPubKey'],
+                'txid' : paladeum_tx_input['txid'],
+                'vout' : paladeum_tx_input['vout'],
+                'scriptPubKey' : unspent_paladeum_inputs['scriptPubKey'],
                 'redeemScript' : '',
-                'amount' : unspent_akila_inputs['amount']
+                'amount' : unspent_paladeum_inputs['amount']
             },
             {
                 'txid' : token_tx_input['txid'],
@@ -149,12 +149,12 @@ class TokenTest(AkilaTestFramework):
         ]
 
         self.log.info("Calling signrawtransaction on first node with one private key...")
-        private_keys = [first_address_priv, unspent_akila_private_key]
+        private_keys = [first_address_priv, unspent_paladeum_private_key]
         signed_data = n0.signrawtransaction(create_raw_hex, prev_tx_data, private_keys)
         assert_equal(signed_data['complete'], True)
 
         self.log.info("Calling signrawtransaction on first node with second private key...")
-        private_keys = [second_address_priv, unspent_akila_private_key]
+        private_keys = [second_address_priv, unspent_paladeum_private_key]
         signed_data = n0.signrawtransaction(create_raw_hex, prev_tx_data, private_keys)
         assert_equal(signed_data['complete'], True)
 
@@ -212,18 +212,18 @@ class TokenTest(AkilaTestFramework):
         issued_scriptPubKey = tx_data['vout'][tx_index]['scriptPubKey']['hex']
 
         # Building createrawtransaction data
-        akila_destination_address = n0.getnewaddress()
+        paladeum_destination_address = n0.getnewaddress()
 
-        self.log.info("Get AKILA for tx fee()...")
-        unspent_akila_inputs = n0.listunspent(100)[0]
+        self.log.info("Get PLD for tx fee()...")
+        unspent_paladeum_inputs = n0.listunspent(100)[0]
 
         self.log.info("Get private key for unspent input")
-        unspent_akila_private_key = n0.dumpprivkey(unspent_akila_inputs['address'])
+        unspent_paladeum_private_key = n0.dumpprivkey(unspent_paladeum_inputs['address'])
 
-        self.log.info("Building akila tx input...")
-        akila_tx_input = {
-            'txid' : unspent_akila_inputs['txid'],
-            'vout' : unspent_akila_inputs['vout']
+        self.log.info("Building paladeum tx input...")
+        paladeum_tx_input = {
+            'txid' : unspent_paladeum_inputs['txid'],
+            'vout' : unspent_paladeum_inputs['vout']
         }
 
         self.log.info("Building token tx input...")
@@ -234,7 +234,7 @@ class TokenTest(AkilaTestFramework):
 
         self.log.info("Building destination tx input...")
         destination_tx_data = {
-            akila_destination_address : unspent_akila_inputs['amount'] - 1,
+            paladeum_destination_address : unspent_paladeum_inputs['amount'] - 1,
             first_address : {
                 'transfer' : {
                     token_name : 1000
@@ -244,15 +244,15 @@ class TokenTest(AkilaTestFramework):
 
         # Create data for signrawtransaction()
         self.log.info("Calling createrawtransaction()...")
-        create_raw_hex = n0.createrawtransaction([akila_tx_input, token_tx_input], destination_tx_data)
+        create_raw_hex = n0.createrawtransaction([paladeum_tx_input, token_tx_input], destination_tx_data)
 
         prev_tx_data = [
             {
-                'txid' : akila_tx_input['txid'],
-                'vout' : akila_tx_input['vout'],
-                'scriptPubKey' : unspent_akila_inputs['scriptPubKey'],
+                'txid' : paladeum_tx_input['txid'],
+                'vout' : paladeum_tx_input['vout'],
+                'scriptPubKey' : unspent_paladeum_inputs['scriptPubKey'],
                 'redeemScript' : '',
-                'amount' : unspent_akila_inputs['amount']
+                'amount' : unspent_paladeum_inputs['amount']
             },
             {
                 'txid' : token_tx_input['txid'],
@@ -264,7 +264,7 @@ class TokenTest(AkilaTestFramework):
         ]
 
         self.log.info("Calling signrawtransaction on first node...")
-        private_keys = [first_address_priv, unspent_akila_private_key]
+        private_keys = [first_address_priv, unspent_paladeum_private_key]
         signed_data = n0.signrawtransaction(create_raw_hex, prev_tx_data, private_keys)
         assert_equal(signed_data['complete'], False)
         partial_signed_hex = signed_data['hex']
@@ -280,8 +280,8 @@ class TokenTest(AkilaTestFramework):
 
         assert_equal(len(txid), 64)
 
-    def p2sh_2of3_multi_nodes_akila_send_test(self):
-        self.log.info("Running p2sh_2of3_multi_nodes_akila_send_test")
+    def p2sh_2of3_multi_nodes_paladeum_send_test(self):
+        self.log.info("Running p2sh_2of3_multi_nodes_paladeum_send_test")
         n0, n1 = self.nodes[0], self.nodes[1]
 
         # Create new address
@@ -324,21 +324,21 @@ class TokenTest(AkilaTestFramework):
         issued_scriptPubKey = tx_data['vout'][tx_index]['scriptPubKey']['hex']
 
         # Building createrawtransaction data
-        akila_destination_address = n0.getnewaddress()
+        paladeum_destination_address = n0.getnewaddress()
 
-        self.log.info("Building akila tx input...")
-        akila_tx_input = {
+        self.log.info("Building paladeum tx input...")
+        paladeum_tx_input = {
             'txid' : txid,
             'vout' : tx_index
         }
 
         self.log.info("Building destination tx input...")
         destination_tx_data = {
-            akila_destination_address : 4999
+            paladeum_destination_address : 4999
         }
 
         self.log.info("Calling createrawtransaction()...")
-        create_raw_hex = n0.createrawtransaction([akila_tx_input], destination_tx_data)
+        create_raw_hex = n0.createrawtransaction([paladeum_tx_input], destination_tx_data)
 
         # Create data for signrawtransaction()
         self.log.info("Building prevTx Data...")
@@ -454,18 +454,18 @@ class TokenTest(AkilaTestFramework):
         issued_scriptPubKey = tx_data['vout'][tx_index]['scriptPubKey']['hex']
 
         # Building createrawtransaction data
-        akila_destination_address = n0.getnewaddress()
+        paladeum_destination_address = n0.getnewaddress()
 
-        self.log.info("Get AKILA for tx fee()...")
-        unspent_akila_inputs = n0.listunspent(100)[0]
+        self.log.info("Get PLD for tx fee()...")
+        unspent_paladeum_inputs = n0.listunspent(100)[0]
 
         self.log.info("Get private key for unspent input")
-        unspent_akila_private_key = n0.dumpprivkey(unspent_akila_inputs['address'])
+        unspent_paladeum_private_key = n0.dumpprivkey(unspent_paladeum_inputs['address'])
 
-        self.log.info("Building akila tx input...")
-        akila_tx_input = {
-            'txid' : unspent_akila_inputs['txid'],
-            'vout' : unspent_akila_inputs['vout']
+        self.log.info("Building paladeum tx input...")
+        paladeum_tx_input = {
+            'txid' : unspent_paladeum_inputs['txid'],
+            'vout' : unspent_paladeum_inputs['vout']
         }
 
         self.log.info("Building token tx input...")
@@ -476,7 +476,7 @@ class TokenTest(AkilaTestFramework):
 
         self.log.info("Building destination tx input...")
         destination_tx_data = {
-            akila_destination_address : unspent_akila_inputs['amount'] - 1,
+            paladeum_destination_address : unspent_paladeum_inputs['amount'] - 1,
             first_address : {
                 'transfer' : {
                     token_name : 1000
@@ -486,15 +486,15 @@ class TokenTest(AkilaTestFramework):
 
         # Create data for signrawtransaction()
         self.log.info("Calling createrawtransaction()...")
-        create_raw_hex = n0.createrawtransaction([akila_tx_input, token_tx_input], destination_tx_data)
+        create_raw_hex = n0.createrawtransaction([paladeum_tx_input, token_tx_input], destination_tx_data)
 
         prev_tx_data = [
             {
-                'txid' : akila_tx_input['txid'],
-                'vout' : akila_tx_input['vout'],
-                'scriptPubKey' : unspent_akila_inputs['scriptPubKey'],
+                'txid' : paladeum_tx_input['txid'],
+                'vout' : paladeum_tx_input['vout'],
+                'scriptPubKey' : unspent_paladeum_inputs['scriptPubKey'],
                 'redeemScript' : '',
-                'amount' : unspent_akila_inputs['amount']
+                'amount' : unspent_paladeum_inputs['amount']
             },
             {
                 'txid' : token_tx_input['txid'],
@@ -506,7 +506,7 @@ class TokenTest(AkilaTestFramework):
         ]
 
         self.log.info("Calling signrawtransaction on first node with one private key...")
-        private_keys = [first_address_priv, unspent_akila_private_key]
+        private_keys = [first_address_priv, unspent_paladeum_private_key]
         signed_data = n0.signrawtransaction(create_raw_hex, prev_tx_data, private_keys)
         assert_equal(signed_data['complete'], True)
 
@@ -533,7 +533,7 @@ class TokenTest(AkilaTestFramework):
         self.activate_p2sh_tokens()
         self.p2sh_issue_token_test()
         self.p2sh_1of2_single_node_token_transfer_test()
-        self.p2sh_2of3_multi_nodes_akila_send_test()
+        self.p2sh_2of3_multi_nodes_paladeum_send_test()
         self.p2sh_2of3_multi_nodes_token_transfer_test()
         self.p2sh_using_rpc_console_test()
         self.p2sh_1of2_single_node_signatue_mutated_attack_test()

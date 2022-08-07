@@ -1,5 +1,5 @@
 # Copyright (c) 2013-2016 The Bitcoin Core developers
-# Copyright (c) 2021-2022 The Akila developers
+# Copyright (c) 2021-2022 The Paladeum developers
 # Distributed under the MIT software license, see the accompanying
 # file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -19,28 +19,28 @@ else
 LIBUNIVALUE = $(UNIVALUE_LIBS)
 endif
 
-AKILA_INCLUDES=-I$(builddir) -I$(builddir)/obj $(BDB_CPPFLAGS) $(BOOST_CPPFLAGS) $(LEVELDB_CPPFLAGS) $(CRYPTO_CFLAGS) $(SSL_CFLAGS)
+PLD_INCLUDES=-I$(builddir) -I$(builddir)/obj $(BDB_CPPFLAGS) $(BOOST_CPPFLAGS) $(LEVELDB_CPPFLAGS) $(CRYPTO_CFLAGS) $(SSL_CFLAGS)
 
-AKILA_INCLUDES += -I$(srcdir)/secp256k1/include
-AKILA_INCLUDES += $(UNIVALUE_CFLAGS)
+PLD_INCLUDES += -I$(srcdir)/secp256k1/include
+PLD_INCLUDES += $(UNIVALUE_CFLAGS)
 
-LIBAKILA_SERVER=libakila_server.a
-LIBAKILA_COMMON=libakila_common.a
-LIBAKILA_CONSENSUS=libakila_consensus.a
-LIBAKILA_CLI=libakila_cli.a
-LIBAKILA_UTIL=libakila_util.a
-LIBAKILA_CRYPTO=crypto/libakila_crypto.a
-LIBAKILAQT=qt/libakilaqt.a
+LIBPLD_SERVER=libpaladeum_server.a
+LIBPLD_COMMON=libpaladeum_common.a
+LIBPLD_CONSENSUS=libpaladeum_consensus.a
+LIBPLD_CLI=libpaladeum_cli.a
+LIBPLD_UTIL=libpaladeum_util.a
+LIBPLD_CRYPTO=crypto/libpaladeum_crypto.a
+LIBPLDQT=qt/libpaladeumqt.a
 LIBSECP256K1=secp256k1/libsecp256k1.la
 
 if ENABLE_ZMQ
-LIBAKILA_ZMQ=libakila_zmq.a
+LIBPLD_ZMQ=libpaladeum_zmq.a
 endif
-if BUILD_AKILA_LIBS
-LIBAKILACONSENSUS=libakilaconsensus.la
+if BUILD_PLD_LIBS
+LIBPLDCONSENSUS=libpaladeumconsensus.la
 endif
 if ENABLE_WALLET
-LIBAKILA_WALLET=libakila_wallet.a
+LIBPLD_WALLET=libpaladeum_wallet.a
 endif
 
 $(LIBSECP256K1): $(wildcard secp256k1/src/*) $(wildcard secp256k1/include/*)
@@ -49,37 +49,37 @@ $(LIBSECP256K1): $(wildcard secp256k1/src/*) $(wildcard secp256k1/include/*)
 # Make is not made aware of per-object dependencies to avoid limiting building parallelization
 # But to build the less dependent modules first, we manually select their order here:
 EXTRA_LIBRARIES += \
-  $(LIBAKILA_CRYPTO) \
-  $(LIBAKILA_UTIL) \
-  $(LIBAKILA_COMMON) \
-  $(LIBAKILA_CONSENSUS) \
-  $(LIBAKILA_SERVER) \
-  $(LIBAKILA_CLI) \
-  $(LIBAKILA_WALLET) \
-  $(LIBAKILA_ZMQ)
+  $(LIBPLD_CRYPTO) \
+  $(LIBPLD_UTIL) \
+  $(LIBPLD_COMMON) \
+  $(LIBPLD_CONSENSUS) \
+  $(LIBPLD_SERVER) \
+  $(LIBPLD_CLI) \
+  $(LIBPLD_WALLET) \
+  $(LIBPLD_ZMQ)
 
-lib_LTLIBRARIES = $(LIBAKILACONSENSUS)
+lib_LTLIBRARIES = $(LIBPLDCONSENSUS)
 
 bin_PROGRAMS =
 noinst_PROGRAMS =
 TESTS =
 BENCHMARKS =
 
-if BUILD_AKILAD
-  bin_PROGRAMS += akilad
+if BUILD_PLDD
+  bin_PROGRAMS += paladeumd
 endif
 
-if BUILD_AKILA_CLI
-  bin_PROGRAMS += akila-cli
+if BUILD_PLD_CLI
+  bin_PROGRAMS += paladeum-cli
 endif
 
-if BUILD_AKILA_TX
-  bin_PROGRAMS += akila-tx
+if BUILD_PLD_TX
+  bin_PROGRAMS += paladeum-tx
 endif
 
 .PHONY: FORCE check-symbols check-security
-# akila core #
-AKILA_CORE_H = \
+# paladeum core #
+PLD_CORE_H = \
   addrdb.h \
   addressindex.h \
   spentindex.h \
@@ -198,12 +198,12 @@ obj/build.h: FORCE
 	@$(MKDIR_P) $(builddir)/obj
 	@$(top_srcdir)/share/genbuild.sh "$(abs_top_builddir)/src/obj/build.h" \
 	  "$(abs_top_srcdir)"
-libakila_util_a-clientversion.$(OBJEXT): obj/build.h
+libpaladeum_util_a-clientversion.$(OBJEXT): obj/build.h
 
-# server: shared between akilad and akila-qt
-libakila_server_a_CPPFLAGS = $(AM_CPPFLAGS) $(AKILA_INCLUDES) $(MINIUPNPC_CPPFLAGS) $(EVENT_CFLAGS) $(EVENT_PTHREADS_CFLAGS)
-libakila_server_a_CXXFLAGS = $(AM_CXXFLAGS) $(PIE_FLAGS)
-libakila_server_a_SOURCES = \
+# server: shared between paladeumd and paladeum-qt
+libpaladeum_server_a_CPPFLAGS = $(AM_CPPFLAGS) $(PLD_INCLUDES) $(MINIUPNPC_CPPFLAGS) $(EVENT_CFLAGS) $(EVENT_PTHREADS_CFLAGS)
+libpaladeum_server_a_CXXFLAGS = $(AM_CXXFLAGS) $(PIE_FLAGS)
+libpaladeum_server_a_SOURCES = \
   addrdb.cpp \
   addrman.cpp \
   bloom.cpp \
@@ -256,23 +256,23 @@ libakila_server_a_SOURCES = \
   validation.cpp \
   validationinterface.cpp \
   versionbits.cpp \
-  $(AKILA_CORE_H)
+  $(PLD_CORE_H)
 
 if ENABLE_ZMQ
-libakila_zmq_a_CPPFLAGS = $(AKILA_INCLUDES) $(ZMQ_CFLAGS)
-libakila_zmq_a_CXXFLAGS = $(AM_CXXFLAGS) $(PIE_FLAGS)
-libakila_zmq_a_SOURCES = \
+libpaladeum_zmq_a_CPPFLAGS = $(PLD_INCLUDES) $(ZMQ_CFLAGS)
+libpaladeum_zmq_a_CXXFLAGS = $(AM_CXXFLAGS) $(PIE_FLAGS)
+libpaladeum_zmq_a_SOURCES = \
   zmq/zmqabstractnotifier.cpp \
   zmq/zmqnotificationinterface.cpp \
   zmq/zmqpublishnotifier.cpp
 endif
 
 
-# wallet: shared between akilad and akila-qt, but only linked
+# wallet: shared between paladeumd and paladeum-qt, but only linked
 # when wallet enabled
-libakila_wallet_a_CPPFLAGS = $(AM_CPPFLAGS) $(AKILA_INCLUDES)
-libakila_wallet_a_CXXFLAGS = $(AM_CXXFLAGS) $(PIE_FLAGS)
-libakila_wallet_a_SOURCES = \
+libpaladeum_wallet_a_CPPFLAGS = $(AM_CPPFLAGS) $(PLD_INCLUDES)
+libpaladeum_wallet_a_CXXFLAGS = $(AM_CXXFLAGS) $(PIE_FLAGS)
+libpaladeum_wallet_a_SOURCES = \
   wallet/crypter.cpp \
   wallet/db.cpp \
   wallet/feebumper.cpp \
@@ -283,12 +283,12 @@ libakila_wallet_a_SOURCES = \
   wallet/wallet.cpp \
   wallet/walletdb.cpp \
   wallet/bip39.cpp \
-  $(AKILA_CORE_H)
+  $(PLD_CORE_H)
 
 # crypto primitives library
-crypto_libakila_crypto_a_CPPFLAGS = $(AM_CPPFLAGS)
-crypto_libakila_crypto_a_CXXFLAGS = $(AM_CXXFLAGS) $(PIE_FLAGS)
-crypto_libakila_crypto_a_SOURCES = \
+crypto_libpaladeum_crypto_a_CPPFLAGS = $(AM_CPPFLAGS)
+crypto_libpaladeum_crypto_a_CXXFLAGS = $(AM_CXXFLAGS) $(PIE_FLAGS)
+crypto_libpaladeum_crypto_a_SOURCES = \
   crypto/aes.cpp \
   crypto/aes.h \
   crypto/chacha20.h \
@@ -334,13 +334,13 @@ crypto_libakila_crypto_a_SOURCES = \
   crypto/blake2b.h
 
 if USE_ASM
-crypto_libakila_crypto_a_SOURCES += crypto/sha256_sse4.cpp
+crypto_libpaladeum_crypto_a_SOURCES += crypto/sha256_sse4.cpp
 endif
 
 # consensus: shared between all executables that validate any consensus rules.
-libakila_consensus_a_CPPFLAGS = $(AM_CPPFLAGS) $(AKILA_INCLUDES)
-libakila_consensus_a_CXXFLAGS = $(AM_CXXFLAGS) $(PIE_FLAGS)
-libakila_consensus_a_SOURCES = \
+libpaladeum_consensus_a_CPPFLAGS = $(AM_CPPFLAGS) $(PLD_INCLUDES)
+libpaladeum_consensus_a_CXXFLAGS = $(AM_CXXFLAGS) $(PIE_FLAGS)
+libpaladeum_consensus_a_SOURCES = \
   amount.h \
   arith_uint256.cpp \
   arith_uint256.h \
@@ -357,7 +357,7 @@ libakila_consensus_a_SOURCES = \
   primitives/transaction.h \
   pubkey.cpp \
   pubkey.h \
-  script/akilaconsensus.cpp \
+  script/paladeumconsensus.cpp \
   script/interpreter.cpp \
   script/interpreter.h \
   script/script.cpp \
@@ -375,12 +375,12 @@ libakila_consensus_a_SOURCES = \
   version.h \
   LibBoolEE.cpp \
   LibBoolEE.h \
-  $(AKILA_CORE_H)
+  $(PLD_CORE_H)
 
-# common: shared between akilad, and akila-qt and non-server tools
-libakila_common_a_CPPFLAGS = $(AM_CPPFLAGS) $(AKILA_INCLUDES)
-libakila_common_a_CXXFLAGS = $(AM_CXXFLAGS) $(PIE_FLAGS)
-libakila_common_a_SOURCES = \
+# common: shared between paladeumd, and paladeum-qt and non-server tools
+libpaladeum_common_a_CPPFLAGS = $(AM_CPPFLAGS) $(PLD_INCLUDES)
+libpaladeum_common_a_CXXFLAGS = $(AM_CXXFLAGS) $(PIE_FLAGS)
+libpaladeum_common_a_SOURCES = \
   base58.cpp \
   chainparams.cpp \
   coins.cpp \
@@ -397,14 +397,14 @@ libakila_common_a_SOURCES = \
   script/sign.cpp \
   script/standard.cpp \
   warnings.cpp \
-  $(AKILA_CORE_H)
+  $(PLD_CORE_H)
 
 # util: shared between all executables.
 # This library *must* be included to make sure that the glibc
 # backward-compatibility objects and their sanity checks are linked.
-libakila_util_a_CPPFLAGS = $(AM_CPPFLAGS) $(AKILA_INCLUDES)
-libakila_util_a_CXXFLAGS = $(AM_CXXFLAGS) $(PIE_FLAGS)
-libakila_util_a_SOURCES = \
+libpaladeum_util_a_CPPFLAGS = $(AM_CPPFLAGS) $(PLD_INCLUDES)
+libpaladeum_util_a_CXXFLAGS = $(AM_CXXFLAGS) $(PIE_FLAGS)
+libpaladeum_util_a_SOURCES = \
   support/lockedpool.cpp \
   chainparamsbase.cpp \
   clientversion.cpp \
@@ -420,102 +420,102 @@ libakila_util_a_SOURCES = \
   utilmoneystr.cpp \
   utilstrencodings.cpp \
   utiltime.cpp \
-  $(AKILA_CORE_H)
+  $(PLD_CORE_H)
 
 if GLIBC_BACK_COMPAT
-libakila_util_a_SOURCES += compat/glibc_compat.cpp
+libpaladeum_util_a_SOURCES += compat/glibc_compat.cpp
 AM_LDFLAGS += $(COMPAT_LDFLAGS)
 endif
 
-# cli: shared between akila-cli and akila-qt
-libakila_cli_a_CPPFLAGS = $(AM_CPPFLAGS) $(AKILA_INCLUDES)
-libakila_cli_a_CXXFLAGS = $(AM_CXXFLAGS) $(PIE_FLAGS)
-libakila_cli_a_SOURCES = \
+# cli: shared between paladeum-cli and paladeum-qt
+libpaladeum_cli_a_CPPFLAGS = $(AM_CPPFLAGS) $(PLD_INCLUDES)
+libpaladeum_cli_a_CXXFLAGS = $(AM_CXXFLAGS) $(PIE_FLAGS)
+libpaladeum_cli_a_SOURCES = \
   rpc/client.cpp \
-  $(AKILA_CORE_H)
+  $(PLD_CORE_H)
 
-nodist_libakila_util_a_SOURCES = $(srcdir)/obj/build.h
+nodist_libpaladeum_util_a_SOURCES = $(srcdir)/obj/build.h
 #
 
-# akilad binary #
-akilad_SOURCES = akilad.cpp
-akilad_CPPFLAGS = $(AM_CPPFLAGS) $(AKILA_INCLUDES)
-akilad_CXXFLAGS = $(AM_CXXFLAGS) $(PIE_FLAGS)
-akilad_LDFLAGS = $(RELDFLAGS) $(AM_LDFLAGS) $(LIBTOOL_APP_LDFLAGS)
+# paladeumd binary #
+paladeumd_SOURCES = paladeumd.cpp
+paladeumd_CPPFLAGS = $(AM_CPPFLAGS) $(PLD_INCLUDES)
+paladeumd_CXXFLAGS = $(AM_CXXFLAGS) $(PIE_FLAGS)
+paladeumd_LDFLAGS = $(RELDFLAGS) $(AM_LDFLAGS) $(LIBTOOL_APP_LDFLAGS)
 
 if TARGET_WINDOWS
-akilad_SOURCES += akilad-res.rc
+paladeumd_SOURCES += paladeumd-res.rc
 endif
 
-akilad_LDADD = \
-  $(LIBAKILA_SERVER) \
-  $(LIBAKILA_COMMON) \
+paladeumd_LDADD = \
+  $(LIBPLD_SERVER) \
+  $(LIBPLD_COMMON) \
   $(LIBUNIVALUE) \
-  $(LIBAKILA_UTIL) \
-  $(LIBAKILA_WALLET) \
-  $(LIBAKILA_ZMQ) \
-  $(LIBAKILA_CONSENSUS) \
-  $(LIBAKILA_CRYPTO) \
+  $(LIBPLD_UTIL) \
+  $(LIBPLD_WALLET) \
+  $(LIBPLD_ZMQ) \
+  $(LIBPLD_CONSENSUS) \
+  $(LIBPLD_CRYPTO) \
   $(LIBLEVELDB) \
   $(LIBLEVELDB_SSE42) \
   $(LIBMEMENV) \
   $(LIBSECP256K1)
 
-akilad_LDADD += $(BOOST_LIBS) $(BDB_LIBS) $(SSL_LIBS) $(CRYPTO_LIBS) $(MINIUPNPC_LIBS) $(EVENT_PTHREADS_LIBS) $(EVENT_LIBS) $(ZMQ_LIBS)
+paladeumd_LDADD += $(BOOST_LIBS) $(BDB_LIBS) $(SSL_LIBS) $(CRYPTO_LIBS) $(MINIUPNPC_LIBS) $(EVENT_PTHREADS_LIBS) $(EVENT_LIBS) $(ZMQ_LIBS)
 
-# akila-cli binary #
-akila_cli_SOURCES = akila-cli.cpp
-akila_cli_CPPFLAGS = $(AM_CPPFLAGS) $(AKILA_INCLUDES) $(EVENT_CFLAGS)
-akila_cli_CXXFLAGS = $(AM_CXXFLAGS) $(PIE_FLAGS)
-akila_cli_LDFLAGS = $(RELDFLAGS) $(AM_LDFLAGS) $(LIBTOOL_APP_LDFLAGS)
+# paladeum-cli binary #
+paladeum_cli_SOURCES = paladeum-cli.cpp
+paladeum_cli_CPPFLAGS = $(AM_CPPFLAGS) $(PLD_INCLUDES) $(EVENT_CFLAGS)
+paladeum_cli_CXXFLAGS = $(AM_CXXFLAGS) $(PIE_FLAGS)
+paladeum_cli_LDFLAGS = $(RELDFLAGS) $(AM_LDFLAGS) $(LIBTOOL_APP_LDFLAGS)
 
 if TARGET_WINDOWS
-akila_cli_SOURCES += akila-cli-res.rc
+paladeum_cli_SOURCES += paladeum-cli-res.rc
 endif
 
-akila_cli_LDADD = \
-  $(LIBAKILA_CLI) \
+paladeum_cli_LDADD = \
+  $(LIBPLD_CLI) \
   $(LIBUNIVALUE) \
-  $(LIBAKILA_UTIL) \
-  $(LIBAKILA_CRYPTO)
+  $(LIBPLD_UTIL) \
+  $(LIBPLD_CRYPTO)
 
-akila_cli_LDADD += $(BOOST_LIBS) $(SSL_LIBS) $(CRYPTO_LIBS) $(EVENT_LIBS)
+paladeum_cli_LDADD += $(BOOST_LIBS) $(SSL_LIBS) $(CRYPTO_LIBS) $(EVENT_LIBS)
 #
 
-# akila-tx binary #
-akila_tx_SOURCES = akila-tx.cpp
-akila_tx_CPPFLAGS = $(AM_CPPFLAGS) $(AKILA_INCLUDES)
-akila_tx_CXXFLAGS = $(AM_CXXFLAGS) $(PIE_FLAGS)
-akila_tx_LDFLAGS = $(RELDFLAGS) $(AM_LDFLAGS) $(LIBTOOL_APP_LDFLAGS)
+# paladeum-tx binary #
+paladeum_tx_SOURCES = paladeum-tx.cpp
+paladeum_tx_CPPFLAGS = $(AM_CPPFLAGS) $(PLD_INCLUDES)
+paladeum_tx_CXXFLAGS = $(AM_CXXFLAGS) $(PIE_FLAGS)
+paladeum_tx_LDFLAGS = $(RELDFLAGS) $(AM_LDFLAGS) $(LIBTOOL_APP_LDFLAGS)
 
 if TARGET_WINDOWS
-akila_tx_SOURCES += akila-tx-res.rc
+paladeum_tx_SOURCES += paladeum-tx-res.rc
 endif
 
-akila_tx_LDADD = \
+paladeum_tx_LDADD = \
   $(LIBUNIVALUE) \
-  $(LIBAKILA_COMMON) \
-  $(LIBAKILA_UTIL) \
-  $(LIBAKILA_CONSENSUS) \
-  $(LIBAKILA_CRYPTO) \
+  $(LIBPLD_COMMON) \
+  $(LIBPLD_UTIL) \
+  $(LIBPLD_CONSENSUS) \
+  $(LIBPLD_CRYPTO) \
   $(LIBSECP256K1)
 
-akila_tx_LDADD += $(BOOST_LIBS) $(CRYPTO_LIBS)
+paladeum_tx_LDADD += $(BOOST_LIBS) $(CRYPTO_LIBS)
 #
 
-# akilaconsensus library #
-if BUILD_AKILA_LIBS
-include_HEADERS = script/akilaconsensus.h
-libakilaconsensus_la_SOURCES = $(crypto_libakila_crypto_a_SOURCES) $(libakila_consensus_a_SOURCES)
+# paladeumconsensus library #
+if BUILD_PLD_LIBS
+include_HEADERS = script/paladeumconsensus.h
+libpaladeumconsensus_la_SOURCES = $(crypto_libpaladeum_crypto_a_SOURCES) $(libpaladeum_consensus_a_SOURCES)
 
 if GLIBC_BACK_COMPAT
-  libakilaconsensus_la_SOURCES += compat/glibc_compat.cpp
+  libpaladeumconsensus_la_SOURCES += compat/glibc_compat.cpp
 endif
 
-libakilaconsensus_la_LDFLAGS = $(AM_LDFLAGS) -no-undefined $(RELDFLAGS)
-libakilaconsensus_la_LIBADD = $(LIBSECP256K1) $(BOOST_LIBS)
-libakilaconsensus_la_CPPFLAGS = $(AM_CPPFLAGS) -I$(builddir)/obj -I$(srcdir)/secp256k1/include -DBUILD_AKILA_INTERNAL
-libakilaconsensus_la_CXXFLAGS = $(AM_CXXFLAGS) $(PIE_FLAGS)
+libpaladeumconsensus_la_LDFLAGS = $(AM_LDFLAGS) -no-undefined $(RELDFLAGS)
+libpaladeumconsensus_la_LIBADD = $(LIBSECP256K1) $(BOOST_LIBS)
+libpaladeumconsensus_la_CPPFLAGS = $(AM_CPPFLAGS) -I$(builddir)/obj -I$(srcdir)/secp256k1/include -DBUILD_PLD_INTERNAL
+libpaladeumconsensus_la_CXXFLAGS = $(AM_CXXFLAGS) $(PIE_FLAGS)
 
 endif
 #
@@ -545,12 +545,12 @@ CLEANFILES += obj/build.h
 EXTRA_DIST = $(CTAES_DIST)
 
 
-config/akila-config.h: config/stamp-h1
+config/paladeum-config.h: config/stamp-h1
 	@$(MAKE) -C $(top_builddir) $(subdir)/$(@)
-config/stamp-h1: $(top_srcdir)/$(subdir)/config/akila-config.h.in $(top_builddir)/config.status
+config/stamp-h1: $(top_srcdir)/$(subdir)/config/paladeum-config.h.in $(top_builddir)/config.status
 	$(AM_V_at)$(MAKE) -C $(top_builddir) $(subdir)/$(@)
-$(top_srcdir)/$(subdir)/config/akila-config.h.in:  $(am__configure_deps)
-	$(AM_V_at)$(MAKE) -C $(top_srcdir) $(subdir)/config/akila-config.h.in
+$(top_srcdir)/$(subdir)/config/paladeum-config.h.in:  $(am__configure_deps)
+	$(AM_V_at)$(MAKE) -C $(top_srcdir) $(subdir)/config/paladeum-config.h.in
 
 clean-local:
 	-$(MAKE) -C secp256k1 clean

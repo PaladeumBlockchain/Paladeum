@@ -1,10 +1,10 @@
 // Copyright (c) 2011-2016 The Bitcoin Core developers
-// Copyright (c) 2021-2022 The Akila developers
+// Copyright (c) 2021-2022 The Paladeum developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef AKILA_QT_RECEIVECOINSDIALOG_H
-#define AKILA_QT_RECEIVECOINSDIALOG_H
+#ifndef PLD_QT_RECEIVECOINSDIALOG_H
+#define PLD_QT_RECEIVECOINSDIALOG_H
 
 #include "guiutil.h"
 
@@ -27,7 +27,7 @@ QT_BEGIN_NAMESPACE
 class QModelIndex;
 QT_END_NAMESPACE
 
-/** Dialog for requesting payment of akilas */
+/** Dialog for requesting payment of paladeums */
 class ReceiveCoinsDialog : public QDialog
 {
     Q_OBJECT
@@ -80,4 +80,4 @@ private Q_SLOTS:
     void copyAmount();
 };
 
-#endif // AKILA_QT_RECEIVECOINSDIALOG_H
+#endif // PLD_QT_RECEIVECOINSDIALOG_H

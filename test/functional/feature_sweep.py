@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # Copyright (c) 2017 The Bitcoin Core developers
-# Copyright (c) 2017-2020 The Akila developers
+# Copyright (c) 2017-2020 The Paladeum developers
 # Distributed under the MIT software license, see the accompanying
 # file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -8,10 +8,10 @@
 Test sweeping from an address
 
 - 6 nodes
-  * node0 will have a collection of AKILA and a few tokens
+  * node0 will have a collection of PLD and a few tokens
   * node1 will sweep on a specific token
   * node2 will sweep on a different specific token
-  * node3 will sweep on all AKILA
+  * node3 will sweep on all PLD
   * node4 will sweep everything else
   * node5 will attempt to sweep, but fail
 """
@@ -22,10 +22,10 @@ Test sweeping from an address
 from collections import defaultdict
 
 # Avoid wildcard * imports if possible
-from test_framework.test_framework import AkilaTestFramework
+from test_framework.test_framework import PaladeumTestFramework
 from test_framework.util import assert_equal, assert_does_not_contain_key, assert_raises_rpc_error, connect_nodes, p2p_port
 
-class FeatureSweepTest(AkilaTestFramework):
+class FeatureSweepTest(PaladeumTestFramework):
     def set_test_params(self):
         self.setup_clean_chain = True
         self.num_nodes = 6
@@ -38,10 +38,10 @@ class FeatureSweepTest(AkilaTestFramework):
         assert_equal(balance, tokens[token_name]["balance"])
 
     def prime_src(self, src_node):
-        self.log.info("Priming node to be swept from with some AKILA and 4 different tokens!")
+        self.log.info("Priming node to be swept from with some PLD and 4 different tokens!")
 
-        # Generate the AKILA
-        self.log.info("> Generating AKILA...")
+        # Generate the PLD
+        self.log.info("> Generating PLD...")
         src_node.generate(1)
         self.sync_all()
         src_node.generate(431)
@@ -93,7 +93,7 @@ class FeatureSweepTest(AkilaTestFramework):
         src_node   = self.nodes[0]
         ast1_node  = self.nodes[1]
         ast2_node  = self.nodes[2]
-        akila_node   = self.nodes[3]
+        paladeum_node   = self.nodes[3]
         all_node   = self.nodes[4]
         fail_node  = self.nodes[5]
 
@@ -131,17 +131,17 @@ class FeatureSweepTest(AkilaTestFramework):
         self.check_token(swept_tokens, "TOKEN.4", 4)
         assert_does_not_contain_key("TOKEN.4", src_node.listmytokens(token="*", verbose=True).keys())
 
-        # Sweep AKILA
-        self.log.info("Testing sweeping of all AKILA")
-        txid_akila = akila_node.sweep(privkey=privkey, token_name="AKILA")
-        akila_node.generate(10)
+        # Sweep PLD
+        self.log.info("Testing sweeping of all PLD")
+        txid_paladeum = paladeum_node.sweep(privkey=privkey, token_name="PLD")
+        paladeum_node.generate(10)
         self.sync_all()
 
-        assert (akila_node.getbalance() > 900)
+        assert (paladeum_node.getbalance() > 900)
 
         # Sweep remaining tokens (fail)
         self.log.info("Testing failure of sweeping everything else with insufficient funds")
-        assert_raises_rpc_error(-6, f"Please add AKILA to address '{token_addr}' to be able to sweep token ''", all_node.sweep, privkey)
+        assert_raises_rpc_error(-6, f"Please add PLD to address '{token_addr}' to be able to sweep token ''", all_node.sweep, privkey)
 
         # Fund the all_node so that we can fund the transaction
         src_node.sendtoaddress(all_node.getnewaddress(), 100)

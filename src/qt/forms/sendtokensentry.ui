@@ -155,7 +155,7 @@
       <item>
        <widget class="QValidatedLineEdit" name="payTo">
         <property name="toolTip">
-         <string>The Akila address to send the payment to</string>
+         <string>The Paladeum address to send the payment to</string>
         </property>
        </widget>
       </item>
@@ -168,7 +168,7 @@
          <string/>
         </property>
         <property name="icon">
-         <iconset resource="../akila.qrc">
+         <iconset resource="../paladeum.qrc">
           <normaloff>:/icons/address-book</normaloff>:/icons/address-book</iconset>
         </property>
         <property name="iconSize">
@@ -191,7 +191,7 @@
          <string/>
         </property>
         <property name="icon">
-         <iconset resource="../akila.qrc">
+         <iconset resource="../paladeum.qrc">
           <normaloff>:/icons/editpaste</normaloff>:/icons/editpaste</iconset>
         </property>
         <property name="iconSize">
@@ -214,7 +214,7 @@
          <string/>
         </property>
         <property name="icon">
-         <iconset resource="../akila.qrc">
+         <iconset resource="../paladeum.qrc">
           <normaloff>:/icons/remove</normaloff>:/icons/remove</iconset>
         </property>
         <property name="iconSize">
@@ -250,7 +250,7 @@
     <item row="10" column="2">
      <widget class="QLabel" name="messageTextLabel">
       <property name="toolTip">
-       <string>A message that was attached to the akila: URI which will be stored with the transaction for your reference. Note: This message will not be sent over the Akila network.</string>
+       <string>A message that was attached to the paladeum: URI which will be stored with the transaction for your reference. Note: This message will not be sent over the Paladeum network.</string>
       </property>
       <property name="textFormat">
        <enum>Qt::PlainText</enum>
@@ -819,7 +819,7 @@
          <string/>
         </property>
         <property name="icon">
-         <iconset resource="../akila.qrc">
+         <iconset resource="../paladeum.qrc">
           <normaloff>:/icons/remove</normaloff>:/icons/remove</iconset>
         </property>
        </widget>
@@ -1379,7 +1379,7 @@
          <string/>
         </property>
         <property name="icon">
-         <iconset resource="../akila.qrc">
+         <iconset resource="../paladeum.qrc">
           <normaloff>:/icons/remove</normaloff>:/icons/remove</iconset>
         </property>
        </widget>
@@ -1417,7 +1417,7 @@
      </widget>
     </item>
     <item row="2" column="1">
-     <widget class="AkilaAmountField" name="payAmount_s">
+     <widget class="PaladeumAmountField" name="payAmount_s">
       <property name="acceptDrops">
        <bool>false</bool>
       </property>
@@ -1433,15 +1433,15 @@
    <header>qvalidatedlineedit.h</header>
   </customwidget>
   <customwidget>
-   <class>AkilaAmountField</class>
+   <class>PaladeumAmountField</class>
    <extends>QLineEdit</extends>
-   <header>akilaamountfield.h</header>
+   <header>paladeumamountfield.h</header>
    <container>1</container>
   </customwidget>
   <customwidget>
    <class>TokenAmountField</class>
    <extends>QLineEdit</extends>
-   <header location="global">akilaamountfield.h</header>
+   <header location="global">paladeumamountfield.h</header>
   </customwidget>
  </customwidgets>
  <tabstops>
@@ -1456,7 +1456,7 @@
   <tabstop>deleteButton_s</tabstop>
  </tabstops>
  <resources>
-  <include location="../akila.qrc"/>
+  <include location="../paladeum.qrc"/>
  </resources>
  <connections/>
 </ui>

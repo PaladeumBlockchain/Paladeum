@@ -296,7 +296,7 @@
         <cursorShape>IBeamCursor</cursorShape>
        </property>
        <property name="text">
-        <string notr="true">123.456 AKILA</string>
+        <string notr="true">123.456 PLD</string>
        </property>
        <property name="textInteractionFlags">
         <set>Qt::LinksAccessibleByMouse|Qt::TextSelectableByKeyboard|Qt::TextSelectableByMouse</set>
@@ -308,7 +308,7 @@
   </layout>
  </widget>
  <resources>
-  <include location="../akila.qrc"/>
+  <include location="../paladeum.qrc"/>
  </resources>
  <connections/>
 </ui>

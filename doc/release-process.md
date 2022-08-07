@@ -3,9 +3,9 @@ Release Process
 
 Before every release candidate:
 
-* Update translations see [translation_process.md](https://github.com/AkilaProject/Akilacoin/blob/master/doc/translation_process.md#synchronising-translations).
+* Update translations see [translation_process.md](https://github.com/PaladeumProject/Paladeumcoin/blob/master/doc/translation_process.md#synchronising-translations).
 
-* Update manpages, see [gen-manpages.sh](https://github.com/AkilaProject/Akilacoin/blob/master/contrib/devtools/README.md#gen-manpagessh).
+* Update manpages, see [gen-manpages.sh](https://github.com/PaladeumProject/Paladeumcoin/blob/master/contrib/devtools/README.md#gen-manpagessh).
 
 Before every minor and major release:
 
@@ -28,9 +28,9 @@ Before every major release:
 ### First time / New builders
 
 
-    git clone https://github.com/AkilaProject/Akilacoin.git
+    git clone https://github.com/PaladeumProject/Paladeumcoin.git
 
-### Akila maintainers/release engineers, suggestion for writing release notes
+### Paladeum maintainers/release engineers, suggestion for writing release notes
 
 Write release notes. git shortlog helps a lot, for example:
 
@@ -56,15 +56,15 @@ Codesigner only: Create Windows/OS X detached signatures:
 
 Codesigner only: Sign the osx binary:
 
-    transfer akila-osx-unsigned.tar.gz to osx for signing
-    tar xf akila-osx-unsigned.tar.gz
+    transfer paladeum-osx-unsigned.tar.gz to osx for signing
+    tar xf paladeum-osx-unsigned.tar.gz
     ./detached-sig-create.sh -s "Key ID"
     Enter the keychain password and authorize the signature
     Move signature-osx.tar.gz back to the gitian host
 
 Codesigner only: Sign the windows binaries:
 
-    tar xf akila-win-unsigned.tar.gz
+    tar xf paladeum-win-unsigned.tar.gz
     ./detached-sig-create.sh -key /path/to/codesign.key
     Enter the passphrase for the key when prompted
     signature-win.tar.gz will be created
@@ -79,14 +79,14 @@ sha256sum * > SHA256SUMS
 
 The list of files should be:
 ```
-akila-${VERSION}-aarch64-linux-gnu.tar.gz
-akila-${VERSION}-arm-linux-gnueabihf.tar.gz
-akila-${VERSION}-x86_64-linux-gnu.tar.gz
-akila-${VERSION}-osx64.tar.gz
-akila-${VERSION}-osx.dmg
-akila-${VERSION}.tar.gz
-akila-${VERSION}-win64-setup.exe
-akila-${VERSION}-win64.zip
+paladeum-${VERSION}-aarch64-linux-gnu.tar.gz
+paladeum-${VERSION}-arm-linux-gnueabihf.tar.gz
+paladeum-${VERSION}-x86_64-linux-gnu.tar.gz
+paladeum-${VERSION}-osx64.tar.gz
+paladeum-${VERSION}-osx.dmg
+paladeum-${VERSION}.tar.gz
+paladeum-${VERSION}-win64-setup.exe
+paladeum-${VERSION}-win64.zip
 
 - GPG-sign it, delete the unsigned file:
 ```
@@ -98,16 +98,16 @@ Note: check that SHA256SUMS itself doesn't end up in SHA256SUMS, which is a spur
 
 - Upload zips and installers, as well as `SHA256SUMS.asc` from last step, to the github-release page.
 
-- Update akilacoin.org version
+- Update paladeumcoin.org version
 
 - Announce the release:
 
-  - akilacore.org blog post
+  - paladeumcore.org blog post
 
-  - Optionally twitter, reddit /r/Akilacoin, ... but this will usually sort out itself
+  - Optionally twitter, reddit /r/Paladeumcoin, ... but this will usually sort out itself
 
   - Archive release notes for the new version to `doc/release-notes/` (branch `master` and branch of the release)
 
-  - Create a [new GitHub release](https://github.com/AkilaProject/Akilacoin/releases/new) with a link to the archived release notes.
+  - Create a [new GitHub release](https://github.com/PaladeumProject/Paladeumcoin/releases/new) with a link to the archived release notes.
 
   - Celebrate

@@ -1,28 +1,28 @@
-Akila Core version *0.15.0.1* is now available from:
+Paladeum Core version *0.15.0.1* is now available from:
 
-  <https://akila.org/bin/akila-core-0.15.0.1/>
+  <https://paladeum.org/bin/paladeum-core-0.15.0.1/>
 
 and
 
-  <https://akilacoin.org/bin/akila-core-0.15.0.1/>
+  <https://paladeumcoin.org/bin/paladeum-core-0.15.0.1/>
 
 This is a minor bug fix for 0.15.0.
 
 Please report bugs using the issue tracker at GitHub:
 
-  <https://github.com/AkilaProject/Akilacoin/issues>
+  <https://github.com/PaladeumProject/Paladeumcoin/issues>
 
 To receive security and update notifications, please subscribe to:
 
-  <https://akilacoin.org/en/list/announcements/join/>
+  <https://paladeumcoin.org/en/list/announcements/join/>
 
 How to Upgrade
 ==============
 
 If you are running an older version, shut it down. Wait until it has completely
 shut down (which might take a few minutes for older versions), then run the 
-installer (on Windows) or just copy over `/Applications/Akila-Qt` (on Mac)
-or `akilad`/`akila-qt` (on Linux).
+installer (on Windows) or just copy over `/Applications/Paladeum-Qt` (on Mac)
+or `paladeumd`/`paladeum-qt` (on Linux).
 
 The first time you run version 0.15.0 or higher, your chainstate database will
 be converted to a new format, which will take anywhere from a few minutes to
@@ -51,10 +51,10 @@ processing the entire blockchain.
 Compatibility
 ==============
 
-Akila Core is extensively tested on multiple operating systems using
+Paladeum Core is extensively tested on multiple operating systems using
 the Linux kernel, macOS 10.8+, and Windows Vista and later. Windows XP is not supported.
 
-Akila Core should also work on most other Unix-like systems but is not
+Paladeum Core should also work on most other Unix-like systems but is not
 frequently tested on them.
 
 Notable changes
@@ -84,4 +84,4 @@ Thanks to everyone who directly contributed to this release:
 - Jonas Schnelli
 - Wladimir J. van der Laan
 
-As well as everyone that helped translating on [Transifex](https://www.transifex.com/projects/p/akila/).
+As well as everyone that helped translating on [Transifex](https://www.transifex.com/projects/p/paladeum/).

@@ -1,10 +1,10 @@
 // Copyright (c) 2017-2019 The Raven Core developers
-// Copyright (c) 2021-2022 The Akila developers
+// Copyright (c) 2021-2022 The Paladeum developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef AKILACOIN_MYTOKENSDB_H
-#define AKILACOIN_MYTOKENSDB_H
+#ifndef PLDCOIN_MYTOKENSDB_H
+#define PLDCOIN_MYTOKENSDB_H
 
 #include <dbwrapper.h>
 
@@ -80,4 +80,4 @@ public:
 };
 
 
-#endif //AKILACOIN_MYTOKENSDB_H
+#endif //PLDCOIN_MYTOKENSDB_H

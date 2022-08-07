@@ -1,17 +1,17 @@
 dist_man1_MANS=
 
-if BUILD_AKILAD
-  dist_man1_MANS+=akilad.1
+if BUILD_PLDD
+  dist_man1_MANS+=paladeumd.1
 endif
 
 if ENABLE_QT
-  dist_man1_MANS+=akila-qt.1
+  dist_man1_MANS+=paladeum-qt.1
 endif
 
-if BUILD_AKILA_CLI
-  dist_man1_MANS+=akila-cli.1
+if BUILD_PLD_CLI
+  dist_man1_MANS+=paladeum-cli.1
 endif
 
-if BUILD_AKILA_TX
-  dist_man1_MANS+=akila-tx.1
+if BUILD_PLD_TX
+  dist_man1_MANS+=paladeum-tx.1
 endif

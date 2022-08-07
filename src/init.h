@@ -1,11 +1,11 @@
 // Copyright (c) 2009-2010 Satoshi Nakamoto
 // Copyright (c) 2009-2016 The Bitcoin Core developers
-// Copyright (c) 2021-2022 The Akila developers
+// Copyright (c) 2021-2022 The Paladeum developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef AKILA_INIT_H
-#define AKILA_INIT_H
+#ifndef PLD_INIT_H
+#define PLD_INIT_H
 
 #include <string>
 
@@ -33,7 +33,7 @@ void InitLogging();
 //!Parameter interaction: change current parameters depending on various rules
 void InitParameterInteraction();
 
-/** Initialize akila core: Basic context setup.
+/** Initialize paladeum core: Basic context setup.
  *  @note This can be done before daemonization. Do not call Shutdown() if this function fails.
  *  @pre Parameters should be parsed and config file should be read.
  */
@@ -54,14 +54,14 @@ bool AppInitParameterInteraction();
 bool AppInitSanityChecks();
 
 /**
- * Lock akila core data directory.
+ * Lock paladeum core data directory.
  * @note This should only be done after daemonization. Do not call Shutdown() if this function fails.
  * @pre Parameters should be parsed and config file should be read, AppInitSanityChecks should have been called.
  */
 bool AppInitLockDataDirectory();
 
 /**
- * Akila core main initialization.
+ * Paladeum core main initialization.
  * @note This should only be done after daemonization. Call Shutdown() if this function fails.
  * @pre Parameters should be parsed and config file should be read, AppInitLockDataDirectory should have been called.
  */
@@ -71,8 +71,8 @@ void PrepareShutdown();
 /** The help message mode determines what help message to show */
 enum HelpMessageMode
 {
-    HMM_AKILAD,
-    HMM_AKILA_QT
+    HMM_PLDD,
+    HMM_PLD_QT
 };
 
 /** Help for options shared between UI and daemon (for -help) */
@@ -81,4 +81,4 @@ std::string HelpMessage(HelpMessageMode mode);
 /** Returns licensing information (for -version) */
 std::string LicenseInfo();
 
-#endif // AKILA_INIT_H
+#endif // PLD_INIT_H

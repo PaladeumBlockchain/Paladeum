@@ -1,10 +1,10 @@
-// Copyright (c) 2021-2022 The Akila developers
+// Copyright (c) 2021-2022 The Paladeum developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
 
 #include <tokens/tokens.h>
-#include <test/test_akila.h>
+#include <test/test_paladeum.h>
 #include <boost/test/unit_test.hpp>
 #include <amount.h>
 #include <base58.h>
@@ -63,9 +63,9 @@ BOOST_FIXTURE_TEST_SUITE(restricted_tests, BasicTestingSetup)
         BOOST_TEST_MESSAGE("Running Verify New Restricted transaction");
 
         /// Create CTxOut to use in the tests ///
-        // Create filler akila tx
-        CScript akilaTransfer = GetScriptForDestination(DecodeDestination(GetParams().GlobalFeeAddress()));
-        CTxOut akilaOut(1*COIN, akilaTransfer);
+        // Create filler paladeum tx
+        CScript paladeumTransfer = GetScriptForDestination(DecodeDestination(GetParams().GlobalFeeAddress()));
+        CTxOut paladeumOut(1*COIN, paladeumTransfer);
 
         // Create transaction and add burn to it
         CScript burnScript = GetScriptForDestination(DecodeDestination(GetBurnAddress(KnownTokenType::RESTRICTED)));
@@ -98,7 +98,7 @@ BOOST_FIXTURE_TEST_SUITE(restricted_tests, BasicTestingSetup)
         // Run successful test 1
         std::string error;
         CMutableTransaction mutTxTest1;
-        mutTxTest1.vout.emplace_back(akilaOut);
+        mutTxTest1.vout.emplace_back(paladeumOut);
         mutTxTest1.vout.emplace_back(burnOut);
         mutTxTest1.vout.emplace_back(parentOut);
         mutTxTest1.vout.emplace_back(verifierOut);
@@ -108,7 +108,7 @@ BOOST_FIXTURE_TEST_SUITE(restricted_tests, BasicTestingSetup)
 
         // Run failure test 2
         CMutableTransaction mutTxTest2;
-        mutTxTest2.vout.emplace_back(akilaOut);
+        mutTxTest2.vout.emplace_back(paladeumOut);
         mutTxTest2.vout.emplace_back(burnOut);
         mutTxTest2.vout.emplace_back(verifierOut);
         mutTxTest2.vout.emplace_back(tokenOut);
@@ -118,7 +118,7 @@ BOOST_FIXTURE_TEST_SUITE(restricted_tests, BasicTestingSetup)
 
         // Run failure test 3
         CMutableTransaction mutTxTest3;
-        mutTxTest3.vout.emplace_back(akilaOut);
+        mutTxTest3.vout.emplace_back(paladeumOut);
         mutTxTest3.vout.emplace_back(burnOut);
         mutTxTest3.vout.emplace_back(parentOut);
         mutTxTest3.vout.emplace_back(tokenOut);
@@ -128,7 +128,7 @@ BOOST_FIXTURE_TEST_SUITE(restricted_tests, BasicTestingSetup)
 
         // Run failure test 4
         CMutableTransaction mutTxTest4;
-        mutTxTest4.vout.emplace_back(akilaOut);
+        mutTxTest4.vout.emplace_back(paladeumOut);
         mutTxTest4.vout.emplace_back(parentOut);
         mutTxTest4.vout.emplace_back(verifierOut);
         mutTxTest4.vout.emplace_back(tokenOut);
@@ -138,7 +138,7 @@ BOOST_FIXTURE_TEST_SUITE(restricted_tests, BasicTestingSetup)
 
         // Run failure test 5
         CMutableTransaction mutTxTest5;
-        mutTxTest5.vout.emplace_back(akilaOut);
+        mutTxTest5.vout.emplace_back(paladeumOut);
         mutTxTest5.vout.emplace_back(burnOut);
         mutTxTest5.vout.emplace_back(parentOut);
         mutTxTest5.vout.emplace_back(verifierOut);
@@ -148,7 +148,7 @@ BOOST_FIXTURE_TEST_SUITE(restricted_tests, BasicTestingSetup)
 
         // Run failure test 6
         CMutableTransaction mutTxTest6;
-        mutTxTest6.vout.emplace_back(akilaOut);
+        mutTxTest6.vout.emplace_back(paladeumOut);
         mutTxTest6.vout.emplace_back(burnOut);
         mutTxTest6.vout.emplace_back(parentOut);
         mutTxTest6.vout.emplace_back(verifierOut);
@@ -160,7 +160,7 @@ BOOST_FIXTURE_TEST_SUITE(restricted_tests, BasicTestingSetup)
 
         // Run failure test 7
         CMutableTransaction mutTxTest7;
-        mutTxTest7.vout.emplace_back(akilaOut);
+        mutTxTest7.vout.emplace_back(paladeumOut);
         mutTxTest7.vout.emplace_back(burnOut);
         mutTxTest7.vout.emplace_back(parentOut);
         mutTxTest7.vout.emplace_back(verifierOut);
@@ -172,7 +172,7 @@ BOOST_FIXTURE_TEST_SUITE(restricted_tests, BasicTestingSetup)
 
         // Run failure test 8
         CMutableTransaction mutTxTest8;
-        mutTxTest8.vout.emplace_back(akilaOut);
+        mutTxTest8.vout.emplace_back(paladeumOut);
         mutTxTest8.vout.emplace_back(burnOut);
         mutTxTest8.vout.emplace_back(parentOut);
         mutTxTest8.vout.emplace_back(verifierOut);

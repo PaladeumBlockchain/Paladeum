@@ -1,10 +1,10 @@
-// Copyright (c) 2021-2022 The Akila developers
+// Copyright (c) 2021-2022 The Paladeum developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
 #include <tokens/tokens.h>
 
-#include <test/test_akila.h>
+#include <test/test_paladeum.h>
 
 #include <boost/test/unit_test.hpp>
 #include "core_write.cpp"
@@ -47,20 +47,20 @@ BOOST_FIXTURE_TEST_SUITE(token_tests, BasicTestingSetup)
         BOOST_CHECK(!IsTokenNameValid("A._BC", type));
         BOOST_CHECK(!IsTokenNameValid("AB_.C", type));
 
-        //- Versions of AKILACOIN NOT allowed
-        BOOST_CHECK(!IsTokenNameValid("AKILA", type));
-        BOOST_CHECK(!IsTokenNameValid("AKILA", type));
-        BOOST_CHECK(!IsTokenNameValid("AKILACOIN", type));
+        //- Versions of PLDCOIN NOT allowed
+        BOOST_CHECK(!IsTokenNameValid("PLD", type));
+        BOOST_CHECK(!IsTokenNameValid("PLD", type));
+        BOOST_CHECK(!IsTokenNameValid("PLDCOIN", type));
 
-        //- Versions of AKILACOIN ALLOWED
-        BOOST_CHECK(IsTokenNameValid("AKILA.COIN", type));
-        BOOST_CHECK(IsTokenNameValid("AKILA_COIN", type));
-        BOOST_CHECK(IsTokenNameValid("AKILASPYDER", type));
-        BOOST_CHECK(IsTokenNameValid("SPYDERAKILA", type));
-        BOOST_CHECK(IsTokenNameValid("AKILASPYDER", type));
-        BOOST_CHECK(IsTokenNameValid("SPYDEAKILA", type));
-        BOOST_CHECK(IsTokenNameValid("BLACK_AKILAS", type));
-        BOOST_CHECK(IsTokenNameValid("SEAKILAOT", type));
+        //- Versions of PLDCOIN ALLOWED
+        BOOST_CHECK(IsTokenNameValid("PLD.COIN", type));
+        BOOST_CHECK(IsTokenNameValid("PLD_COIN", type));
+        BOOST_CHECK(IsTokenNameValid("PLDSPYDER", type));
+        BOOST_CHECK(IsTokenNameValid("SPYDERPLD", type));
+        BOOST_CHECK(IsTokenNameValid("PLDSPYDER", type));
+        BOOST_CHECK(IsTokenNameValid("SPYDEPLD", type));
+        BOOST_CHECK(IsTokenNameValid("BLACK_PLDS", type));
+        BOOST_CHECK(IsTokenNameValid("SEPLDOT", type));
 
         // subs
         BOOST_CHECK(IsTokenNameValid("ABC/A", type));
@@ -227,7 +227,7 @@ BOOST_FIXTURE_TEST_SUITE(token_tests, BasicTestingSetup)
         SelectParams(CBaseChainParams::MAIN);
 
         // Create the token scriptPubKey
-        CTokenTransfer token("AKILA", 1000);
+        CTokenTransfer token("PLD", 1000);
         CScript scriptPubKey = GetScriptForDestination(DecodeDestination(GetParams().GlobalFeeAddress()));
         token.ConstructTransaction(scriptPubKey);
 
@@ -248,7 +248,7 @@ BOOST_FIXTURE_TEST_SUITE(token_tests, BasicTestingSetup)
         SelectParams(CBaseChainParams::MAIN);
 
         // Create the token scriptPubKey
-        CNewToken token("AKILA", 1000, 8, 1, 0, "");
+        CNewToken token("PLD", 1000, 8, 1, 0, "");
         CScript scriptPubKey = GetScriptForDestination(DecodeDestination(GetParams().GlobalFeeAddress()));
         token.ConstructTransaction(scriptPubKey);
 

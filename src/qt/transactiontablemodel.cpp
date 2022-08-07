@@ -1,5 +1,5 @@
 // Copyright (c) 2011-2016 The Bitcoin Core developers
-// Copyright (c) 2021-2022 The Akila developers
+// Copyright (c) 2021-2022 The Paladeum developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -269,7 +269,7 @@ TransactionTableModel::~TransactionTableModel()
 /** Updates the column title to "Amount (DisplayUnit)" and emits headerDataChanged() signal for table headers to react. */
 //void TransactionTableModel::updateAmountColumnTitle()
 //{
-//    columns[Amount] = AkilaUnits::getAmountColumnTitle(walletModel->getOptionsModel()->getDisplayUnit());
+//    columns[Amount] = PaladeumUnits::getAmountColumnTitle(walletModel->getOptionsModel()->getDisplayUnit());
 //    Q_EMIT headerDataChanged(Qt::Horizontal,Amount,Amount);
 //}
 
@@ -469,7 +469,7 @@ QVariant TransactionTableModel::addressColor(const TransactionRecord *wtx) const
     return QVariant();
 }
 
-QString TransactionTableModel::formatTxAmount(const TransactionRecord *wtx, bool showUnconfirmed, AkilaUnits::SeparatorStyle separators) const
+QString TransactionTableModel::formatTxAmount(const TransactionRecord *wtx, bool showUnconfirmed, PaladeumUnits::SeparatorStyle separators) const
 {
     QString str;
     switch(wtx->type) {
@@ -482,7 +482,7 @@ QString TransactionTableModel::formatTxAmount(const TransactionRecord *wtx, bool
             } break;
         default:
             {
-            str = AkilaUnits::format(walletModel->getOptionsModel()->getDisplayUnit(), wtx->credit + wtx->debit,
+            str = PaladeumUnits::format(walletModel->getOptionsModel()->getDisplayUnit(), wtx->credit + wtx->debit,
                                              false, separators);
             } break;
     }
@@ -588,12 +588,12 @@ QVariant TransactionTableModel::data(const QModelIndex &index, int role) const
         case ToAddress:
             return formatTxToAddress(rec, false);
         case Amount:
-            return formatTxAmount(rec, true, AkilaUnits::separatorAlways);
+            return formatTxAmount(rec, true, PaladeumUnits::separatorAlways);
         case TokenName:
-            if (rec->tokenName != "AKILA")
+            if (rec->tokenName != "PLD")
                return QString::fromStdString(rec->tokenName);
             else
-               return QString(AkilaUnits::name(walletModel->getOptionsModel()->getDisplayUnit()));
+               return QString(PaladeumUnits::name(walletModel->getOptionsModel()->getDisplayUnit()));
         } // no default case, so the compiler can warn about missing cases
         assert(false);
     case Qt::EditRole:
@@ -640,7 +640,7 @@ QVariant TransactionTableModel::data(const QModelIndex &index, int role) const
         }
         if(index.column() == TokenName)
         {
-            if (rec->tokenName != "AKILA")
+            if (rec->tokenName != "PLD")
                return platformStyle->TokenTxColor();
         }
         break;
@@ -691,21 +691,21 @@ QVariant TransactionTableModel::data(const QModelIndex &index, int role) const
                 details.append(QString::fromStdString(rec->address));
                 details.append(" ");
             }
-            details.append(formatTxAmount(rec, false, AkilaUnits::separatorNever));
+            details.append(formatTxAmount(rec, false, PaladeumUnits::separatorNever));
             return details;
         }
     case ConfirmedRole:
         return rec->status.countsForBalance;
     case FormattedAmountRole:
         // Used for copy/export, so don't include separators
-        return formatTxAmount(rec, false, AkilaUnits::separatorNever);
+        return formatTxAmount(rec, false, PaladeumUnits::separatorNever);
     case TokenNameRole:
         {
             QString tokenName;
-            if (rec->tokenName != "AKILA")
+            if (rec->tokenName != "PLD")
                tokenName.append(QString::fromStdString(rec->tokenName));
             else
-               tokenName.append(QString(AkilaUnits::name(walletModel->getOptionsModel()->getDisplayUnit())));
+               tokenName.append(QString(PaladeumUnits::name(walletModel->getOptionsModel()->getDisplayUnit())));
             return tokenName;
         }
     case StatusRole:
@@ -742,7 +742,7 @@ QVariant TransactionTableModel::headerData(int section, Qt::Orientation orientat
             case Amount:
                 return tr("Amount removed from or added to balance.");
             case TokenName:
-                return tr("The token (or AKILA) removed or added to balance.");
+                return tr("The token (or PLD) removed or added to balance.");
             }
         }
     }

@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # Copyright (c) 2015-2016 The Bitcoin Core developers
-# Copyright (c) 2017-2020 The Akila developers
+# Copyright (c) 2017-2020 The Paladeum developers
 # Distributed under the MIT software license, see the accompanying
 # file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -62,15 +62,15 @@ work on its chain).
 
 import time
 from test_framework.mininode import NodeConn, NodeConnCB, NetworkThread, MsgBlock, MsgHeaders, CBlockHeader, mininode_lock, MsgInv, CInv
-from test_framework.test_framework import AkilaTestFramework
+from test_framework.test_framework import PaladeumTestFramework
 from test_framework.util import os, p2p_port, assert_equal, assert_raises_rpc_error, connect_nodes, sync_blocks
 from test_framework.blocktools import create_block, create_coinbase
 
-class AcceptBlockTest(AkilaTestFramework):
+class AcceptBlockTest(PaladeumTestFramework):
     def add_options(self, parser):
         parser.add_option("--testbinary", dest="testbinary",
-                          default=os.getenv("AKILAD", "akilad"),
-                          help="akilad binary to test")
+                          default=os.getenv("PLDD", "paladeumd"),
+                          help="paladeumd binary to test")
 
     def set_test_params(self):
         self.setup_clean_chain = True

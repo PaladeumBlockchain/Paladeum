@@ -1,11 +1,11 @@
 // Copyright (c) 2009-2010 Satoshi Nakamoto
 // Copyright (c) 2009-2016 The Bitcoin Core developers
-// Copyright (c) 2021-2022 The Akila developers
+// Copyright (c) 2021-2022 The Paladeum developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef AKILA_ADDRDB_H
-#define AKILA_ADDRDB_H
+#ifndef PLD_ADDRDB_H
+#define PLD_ADDRDB_H
 
 #include "fs.h"
 #include "serialize.h"
@@ -100,4 +100,4 @@ public:
     bool Read(banmap_t& banSet);
 };
 
-#endif // AKILA_ADDRDB_H
+#endif // PLD_ADDRDB_H

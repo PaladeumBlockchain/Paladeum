@@ -1,5 +1,5 @@
 // Copyright (c) 2017-2017 The Bitcoin Core developers
-// Copyright (c) 2021-2022 The Akila developers
+// Copyright (c) 2021-2022 The Paladeum developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -205,7 +205,7 @@ bool CheckTransaction(const CTransaction& tx, CValidationState &state, bool fChe
             return state.DoS(100, false, REJECT_INVALID, "offline-staking-not-enabled");
 
         /** TOKENS START */
-        // Find and handle all new OP_AKILA_TOKEN null data transactions
+        // Find and handle all new OP_PLD_TOKEN null data transactions
         if (txout.scriptPubKey.IsNullToken()) {
             CNullTokenTxData data;
             std::string address;
@@ -541,7 +541,7 @@ bool CheckTransaction(const CTransaction& tx, CValidationState &state, bool fChe
 
     } else {
         // Fail if transaction contains any non-transfer token scripts and hasn't conformed to one of the
-        // above transaction types.  Also fail if it contains OP_AKILA_TOKEN opcode but wasn't a valid script.
+        // above transaction types.  Also fail if it contains OP_PLD_TOKEN opcode but wasn't a valid script.
         for (auto out : tx.vout) {
             int nType;
             bool _isOwner;
@@ -550,10 +550,10 @@ bool CheckTransaction(const CTransaction& tx, CValidationState &state, bool fChe
                     return state.DoS(100, false, REJECT_INVALID, "bad-txns-bad-token-transaction");
                 }
             } else {
-                if (out.scriptPubKey.Find(OP_AKILA_TOKEN)) {
-                    if (out.scriptPubKey[0] != OP_AKILA_TOKEN) {
+                if (out.scriptPubKey.Find(OP_PLD_TOKEN)) {
+                    if (out.scriptPubKey[0] != OP_PLD_TOKEN) {
                         return state.DoS(100, false, REJECT_INVALID,
-                                         "bad-txns-op-akila-token-not-in-right-script-location");
+                                         "bad-txns-op-paladeum-token-not-in-right-script-location");
                     }
                 }
             }
@@ -905,11 +905,11 @@ bool Consensus::CheckTxTokens(const CTransaction& tx, CValidationState& state, c
                         return state.DoS(100, false, REJECT_INVALID, "bad-txns-bad-token-transaction", false, "", tx.GetHash());
                     }
                 } else {
-                    if (out.scriptPubKey.Find(OP_AKILA_TOKEN)) {
+                    if (out.scriptPubKey.Find(OP_PLD_TOKEN)) {
                         if (AreRestrictedTokensDeployed()) {
-                            if (out.scriptPubKey[0] != OP_AKILA_TOKEN) {
+                            if (out.scriptPubKey[0] != OP_PLD_TOKEN) {
                                 return state.DoS(100, false, REJECT_INVALID,
-                                                 "bad-txns-op-akila-token-not-in-right-script-location", false, "", tx.GetHash());
+                                                 "bad-txns-op-paladeum-token-not-in-right-script-location", false, "", tx.GetHash());
                             }
                         } else {
                             return state.DoS(100, false, REJECT_INVALID, "bad-txns-bad-token-script", false, "", tx.GetHash());

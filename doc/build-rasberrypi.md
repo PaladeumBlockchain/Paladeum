@@ -1,6 +1,6 @@
 RASBERRY PI BUILD NOTES
 ====================
-Origin: traysi.org/akila_rpi.php
+Origin: traysi.org/paladeum_rpi.php
 
 # Install necessary packages:
 ```
@@ -33,11 +33,11 @@ make -j4 # If error, remove the -j4
 sudo make install
 ```
 
-# Build Akilacoin
+# Build Paladeumcoin
 ```
 cd ~/build/
-git clone https://github.com/AkilaProject/Akilacoin
-cd Akilacoin/
+git clone https://github.com/PaladeumProject/Paladeumcoin
+cd Paladeumcoin/
 ./autogen.sh
 ./configure --disable-tests --with-gui=no CPPFLAGS="-I/usr/local/BerkeleyDB.4.8/include -O2" LDFLAGS="-L/usr/local/BerkeleyDB.4.8/lib"
 make

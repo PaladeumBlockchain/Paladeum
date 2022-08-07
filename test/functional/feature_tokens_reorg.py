@@ -1,22 +1,22 @@
 #!/usr/bin/env python3
 # Copyright (c) 2017 The Bitcoin Core developers
-# Copyright (c) 2017-2020 The Akila developers
+# Copyright (c) 2017-2020 The Paladeum developers
 # Distributed under the MIT software license, see the accompanying
 # file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
 """Testing token reorg use cases"""
 
-from test_framework.test_framework import AkilaTestFramework
+from test_framework.test_framework import PaladeumTestFramework
 from test_framework.util import assert_equal, disconnect_all_nodes, connect_all_nodes_bi
 
-class TokenReorgTest(AkilaTestFramework):
+class TokenReorgTest(PaladeumTestFramework):
     def set_test_params(self):
         self.setup_clean_chain = True
         self.num_nodes = 2
 
 
     def activate_tokens(self):
-        self.log.info("Generating AKILA and activating tokens...")
+        self.log.info("Generating PLD and activating tokens...")
         n0, n1 = self.nodes[0], self.nodes[1]
 
         n0.generate(1)

@@ -30,14 +30,14 @@ OfflinePage::OfflinePage(const PlatformStyle *platformStyle, QWidget *parent) :
 
 void OfflinePage::on_createButton_clicked()
 {
-	CAkilaAddress stakingAddress(ui->stakingEdit->text().toStdString());
+	CPaladeumAddress stakingAddress(ui->stakingEdit->text().toStdString());
     CKeyID stakingKeyID;
     if (!stakingAddress.IsValid() || !stakingAddress.GetKeyID(stakingKeyID)) {
         ui->resultEdit->setText("Staking address is invalid");
         return;
     }
 
-    CAkilaAddress spendingAddress(ui->spendingEdit->text().toStdString());
+    CPaladeumAddress spendingAddress(ui->spendingEdit->text().toStdString());
     CKeyID spendingKeyID;
     if (!spendingAddress.IsValid() || !spendingAddress.GetKeyID(spendingKeyID)) {
     	ui->resultEdit->setText("Spending address is invalid");
@@ -46,7 +46,7 @@ void OfflinePage::on_createButton_clicked()
 
     spendingAddress.GetKeyID(spendingKeyID);
 
-    ui->resultEdit->setText(QString::fromStdString(CAkilaAddress(stakingKeyID, spendingKeyID).ToString()));
+    ui->resultEdit->setText(QString::fromStdString(CPaladeumAddress(stakingKeyID, spendingKeyID).ToString()));
 }
 
 OfflinePage::~OfflinePage()

@@ -1,19 +1,19 @@
 # Copyright (c) 2015-2016 The Bitcoin Core developers
-# Copyright (c) 2021-2022 The Akila developers
+# Copyright (c) 2021-2022 The Paladeum developers
 # Distributed under the MIT software license, see the accompanying
 # file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-bin_PROGRAMS += bench/bench_akila
+bin_PROGRAMS += bench/bench_paladeum
 BENCH_SRCDIR = bench
-BENCH_BINARY = bench/bench_akila$(EXEEXT)
+BENCH_BINARY = bench/bench_paladeum$(EXEEXT)
 
 RAW_BENCH_FILES = \
   bench/data/block566553.raw
 GENERATED_BENCH_FILES = $(RAW_BENCH_FILES:.raw=.raw.h)
 
-bench_bench_akila_SOURCES = \
+bench_bench_paladeum_SOURCES = \
   $(RAW_BENCH_FILES) \
-  bench/bench_akila.cpp \
+  bench/bench_paladeum.cpp \
   bench/bench.cpp \
   bench/bench.h \
   bench/checkblock.cpp \
@@ -30,16 +30,16 @@ bench_bench_akila_SOURCES = \
   bench/perf.h \
   bench/prevector_destructor.cpp
 
-nodist_bench_bench_akila_SOURCES = $(GENERATED_BENCH_FILES)
+nodist_bench_bench_paladeum_SOURCES = $(GENERATED_BENCH_FILES)
 
-bench_bench_akila_CPPFLAGS = $(AM_CPPFLAGS) $(AKILA_INCLUDES) $(EVENT_CLFAGS) $(EVENT_PTHREADS_CFLAGS) -I$(builddir)/bench/
-bench_bench_akila_CXXFLAGS = $(AM_CXXFLAGS) $(PIE_FLAGS)
-bench_bench_akila_LDADD = \
-  $(LIBAKILA_SERVER) \
-  $(LIBAKILA_COMMON) \
-  $(LIBAKILA_UTIL) \
-  $(LIBAKILA_CONSENSUS) \
-  $(LIBAKILA_CRYPTO) \
+bench_bench_paladeum_CPPFLAGS = $(AM_CPPFLAGS) $(PLD_INCLUDES) $(EVENT_CLFAGS) $(EVENT_PTHREADS_CFLAGS) -I$(builddir)/bench/
+bench_bench_paladeum_CXXFLAGS = $(AM_CXXFLAGS) $(PIE_FLAGS)
+bench_bench_paladeum_LDADD = \
+  $(LIBPLD_SERVER) \
+  $(LIBPLD_COMMON) \
+  $(LIBPLD_UTIL) \
+  $(LIBPLD_CONSENSUS) \
+  $(LIBPLD_CRYPTO) \
   $(LIBLEVELDB) \
   $(LIBLEVELDB_SSE42) \
   $(LIBMEMENV) \
@@ -47,30 +47,30 @@ bench_bench_akila_LDADD = \
   $(LIBUNIVALUE)
 
 if ENABLE_ZMQ
-bench_bench_akila_LDADD += $(LIBAKILA_ZMQ) $(ZMQ_LIBS)
+bench_bench_paladeum_LDADD += $(LIBPLD_ZMQ) $(ZMQ_LIBS)
 endif
 
 if ENABLE_WALLET
-bench_bench_akila_SOURCES += bench/coin_selection.cpp
-bench_bench_akila_LDADD += $(LIBAKILA_WALLET) $(LIBAKILA_CRYPTO)
+bench_bench_paladeum_SOURCES += bench/coin_selection.cpp
+bench_bench_paladeum_LDADD += $(LIBPLD_WALLET) $(LIBPLD_CRYPTO)
 endif
 
-bench_bench_akila_LDADD += $(BOOST_LIBS) $(BDB_LIBS) $(SSL_LIBS) $(CRYPTO_LIBS) $(MINIUPNPC_LIBS) $(EVENT_PTHREADS_LIBS) $(EVENT_LIBS)
-bench_bench_akila_LDFLAGS = $(RELDFLAGS) $(AM_LDFLAGS) $(LIBTOOL_APP_LDFLAGS)
+bench_bench_paladeum_LDADD += $(BOOST_LIBS) $(BDB_LIBS) $(SSL_LIBS) $(CRYPTO_LIBS) $(MINIUPNPC_LIBS) $(EVENT_PTHREADS_LIBS) $(EVENT_LIBS)
+bench_bench_paladeum_LDFLAGS = $(RELDFLAGS) $(AM_LDFLAGS) $(LIBTOOL_APP_LDFLAGS)
 
-CLEAN_AKILA_BENCH = bench/*.gcda bench/*.gcno $(GENERATED_BENCH_FILES)
+CLEAN_PLD_BENCH = bench/*.gcda bench/*.gcno $(GENERATED_BENCH_FILES)
 
-CLEANFILES += $(CLEAN_AKILA_BENCH)
+CLEANFILES += $(CLEAN_PLD_BENCH)
 
 bench/checkblock.cpp: bench/data/block566553.raw.h
 
-akila_bench: $(BENCH_BINARY)
+paladeum_bench: $(BENCH_BINARY)
 
 bench: $(BENCH_BINARY) FORCE
 	$(BENCH_BINARY)
 
-akila_bench_clean : FORCE
-	rm -f $(CLEAN_AKILA_BENCH) $(bench_bench_akila_OBJECTS) $(BENCH_BINARY)
+paladeum_bench_clean : FORCE
+	rm -f $(CLEAN_PLD_BENCH) $(bench_bench_paladeum_OBJECTS) $(BENCH_BINARY)
 
 %.raw.h: %.raw
 	@$(MKDIR_P) $(@D)

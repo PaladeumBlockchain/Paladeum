@@ -3,14 +3,14 @@ Jenkinsfile
 *.tar.gz
 
 *.exe
-src/akila
-src/akilad
-src/akila-cli
-src/akila-tx
-src/test/test_akila
-src/test/test_akila_fuzzy
-src/test/test_akila_hash
-src/qt/test/test_akila-qt
+src/paladeum
+src/paladeumd
+src/paladeum-cli
+src/paladeum-tx
+src/test/test_paladeum
+src/test/test_paladeum_fuzzy
+src/test/test_paladeum_hash
+src/qt/test/test_paladeum-qt
 .vscode
 output.txt
 
@@ -36,8 +36,8 @@ config.status
 configure
 configure~
 libtool
-src/config/akila-config.h
-src/config/akila-config.h.in
+src/config/paladeum-config.h
+src/config/paladeum-config.h.in
 src/config/stamp-h1
 share/setup.nsi
 share/qt/Info.plist
@@ -85,12 +85,12 @@ src/qt/test/moc*.cpp
 # Compilation and Qt preprocessor part
 *.qm
 Makefile
-akila-qt
-Akila-Qt.app
+paladeum-qt
+Paladeum-Qt.app
 
 # Unit-tests
 Makefile.test
-akila-qt_test
+paladeum-qt_test
 
 # Resources cpp
 qrc_*.cpp
@@ -103,7 +103,7 @@ build
 *.gcno
 *.gcda
 /*.info
-test_akila.coverage/
+test_paladeum.coverage/
 total.coverage/
 coverage_percent.txt
 
@@ -118,7 +118,7 @@ test/cache/*
 
 /doc/doxygen/
 
-libakilaconsensus.pc
+libpaladeumconsensus.pc
 contrib/devtools/split-debug.sh
 .idea
 cmake-build-debug

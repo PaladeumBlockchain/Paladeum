@@ -1,4 +1,4 @@
-#include "akilaunits.h"
+#include "paladeumunits.h"
 
 #include <QAbstractTableModel>
 #include <QStringList>
@@ -53,7 +53,7 @@ public:
                 TxPlainTextRole,
         /** Unprocessed icon */
                 RawDecorationRole,
-        /** AKILA or name of an token */
+        /** PLD or name of an token */
                 TokenNameRole,
     };
 

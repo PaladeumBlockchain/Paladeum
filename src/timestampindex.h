@@ -3,8 +3,8 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef AKILA_TIMESTAMPINDEX_H
-#define AKILA_TIMESTAMPINDEX_H
+#ifndef PLD_TIMESTAMPINDEX_H
+#define PLD_TIMESTAMPINDEX_H
 
 #include "uint256.h"
 
@@ -128,4 +128,4 @@ struct CTimestampBlockIndexValue {
     }
 };
 
-#endif // AKILA_TIMESTAMPINDEX_H
+#endif // PLD_TIMESTAMPINDEX_H

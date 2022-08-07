@@ -1,11 +1,11 @@
 // Copyright (c) 2010 Satoshi Nakamoto
 // Copyright (c) 2012-2016 The Bitcoin Core developers
-// Copyright (c) 2021-2022 The Akila developers
+// Copyright (c) 2021-2022 The Paladeum developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef AKILA_UI_INTERFACE_H
-#define AKILA_UI_INTERFACE_H
+#ifndef PLD_UI_INTERFACE_H
+#define PLD_UI_INTERFACE_H
 
 #include <stdint.h>
 #include <string>
@@ -127,4 +127,4 @@ std::string AmountErrMsg(const char* const optname, const std::string& strValue)
 
 extern CClientUIInterface uiInterface;
 
-#endif // AKILA_UI_INTERFACE_H
+#endif // PLD_UI_INTERFACE_H

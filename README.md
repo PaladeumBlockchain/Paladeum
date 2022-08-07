@@ -1,15 +1,15 @@
-Akila Core integration/staging tree
+Paladeum Core integration/staging tree
 =====================================
 
-https://akilacoin.org
+https://paladeumcoin.org
 
-What is Akilacoin?
+What is Paladeumcoin?
 ----------------
 
-Akilacoin is an experimental digital currency that enables instant payments to
-anyone, anywhere in the world. The Akilacoin platform also lets anyone create tokens (tokens) on the Akilacoin network. 
+Paladeumcoin is an experimental digital currency that enables instant payments to
+anyone, anywhere in the world. The Paladeumcoin platform also lets anyone create tokens (tokens) on the Paladeumcoin network. 
 Tokens can be used for NFTs, STOs, Gift Cards, and fractional ownership of anything of value.
-Akilacoin uses peer-to-peer technology to operate
+Paladeumcoin uses peer-to-peer technology to operate
 with no central authority: managing transactions and issuing money are carried
 out collectively by the network. 
 
@@ -18,15 +18,15 @@ out collectively by the network.
 License
 -------
 
-Akila Core is released under the terms of the MIT license. See [COPYING](COPYING) for more
+Paladeum Core is released under the terms of the MIT license. See [COPYING](COPYING) for more
 information or see https://opensource.org/licenses/MIT.
 
 Development Process
 -------------------
 
 The `master` branch is regularly built and tested, but is not guaranteed to be
-completely stable. [Tags](https://github.com/AkilaProject/Akilacoin/tags) are created
-regularly to indicate new official, stable release versions of Akila Core.
+completely stable. [Tags](https://github.com/PaladeumProject/Paladeumcoin/tags) are created
+regularly to indicate new official, stable release versions of Paladeum Core.
 
 Active development is done in the `develop` branch. 
 
@@ -64,24 +64,24 @@ to add a test plan to the pull request description if testing the changes is
 not straightforward.
 
 
-About Akilacoin
+About Paladeumcoin
 ----------------
 A digital peer to peer network for the facilitation of token transfer.
 
 
 
-In the fictional world of Westeros, akilas are used as messengers who carry statements of truth. Akilacoin is a use case specific blockchain designed to carry statements of truth about who owns what tokens. 
+In the fictional world of Westeros, paladeums are used as messengers who carry statements of truth. Paladeumcoin is a use case specific blockchain designed to carry statements of truth about who owns what tokens. 
 
 
 
 Thank you to the Bitcoin developers. 
 
-The Akilacoin project is launched based on the hard work and continuous effort of over 400 Bitcoin developers who made over 14,000 commits over the life to date of the Bitcoin project. We are eternally grateful to you for your efforts and diligence in making a secure network and for their support of free and open source software development.  The Akilacoin experiment is made on the foundation you built.
+The Paladeumcoin project is launched based on the hard work and continuous effort of over 400 Bitcoin developers who made over 14,000 commits over the life to date of the Bitcoin project. We are eternally grateful to you for your efforts and diligence in making a secure network and for their support of free and open source software development.  The Paladeumcoin experiment is made on the foundation you built.
 
 
 Abstract
 ----------------
-Akilacoin aims to implement a blockchain which is optimized specifically for the use case of transferring tokens such as securities from one holder to another. Based on the extensive development and testing of Bitcoin, Akilacoin is built on a fork of the Bitcoin code. Key changes include a faster block reward time and a change in the number, but not weighed distribution schedule, of coins. Akilacoin is free and open source and will be issued and mined transparently with no pre-mine, developer allocation or any other similar set aside. Akilacoin is intended to prioritize user control, privacy and censorship resistance and be jurisdiction agnostic while allowing simple optional additional features for users based on need.
+Paladeumcoin aims to implement a blockchain which is optimized specifically for the use case of transferring tokens such as securities from one holder to another. Based on the extensive development and testing of Bitcoin, Paladeumcoin is built on a fork of the Bitcoin code. Key changes include a faster block reward time and a change in the number, but not weighed distribution schedule, of coins. Paladeumcoin is free and open source and will be issued and mined transparently with no pre-mine, developer allocation or any other similar set aside. Paladeumcoin is intended to prioritize user control, privacy and censorship resistance and be jurisdiction agnostic while allowing simple optional additional features for users based on need.
 
 
 
@@ -91,9 +91,9 @@ The success of the Ethereum ERC 20 token shows the demand for tokenized tokens t
 
 Bitcoin also has the capability of serving as the rails for tokens by using projects such as Omnilayer, RSK or Counterparty. However, neither Bitcoin nor Ethereum was specifically designed for facilitating ownership of other tokens. 
 
-Akilacoin is designed to be a use case specific blockchain designed to efficiently handle one specific function: the transfer of tokens from one party to another.
+Paladeumcoin is designed to be a use case specific blockchain designed to efficiently handle one specific function: the transfer of tokens from one party to another.
 
-Bitcoin is and always should be focused on its goals of being a better form of money. Bitcoin developers will unlikely prioritize improvements or features which are specifically beneficial to the facilitation of token transfers.  One goal of the Akilacoin project is to see if a use case specific blockchain and development effort can create code which can either improve existing structures like Bitcoin or provide advantages for specific use cases.
+Bitcoin is and always should be focused on its goals of being a better form of money. Bitcoin developers will unlikely prioritize improvements or features which are specifically beneficial to the facilitation of token transfers.  One goal of the Paladeumcoin project is to see if a use case specific blockchain and development effort can create code which can either improve existing structures like Bitcoin or provide advantages for specific use cases.
 
 In the new global economy, borders and jurisdictions will be less relevant as more tokens are tradable and trade across borders is increasingly frictionless. In an age where people can move significant amounts of wealth instantly using Bitcoin, global consumers will likely demand the same efficiency for their securities and similar token holdings.
 

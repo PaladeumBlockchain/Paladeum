@@ -2,12 +2,12 @@
 // Copyright (c) 2009-2016 The Bitcoin Core developers
 // Copyright (c) 2017-2019 The Raven Core developers
 // Copyright (c) 2014-2016 The BlackCoin developers
-// Copyright (c) 2021-2022 The Akila developers
+// Copyright (c) 2021-2022 The Paladeum developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef AKILA_SCRIPT_STANDARD_H
-#define AKILA_SCRIPT_STANDARD_H
+#ifndef PLD_SCRIPT_STANDARD_H
+#define PLD_SCRIPT_STANDARD_H
 
 #include "script/interpreter.h"
 #include "uint256.h"
@@ -76,7 +76,7 @@ enum txnouttype
     TX_NEW_TOKEN = 8,
     TX_REISSUE_TOKEN = 9,
     TX_TRANSFER_TOKEN = 10,
-    TX_RESTRICTED_TOKEN_DATA = 11, //!< unspendable OP_AKILA_TOKEN script that carries data
+    TX_RESTRICTED_TOKEN_DATA = 11, //!< unspendable OP_PLD_TOKEN script that carries data
     /** TOKENS END */
     TX_CLTV = 12,
     TX_OFFLINE_STAKING = 13
@@ -93,7 +93,7 @@ public:
  *  * CNoDestination: no destination set
  *  * CKeyID: TX_PUBKEYHASH destination
  *  * CScriptID: TX_SCRIPTHASH destination
- *  A CTxDestination is the internal data type encoded in a akilacoin address
+ *  A CTxDestination is the internal data type encoded in a paladeumcoin address
  */
 typedef boost::variant<CNoDestination, CKeyID, CScriptID, std::pair<CKeyID, CKeyID>> CTxDestination;
 
@@ -135,7 +135,7 @@ bool ExtractDestination(const CScript& scriptPubKey, CTxDestination& addressRet)
 bool ExtractDestinations(const CScript& scriptPubKey, txnouttype& typeRet, txnouttype& scriptType, std::vector<CTxDestination>& addressRet, int& nRequiredRet);
 
 /**
- * Generate a Akila scriptPubKey for the given CTxDestination. Returns a P2PKH
+ * Generate a Paladeum scriptPubKey for the given CTxDestination. Returns a P2PKH
  * script for a CKeyID destination, a P2SH script for a CScriptID, and an empty
  * script for CNoDestination.
  */
@@ -157,4 +157,4 @@ CScript GetScriptForNullTokenDataDestination(const CTxDestination &dest);
  */
 CScript GetScriptForWitness(const CScript& redeemscript);
 
-#endif // AKILA_SCRIPT_STANDARD_H
+#endif // PLD_SCRIPT_STANDARD_H

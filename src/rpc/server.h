@@ -1,11 +1,11 @@
 // Copyright (c) 2010 Satoshi Nakamoto
 // Copyright (c) 2009-2016 The Bitcoin Core developers
-// Copyright (c) 2021-2022 The Akila developers
+// Copyright (c) 2021-2022 The Paladeum developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef AKILA_RPCSERVER_H
-#define AKILA_RPCSERVER_H
+#ifndef PLD_RPCSERVER_H
+#define PLD_RPCSERVER_H
 
 #include "amount.h"
 #include "rpc/protocol.h"
@@ -138,7 +138,7 @@ public:
 };
 
 /**
- * Akila RPC command dispatcher.
+ * Paladeum RPC command dispatcher.
  */
 class CRPCTable
 {
@@ -186,7 +186,7 @@ extern std::vector<unsigned char> ParseHexV(const UniValue& v, std::string strNa
 extern std::vector<unsigned char> ParseHexO(const UniValue& o, std::string strKey);
 
 extern double GetPoSKernelPS();
-extern CAmount AmountFromValue(const UniValue& value, bool p_isAKILA = true);
+extern CAmount AmountFromValue(const UniValue& value, bool p_isPLD = true);
 extern std::string HelpExampleCli(const std::string& methodname, const std::string& args);
 extern std::string HelpExampleRpc(const std::string& methodname, const std::string& args);
 
@@ -201,4 +201,4 @@ std::string JSONRPCExecBatch(const JSONRPCRequest& jreq, const UniValue& vReq);
 // Retrieves any serialization flags requested in command line argument
 int RPCSerializationFlags();
 
-#endif // AKILA_RPCSERVER_H
+#endif // PLD_RPCSERVER_H

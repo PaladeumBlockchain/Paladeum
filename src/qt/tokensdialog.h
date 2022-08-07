@@ -1,10 +1,10 @@
 ﻿// Copyright (c) 2011-2016 The Bitcoin Core developers
-// Copyright (c) 2021-2022 The Akila developers
+// Copyright (c) 2021-2022 The Paladeum developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef AKILA_QT_TOKENSDIALOG_H
-#define AKILA_QT_TOKENSDIALOG_H
+#ifndef PLD_QT_TOKENSDIALOG_H
+#define PLD_QT_TOKENSDIALOG_H
 
 #include "walletmodel.h"
 
@@ -26,7 +26,7 @@ QT_BEGIN_NAMESPACE
 class QUrl;
 QT_END_NAMESPACE
 
-/** Dialog for sending akilas */
+/** Dialog for sending paladeums */
 class TokensDialog : public QDialog
 {
     Q_OBJECT
@@ -119,4 +119,4 @@ private Q_SLOTS:
             void message(const QString &title, const QString &message, unsigned int style);
 };
 
-#endif // AKILA_QT_TOKENSSDIALOG_H
+#endif // PLD_QT_TOKENSSDIALOG_H

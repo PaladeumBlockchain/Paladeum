@@ -1,12 +1,12 @@
 // Copyright (c) 2009-2010 Satoshi Nakamoto
 // Copyright (c) 2009-2016 The Bitcoin Core developers
 // Copyright (c) 2014-2016 The BlackCoin developers
-// Copyright (c) 2021-2022 The Akila developers
+// Copyright (c) 2021-2022 The Paladeum developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef AKILA_PRIMITIVES_BLOCK_H
-#define AKILA_PRIMITIVES_BLOCK_H
+#ifndef PLD_PRIMITIVES_BLOCK_H
+#define PLD_PRIMITIVES_BLOCK_H
 
 #include "primitives/transaction.h"
 #include "serialize.h"
@@ -238,4 +238,4 @@ public:
     }
 };
 
-#endif // AKILA_PRIMITIVES_BLOCK_H
+#endif // PLD_PRIMITIVES_BLOCK_H

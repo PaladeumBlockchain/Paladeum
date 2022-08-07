@@ -1,11 +1,11 @@
 // Copyright (c) 2009-2010 Satoshi Nakamoto
 // Copyright (c) 2009-2016 The Bitcoin Core developers
-// Copyright (c) 2021-2022 The Akila developers
+// Copyright (c) 2021-2022 The Paladeum developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef AKILA_CONSENSUS_PARAMS_H
-#define AKILA_CONSENSUS_PARAMS_H
+#ifndef PLD_CONSENSUS_PARAMS_H
+#define PLD_CONSENSUS_PARAMS_H
 
 #include "uint256.h"
 #include <map>
@@ -79,4 +79,4 @@ struct Params {
 };
 } // namespace Consensus
 
-#endif // AKILA_CONSENSUS_PARAMS_H
+#endif // PLD_CONSENSUS_PARAMS_H

@@ -2,15 +2,15 @@
 
   1. Check PROTOCOL_VERSION in the following location: src/version.h
 
-  2. Check Akilad Version in the following locations: configure.ac, src/version.h
+  2. Check Paladeumd Version in the following locations: configure.ac, src/version.h
 
   3. All unit and functional tests pass
 
-  4. Check PROTOCOL_VERSION in the iOS app located at akilawallet-ios
+  4. Check PROTOCOL_VERSION in the iOS app located at paladeumwallet-ios
 
-  5. Check PROTOCOL_VERSION is the android app located at akilawallet-android
+  5. Check PROTOCOL_VERSION is the android app located at paladeumwallet-android
 
-  6. Check the Javascript stack (akilacore) for any block serialization or rpc changes
+  6. Check the Javascript stack (paladeumcore) for any block serialization or rpc changes
   
   7. Build release notes for all new features and bug fixes
 
@@ -20,9 +20,9 @@
 
 **Post Release :**
 
-  1. Update akilacoin.org with correct popup version
+  1. Update paladeumcoin.org with correct popup version
   
-  2. Update akilacoin.org with correct release download urls for each platform (Windows, Linux, Mac)
+  2. Update paladeumcoin.org with correct release download urls for each platform (Windows, Linux, Mac)
 
 **Build Process**
 

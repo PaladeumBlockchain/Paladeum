@@ -1,15 +1,15 @@
 // Copyright (c) 2011-2016 The Bitcoin Core developers
-// Copyright (c) 2021-2022 The Akila developers
+// Copyright (c) 2021-2022 The Paladeum developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef AKILA_QT_UTILITYDIALOG_H
-#define AKILA_QT_UTILITYDIALOG_H
+#ifndef PLD_QT_UTILITYDIALOG_H
+#define PLD_QT_UTILITYDIALOG_H
 
 #include <QDialog>
 #include <QObject>
 
-class AkilaGUI;
+class PaladeumGUI;
 
 namespace Ui {
     class HelpMessageDialog;
@@ -43,11 +43,11 @@ class ShutdownWindow : public QWidget
 
 public:
     explicit ShutdownWindow(QWidget *parent=nullptr, Qt::WindowFlags f=Qt::Widget);
-    static QWidget *showShutdownWindow(AkilaGUI *window);
+    static QWidget *showShutdownWindow(PaladeumGUI *window);
 
 protected:
     void closeEvent(QCloseEvent *event);
 };
 
 
-#endif // AKILA_QT_UTILITYDIALOG_H
+#endif // PLD_QT_UTILITYDIALOG_H

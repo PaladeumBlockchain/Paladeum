@@ -11,7 +11,7 @@
   </array>
 
   <key>CFBundleIconFile</key>
-  <string>akila.icns</string>
+  <string>paladeum.icns</string>
 
   <key>CFBundlePackageType</key>
   <string>APPL</string>
@@ -29,16 +29,16 @@
   <string>????</string>
 
   <key>CFBundleExecutable</key>
-  <string>Akila-Qt</string>
+  <string>Paladeum-Qt</string>
   
   <key>CFBundleName</key>
-  <string>Akila-Qt</string>
+  <string>Paladeum-Qt</string>
 
   <key>LSHasLocalizedDisplayName</key>
   <true/>
 
   <key>CFBundleIdentifier</key>
-  <string>org.akilafoundation.Akila-Qt</string>
+  <string>org.paladeumfoundation.Paladeum-Qt</string>
 
   <key>CFBundleURLTypes</key>
   <array>
@@ -46,10 +46,10 @@
       <key>CFBundleTypeRole</key>
       <string>Editor</string>
       <key>CFBundleURLName</key>
-      <string>org.akila.AkilaPayment</string>
+      <string>org.paladeum.PaladeumPayment</string>
       <key>CFBundleURLSchemes</key>
       <array>
-        <string>akila</string>
+        <string>paladeum</string>
       </array>
     </dict>
   </array>
@@ -58,9 +58,9 @@
   <array>
     <dict>
       <key>UTTypeIdentifier</key>
-      <string>org.akila.paymentrequest</string>
+      <string>org.paladeum.paymentrequest</string>
       <key>UTTypeDescription</key>
-      <string>Akila payment request</string>
+      <string>Paladeum payment request</string>
       <key>UTTypeConformsTo</key>
       <array>
         <string>public.data</string>
@@ -68,10 +68,10 @@
       <key>UTTypeTagSpecification</key>
       <dict>
         <key>public.mime-type</key>
-        <string>application/x-akila-payment-request</string>
+        <string>application/x-paladeum-payment-request</string>
         <key>public.filename-extension</key>
         <array>
-          <string>akilapaymentrequest</string>
+          <string>paladeumpaymentrequest</string>
         </array>
       </dict>
     </dict>
@@ -84,7 +84,7 @@
       <string>Editor</string>
       <key>LSItemContentTypes</key>
       <array>
-        <string>org.akila.paymentrequest</string>
+        <string>org.paladeum.paymentrequest</string>
       </array>
       <key>LSHandlerRank</key>
       <string>Owner</string>

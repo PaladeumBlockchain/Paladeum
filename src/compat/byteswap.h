@@ -1,13 +1,13 @@
 // Copyright (c) 2014-2016 The Bitcoin Core developers
-// Copyright (c) 2021-2022 The Akila developers
+// Copyright (c) 2021-2022 The Paladeum developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef AKILA_COMPAT_BYTESWAP_H
-#define AKILA_COMPAT_BYTESWAP_H
+#ifndef PLD_COMPAT_BYTESWAP_H
+#define PLD_COMPAT_BYTESWAP_H
 
 #if defined(HAVE_CONFIG_H)
-#include "config/akila-config.h"
+#include "config/paladeum-config.h"
 #endif
 
 #include <stdint.h>
@@ -64,4 +64,4 @@ inline uint64_t bswap_64(uint64_t x)
 
 #endif // defined(__APPLE__)
 
-#endif // AKILA_COMPAT_BYTESWAP_H
+#endif // PLD_COMPAT_BYTESWAP_H

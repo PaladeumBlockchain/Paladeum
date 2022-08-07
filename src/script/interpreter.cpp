@@ -2,7 +2,7 @@
 // Copyright (c) 2009-2016 The Bitcoin Core developers
 // Copyright (c) 2017-2019 The Raven Core developers
 // Copyright (c) 2014-2016 The BlackCoin developers
-// Copyright (c) 2021-2022 The Akila developers
+// Copyright (c) 2021-2022 The Paladeum developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -1129,7 +1129,7 @@ bool EvalScript(std::vector<std::vector<unsigned char> > &stack, const CScript &
                         break;
 
                     /** TOKENS START */
-                    case OP_AKILA_TOKEN:
+                    case OP_PLD_TOKEN:
                         break;
                     /** TOKENS END */
 

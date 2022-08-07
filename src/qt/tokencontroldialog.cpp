@@ -1,5 +1,5 @@
 // Copyright (c) 2011-2016 The Bitcoin Core developers
-// Copyright (c) 2021-2022 The Akila developers
+// Copyright (c) 2021-2022 The Paladeum developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -7,7 +7,7 @@
 #include "ui_tokencontroldialog.h"
 
 #include "addresstablemodel.h"
-#include "akilaunits.h"
+#include "paladeumunits.h"
 #include "guiutil.h"
 #include "optionsmodel.h"
 #include "platformstyle.h"
@@ -268,7 +268,7 @@ void TokenControlDialog::showMenu(const QPoint &point)
 // context menu action: copy amount
 void TokenControlDialog::copyAmount()
 {
-    GUIUtil::setClipboard(AkilaUnits::removeSpaces(contextMenuItem->text(COLUMN_AMOUNT)));
+    GUIUtil::setClipboard(PaladeumUnits::removeSpaces(contextMenuItem->text(COLUMN_AMOUNT)));
 }
 
 // context menu action: copy label
@@ -563,7 +563,7 @@ void TokenControlDialog::updateLabels(WalletModel *model, QDialog* dialog)
     }
 
     // actually update labels
-    int nDisplayUnit = AkilaUnits::AKILA;
+    int nDisplayUnit = PaladeumUnits::PLD;
     if (model && model->getOptionsModel())
         nDisplayUnit = model->getOptionsModel()->getDisplayUnit();
 
@@ -583,12 +583,12 @@ void TokenControlDialog::updateLabels(WalletModel *model, QDialog* dialog)
 
     // stats
     l1->setText(QString::number(nQuantity));                                 // Quantity
-    l2->setText(AkilaUnits::formatWithCustomName(QString::fromStdString(strTokenName), nTokenAmount));        // Amount
-    l3->setText(AkilaUnits::formatWithUnit(nDisplayUnit, nPayFee));        // Fee
-    l4->setText(AkilaUnits::formatWithUnit(nDisplayUnit, nAfterFee));      // After Fee
+    l2->setText(PaladeumUnits::formatWithCustomName(QString::fromStdString(strTokenName), nTokenAmount));        // Amount
+    l3->setText(PaladeumUnits::formatWithUnit(nDisplayUnit, nPayFee));        // Fee
+    l4->setText(PaladeumUnits::formatWithUnit(nDisplayUnit, nAfterFee));      // After Fee
     l5->setText(((nBytes > 0) ? ASYMP_UTF8 : "") + QString::number(nBytes));        // Bytes
     l7->setText(fDust ? tr("yes") : tr("no"));                               // Dust
-    l8->setText(AkilaUnits::formatWithCustomName(QString::fromStdString(strTokenName), nChange));        // Change
+    l8->setText(PaladeumUnits::formatWithCustomName(QString::fromStdString(strTokenName), nChange));        // Change
     if (nPayFee > 0)
     {
         l3->setText(ASYMP_UTF8 + l3->text());
@@ -702,7 +702,7 @@ void TokenControlDialog::updateView()
             if (ExtractDestination(out.tx->tx->vout[out.i].scriptPubKey, outputAddress)) {
                 sAddress = QString::fromStdString(EncodeDestination(outputAddress));
 
-                // if listMode or change => show akila address. In tree mode, address is not shown again for direct wallet address outputs
+                // if listMode or change => show paladeum address. In tree mode, address is not shown again for direct wallet address outputs
                 if (!treeMode || (!(sAddress == sWalletAddress))) {
                     itemOutput->setText(COLUMN_ADDRESS, sAddress);
                     // token name
@@ -725,7 +725,7 @@ void TokenControlDialog::updateView()
             }
 
             // amount
-            itemOutput->setText(COLUMN_AMOUNT, AkilaUnits::format(nDisplayUnit, nAmount));
+            itemOutput->setText(COLUMN_AMOUNT, PaladeumUnits::format(nDisplayUnit, nAmount));
             itemOutput->setData(COLUMN_AMOUNT, Qt::UserRole,
                                 QVariant((qlonglong) nAmount)); // padding so that sorting works correctly
 
@@ -760,7 +760,7 @@ void TokenControlDialog::updateView()
         // amount
         if (treeMode) {
             itemWalletAddress->setText(COLUMN_CHECKBOX, "(" + QString::number(nChildren) + ")");
-            itemWalletAddress->setText(COLUMN_AMOUNT, AkilaUnits::format(nDisplayUnit, nSum));
+            itemWalletAddress->setText(COLUMN_AMOUNT, PaladeumUnits::format(nDisplayUnit, nSum));
             itemWalletAddress->setData(COLUMN_AMOUNT, Qt::UserRole, QVariant((qlonglong) nSum));
         }
     }

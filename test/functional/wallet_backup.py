@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # Copyright (c) 2014-2016 The Bitcoin Core developers
-# Copyright (c) 2017-2020 The Akila developers
+# Copyright (c) 2017-2020 The Paladeum developers
 # Distributed under the MIT software license, see the accompanying
 # file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -36,10 +36,10 @@ and confirm again balances are correct.
 
 from random import randint
 import shutil
-from test_framework.test_framework import AkilaTestFramework
+from test_framework.test_framework import PaladeumTestFramework
 from test_framework.util import connect_nodes, Decimal, sync_mempools, sync_blocks, os, assert_equal
 
-class WalletBackupTest(AkilaTestFramework):
+class WalletBackupTest(PaladeumTestFramework):
     def set_test_params(self):
         self.num_nodes = 4
         self.setup_clean_chain = True

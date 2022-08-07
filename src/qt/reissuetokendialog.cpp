@@ -1,5 +1,5 @@
 // Copyright (c) 2011-2016 The Bitcoin Core developers
-// Copyright (c) 2021-2022 The Akila developers
+// Copyright (c) 2021-2022 The Paladeum developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -13,7 +13,7 @@
 #include "core_io.h"
 #include "univalue.h"
 #include "tokens/tokentypes.h"
-#include "akilaunits.h"
+#include "paladeumunits.h"
 #include "optionsmodel.h"
 #include "sendcoinsdialog.h"
 #include "coincontroldialog.h"
@@ -226,7 +226,7 @@ void ReissueTokenDialog::setModel(WalletModel *_model)
         else
             ui->confTargetSelector->setCurrentIndex(getIndexForConfTarget(settings.value("nConfTarget").toInt()));
 
-        ui->reissueCostLabel->setText(tr("Cost") + ": " + AkilaUnits::formatWithUnit(model->getOptionsModel()->getDisplayUnit(), GetBurnAmount(KnownTokenType::REISSUE)));
+        ui->reissueCostLabel->setText(tr("Cost") + ": " + PaladeumUnits::formatWithUnit(model->getOptionsModel()->getDisplayUnit(), GetBurnAmount(KnownTokenType::REISSUE)));
         ui->reissueCostLabel->setStyleSheet("font-weight: bold");
 
         // Setup the default values
@@ -439,7 +439,7 @@ void ReissueTokenDialog::setBalance(const CAmount& balance, const CAmount& uncon
 
     if(model && model->getOptionsModel())
     {
-        ui->labelBalance->setText(AkilaUnits::formatWithUnit(model->getOptionsModel()->getDisplayUnit(), balance));
+        ui->labelBalance->setText(PaladeumUnits::formatWithUnit(model->getOptionsModel()->getDisplayUnit(), balance));
     }
 }
 
@@ -515,7 +515,7 @@ void ReissueTokenDialog::CheckFormState()
     const CTxDestination dest = DecodeDestination(ui->addressText->text().toStdString());
     if (!ui->addressText->text().isEmpty()) {
         if (!IsValidDestination(dest)) {
-            showMessage(tr("Invalid Akila Destination Address"));
+            showMessage(tr("Invalid Paladeum Destination Address"));
             return;
         }
     }
@@ -545,7 +545,7 @@ void ReissueTokenDialog::CheckFormState()
 
             if (fHasQuantity && !IsValidDestination(dest)) {
                 ui->addressText->setStyleSheet(STYLE_INVALID);
-                showMessage(tr("Warning: Invalid Akila address"));
+                showMessage(tr("Warning: Invalid Paladeum address"));
                 return;
             }
 
@@ -953,7 +953,7 @@ void ReissueTokenDialog::onReissueTokenClicked()
     QStringList formatted;
 
     // generate bold amount string
-    QString amount = "<b>" + QString::fromStdString(ValueFromAmountString(GetReissueTokenFeeAmount(), 8)) + " AKILA";
+    QString amount = "<b>" + QString::fromStdString(ValueFromAmountString(GetReissueTokenFeeAmount(), 8)) + " PLD";
     amount.append("</b>");
     // generate monospace address string
     QString addressburn = "<span style='font-family: monospace;'>" + QString::fromStdString(GetParams().ReissueTokenFeeAddress());
@@ -982,7 +982,7 @@ void ReissueTokenDialog::onReissueTokenClicked()
     {
         // append fee string if a fee is required
         questionString.append("<hr /><span style='color:#aa0000;'>");
-        questionString.append(AkilaUnits::formatHtmlWithUnit(model->getOptionsModel()->getDisplayUnit(), nFeeRequired));
+        questionString.append(PaladeumUnits::formatHtmlWithUnit(model->getOptionsModel()->getDisplayUnit(), nFeeRequired));
         questionString.append("</span> ");
         questionString.append(tr("added as transaction fee"));
 
@@ -994,13 +994,13 @@ void ReissueTokenDialog::onReissueTokenClicked()
     questionString.append("<hr />");
     CAmount totalAmount = GetReissueTokenFeeAmount() + nFeeRequired;
     QStringList alternativeUnits;
-    for (AkilaUnits::Unit u : AkilaUnits::availableUnits())
+    for (PaladeumUnits::Unit u : PaladeumUnits::availableUnits())
     {
         if(u != model->getOptionsModel()->getDisplayUnit())
-            alternativeUnits.append(AkilaUnits::formatHtmlWithUnit(u, totalAmount));
+            alternativeUnits.append(PaladeumUnits::formatHtmlWithUnit(u, totalAmount));
     }
     questionString.append(tr("Total Amount %1")
-                                  .arg(AkilaUnits::formatHtmlWithUnit(model->getOptionsModel()->getDisplayUnit(), totalAmount)));
+                                  .arg(PaladeumUnits::formatHtmlWithUnit(model->getOptionsModel()->getDisplayUnit(), totalAmount)));
     questionString.append(QString("<span style='font-size:10pt;font-weight:normal;'><br />(=%2)</span>")
                                   .arg(alternativeUnits.join(" " + tr("or") + "<br />")));
 
@@ -1083,7 +1083,7 @@ void ReissueTokenDialog::updateSmartFeeLabel()
     FeeCalculation feeCalc;
     CFeeRate feeRate = CFeeRate(GetMinimumFee(1000, coin_control, ::mempool, ::feeEstimator, &feeCalc));
 
-    ui->labelSmartFee->setText(AkilaUnits::formatWithUnit(model->getOptionsModel()->getDisplayUnit(), feeRate.GetFeePerK()) + "/kB");
+    ui->labelSmartFee->setText(PaladeumUnits::formatWithUnit(model->getOptionsModel()->getDisplayUnit(), feeRate.GetFeePerK()) + "/kB");
 
     if (feeCalc.reason == FeeReason::FALLBACK) {
         ui->labelSmartFee2->show(); // (Smart fee not initialized yet. This usually takes a few blocks...)
@@ -1211,7 +1211,7 @@ void ReissueTokenDialog::coinControlChangeEdited(const QString& text)
         }
         else if (!IsValidDestination(dest)) // Invalid address
         {
-            ui->labelCoinControlChangeLabel->setText(tr("Warning: Invalid Akila address"));
+            ui->labelCoinControlChangeLabel->setText(tr("Warning: Invalid Paladeum address"));
         }
         else // Valid address
         {
@@ -1328,7 +1328,7 @@ void ReissueTokenDialog::updateFeeMinimizedLabel()
     if (ui->radioSmartFee->isChecked())
         ui->labelFeeMinimized->setText(ui->labelSmartFee->text());
     else {
-        ui->labelFeeMinimized->setText(AkilaUnits::formatWithUnit(model->getOptionsModel()->getDisplayUnit(), ui->customFee->value()) + "/kB");
+        ui->labelFeeMinimized->setText(PaladeumUnits::formatWithUnit(model->getOptionsModel()->getDisplayUnit(), ui->customFee->value()) + "/kB");
     }
 }
 
@@ -1336,7 +1336,7 @@ void ReissueTokenDialog::updateMinFeeLabel()
 {
     if (model && model->getOptionsModel())
         ui->checkBoxMinimumFee->setText(tr("Pay only the required fee of %1").arg(
-                AkilaUnits::formatWithUnit(model->getOptionsModel()->getDisplayUnit(), GetRequiredFee(1000)) + "/kB")
+                PaladeumUnits::formatWithUnit(model->getOptionsModel()->getDisplayUnit(), GetRequiredFee(1000)) + "/kB")
         );
 }
 

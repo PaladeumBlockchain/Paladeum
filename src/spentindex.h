@@ -3,8 +3,8 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef AKILA_SPENTINDEX_H
-#define AKILA_SPENTINDEX_H
+#ifndef PLD_SPENTINDEX_H
+#define PLD_SPENTINDEX_H
 
 #include "uint256.h"
 #include "amount.h"
@@ -95,4 +95,4 @@ struct CSpentIndexKeyCompare
     }
 };
 
-#endif // AKILA_SPENTINDEX_H
+#endif // PLD_SPENTINDEX_H

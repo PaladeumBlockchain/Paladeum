@@ -1,5 +1,5 @@
 // Copyright (c) 2011-2016 The Bitcoin Core developers
-// Copyright (c) 2021-2022 The Akila developers
+// Copyright (c) 2021-2022 The Paladeum developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -13,11 +13,11 @@
 #include "script/sign.h"
 #include "util.h"
 #include "utilstrencodings.h"
-#include "test/test_akila.h"
+#include "test/test_paladeum.h"
 #include "rpc/server.h"
 
 #if defined(HAVE_CONSENSUS_LIB)
-#include "script/akilaconsensus.h"
+#include "script/paladeumconsensus.h"
 #endif
 
 #include <fstream>
@@ -172,13 +172,13 @@ BOOST_FIXTURE_TEST_SUITE(script_tests, BasicTestingSetup)
 #if defined(HAVE_CONSENSUS_LIB)
         CDataStream stream(SER_NETWORK, PROTOCOL_VERSION);
         stream << tx2;
-        int libconsensus_flags = flags & akilaconsensus_SCRIPT_FLAGS_VERIFY_ALL;
+        int libconsensus_flags = flags & paladeumconsensus_SCRIPT_FLAGS_VERIFY_ALL;
         if (libconsensus_flags == flags) {
-            if (flags & akilaconsensus_SCRIPT_FLAGS_VERIFY_WITNESS) {
-                BOOST_CHECK_MESSAGE(akilaconsensus_verify_script_with_amount(scriptPubKey.data(), scriptPubKey.size(), txCredit.vout[0].nValue, (const unsigned char*)&stream[0], stream.size(), 0, libconsensus_flags, nullptr) == expect, message);
+            if (flags & paladeumconsensus_SCRIPT_FLAGS_VERIFY_WITNESS) {
+                BOOST_CHECK_MESSAGE(paladeumconsensus_verify_script_with_amount(scriptPubKey.data(), scriptPubKey.size(), txCredit.vout[0].nValue, (const unsigned char*)&stream[0], stream.size(), 0, libconsensus_flags, nullptr) == expect, message);
             } else {
-                BOOST_CHECK_MESSAGE(akilaconsensus_verify_script_with_amount(scriptPubKey.data(), scriptPubKey.size(), 0, (const unsigned char*)&stream[0], stream.size(), 0, libconsensus_flags, nullptr) == expect, message);
-                BOOST_CHECK_MESSAGE(akilaconsensus_verify_script(scriptPubKey.data(), scriptPubKey.size(), (const unsigned char*)&stream[0], stream.size(), 0, libconsensus_flags, nullptr) == expect,message);
+                BOOST_CHECK_MESSAGE(paladeumconsensus_verify_script_with_amount(scriptPubKey.data(), scriptPubKey.size(), 0, (const unsigned char*)&stream[0], stream.size(), 0, libconsensus_flags, nullptr) == expect, message);
+                BOOST_CHECK_MESSAGE(paladeumconsensus_verify_script(scriptPubKey.data(), scriptPubKey.size(), (const unsigned char*)&stream[0], stream.size(), 0, libconsensus_flags, nullptr) == expect,message);
             }
         }
 #endif

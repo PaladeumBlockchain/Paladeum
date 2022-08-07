@@ -1,10 +1,10 @@
 // Copyright (c) 2017-2019 The Raven Core developers
-// Copyright (c) 2021-2022 The Akila developers
+// Copyright (c) 2021-2022 The Paladeum developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef AKILA_TOKENDB_H
-#define AKILA_TOKENDB_H
+#ifndef PLD_TOKENDB_H
+#define PLD_TOKENDB_H
 
 #include "fs.h"
 #include "serialize.h"
@@ -98,4 +98,4 @@ public:
 };
 
 
-#endif //AKILA_TOKENDB_H
+#endif //PLD_TOKENDB_H

@@ -1,0 +1,8 @@
+/usr/bin/paladeum-cli		--	gen_context(system_u:object_r:paladeum_exec_t,s0)
+/usr/sbin/paladeumd		--	gen_context(system_u:object_r:paladeum_exec_t,s0)
+/usr/lib(64)?/paladeum/paladeumd		--	gen_context(system_u:object_r:paladeum_exec_t,s0)
+
+/etc/paladeum(/.*)?		gen_context(system_u:object_r:paladeum_conf_t,s0)
+/var/lib/paladeum(/.*)?		gen_context(system_u:object_r:paladeum_var_lib_t,s0)
+
+(/var)?/run/paladeumd(/.*)?   gen_context(system_u:object_r:paladeum_var_run_t,s0)

@@ -1,13 +1,13 @@
 // Copyright (c) 2014 The Bitcoin Core developers
-// Copyright (c) 2021-2022 The Akila developers
+// Copyright (c) 2021-2022 The Paladeum developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef AKILA_CRYPTO_COMMON_H
-#define AKILA_CRYPTO_COMMON_H
+#ifndef PLD_CRYPTO_COMMON_H
+#define PLD_CRYPTO_COMMON_H
 
 #if defined(HAVE_CONFIG_H)
-#include "config/akila-config.h"
+#include "config/paladeum-config.h"
 #endif
 
 #include <stdint.h>
@@ -101,4 +101,4 @@ uint64_t static inline CountBits(uint64_t x)
     return ret;
 }
 
-#endif // AKILA_CRYPTO_COMMON_H
+#endif // PLD_CRYPTO_COMMON_H

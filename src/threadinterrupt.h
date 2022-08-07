@@ -1,10 +1,10 @@
 // Copyright (c) 2016 The Bitcoin Core developers
-// Copyright (c) 2021-2022 The Akila developers
+// Copyright (c) 2021-2022 The Paladeum developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef AKILA_THREADINTERRUPT_H
-#define AKILA_THREADINTERRUPT_H
+#ifndef PLD_THREADINTERRUPT_H
+#define PLD_THREADINTERRUPT_H
 
 #include <atomic>
 #include <chrono>
@@ -32,4 +32,4 @@ private:
     std::atomic<bool> flag;
 };
 
-#endif //AKILA_THREADINTERRUPT_H
+#endif //PLD_THREADINTERRUPT_H

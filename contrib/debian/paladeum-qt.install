@@ -1,0 +1,6 @@
+usr/local/bin/paladeum-qt usr/bin
+share/pixmaps/paladeum32.xpm usr/share/pixmaps
+share/pixmaps/paladeum16.xpm usr/share/pixmaps
+share/pixmaps/paladeum128.png usr/share/pixmaps
+debian/paladeum-qt.desktop usr/share/applications
+debian/paladeum-qt.protocol usr/share/kde4/services/

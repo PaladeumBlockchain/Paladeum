@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # Copyright (c) 2014-2016 The Bitcoin Core developers
-# Copyright (c) 2017-2020 The Akila developers
+# Copyright (c) 2017-2020 The Paladeum developers
 # Distributed under the MIT software license, see the accompanying
 # file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -10,7 +10,7 @@ Test the rawtransaction RPCs for token transactions.
 
 import math
 from io import BytesIO
-from test_framework.test_framework import AkilaTestFramework
+from test_framework.test_framework import PaladeumTestFramework
 from test_framework.util import assert_equal, assert_raises_rpc_error, assert_is_hash_string, assert_does_not_contain_key, assert_contains_key, assert_contains_pair
 from test_framework.mininode import CTransaction, hex_str_to_bytes, bytes_to_hex_str, CScriptReissue, CScriptOwner, CScriptTransfer, CTxOut, CScriptIssue
 
@@ -56,13 +56,13 @@ def get_tx_issue_hex(self, node, token_name, token_quantity, token_units=0):
 
 
 # noinspection PyTypeChecker
-class RawTokenTransactionsTest(AkilaTestFramework):
+class RawTokenTransactionsTest(PaladeumTestFramework):
     def set_test_params(self):
         self.setup_clean_chain = True
         self.num_nodes = 3
 
     def activate_tokens(self):
-        self.log.info("Generating AKILA for node[0] and activating tokens...")
+        self.log.info("Generating PLD for node[0] and activating tokens...")
         n0 = self.nodes[0]
 
         n0.generate(1)
@@ -136,19 +136,19 @@ class RawTokenTransactionsTest(AkilaTestFramework):
         tx = CTransaction()
         f = BytesIO(hex_str_to_bytes(tx_hex))
         tx.deserialize(f)
-        akilar = '72766e72'  # akilar
+        paladeumr = '72766e72'  # paladeumr
         op_drop = '75'
         for n in range(0, len(tx.vout)):
             out = tx.vout[n]
-            if akilar in bytes_to_hex_str(out.scriptPubKey):
+            if paladeumr in bytes_to_hex_str(out.scriptPubKey):
                 script_hex = bytes_to_hex_str(out.scriptPubKey)
-                reissue_script_hex = script_hex[script_hex.index(akilar) + len(akilar):-len(op_drop)]
+                reissue_script_hex = script_hex[script_hex.index(paladeumr) + len(paladeumr):-len(op_drop)]
                 f = BytesIO(hex_str_to_bytes(reissue_script_hex))
                 reissue = CScriptReissue()
                 reissue.deserialize(f)
                 reissue.name = alternate_token_name.encode()
                 tampered_reissue = bytes_to_hex_str(reissue.serialize())
-                tampered_script = script_hex[:script_hex.index(akilar)] + akilar + tampered_reissue + op_drop
+                tampered_script = script_hex[:script_hex.index(paladeumr)] + paladeumr + tampered_reissue + op_drop
                 tx.vout[n].scriptPubKey = hex_str_to_bytes(tampered_script)
         tx_hex_bad = bytes_to_hex_str(tx.serialize())
         tx_signed = n0.signrawtransaction(tx_hex_bad)['hex']
@@ -159,9 +159,9 @@ class RawTokenTransactionsTest(AkilaTestFramework):
         tx = CTransaction()
         f = BytesIO(hex_str_to_bytes(tx_hex))
         tx.deserialize(f)
-        akilat = '72766e74'  # akilat
+        paladeumt = '72766e74'  # paladeumt
         # remove the owner output from vout
-        bad_vout = list(filter(lambda out_script: akilat not in bytes_to_hex_str(out_script.scriptPubKey), tx.vout))
+        bad_vout = list(filter(lambda out_script: paladeumt not in bytes_to_hex_str(out_script.scriptPubKey), tx.vout))
         tx.vout = bad_vout
         tx_hex_bad = bytes_to_hex_str(tx.serialize())
         tx_signed = n0.signrawtransaction(tx_hex_bad)['hex']
@@ -195,9 +195,9 @@ class RawTokenTransactionsTest(AkilaTestFramework):
         tx = CTransaction()
         f = BytesIO(hex_str_to_bytes(tx_issue_hex))
         tx.deserialize(f)
-        akilao = '72766e6f'  # akilao
+        paladeumo = '72766e6f'  # paladeumo
         # remove the owner output from vout
-        bad_vout = list(filter(lambda out_script: akilao not in bytes_to_hex_str(out_script.scriptPubKey), tx.vout))
+        bad_vout = list(filter(lambda out_script: paladeumo not in bytes_to_hex_str(out_script.scriptPubKey), tx.vout))
         tx.vout = bad_vout
         tx_bad_issue = bytes_to_hex_str(tx.serialize())
         tx_bad_issue_signed = n0.signrawtransaction(tx_bad_issue)['hex']
@@ -209,9 +209,9 @@ class RawTokenTransactionsTest(AkilaTestFramework):
         tx = CTransaction()
         f = BytesIO(hex_str_to_bytes(tx_issue_hex))
         tx.deserialize(f)
-        akilao = '72766e6f'  # akilao
+        paladeumo = '72766e6f'  # paladeumo
         # find the owner output from vout and insert a duplicate back in
-        owner_vout = list(filter(lambda out_script: akilao in bytes_to_hex_str(out_script.scriptPubKey), tx.vout))[0]
+        owner_vout = list(filter(lambda out_script: paladeumo in bytes_to_hex_str(out_script.scriptPubKey), tx.vout))[0]
         tx.vout.insert(-1, owner_vout)
         tx_bad_issue = bytes_to_hex_str(tx.serialize())
         tx_bad_issue_signed = n0.signrawtransaction(tx_bad_issue)['hex']
@@ -223,9 +223,9 @@ class RawTokenTransactionsTest(AkilaTestFramework):
         tx = CTransaction()
         f = BytesIO(hex_str_to_bytes(tx_issue_hex))
         tx.deserialize(f)
-        akilaq = '72766e71'  # akilaq
+        paladeumq = '72766e71'  # paladeumq
         # remove the owner output from vout
-        bad_vout = list(filter(lambda out_script: akilaq not in bytes_to_hex_str(out_script.scriptPubKey), tx.vout))
+        bad_vout = list(filter(lambda out_script: paladeumq not in bytes_to_hex_str(out_script.scriptPubKey), tx.vout))
         tx.vout = bad_vout
         tx_bad_issue = bytes_to_hex_str(tx.serialize())
         tx_bad_issue_signed = n0.signrawtransaction(tx_bad_issue)['hex']
@@ -237,21 +237,21 @@ class RawTokenTransactionsTest(AkilaTestFramework):
         tx = CTransaction()
         f = BytesIO(hex_str_to_bytes(tx_issue_hex))
         tx.deserialize(f)
-        akilao = '72766e6f'  # akilao
+        paladeumo = '72766e6f'  # paladeumo
         op_drop = '75'
         # change the owner name
         for n in range(0, len(tx.vout)):
             out = tx.vout[n]
-            if akilao in bytes_to_hex_str(out.scriptPubKey):
+            if paladeumo in bytes_to_hex_str(out.scriptPubKey):
                 owner_out = out
                 owner_script_hex = bytes_to_hex_str(owner_out.scriptPubKey)
-                token_script_hex = owner_script_hex[owner_script_hex.index(akilao) + len(akilao):-len(op_drop)]
+                token_script_hex = owner_script_hex[owner_script_hex.index(paladeumo) + len(paladeumo):-len(op_drop)]
                 f = BytesIO(hex_str_to_bytes(token_script_hex))
                 owner = CScriptOwner()
                 owner.deserialize(f)
                 owner.name = b"NOT_MY_TOKEN!"
                 tampered_owner = bytes_to_hex_str(owner.serialize())
-                tampered_script = owner_script_hex[:owner_script_hex.index(akilao)] + akilao + tampered_owner + op_drop
+                tampered_script = owner_script_hex[:owner_script_hex.index(paladeumo)] + paladeumo + tampered_owner + op_drop
                 tx.vout[n].scriptPubKey = hex_str_to_bytes(tampered_script)
         tx_bad_issue = bytes_to_hex_str(tx.serialize())
         tx_bad_issue_signed = n0.signrawtransaction(tx_bad_issue)['hex']
@@ -263,18 +263,18 @@ class RawTokenTransactionsTest(AkilaTestFramework):
         tx = CTransaction()
         f = BytesIO(hex_str_to_bytes(tx_issue_hex))
         tx.deserialize(f)
-        akilao = '72766e6f'  # akilao
-        AKILAO = '52564e4f'  # AKILAO
+        paladeumo = '72766e6f'  # paladeumo
+        PLDO = '52564e4f'  # PLDO
         # change the owner output script type to be invalid
         for n in range(0, len(tx.vout)):
             out = tx.vout[n]
-            if akilao in bytes_to_hex_str(out.scriptPubKey):
+            if paladeumo in bytes_to_hex_str(out.scriptPubKey):
                 owner_script_hex = bytes_to_hex_str(out.scriptPubKey)
-                tampered_script = owner_script_hex.replace(akilao, AKILAO)
+                tampered_script = owner_script_hex.replace(paladeumo, PLDO)
                 tx.vout[n].scriptPubKey = hex_str_to_bytes(tampered_script)
         tx_bad_issue = bytes_to_hex_str(tx.serialize())
         tx_bad_issue_signed = n0.signrawtransaction(tx_bad_issue)['hex']
-        assert_raises_rpc_error(-26, "bad-txns-op-akila-token-not-in-right-script-location",
+        assert_raises_rpc_error(-26, "bad-txns-op-paladeum-token-not-in-right-script-location",
                                 n0.sendrawtransaction, tx_bad_issue_signed)
 
         ########################################
@@ -396,17 +396,17 @@ class RawTokenTransactionsTest(AkilaTestFramework):
         tx = CTransaction()
         f = BytesIO(hex_str_to_bytes(tx_hex))
         tx.deserialize(f)
-        akilat = '72766e74'  # akilat
+        paladeumt = '72766e74'  # paladeumt
         op_drop = '75'
         # change token outputs from 400,600 to 500,500
         for i in range(1, 3):
             script_hex = bytes_to_hex_str(tx.vout[i].scriptPubKey)
-            f = BytesIO(hex_str_to_bytes(script_hex[script_hex.index(akilat) + len(akilat):-len(op_drop)]))
+            f = BytesIO(hex_str_to_bytes(script_hex[script_hex.index(paladeumt) + len(paladeumt):-len(op_drop)]))
             transfer = CScriptTransfer()
             transfer.deserialize(f)
             transfer.amount = 50000000000
             tampered_transfer = bytes_to_hex_str(transfer.serialize())
-            tampered_script = script_hex[:script_hex.index(akilat)] + akilat + tampered_transfer + op_drop
+            tampered_script = script_hex[:script_hex.index(paladeumt)] + paladeumt + tampered_transfer + op_drop
             tx.vout[i].scriptPubKey = hex_str_to_bytes(tampered_script)
         tampered_hex = bytes_to_hex_str(tx.serialize())
         assert_raises_rpc_error(-26, "mandatory-script-verify-flag-failed (Signature must be zero for failed CHECK(MULTI)SIG operation)", n0.sendrawtransaction, tampered_hex)
@@ -459,19 +459,19 @@ class RawTokenTransactionsTest(AkilaTestFramework):
         tx = CTransaction()
         f = BytesIO(hex_str_to_bytes(tx_hex))
         tx.deserialize(f)
-        akilat = '72766e74'  # akilat
+        paladeumt = '72766e74'  # paladeumt
         op_drop = '75'
         # change token name
         for n in range(0, len(tx.vout)):
             out = tx.vout[n]
-            if akilat in bytes_to_hex_str(out.scriptPubKey):
+            if paladeumt in bytes_to_hex_str(out.scriptPubKey):
                 script_hex = bytes_to_hex_str(out.scriptPubKey)
-                f = BytesIO(hex_str_to_bytes(script_hex[script_hex.index(akilat) + len(akilat):-len(op_drop)]))
+                f = BytesIO(hex_str_to_bytes(script_hex[script_hex.index(paladeumt) + len(paladeumt):-len(op_drop)]))
                 transfer = CScriptTransfer()
                 transfer.deserialize(f)
                 transfer.name = b"TOKEN_DOES_NOT_EXIST"
                 tampered_transfer = bytes_to_hex_str(transfer.serialize())
-                tampered_script = script_hex[:script_hex.index(akilat)] + akilat + tampered_transfer + op_drop
+                tampered_script = script_hex[:script_hex.index(paladeumt)] + paladeumt + tampered_transfer + op_drop
                 tx.vout[n].scriptPubKey = hex_str_to_bytes(tampered_script)
         tampered_hex = bytes_to_hex_str(tx.serialize())
         assert_raises_rpc_error(-26, "bad-txns-transfer-token-not-exist",
@@ -485,19 +485,19 @@ class RawTokenTransactionsTest(AkilaTestFramework):
         tx = CTransaction()
         f = BytesIO(hex_str_to_bytes(tx_hex))
         tx.deserialize(f)
-        akilat = '72766e74'  # akilat
+        paladeumt = '72766e74'  # paladeumt
         op_drop = '75'
         # change token name
         for n in range(0, len(tx.vout)):
             out = tx.vout[n]
-            if akilat in bytes_to_hex_str(out.scriptPubKey):
+            if paladeumt in bytes_to_hex_str(out.scriptPubKey):
                 script_hex = bytes_to_hex_str(out.scriptPubKey)
-                f = BytesIO(hex_str_to_bytes(script_hex[script_hex.index(akilat) + len(akilat):-len(op_drop)]))
+                f = BytesIO(hex_str_to_bytes(script_hex[script_hex.index(paladeumt) + len(paladeumt):-len(op_drop)]))
                 transfer = CScriptTransfer()
                 transfer.deserialize(f)
                 transfer.name = alternate_token_name.encode()
                 tampered_transfer = bytes_to_hex_str(transfer.serialize())
-                tampered_script = script_hex[:script_hex.index(akilat)] + akilat + tampered_transfer + op_drop
+                tampered_script = script_hex[:script_hex.index(paladeumt)] + paladeumt + tampered_transfer + op_drop
                 tx.vout[n].scriptPubKey = hex_str_to_bytes(tampered_script)
         tampered_hex = bytes_to_hex_str(tx.serialize())
         assert_raises_rpc_error(-26, "bad-tx-inputs-outputs-mismatch Bad Transaction - " +
@@ -509,9 +509,9 @@ class RawTokenTransactionsTest(AkilaTestFramework):
         tx = CTransaction()
         f = BytesIO(hex_str_to_bytes(tx_hex))
         tx.deserialize(f)
-        akilat = '72766e74'  # akilat
+        paladeumt = '72766e74'  # paladeumt
         # remove the transfer output from vout
-        bad_vout = list(filter(lambda out_script: akilat not in bytes_to_hex_str(out_script.scriptPubKey), tx.vout))
+        bad_vout = list(filter(lambda out_script: paladeumt not in bytes_to_hex_str(out_script.scriptPubKey), tx.vout))
         tx.vout = bad_vout
         tampered_hex = bytes_to_hex_str(tx.serialize())
         assert_raises_rpc_error(-26, "bad-tx-token-inputs-size-does-not-match-outputs-size",
@@ -1292,21 +1292,21 @@ class RawTokenTransactionsTest(AkilaTestFramework):
         tx = CTransaction()
         f = BytesIO(hex_str_to_bytes(tx_issue_sub_hex))
         tx.deserialize(f)
-        akilat = '72766e74'  # akilat
+        paladeumt = '72766e74'  # paladeumt
         op_drop = '75'
         # change the transfer amount
         for n in range(0, len(tx.vout)):
             out = tx.vout[n]
-            if akilat in bytes_to_hex_str(out.scriptPubKey):
+            if paladeumt in bytes_to_hex_str(out.scriptPubKey):
                 transfer_out = out
                 transfer_script_hex = bytes_to_hex_str(transfer_out.scriptPubKey)
-                token_script_hex = transfer_script_hex[transfer_script_hex.index(akilat) + len(akilat):-len(op_drop)]
+                token_script_hex = transfer_script_hex[transfer_script_hex.index(paladeumt) + len(paladeumt):-len(op_drop)]
                 f = BytesIO(hex_str_to_bytes(token_script_hex))
                 transfer = CScriptTransfer()
                 transfer.deserialize(f)
                 transfer.amount = 0
                 tampered_transfer = bytes_to_hex_str(transfer.serialize())
-                tampered_script = transfer_script_hex[:transfer_script_hex.index(akilat)] + akilat + tampered_transfer + op_drop
+                tampered_script = transfer_script_hex[:transfer_script_hex.index(paladeumt)] + paladeumt + tampered_transfer + op_drop
                 tx.vout[n].scriptPubKey = hex_str_to_bytes(tampered_script)
         tx_bad_transfer = bytes_to_hex_str(tx.serialize())
         tx_bad_transfer_signed = n0.signrawtransaction(tx_bad_transfer)['hex']
@@ -1368,21 +1368,21 @@ class RawTokenTransactionsTest(AkilaTestFramework):
         tx = CTransaction()
         f = BytesIO(hex_str_to_bytes(tx_transfer_hex))
         tx.deserialize(f)
-        akilat = '72766e74'  # akilat
+        paladeumt = '72766e74'  # paladeumt
         op_drop = '75'
         # change the transfer amounts = 0
         for n in range(0, len(tx.vout)):
             out = tx.vout[n]
-            if akilat in bytes_to_hex_str(out.scriptPubKey):
+            if paladeumt in bytes_to_hex_str(out.scriptPubKey):
                 transfer_out = out
                 transfer_script_hex = bytes_to_hex_str(transfer_out.scriptPubKey)
-                token_script_hex = transfer_script_hex[transfer_script_hex.index(akilat) + len(akilat):-len(op_drop)]
+                token_script_hex = transfer_script_hex[transfer_script_hex.index(paladeumt) + len(paladeumt):-len(op_drop)]
                 f = BytesIO(hex_str_to_bytes(token_script_hex))
                 transfer = CScriptTransfer()
                 transfer.deserialize(f)
                 transfer.amount = 0
                 tampered_transfer = bytes_to_hex_str(transfer.serialize())
-                tampered_script = transfer_script_hex[:transfer_script_hex.index(akilat)] + akilat + tampered_transfer + op_drop
+                tampered_script = transfer_script_hex[:transfer_script_hex.index(paladeumt)] + paladeumt + tampered_transfer + op_drop
                 tx.vout[n].scriptPubKey = hex_str_to_bytes(tampered_script)
         tx_bad_transfer = bytes_to_hex_str(tx.serialize())
         tx_bad_transfer_signed = n0.signrawtransaction(tx_bad_transfer)['hex']
@@ -1434,7 +1434,7 @@ class RawTokenTransactionsTest(AkilaTestFramework):
         tx = CTransaction()
         f = BytesIO(hex_str_to_bytes(tx_transfer_hex))
         tx.deserialize(f)
-        akilat = '72766e74'  # akilat
+        paladeumt = '72766e74'  # paladeumt
         op_drop = '75'
 
         # create a new issue CTxOut
@@ -1446,16 +1446,16 @@ class RawTokenTransactionsTest(AkilaTestFramework):
         issue_script.name = b'BYTE_ISSUE'
         issue_script.amount = 1
         issue_serialized = bytes_to_hex_str(issue_script.serialize())
-        akilaq = '72766e71'  # akilaq
+        paladeumq = '72766e71'  # paladeumq
 
         for n in range(0, len(tx.vout)):
             out = tx.vout[n]
-            if akilat in bytes_to_hex_str(out.scriptPubKey):
+            if paladeumt in bytes_to_hex_str(out.scriptPubKey):
                 transfer_out = out
                 transfer_script_hex = bytes_to_hex_str(transfer_out.scriptPubKey)
 
-                # Generate a script that has a valid destination address but switch it with akilaq and the issue_serialized data
-                issue_out.scriptPubKey = hex_str_to_bytes(transfer_script_hex[:transfer_script_hex.index(akilat)] + akilaq + issue_serialized + op_drop)
+                # Generate a script that has a valid destination address but switch it with paladeumq and the issue_serialized data
+                issue_out.scriptPubKey = hex_str_to_bytes(transfer_script_hex[:transfer_script_hex.index(paladeumt)] + paladeumq + issue_serialized + op_drop)
 
         tx.vout.insert(0, issue_out)  # Insert the issue transaction at the begin on the vouts
 
@@ -1496,9 +1496,9 @@ class RawTokenTransactionsTest(AkilaTestFramework):
         balance2 = float(n2.getwalletinfo()['balance'])
 
         ########################################
-        # akila for tokens
+        # paladeum for tokens
 
-        # n1 buys 400 ANDUIN from n2 for 4000 AKILA
+        # n1 buys 400 ANDUIN from n2 for 4000 PLD
         price = 4000
         amount = 400
         fee = 0.01
@@ -1545,9 +1545,9 @@ class RawTokenTransactionsTest(AkilaTestFramework):
         assert_equal(starting_amount - amount, int(n2.listmytokens()[anduin]))
 
         ########################################
-        # akila for owner
+        # paladeum for owner
 
-        # n2 buys JAINA! from n1 for 20000 AKILA
+        # n2 buys JAINA! from n1 for 20000 PLD
         price = 20000
         amount = 1
         balance1 = newbalance1
@@ -1740,9 +1740,9 @@ class RawTokenTransactionsTest(AkilaTestFramework):
         self.log.info("Testing fundrawtransaction with transfer outputs...")
         n0 = self.nodes[0]
         n2 = self.nodes[2]
-        token_name = "DONT_FUND_AKILA"
+        token_name = "DONT_FUND_PLD"
         token_amount = 100
-        akila_amount = 100
+        paladeum_amount = 100
 
         n2_address = n2.getnewaddress()
 
@@ -1765,7 +1765,7 @@ class RawTokenTransactionsTest(AkilaTestFramework):
         self.sync_all()
 
         for _ in range(0, 5):
-            n0.sendtoaddress(n2_address, akila_amount / 5)
+            n0.sendtoaddress(n2_address, paladeum_amount / 5)
         n0.generate(1)
         self.sync_all()
 

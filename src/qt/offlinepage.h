@@ -1,5 +1,5 @@
-#ifndef AKILA_QT_OFFLINEPAGE_H
-#define AKILA_QT_OFFLINEPAGE_H
+#ifndef PLD_QT_OFFLINEPAGE_H
+#define PLD_QT_OFFLINEPAGE_H
 
 #include <QWidget>
 #include <memory>
@@ -40,4 +40,4 @@ private Q_SLOTS:
 private Q_SLOTS:
 };
 
-#endif // AKILA_QT_OFFLINEPAGE_H
+#endif // PLD_QT_OFFLINEPAGE_H

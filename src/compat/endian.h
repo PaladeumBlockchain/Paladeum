@@ -1,13 +1,13 @@
 // Copyright (c) 2014-2016 The Bitcoin Core developers
-// Copyright (c) 2021-2022 The Akila developers
+// Copyright (c) 2021-2022 The Paladeum developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef AKILA_COMPAT_ENDIAN_H
-#define AKILA_COMPAT_ENDIAN_H
+#ifndef PLD_COMPAT_ENDIAN_H
+#define PLD_COMPAT_ENDIAN_H
 
 #if defined(HAVE_CONFIG_H)
-#include "config/akila-config.h"
+#include "config/paladeum-config.h"
 #endif
 
 #include "compat/byteswap.h"
@@ -194,4 +194,4 @@ inline uint64_t le64toh(uint64_t little_endian_64bits)
 
 #endif // WORDS_BIGENDIAN
 
-#endif // AKILA_COMPAT_ENDIAN_H
+#endif // PLD_COMPAT_ENDIAN_H

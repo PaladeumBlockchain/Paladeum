@@ -1,12 +1,12 @@
 // Copyright (c) 2009-2010 Satoshi Nakamoto
 // Copyright (c) 2009-2016 The Bitcoin Core developers
 // Copyright (c) 2014-2016 The BlackCoin developers
-// Copyright (c) 2021-2022 The Akila developers
+// Copyright (c) 2021-2022 The Paladeum developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef AKILA_COINS_H
-#define AKILA_COINS_H
+#ifndef PLD_COINS_H
+#define PLD_COINS_H
 
 #include "primitives/transaction.h"
 #include "compressor.h"
@@ -303,7 +303,7 @@ public:
     size_t DynamicMemoryUsage() const;
 
     /** 
-     * Amount of akilas coming in to a transaction
+     * Amount of paladeums coming in to a transaction
      * Note that lightweight clients may not know anything besides the hash of previous transactions,
      * so may not be able to calculate this.
      *
@@ -333,4 +333,4 @@ void AddCoins(CCoinsViewCache& cache, const CTransaction& tx, int nHeight, uint2
 // lookups to database, so it should be used with care.
 const Coin& AccessByTxid(const CCoinsViewCache& cache, const uint256& txid);
 
-#endif // AKILA_COINS_H
+#endif // PLD_COINS_H

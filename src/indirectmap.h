@@ -1,10 +1,10 @@
 // Copyright (c) 2016 The Bitcoin Core developers
-// Copyright (c) 2021-2022 The Akila developers
+// Copyright (c) 2021-2022 The Paladeum developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef AKILA_INDIRECTMAP_H
-#define AKILA_INDIRECTMAP_H
+#ifndef PLD_INDIRECTMAP_H
+#define PLD_INDIRECTMAP_H
 
 template <class T>
 struct DereferencingComparator { bool operator()(const T a, const T b) const { return *a < *b; } };
@@ -54,4 +54,4 @@ public:
     const_iterator cend() const     { return m.cend(); }
 };
 
-#endif // AKILA_INDIRECTMAP_H
+#endif // PLD_INDIRECTMAP_H

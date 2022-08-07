@@ -1,10 +1,10 @@
 // Copyright (c) 2015-2016 The Bitcoin Core developers
-// Copyright (c) 2021-2022 The Akila developers
+// Copyright (c) 2021-2022 The Paladeum developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef AKILA_REVERSELOCK_H
-#define AKILA_REVERSELOCK_H
+#ifndef PLD_REVERSELOCK_H
+#define PLD_REVERSELOCK_H
 
 /**
  * An RAII-style reverse lock. Unlocks on construction and locks on destruction.
@@ -32,4 +32,4 @@ private:
     Lock templock;
 };
 
-#endif // AKILA_REVERSELOCK_H
+#endif // PLD_REVERSELOCK_H

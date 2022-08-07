@@ -1,23 +1,23 @@
 #!/usr/bin/env python3
 # Copyright (c) 2015-2016 The Bitcoin Core developers
-# Copyright (c) 2017-2020 The Akila developers
+# Copyright (c) 2017-2020 The Paladeum developers
 # Distributed under the MIT software license, see the accompanying
 # file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
 """Test restricted token related RPC commands."""
 
-from test_framework.test_framework import AkilaTestFramework
+from test_framework.test_framework import PaladeumTestFramework
 from test_framework.util import assert_equal, assert_raises_rpc_error, assert_does_not_contain_key, assert_does_not_contain, assert_contains_key, assert_happening, assert_contains
 
 # noinspection PyAttributeOutsideInit
-class RestrictedTokensTest(AkilaTestFramework):
+class RestrictedTokensTest(PaladeumTestFramework):
     def set_test_params(self):
         self.setup_clean_chain = True
         self.num_nodes = 2
         self.extra_args = [['-tokenindex'], ['-tokenindex']]
 
     def activate_restricted_tokens(self):
-        self.log.info("Generating AKILA and activating restricted tokens...")
+        self.log.info("Generating PLD and activating restricted tokens...")
         n0 = self.nodes[0]
         n0.generate(432)
         self.sync_all()
@@ -48,7 +48,7 @@ class RestrictedTokensTest(AkilaTestFramework):
         assert_raises_rpc_error(None, "Verifier string can not be empty", n0.issuerestrictedtoken, token_name, qty, "", to_address)
         assert_raises_rpc_error(None, "bad-txns-null-verifier-failed-syntax-check", n0.issuerestrictedtoken, token_name, qty, "false && true", to_address)
         assert_raises_rpc_error(None, "bad-txns-null-verifier-contains-non-issued-qualifier", n0.issuerestrictedtoken, token_name, qty, "#NONEXIZTENT", to_address)
-        assert_raises_rpc_error(None, "Invalid Akila address", n0.issuerestrictedtoken, token_name, qty, verifier, "garbageaddress")
+        assert_raises_rpc_error(None, "Invalid Paladeum address", n0.issuerestrictedtoken, token_name, qty, verifier, "garbageaddress")
 
         # base token required
         assert_raises_rpc_error(-32600, f"Wallet doesn't have token: {base_token_name}!", n0.issuerestrictedtoken, token_name, qty, verifier, to_address)
@@ -85,7 +85,7 @@ class RestrictedTokensTest(AkilaTestFramework):
         n0.issue(base_token_name)
 
         # valid params
-        assert_raises_rpc_error(None, "Invalid Akila address", n0.issuerestrictedtoken, token_name, qty, verifier, to_address, "garbagechangeaddress")
+        assert_raises_rpc_error(None, "Invalid Paladeum address", n0.issuerestrictedtoken, token_name, qty, verifier, to_address, "garbagechangeaddress")
         assert_raises_rpc_error(None, "Units must be between 0 and 8", n0.issuerestrictedtoken, token_name, qty, verifier, to_address, change_address, 9)
         assert_raises_rpc_error(None, "Units must be between 0 and 8", n0.issuerestrictedtoken, token_name, qty, verifier, to_address, change_address, -1)
 
@@ -144,8 +144,8 @@ class RestrictedTokensTest(AkilaTestFramework):
         # valid params
         assert_raises_rpc_error(None, "Invalid token name", n0.reissuerestrictedtoken, "$!N\/AL!D", qty, to_address)
         assert_raises_rpc_error(None, "Wallet doesn't have token", n0.reissuerestrictedtoken, foreign_token_name, qty, to_address)
-        assert_raises_rpc_error(None, "Invalid Akila address", n0.reissuerestrictedtoken, token_name, qty, "garbageaddress")
-        assert_raises_rpc_error(None, "Invalid Akila address", n0.reissuerestrictedtoken, token_name, qty, to_address, change_verifier, verifier, "garbagechangeaddress")
+        assert_raises_rpc_error(None, "Invalid Paladeum address", n0.reissuerestrictedtoken, token_name, qty, "garbageaddress")
+        assert_raises_rpc_error(None, "Invalid Paladeum address", n0.reissuerestrictedtoken, token_name, qty, to_address, change_verifier, verifier, "garbagechangeaddress")
         assert_raises_rpc_error(None, "Units must be between -1 and 8", n0.reissuerestrictedtoken, token_name, qty, to_address, change_verifier, verifier, change_address, 9)
         assert_raises_rpc_error(None, "Units must be between -1 and 8", n0.reissuerestrictedtoken, token_name, qty, to_address, change_verifier, verifier, change_address, -2)
 
@@ -198,8 +198,8 @@ class RestrictedTokensTest(AkilaTestFramework):
         ipfs_hash = "QmacSRmrkVmvJfbCpmU6pK72furJ8E8fbKHindrLxmYMQo"
 
         assert_raises_rpc_error(None, "Amount must be between 1 and 10", n0.issuequalifiertoken, token_name, 0)
-        assert_raises_rpc_error(None, "Invalid Akila address", n0.issuequalifiertoken, token_name, qty, "garbageaddress")
-        assert_raises_rpc_error(None, "Invalid Akila address", n0.issuequalifiertoken, token_name, qty, to_address, "gargabechangeaddress")
+        assert_raises_rpc_error(None, "Invalid Paladeum address", n0.issuequalifiertoken, token_name, qty, "garbageaddress")
+        assert_raises_rpc_error(None, "Invalid Paladeum address", n0.issuequalifiertoken, token_name, qty, to_address, "gargabechangeaddress")
         assert_raises_rpc_error(None, "ipfs_hash must be 46 characters", n0.issuequalifiertoken, token_name, qty, to_address, change_address, True)
 
         # issue
@@ -234,8 +234,8 @@ class RestrictedTokensTest(AkilaTestFramework):
         assert_does_not_contain_key(token_name, n1.listmytokens())
 
         assert_raises_rpc_error(None, "Only use this rpc call to send Qualifier tokens", n0.transferqualifier, nonqualifier_token_name, 1, n1_address)
-        assert_raises_rpc_error(None, "Invalid Akila address", n0.transferqualifier, token_name, 1, "garbageaddress")
-        assert_raises_rpc_error(None, "Invalid Akila address", n0.transferqualifier, token_name, 1, n1_address, "garbagechangeaddress")
+        assert_raises_rpc_error(None, "Invalid Paladeum address", n0.transferqualifier, token_name, 1, "garbageaddress")
+        assert_raises_rpc_error(None, "Invalid Paladeum address", n0.transferqualifier, token_name, 1, n1_address, "garbagechangeaddress")
         assert_raises_rpc_error(None, "Invalid IPFS hash", n0.transferqualifier, token_name, 1, n1_address, n0_change_address, "garbagemessage")
 
         # transfer
@@ -295,19 +295,19 @@ class RestrictedTokensTest(AkilaTestFramework):
         assert_raises_rpc_error(-8, "bad-txns-null-verifier-address-failed-verification", n0.transfer, token_name, 100, address)
 
         # special case: make sure transfer fails if change address(es) are verified even though to address isn't
-        akila_change_address = n0.getnewaddress()
+        paladeum_change_address = n0.getnewaddress()
         token_change_address = n0.getnewaddress()
-        n0.addtagtoaddress(tag, akila_change_address)
+        n0.addtagtoaddress(tag, paladeum_change_address)
         n0.addtagtoaddress(tag, token_change_address)
         n0.generate(1)
-        assert_raises_rpc_error(-8, "bad-txns-null-verifier-address-failed-verification", n0.transfer, token_name, 100, address, "", 0, akila_change_address, token_change_address)
-        n0.removetagfromaddress(tag, akila_change_address)
+        assert_raises_rpc_error(-8, "bad-txns-null-verifier-address-failed-verification", n0.transfer, token_name, 100, address, "", 0, paladeum_change_address, token_change_address)
+        n0.removetagfromaddress(tag, paladeum_change_address)
         n0.removetagfromaddress(tag, token_change_address)
         n0.generate(1)
         ##
 
-        assert_raises_rpc_error(None, "Invalid Akila address", n0.addtagtoaddress, tag, "garbageaddress")
-        assert_raises_rpc_error(None, "Invalid Akila change address", n0.addtagtoaddress, tag, address, "garbagechangeaddress")
+        assert_raises_rpc_error(None, "Invalid Paladeum address", n0.addtagtoaddress, tag, "garbageaddress")
+        assert_raises_rpc_error(None, "Invalid Paladeum change address", n0.addtagtoaddress, tag, address, "garbagechangeaddress")
 
         n0.addtagtoaddress(tag, address, change_address)
         n0.generate(1)
@@ -331,14 +331,14 @@ class RestrictedTokensTest(AkilaTestFramework):
             else:
                 assert_happening(t['Removed'])
 
-        # special case: make sure transfer fails if the token change address isn't verified (even if the akila change address is)
-        akila_change_address = n0.getnewaddress()
+        # special case: make sure transfer fails if the token change address isn't verified (even if the paladeum change address is)
+        paladeum_change_address = n0.getnewaddress()
         token_change_address = n0.getnewaddress()
-        assert_raises_rpc_error(-20, "bad-txns-null-verifier-address-failed-verification", n0.transfer, token_name, 100, address, "", 0, akila_change_address, token_change_address)
-        n0.addtagtoaddress(tag, akila_change_address)
+        assert_raises_rpc_error(-20, "bad-txns-null-verifier-address-failed-verification", n0.transfer, token_name, 100, address, "", 0, paladeum_change_address, token_change_address)
+        n0.addtagtoaddress(tag, paladeum_change_address)
         n0.generate(1)
-        assert_raises_rpc_error(-20, "bad-txns-null-verifier-address-failed-verification", n0.transfer, token_name, 100, address, "", 0, akila_change_address, token_change_address)
-        n0.removetagfromaddress(tag, akila_change_address)
+        assert_raises_rpc_error(-20, "bad-txns-null-verifier-address-failed-verification", n0.transfer, token_name, 100, address, "", 0, paladeum_change_address, token_change_address)
+        n0.removetagfromaddress(tag, paladeum_change_address)
         n0.generate(1)
 
         # do the transfer already!
@@ -356,8 +356,8 @@ class RestrictedTokensTest(AkilaTestFramework):
         assert_equal(64, len(txid[0]))
         assert (n0.listtokenbalancesbyaddress(token_change_address)[token_name] > 0)
 
-        assert_raises_rpc_error(None, "Invalid Akila address", n0.removetagfromaddress, tag, "garbageaddress")
-        assert_raises_rpc_error(None, "Invalid Akila change address", n0.removetagfromaddress, tag, address, "garbagechangeaddress")
+        assert_raises_rpc_error(None, "Invalid Paladeum address", n0.removetagfromaddress, tag, "garbageaddress")
+        assert_raises_rpc_error(None, "Invalid Paladeum change address", n0.removetagfromaddress, tag, address, "garbagechangeaddress")
 
         n0.removetagfromaddress(tag, address, change_address)
         n0.generate(1)
@@ -395,7 +395,7 @@ class RestrictedTokensTest(AkilaTestFramework):
         verifier = "true"
         address = n0.getnewaddress()
         safe_address = n0.getnewaddress()
-        akila_change_address = n0.getnewaddress()
+        paladeum_change_address = n0.getnewaddress()
 
         n0.issue(base_token_name)
         n0.generate(1)
@@ -429,13 +429,13 @@ class RestrictedTokensTest(AkilaTestFramework):
         assert_equal(1000, n1.listmytokens()[token_name])
         address = change_address  # tokens have moved
 
-        assert_raises_rpc_error(None, "Invalid Akila address", n0.freezeaddress, token_name, "garbageaddress")
-        assert_raises_rpc_error(None, "Invalid Akila change address", n0.freezeaddress, token_name, address, "garbagechangeaddress")
+        assert_raises_rpc_error(None, "Invalid Paladeum address", n0.freezeaddress, token_name, "garbageaddress")
+        assert_raises_rpc_error(None, "Invalid Paladeum change address", n0.freezeaddress, token_name, address, "garbagechangeaddress")
 
-        n0.freezeaddress(token_name, address, akila_change_address)
+        n0.freezeaddress(token_name, address, paladeum_change_address)
         n0.generate(1)
 
-        assert_raises_rpc_error(-32600, "freeze-address-when-already-frozen", n0.freezeaddress, token_name, address, akila_change_address)
+        assert_raises_rpc_error(-32600, "freeze-address-when-already-frozen", n0.freezeaddress, token_name, address, paladeum_change_address)
 
         # post-freezing verification
         assert_contains(token_name, n0.listaddressrestrictions(address))
@@ -451,13 +451,13 @@ class RestrictedTokensTest(AkilaTestFramework):
 
         assert_raises_rpc_error(-8, "No token outpoints are selected from the given address", n0.transferfromaddress, token_name, address, 1000, n1.getnewaddress())
 
-        assert_raises_rpc_error(None, "Invalid Akila address", n0.unfreezeaddress, token_name, "garbageaddress")
-        assert_raises_rpc_error(None, "Invalid Akila change address", n0.unfreezeaddress, token_name, address, "garbagechangeaddress")
+        assert_raises_rpc_error(None, "Invalid Paladeum address", n0.unfreezeaddress, token_name, "garbageaddress")
+        assert_raises_rpc_error(None, "Invalid Paladeum change address", n0.unfreezeaddress, token_name, address, "garbagechangeaddress")
 
-        n0.unfreezeaddress(token_name, address, akila_change_address)
+        n0.unfreezeaddress(token_name, address, paladeum_change_address)
         n0.generate(1)
 
-        assert_raises_rpc_error(-32600, "unfreeze-address-when-not-frozen", n0.unfreezeaddress, token_name, address, akila_change_address)
+        assert_raises_rpc_error(-32600, "unfreeze-address-when-not-frozen", n0.unfreezeaddress, token_name, address, paladeum_change_address)
 
         # post-unfreezing verification
         assert_does_not_contain(token_name, n0.listaddressrestrictions(address))
@@ -488,7 +488,7 @@ class RestrictedTokensTest(AkilaTestFramework):
         qty = 10000
         verifier = "true"
         address = n0.getnewaddress()
-        akila_change_address = n0.getnewaddress()
+        paladeum_change_address = n0.getnewaddress()
 
         n0.issue(base_token_name)
         n0.generate(1)
@@ -508,23 +508,23 @@ class RestrictedTokensTest(AkilaTestFramework):
         assert_equal(1000, n1.listmytokens()[token_name])
         address = change_address  # tokens have moved
 
-        assert_raises_rpc_error(None, "Invalid Akila change address", n0.freezerestrictedtoken, token_name, "garbagechangeaddress")
+        assert_raises_rpc_error(None, "Invalid Paladeum change address", n0.freezerestrictedtoken, token_name, "garbagechangeaddress")
 
-        n0.freezerestrictedtoken(token_name, akila_change_address)  # Can only freeze once!
-        assert_raises_rpc_error(-26, "Freezing transaction already in mempool", n0.freezerestrictedtoken, token_name, akila_change_address)
+        n0.freezerestrictedtoken(token_name, paladeum_change_address)  # Can only freeze once!
+        assert_raises_rpc_error(-26, "Freezing transaction already in mempool", n0.freezerestrictedtoken, token_name, paladeum_change_address)
         n0.generate(1)
-        assert_raises_rpc_error(None, "global-freeze-when-already-frozen", n0.freezerestrictedtoken, token_name, akila_change_address)
+        assert_raises_rpc_error(None, "global-freeze-when-already-frozen", n0.freezerestrictedtoken, token_name, paladeum_change_address)
 
         # post-freeze validation
         assert_contains(token_name, n0.listglobalrestrictions())
         assert n0.checkglobalrestriction(token_name)
         assert_raises_rpc_error(-8, "restricted token has been globally frozen", n0.transferfromaddress, token_name, address, 1000, n1.getnewaddress())
-        assert_raises_rpc_error(None, "Invalid Akila change address", n0.unfreezerestrictedtoken, token_name, "garbagechangeaddress")
+        assert_raises_rpc_error(None, "Invalid Paladeum change address", n0.unfreezerestrictedtoken, token_name, "garbagechangeaddress")
 
-        n0.unfreezerestrictedtoken(token_name, akila_change_address)  # Can only un-freeze once!
-        assert_raises_rpc_error(-26, "Unfreezing transaction already in mempool", n0.unfreezerestrictedtoken, token_name, akila_change_address)
+        n0.unfreezerestrictedtoken(token_name, paladeum_change_address)  # Can only un-freeze once!
+        assert_raises_rpc_error(-26, "Unfreezing transaction already in mempool", n0.unfreezerestrictedtoken, token_name, paladeum_change_address)
         n0.generate(1)
-        assert_raises_rpc_error(None, "global-unfreeze-when-not-frozen", n0.unfreezerestrictedtoken, token_name, akila_change_address)
+        assert_raises_rpc_error(None, "global-unfreeze-when-not-frozen", n0.unfreezerestrictedtoken, token_name, paladeum_change_address)
 
         # post-unfreeze validation
         assert_does_not_contain(token_name, n0.listglobalrestrictions())

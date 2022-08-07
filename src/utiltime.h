@@ -1,11 +1,11 @@
 // Copyright (c) 2009-2010 Satoshi Nakamoto
 // Copyright (c) 2009-2015 The Bitcoin Core developers
-// Copyright (c) 2021-2022 The Akila developers
+// Copyright (c) 2021-2022 The Paladeum developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef AKILA_UTILTIME_H
-#define AKILA_UTILTIME_H
+#ifndef PLD_UTILTIME_H
+#define PLD_UTILTIME_H
 
 #include <stdint.h>
 #include <string>
@@ -30,4 +30,4 @@ void MilliSleep(int64_t n);
 
 std::string DateTimeStrFormat(const char* pszFormat, int64_t nTime);
 
-#endif // AKILA_UTILTIME_H
+#endif // PLD_UTILTIME_H

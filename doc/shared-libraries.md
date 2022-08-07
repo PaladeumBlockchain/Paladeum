@@ -1,21 +1,21 @@
 Shared Libraries
 ================
 
-## akilaconsensus
+## paladeumconsensus
 
-The purpose of this library is to make the verification functionality that is critical to Akila's consensus available to other applications, e.g. to language bindings.
+The purpose of this library is to make the verification functionality that is critical to Paladeum's consensus available to other applications, e.g. to language bindings.
 
 ### API
 
-The interface is defined in the C header `akilaconsensus.h` located in  `src/script/akilaconsensus.h`.
+The interface is defined in the C header `paladeumconsensus.h` located in  `src/script/paladeumconsensus.h`.
 
 #### Version
 
-`akilaconsensus_version` returns an `unsigned int` with the API version *(currently at an experimental `0`)*.
+`paladeumconsensus_version` returns an `unsigned int` with the API version *(currently at an experimental `0`)*.
 
 #### Script Validation
 
-`akilaconsensus_verify_script` returns an `int` with the status of the verification. It will be `1` if the input script correctly spends the previous output `scriptPubKey`.
+`paladeumconsensus_verify_script` returns an `int` with the status of the verification. It will be `1` if the input script correctly spends the previous output `scriptPubKey`.
 
 ##### Parameters
 - `const unsigned char *scriptPubKey` - The previous output script that encumbers spending.
@@ -24,26 +24,26 @@ The interface is defined in the C header `akilaconsensus.h` located in  `src/scr
 - `unsigned int txToLen` - The number of bytes for the `txTo`.
 - `unsigned int nIn` - The index of the input in `txTo` that spends the `scriptPubKey`.
 - `unsigned int flags` - The script validation flags *(see below)*.
-- `akilaconsensus_error* err` - Will have the error/success code for the operation *(see below)*.
+- `paladeumconsensus_error* err` - Will have the error/success code for the operation *(see below)*.
 
 ##### Script Flags
-- `akilaconsensus_SCRIPT_FLAGS_VERIFY_NONE`
-- `akilaconsensus_SCRIPT_FLAGS_VERIFY_P2SH` - Evaluate P2SH ([BIP16](https://github.com/bitcoin/bips/blob/master/bip-0016.mediawiki)) subscripts
-- `akilaconsensus_SCRIPT_FLAGS_VERIFY_DERSIG` - Enforce strict DER ([BIP66](https://github.com/bitcoin/bips/blob/master/bip-0066.mediawiki)) compliance
-- `akilaconsensus_SCRIPT_FLAGS_VERIFY_NULLDUMMY` - Enforce NULLDUMMY ([BIP147](https://github.com/bitcoin/bips/blob/master/bip-0147.mediawiki))
-- `akilaconsensus_SCRIPT_FLAGS_VERIFY_CHECKLOCKTIMEVERIFY` - Enable CHECKLOCKTIMEVERIFY ([BIP65](https://github.com/bitcoin/bips/blob/master/bip-0065.mediawiki))
-- `akilaconsensus_SCRIPT_FLAGS_VERIFY_CHECKSEQUENCEVERIFY` - Enable CHECKSEQUENCEVERIFY ([BIP112](https://github.com/bitcoin/bips/blob/master/bip-0112.mediawiki))
-- `akilaconsensus_SCRIPT_FLAGS_VERIFY_WITNESS` - Enable WITNESS ([BIP141](https://github.com/bitcoin/bips/blob/master/bip-0141.mediawiki))
+- `paladeumconsensus_SCRIPT_FLAGS_VERIFY_NONE`
+- `paladeumconsensus_SCRIPT_FLAGS_VERIFY_P2SH` - Evaluate P2SH ([BIP16](https://github.com/bitcoin/bips/blob/master/bip-0016.mediawiki)) subscripts
+- `paladeumconsensus_SCRIPT_FLAGS_VERIFY_DERSIG` - Enforce strict DER ([BIP66](https://github.com/bitcoin/bips/blob/master/bip-0066.mediawiki)) compliance
+- `paladeumconsensus_SCRIPT_FLAGS_VERIFY_NULLDUMMY` - Enforce NULLDUMMY ([BIP147](https://github.com/bitcoin/bips/blob/master/bip-0147.mediawiki))
+- `paladeumconsensus_SCRIPT_FLAGS_VERIFY_CHECKLOCKTIMEVERIFY` - Enable CHECKLOCKTIMEVERIFY ([BIP65](https://github.com/bitcoin/bips/blob/master/bip-0065.mediawiki))
+- `paladeumconsensus_SCRIPT_FLAGS_VERIFY_CHECKSEQUENCEVERIFY` - Enable CHECKSEQUENCEVERIFY ([BIP112](https://github.com/bitcoin/bips/blob/master/bip-0112.mediawiki))
+- `paladeumconsensus_SCRIPT_FLAGS_VERIFY_WITNESS` - Enable WITNESS ([BIP141](https://github.com/bitcoin/bips/blob/master/bip-0141.mediawiki))
 
 ##### Errors
-- `akilaconsensus_ERR_OK` - No errors with input parameters *(see the return value of `akilaconsensus_verify_script` for the verification status)*
-- `akilaconsensus_ERR_TX_INDEX` - An invalid index for `txTo`
-- `akilaconsensus_ERR_TX_SIZE_MISMATCH` - `txToLen` did not match with the size of `txTo`
-- `akilaconsensus_ERR_DESERIALIZE` - An error deserializing `txTo`
-- `akilaconsensus_ERR_AMOUNT_REQUIRED` - Input amount is required if WITNESS is used
+- `paladeumconsensus_ERR_OK` - No errors with input parameters *(see the return value of `paladeumconsensus_verify_script` for the verification status)*
+- `paladeumconsensus_ERR_TX_INDEX` - An invalid index for `txTo`
+- `paladeumconsensus_ERR_TX_SIZE_MISMATCH` - `txToLen` did not match with the size of `txTo`
+- `paladeumconsensus_ERR_DESERIALIZE` - An error deserializing `txTo`
+- `paladeumconsensus_ERR_AMOUNT_REQUIRED` - Input amount is required if WITNESS is used
 
 ### Example Implementations
-- [NAkila](https://github.com/NicolasDorier/NAkila/blob/master/NAkila/Script.cs#L814) (.NET Bindings)
-- [node-libakilaconsensus](https://github.com/bitpay/node-libakilaconsensus) (Node.js Bindings)
-- [java-libakilaconsensus](https://github.com/dexX7/java-libakilaconsensus) (Java Bindings)
-- [akilaconsensus-php](https://github.com/Bit-Wasp/akilaconsensus-php) (PHP Bindings)
+- [NPaladeum](https://github.com/NicolasDorier/NPaladeum/blob/master/NPaladeum/Script.cs#L814) (.NET Bindings)
+- [node-libpaladeumconsensus](https://github.com/bitpay/node-libpaladeumconsensus) (Node.js Bindings)
+- [java-libpaladeumconsensus](https://github.com/dexX7/java-libpaladeumconsensus) (Java Bindings)
+- [paladeumconsensus-php](https://github.com/Bit-Wasp/paladeumconsensus-php) (PHP Bindings)

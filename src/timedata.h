@@ -1,10 +1,10 @@
 // Copyright (c) 2014-2016 The Bitcoin Core developers
-// Copyright (c) 2021-2022 The Akila developers
+// Copyright (c) 2021-2022 The Paladeum developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef AKILA_TIMEDATA_H
-#define AKILA_TIMEDATA_H
+#ifndef PLD_TIMEDATA_H
+#define PLD_TIMEDATA_H
 
 #include <algorithm>
 #include <assert.h>
@@ -76,4 +76,4 @@ int64_t GetTimeOffset();
 int64_t GetAdjustedTime();
 void AddTimeData(const CNetAddr& ip, int64_t nTime);
 
-#endif // AKILA_TIMEDATA_H
+#endif // PLD_TIMEDATA_H

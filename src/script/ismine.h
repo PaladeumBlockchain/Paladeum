@@ -1,11 +1,11 @@
 // Copyright (c) 2009-2010 Satoshi Nakamoto
 // Copyright (c) 2009-2016 The Bitcoin Core developers
-// Copyright (c) 2021-2022 The Akila developers
+// Copyright (c) 2021-2022 The Paladeum developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef AKILA_SCRIPT_ISMINE_H
-#define AKILA_SCRIPT_ISMINE_H
+#ifndef PLD_SCRIPT_ISMINE_H
+#define PLD_SCRIPT_ISMINE_H
 
 #include "script/standard.h"
 #include "chain.h"
@@ -45,4 +45,4 @@ isminetype IsMine(const CKeyStore& keystore, const CTxDestination& dest, CBlockI
 bool IsTimeLock(const CKeyStore &keystore, const CScript& scriptPubKey, CScriptNum& nLockTime);
 bool IsTimeLock(const CScript& scriptPubKey, CScriptNum& nLockTime);
 
-#endif // AKILA_SCRIPT_ISMINE_H
+#endif // PLD_SCRIPT_ISMINE_H

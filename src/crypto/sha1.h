@@ -1,10 +1,10 @@
 // Copyright (c) 2014-2016 The Bitcoin Core developers
-// Copyright (c) 2021-2022 The Akila developers
+// Copyright (c) 2021-2022 The Paladeum developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef AKILA_CRYPTO_SHA1_H
-#define AKILA_CRYPTO_SHA1_H
+#ifndef PLD_CRYPTO_SHA1_H
+#define PLD_CRYPTO_SHA1_H
 
 #include <stdint.h>
 #include <stdlib.h>
@@ -26,4 +26,4 @@ public:
     CSHA1& Reset();
 };
 
-#endif // AKILA_CRYPTO_SHA1_H
+#endif // PLD_CRYPTO_SHA1_H

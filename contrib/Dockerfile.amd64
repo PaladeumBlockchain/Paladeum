@@ -8,20 +8,20 @@ EXPOSE $PORT
 
 RUN apt-get update && apt-get install -y bash net-tools && apt-get clean
 
-RUN useradd -ms /bin/bash akila
+RUN useradd -ms /bin/bash paladeum
 
-RUN mkdir /etc/akila
+RUN mkdir /etc/paladeum
 
-RUN mkdir /var/lib/akila
+RUN mkdir /var/lib/paladeum
 
-RUN chown akila:akila /etc/akila /var/lib/akila
+RUN chown paladeum:paladeum /etc/paladeum /var/lib/paladeum
 
-WORKDIR /home/akila
+WORKDIR /home/paladeum
 
-COPY --chown=akila:akila linux64/* /home/akila/
+COPY --chown=paladeum:paladeum linux64/* /home/paladeum/
 
-COPY --chown=akila:akila run.sh /home/akila/
+COPY --chown=paladeum:paladeum run.sh /home/paladeum/
 
-USER akila
+USER paladeum
 
-CMD ["/home/akila/run.sh"]
+CMD ["/home/paladeum/run.sh"]

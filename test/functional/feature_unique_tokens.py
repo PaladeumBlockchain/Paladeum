@@ -1,13 +1,13 @@
 #!/usr/bin/env python3
 # Copyright (c) 2017 The Bitcoin Core developers
-# Copyright (c) 2017-2020 The Akila developers
+# Copyright (c) 2017-2020 The Paladeum developers
 # Distributed under the MIT software license, see the accompanying
 # file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
 """Testing unique token use cases"""
 
 import random
-from test_framework.test_framework import AkilaTestFramework
+from test_framework.test_framework import PaladeumTestFramework
 from test_framework.util import assert_contains, assert_does_not_contain_key, assert_equal, assert_raises_rpc_error
 
 
@@ -30,14 +30,14 @@ def gen_unique_token_name(root):
     return name
 
 
-class UniqueTokenTest(AkilaTestFramework):
+class UniqueTokenTest(PaladeumTestFramework):
     def set_test_params(self):
         self.setup_clean_chain = True
         self.num_nodes = 3
         self.extra_args = [['-tokenindex'], ['-tokenindex'], ['-tokenindex']]
 
     def activate_tokens(self):
-        self.log.info("Generating AKILA for node[0] and activating tokens...")
+        self.log.info("Generating PLD for node[0] and activating tokens...")
         n0 = self.nodes[0]
         n0.generate(432)
         self.sync_all()

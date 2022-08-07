@@ -13,7 +13,7 @@ Construct a linear, no-fork, best version of the blockchain.
 
 ### [Qos](/contrib/qos) ###
 
-A Linux bash script that will set up traffic control (tc) to limit the outgoing bandwidth for connections to the Akila network. This means one can have an always-on akilad instance running, and another local akilad/akila-qt instance which connects to this node and receives blocks from it.
+A Linux bash script that will set up traffic control (tc) to limit the outgoing bandwidth for connections to the Paladeum network. This means one can have an always-on paladeumd instance running, and another local paladeumd/paladeum-qt instance which connects to this node and receives blocks from it.
 
 ### [Seeds](/contrib/seeds) ###
 Utility to generate the pnSeed[] array that is compiled into the client.
@@ -22,20 +22,20 @@ Build Tools and Keys
 ---------------------
 
 ### [Debian](/contrib/debian) ###
-Contains files used to package akilad/akila-qt
-for Debian-based Linux systems. If you compile akilad/akila-qt yourself, there are some useful files here.
+Contains files used to package paladeumd/paladeum-qt
+for Debian-based Linux systems. If you compile paladeumd/paladeum-qt yourself, there are some useful files here.
 
 ### [Gitian-descriptors](/contrib/gitian-descriptors) ###
-Files used during the gitian build process. For more information about gitian, see the [the Akila Core documentation repository](https://github.com/akila-core/docs).
+Files used during the gitian build process. For more information about gitian, see the [the Paladeum Core documentation repository](https://github.com/paladeum-core/docs).
 
 ### [Gitian-keys](/contrib/gitian-keys)
-PGP keys used for signing Akila Core [Gitian release](/doc/release-process.md) results.
+PGP keys used for signing Paladeum Core [Gitian release](/doc/release-process.md) results.
 
 ### [MacDeploy](/contrib/macdeploy) ###
 Scripts and notes for Mac builds. 
 
 ### [RPM](/contrib/rpm) ###
-RPM spec file for building akila-core on RPM based distributions.
+RPM spec file for building paladeum-core on RPM based distributions.
 
 ### [Gitian-build](/contrib/gitian-build.sh) ###
 Script for running full Gitian builds.
@@ -44,7 +44,7 @@ Test and Verify Tools
 ---------------------
 
 ### [TestGen](/contrib/testgen) ###
-Utilities to generate test vectors for the data-driven Akila tests.
+Utilities to generate test vectors for the data-driven Paladeum tests.
 
 ### [Verify Binaries](/contrib/verifybinaries) ###
-This script attempts to download and verify the signature file SHA256SUMS.asc from akila.org.
+This script attempts to download and verify the signature file SHA256SUMS.asc from paladeum.org.

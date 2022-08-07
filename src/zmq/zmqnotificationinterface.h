@@ -1,10 +1,10 @@
 // Copyright (c) 2015-2016 The Bitcoin Core developers
-// Copyright (c) 2021-2022 The Akila developers
+// Copyright (c) 2021-2022 The Paladeum developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef AKILA_ZMQ_ZMQNOTIFICATIONINTERFACE_H
-#define AKILA_ZMQ_ZMQNOTIFICATIONINTERFACE_H
+#ifndef PLD_ZMQ_ZMQNOTIFICATIONINTERFACE_H
+#define PLD_ZMQ_ZMQNOTIFICATIONINTERFACE_H
 
 #include "validationinterface.h"
 #include <string>
@@ -39,4 +39,4 @@ private:
     std::list<CZMQAbstractNotifier*> notifiers;
 };
 
-#endif // AKILA_ZMQ_ZMQNOTIFICATIONINTERFACE_H
+#endif // PLD_ZMQ_ZMQNOTIFICATIONINTERFACE_H

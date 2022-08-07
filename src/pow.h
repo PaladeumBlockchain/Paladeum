@@ -1,12 +1,12 @@
 // Copyright (c) 2009-2010 Satoshi Nakamoto
 // Copyright (c) 2009-2016 The Bitcoin Core developers
 // Copyright (c) 2014-2016 The BlackCoin developers
-// Copyright (c) 2021-2022 The Akila developers
+// Copyright (c) 2021-2022 The Paladeum developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef AKILA_POW_H
-#define AKILA_POW_H
+#ifndef PLD_POW_H
+#define PLD_POW_H
 
 #include "consensus/params.h"
 
@@ -22,4 +22,4 @@ unsigned int GetNextWorkRequired(const CBlockIndex* pindexLast, const Consensus:
 /** Check whether a block hash satisfies the proof-of-work requirement specified by nBits */
 bool CheckProofOfWork(uint256 hash, unsigned int nBits, const Consensus::Params&);
 
-#endif // AKILA_POW_H
+#endif // PLD_POW_H

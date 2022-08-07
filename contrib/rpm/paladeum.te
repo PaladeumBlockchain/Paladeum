@@ -1,0 +1,81 @@
+policy_module(paladeum, 1.100.1)
+
+########################################
+#
+# Declarations
+#
+
+type paladeum_t;
+type paladeum_exec_t;
+init_daemon_domain(paladeum_t, paladeum_exec_t)
+
+permissive paladeum_t;
+
+type paladeum_initrc_exec_t;
+init_script_file(paladeum_initrc_exec_t)
+
+type paladeum_conf_t;
+files_type(paladeum_conf_t)
+
+type paladeum_var_lib_t;
+files_type(paladeum_var_lib_t)
+
+type paladeum_var_run_t;
+files_type(paladeum_var_run_t)
+
+type paladeum_port_t;
+corenet_port(paladeum_port_t)
+
+########################################
+#
+# paladeum local policy
+#
+allow paladeum_t self:process { fork };
+
+allow paladeum_t self:fifo_file rw_fifo_file_perms;
+allow paladeum_t self:unix_stream_socket create_stream_socket_perms;
+
+manage_dirs_pattern(paladeum_t, paladeum_conf_t, paladeum_conf_t)
+manage_files_pattern(paladeum_t, paladeum_conf_t, paladeum_conf_t)
+
+manage_dirs_pattern(paladeum_t, paladeum_var_lib_t, paladeum_var_lib_t)
+manage_files_pattern(paladeum_t, paladeum_var_lib_t, paladeum_var_lib_t)
+files_var_lib_filetrans(paladeum_t, paladeum_var_lib_t, { dir file })
+
+manage_dirs_pattern(paladeum_t, paladeum_var_run_t, paladeum_var_run_t)
+manage_files_pattern(paladeum_t, paladeum_var_run_t, paladeum_var_run_t)
+
+sysnet_dns_name_resolve(paladeum_t)
+corenet_all_recvfrom_unlabeled(paladeum_t)
+
+allow paladeum_t self:tcp_socket create_stream_socket_perms;
+corenet_tcp_sendrecv_generic_if(paladeum_t)
+corenet_tcp_sendrecv_generic_node(paladeum_t)
+corenet_tcp_sendrecv_all_ports(paladeum_t)
+corenet_tcp_bind_generic_node(paladeum_t)
+
+gen_require(`
+    type paladeum_port_t;
+')
+allow paladeum_t paladeum_port_t:tcp_socket name_bind;
+
+gen_require(`
+    type paladeum_port_t;
+')
+allow paladeum_t paladeum_port_t:tcp_socket name_connect;
+
+domain_use_interactive_fds(paladeum_t)
+
+files_read_etc_files(paladeum_t)
+
+miscfiles_read_localization(paladeum_t)
+
+sysnet_dns_name_resolve(paladeum_t)
+
+allow paladeum_t paladeum_exec_t:file execute_no_trans;
+allow paladeum_t self:process setsched;
+corecmd_exec_ls(paladeum_t)
+corenet_tcp_connect_http_port(paladeum_t)
+dev_read_urand(paladeum_t)
+fs_getattr_xattr_fs(paladeum_t)
+kernel_read_system_state(paladeum_t)

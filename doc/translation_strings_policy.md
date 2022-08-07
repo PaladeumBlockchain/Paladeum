@@ -1,7 +1,7 @@
 Translation Strings Policy
 ===========================
 
-This document provides guidelines for internationalization of the Akila Core software.
+This document provides guidelines for internationalization of the Paladeum Core software.
 
 How to translate?
 ------------------
@@ -85,10 +85,10 @@ In Qt code use tr's third argument for optional plurality. For example:
 This adds `<numerusform>`s to the respective `.ts` file, which can be translated separately depending on the language. In English, this is simply:
 
     <message numerus="yes">
-        <source>%n active connection(s) to Akila network</source>
+        <source>%n active connection(s) to Paladeum network</source>
         <translation>
-            <numerusform>%n active connection to Akila network</numerusform>
-            <numerusform>%n active connections to Akila network</numerusform>
+            <numerusform>%n active connection to Paladeum network</numerusform>
+            <numerusform>%n active connections to Paladeum network</numerusform>
         </translation>
     </message>
 
@@ -106,4 +106,4 @@ The second example reduces the number of pluralized words that translators have 
 
 During a string freeze (often before a major release), no translation strings are to be added, modified or removed.
 
-This can be checked by executing `make translate` in the `src` directory, then verifying that `akila_en.ts` remains unchanged.
+This can be checked by executing `make translate` in the `src` directory, then verifying that `paladeum_en.ts` remains unchanged.

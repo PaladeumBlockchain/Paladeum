@@ -1,13 +1,13 @@
 // Copyright (c) 2014 The Bitcoin Core developers
-// Copyright (c) 2021-2022 The Akila developers
+// Copyright (c) 2021-2022 The Paladeum developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef AKILA_ZMQ_ZMQCONFIG_H
-#define AKILA_ZMQ_ZMQCONFIG_H
+#ifndef PLD_ZMQ_ZMQCONFIG_H
+#define PLD_ZMQ_ZMQCONFIG_H
 
 #if defined(HAVE_CONFIG_H)
-#include "config/akila-config.h"
+#include "config/paladeum-config.h"
 #endif
 
 #include <stdarg.h>
@@ -22,4 +22,4 @@
 
 void zmqError(const char *str);
 
-#endif // AKILA_ZMQ_ZMQCONFIG_H
+#endif // PLD_ZMQ_ZMQCONFIG_H

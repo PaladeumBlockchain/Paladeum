@@ -1,15 +1,15 @@
 #!/usr/bin/env python3
 # Copyright (c) 2014-2015 The Bitcoin Core developers
-# Copyright (c) 2017-2020 The Akila developers
+# Copyright (c) 2017-2020 The Paladeum developers
 # Distributed under the MIT software license, see the accompanying
 # file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
 """Test transferring tokens rpc calls"""
 
-from test_framework.test_framework import AkilaTestFramework
+from test_framework.test_framework import PaladeumTestFramework
 from test_framework.util import connect_all_nodes_bi, assert_equal, assert_raises_rpc_error
 
-class TokenTransferTest(AkilaTestFramework):
+class TokenTransferTest(PaladeumTestFramework):
 
     def set_test_params(self):
         self.setup_clean_chain = True
@@ -54,10 +54,10 @@ class TokenTransferTest(AkilaTestFramework):
 
         n1_address = n1.getnewaddress()
 
-        n0_akila_change = n0.getnewaddress()
+        n0_paladeum_change = n0.getnewaddress()
         n0_token_change = n0.getnewaddress()
 
-        n0.transfer(token_name="TRANSFER_TEST", qty=200, to_address=n1_address, message='', expire_time=0, change_address=n0_akila_change, token_change_address=n0_token_change)
+        n0.transfer(token_name="TRANSFER_TEST", qty=200, to_address=n1_address, message='', expire_time=0, change_address=n0_paladeum_change, token_change_address=n0_token_change)
 
         n0.generate(1)
         self.sync_all()
@@ -71,10 +71,10 @@ class TokenTransferTest(AkilaTestFramework):
         n1_already_received_address = n1_address
 
         n1_address = n1.getnewaddress()
-        n0_akila_change = n0.getnewaddress()
+        n0_paladeum_change = n0.getnewaddress()
         n0_token_change = n0.getnewaddress()
 
-        n0.transferfromaddress(token_name="TRANSFER_TEST", from_address=n0_from_address, qty=200, to_address=n1_address, message='', expire_time=0, akila_change_address=n0_akila_change, token_change_address=n0_token_change)
+        n0.transferfromaddress(token_name="TRANSFER_TEST", from_address=n0_from_address, qty=200, to_address=n1_address, message='', expire_time=0, paladeum_change_address=n0_paladeum_change, token_change_address=n0_token_change)
 
         n0.generate(1)
         self.sync_all()
@@ -87,7 +87,7 @@ class TokenTransferTest(AkilaTestFramework):
 
         # transfer some tokens into another address node0 controls
         n0_new_address = n0.getnewaddress()
-        n0.transfer(token_name="TRANSFER_TEST", qty=200, to_address=n0_new_address, message='', expire_time=0, change_address=n0_akila_change, token_change_address=n0_token_change)
+        n0.transfer(token_name="TRANSFER_TEST", qty=200, to_address=n0_new_address, message='', expire_time=0, change_address=n0_paladeum_change, token_change_address=n0_token_change)
 
         n0.generate(1)
         self.sync_all()
@@ -97,10 +97,10 @@ class TokenTransferTest(AkilaTestFramework):
         n1_already_received_address_2 = n1_address
 
         n1_address = n1.getnewaddress()
-        n0_akila_change = n0.getnewaddress()
+        n0_paladeum_change = n0.getnewaddress()
         n0_token_change = n0.getnewaddress()
 
-        n0.transferfromaddresses(token_name="TRANSFER_TEST", from_addresses=n0_from_addresses, qty=450, to_address=n1_address, message='', expire_time=0, akila_change_address=n0_akila_change, token_change_address=n0_token_change)
+        n0.transferfromaddresses(token_name="TRANSFER_TEST", from_addresses=n0_from_addresses, qty=450, to_address=n1_address, message='', expire_time=0, paladeum_change_address=n0_paladeum_change, token_change_address=n0_token_change)
 
         n0.generate(1)
         self.sync_all()
@@ -115,7 +115,7 @@ class TokenTransferTest(AkilaTestFramework):
         # Add the address the only contain 150 TRANSFER_TEST tokens
         n0_from_addresses = [n0_token_change]
 
-        assert_raises_rpc_error(-25, "Insufficient token funds", n0.transferfromaddresses, "TRANSFER_TEST", n0_from_addresses, 450, n1_address, '', 0, n0_akila_change, n0_token_change)
+        assert_raises_rpc_error(-25, "Insufficient token funds", n0.transferfromaddresses, "TRANSFER_TEST", n0_from_addresses, 450, n1_address, '', 0, n0_paladeum_change, n0_token_change)
 
         # Verify that the failed transaction doesn't change the already mined address values on the wallet
         assert_equal(n0.listtokenbalancesbyaddress(n1_already_received_address)["TRANSFER_TEST"], 200)

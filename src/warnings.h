@@ -1,11 +1,11 @@
 // Copyright (c) 2009-2010 Satoshi Nakamoto
 // Copyright (c) 2009-2016 The Bitcoin Core developers
-// Copyright (c) 2021-2022 The Akila developers
+// Copyright (c) 2021-2022 The Paladeum developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef AKILA_WARNINGS_H
-#define AKILA_WARNINGS_H
+#ifndef PLD_WARNINGS_H
+#define PLD_WARNINGS_H
 
 #include <stdlib.h>
 #include <string>
@@ -25,4 +25,4 @@ std::string GetWarnings(const std::string& strFor);
 
 static const bool DEFAULT_TESTSAFEMODE = false;
 
-#endif //  AKILA_WARNINGS_H
+#endif //  PLD_WARNINGS_H

@@ -1,10 +1,10 @@
 // Copyright (c) 2017 The Bitcoin Core developers
-// Copyright (c) 2021-2022 The Akila developers
+// Copyright (c) 2021-2022 The Paladeum developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef AKILA_CRYPTO_CHACHA20_H
-#define AKILA_CRYPTO_CHACHA20_H
+#ifndef PLD_CRYPTO_CHACHA20_H
+#define PLD_CRYPTO_CHACHA20_H
 
 #include <stdint.h>
 #include <stdlib.h>
@@ -24,4 +24,4 @@ public:
     void Output(unsigned char* output, size_t bytes);
 };
 
-#endif // AKILA_CRYPTO_CHACHA20_H
+#endif // PLD_CRYPTO_CHACHA20_H

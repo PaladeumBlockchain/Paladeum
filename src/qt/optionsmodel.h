@@ -1,10 +1,10 @@
 // Copyright (c) 2011-2016 The Bitcoin Core developers
-// Copyright (c) 2021-2022 The Akila developers
+// Copyright (c) 2021-2022 The Paladeum developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef AKILA_QT_OPTIONSMODEL_H
-#define AKILA_QT_OPTIONSMODEL_H
+#ifndef PLD_QT_OPTIONSMODEL_H
+#define PLD_QT_OPTIONSMODEL_H
 
 #include "amount.h"
 
@@ -14,7 +14,7 @@ QT_BEGIN_NAMESPACE
 class QNetworkProxy;
 QT_END_NAMESPACE
 
-/** Interface from Qt to configuration data structure for Akila client.
+/** Interface from Qt to configuration data structure for Paladeum client.
    To Qt, the options are presented as a list with the different options
    laid out vertically.
    This can be changed to a tree once the settings become sufficiently
@@ -39,7 +39,7 @@ public:
         ProxyUseTor,            // bool
         ProxyIPTor,             // QString
         ProxyPortTor,           // int
-        DisplayUnit,            // AkilaUnits::Unit
+        DisplayUnit,            // PaladeumUnits::Unit
         ThirdPartyTxUrls,       // QString
         IpfsUrl,                // QString
         Language,               // QString
@@ -108,4 +108,4 @@ Q_SIGNALS:
     void hideTrayIconChanged(bool);
 };
 
-#endif // AKILA_QT_OPTIONSMODEL_H
+#endif // PLD_QT_OPTIONSMODEL_H

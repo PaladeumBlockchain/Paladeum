@@ -1,10 +1,10 @@
 Format: http://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
-Upstream-Name: Akilacoin
-Source: https://github.com/AkilaProject/Akilacoin
+Upstream-Name: Paladeumcoin
+Source: https://github.com/PaladeumProject/Paladeumcoin
 
 Files: *
 Copyright: 2009-2017, Bitcoin Core Developers
-           2017-2020, Akila Core Developers
+           2017-2020, Paladeum Core Developers
 License: Expat
 Comment: The Bitcoin Core Developers encompasses the current developers listed on bitcoin.org,
          as well as the numerous contributors to the project.
@@ -77,10 +77,10 @@ License: Expat
 Comment: Modifications of Stephan Hutchings Typicons
 
 Files: src/qt/res/icons/about.png
-       src/qt/res/icons/akila.*
-       share/pixmaps/akila*
-       src/qt/res/src/akila.svg
-Copyright: The Akila Core Developers
+       src/qt/res/icons/paladeum.*
+       share/pixmaps/paladeum*
+       src/qt/res/src/paladeum.svg
+Copyright: The Paladeum Core Developers
 License: public-domain
 
 

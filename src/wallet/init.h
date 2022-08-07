@@ -1,11 +1,11 @@
 // Copyright (c) 2009-2010 Satoshi Nakamoto
 // Copyright (c) 2009-2017 The Bitcoin Core developers
-// Copyright (c) 2021-2022 The Akila developers
+// Copyright (c) 2021-2022 The Paladeum developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef AKILA_WALLET_INIT_H
-#define AKILA_WALLET_INIT_H
+#ifndef PLD_WALLET_INIT_H
+#define PLD_WALLET_INIT_H
 
 #include <string>
 
@@ -41,4 +41,4 @@ void StopWallets();
 //! Close all wallets.
 void CloseWallets();
 
-#endif // AKILA_WALLET_INIT_H
+#endif // PLD_WALLET_INIT_H

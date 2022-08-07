@@ -9,7 +9,7 @@ _Andy has some apples.  Barb has some bananas.  Andy agrees to give Barb two app
 
 ## The Inputs
 
-We'll need to find 3 UTXOs to use as inputs.  Andy's apples, Barb's bananas and some Akila to pay the network fee (Andy will pay).
+We'll need to find 3 UTXOs to use as inputs.  Andy's apples, Barb's bananas and some Paladeum to pay the network fee (Andy will pay).
 
 Andy uses `listunspent` to find a suitable `txid` and `vout`:
 
@@ -72,9 +72,9 @@ Extracting the txids and vouts gives us our raw inputs:
 
 ## The Outputs
 
-We'll be using 5 new Akilacoin addresses:
+We'll be using 5 new Paladeumcoin addresses:
 
-Andy's Akila change address:
+Andy's Paladeum change address:
 `mvGfeg4uZA8XvjVDUywdgYE6TAyz77o5gB`
 
 Andy's banana receive address:
@@ -89,7 +89,7 @@ Barb's apple receive address:
 Andy's apple change address:
 `mzct8GQ5zdaCvbrnRDrR8T87ZuZxkRYNwL`
 
-All token transfers have to be balanced.  Since we have 1000 APPLES coming in, we have to have 1000 going out.  So Andy will send 2 to Barb's receive address and the rest (998) to his change address.  The Akila will pay 0.0001 for the network fee as normal.
+All token transfers have to be balanced.  Since we have 1000 APPLES coming in, we have to have 1000 going out.  So Andy will send 2 to Barb's receive address and the rest (998) to his change address.  The Paladeum will pay 0.0001 for the network fee as normal.
 
 `'{"mvGfeg4uZA8XvjVDUywdgYE6TAyz77o5gB":4.8827125, \
   "msXQpCK8UexfgtMbUGwnKjDfE6vqJ4JUPF":{"transfer":{"BANANAS":1}}, \

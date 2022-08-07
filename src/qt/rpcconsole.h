@@ -1,10 +1,10 @@
 // Copyright (c) 2011-2016 The Bitcoin Core developers
-// Copyright (c) 2021-2022 The Akila developers
+// Copyright (c) 2021-2022 The Paladeum developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef AKILA_QT_RPCCONSOLE_H
-#define AKILA_QT_RPCCONSOLE_H
+#ifndef PLD_QT_RPCCONSOLE_H
+#define PLD_QT_RPCCONSOLE_H
 
 #include "guiutil.h"
 #include "peertablemodel.h"
@@ -29,7 +29,7 @@ class QMenu;
 class QItemSelection;
 QT_END_NAMESPACE
 
-/** Local Akila RPC console. */
+/** Local Paladeum RPC console. */
 class RPCConsole: public QWidget
 {
     Q_OBJECT
@@ -171,4 +171,4 @@ private:
     void updateNetworkState();
 };
 
-#endif // AKILA_QT_RPCCONSOLE_H
+#endif // PLD_QT_RPCCONSOLE_H

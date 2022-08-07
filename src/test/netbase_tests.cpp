@@ -1,10 +1,10 @@
 // Copyright (c) 2012-2016 The Bitcoin Core developers
-// Copyright (c) 2021-2022 The Akila developers
+// Copyright (c) 2021-2022 The Paladeum developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
 #include "netbase.h"
-#include "test/test_akila.h"
+#include "test/test_paladeum.h"
 #include "utilstrencodings.h"
 
 #include <string>
@@ -89,10 +89,10 @@ BOOST_FIXTURE_TEST_SUITE(netbase_tests, BasicTestingSetup)
     {
         BOOST_TEST_MESSAGE("Running NetBase SplitHost Test");
 
-        BOOST_CHECK(TestSplitHost("www.akila.org", "www.akila.org", -1));
-        BOOST_CHECK(TestSplitHost("[www.akila.org]", "www.akila.org", -1));
-        BOOST_CHECK(TestSplitHost("www.akila.org:80", "www.akila.org", 80));
-        BOOST_CHECK(TestSplitHost("[www.akila.org]:80", "www.akila.org", 80));
+        BOOST_CHECK(TestSplitHost("www.paladeum.org", "www.paladeum.org", -1));
+        BOOST_CHECK(TestSplitHost("[www.paladeum.org]", "www.paladeum.org", -1));
+        BOOST_CHECK(TestSplitHost("www.paladeum.org:80", "www.paladeum.org", 80));
+        BOOST_CHECK(TestSplitHost("[www.paladeum.org]:80", "www.paladeum.org", 80));
         BOOST_CHECK(TestSplitHost("127.0.0.1", "127.0.0.1", -1));
         BOOST_CHECK(TestSplitHost("127.0.0.1:8767", "127.0.0.1", 8767));
         BOOST_CHECK(TestSplitHost("[127.0.0.1]", "127.0.0.1", -1));

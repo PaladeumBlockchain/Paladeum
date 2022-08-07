@@ -1,11 +1,11 @@
 // Copyright (c) 2017-2019 The Raven Core developers
-// Copyright (c) 2021-2022 The Akila developers
+// Copyright (c) 2021-2022 The Paladeum developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
 
-#ifndef AKILACOIN_TOKEN_PROTOCOL_H
-#define AKILACOIN_TOKEN_PROTOCOL_H
+#ifndef PLDCOIN_TOKEN_PROTOCOL_H
+#define PLDCOIN_TOKEN_PROTOCOL_H
 
 #include "amount.h"
 #include "tinyformat.h"
@@ -478,10 +478,10 @@ bool CheckIssueBurnTx(const CTxOut& txOut, const KnownTokenType& type);
 bool CheckReissueBurnTx(const CTxOut& txOut);
 
 //! issue token scripts to make sure script meets the standards
-bool CheckIssueDataTx(const CTxOut& txOut); // OP_AKILA_TOKEN AKILAQ (That is a Q as in Que not an O)
-bool CheckOwnerDataTx(const CTxOut& txOut);// OP_AKILA_TOKEN AKILAO
-bool CheckReissueDataTx(const CTxOut& txOut);// OP_AKILA_TOKEN AKILAR
-bool CheckTransferOwnerTx(const CTxOut& txOut);// OP_AKILA_TOKEN AKILAT
+bool CheckIssueDataTx(const CTxOut& txOut); // OP_PLD_TOKEN PLDQ (That is a Q as in Que not an O)
+bool CheckOwnerDataTx(const CTxOut& txOut);// OP_PLD_TOKEN PLDO
+bool CheckReissueDataTx(const CTxOut& txOut);// OP_PLD_TOKEN PLDR
+bool CheckTransferOwnerTx(const CTxOut& txOut);// OP_PLD_TOKEN PLDT
 
 //! Check the Encoded hash and make sure it is either an IPFS hash or a OIP hash
 bool CheckEncoded(const std::string& hash, std::string& strError);
@@ -601,4 +601,4 @@ bool ContextualCheckUniqueToken(CTokensCache* tokenCache, const CNewToken& uniqu
 bool ContextualCheckUsernameTokenTx(CTokensCache* tokenCache, std::string& strError, const CTransaction& tx);
 bool ContextualCheckUsernameToken(CTokensCache* tokenCache, const CNewToken& username_token, std::string& strError);
 
-#endif //AKILACOIN_TOKEN_PROTOCOL_H
+#endif //PLDCOIN_TOKEN_PROTOCOL_H

@@ -2,7 +2,7 @@
 // Copyright (c) 2009-2016 The Bitcoin Core developers
 // Copyright (c) 2017-2019 The Raven Core developers
 // Copyright (c) 2014-2016 The BlackCoin developers
-// Copyright (c) 2021-2022 The Akila developers
+// Copyright (c) 2021-2022 The Paladeum developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -57,7 +57,7 @@ bool Solver(const CScript& scriptPubKey, txnouttype& typeRet, txnouttype& script
         // Standard tx, sender provides pubkey, receiver adds signature
         mTemplates.insert(std::make_pair(TX_PUBKEY, CScript() << OP_PUBKEY << OP_CHECKSIG));
 
-        // Akila address tx, sender provides hash of pubkey, receiver provides signature and pubkey
+        // Paladeum address tx, sender provides hash of pubkey, receiver provides signature and pubkey
         mTemplates.insert(std::make_pair(TX_PUBKEYHASH, CScript() << OP_DUP << OP_HASH160 << OP_PUBKEYHASH << OP_EQUALVERIFY << OP_CHECKSIG));
 
         // Sender provides N pubkeys, receivers provides M signatures
@@ -140,7 +140,7 @@ bool Solver(const CScript& scriptPubKey, txnouttype& typeRet, txnouttype& script
     //
     // So long as script passes the IsUnspendable() test and all but the first three
     // byte passes the IsPushOnly()
-    if (scriptPubKey.size() >= 1 && scriptPubKey[0] == OP_AKILA_TOKEN && scriptPubKey.IsPushOnly(scriptPubKey.begin()+1)) {
+    if (scriptPubKey.size() >= 1 && scriptPubKey[0] == OP_PLD_TOKEN && scriptPubKey.IsPushOnly(scriptPubKey.begin()+1)) {
         typeRet = TX_RESTRICTED_TOKEN_DATA;
 
         if (scriptPubKey.size() >= 23 && scriptPubKey[1] != OP_RESERVED) {
@@ -409,13 +409,13 @@ namespace
 
         bool operator()(const CKeyID &keyID) const {
             script->clear();
-            *script << OP_AKILA_TOKEN << ToByteVector(keyID);
+            *script << OP_PLD_TOKEN << ToByteVector(keyID);
             return true;
         }
 
         bool operator()(const CScriptID &scriptID) const {
             script->clear();
-            *script << OP_AKILA_TOKEN << ToByteVector(scriptID);
+            *script << OP_PLD_TOKEN << ToByteVector(scriptID);
             return true;
         }
     };

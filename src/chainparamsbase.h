@@ -1,18 +1,18 @@
 // Copyright (c) 2014-2015 The Bitcoin Core developers
-// Copyright (c) 2021-2022 The Akila developers
+// Copyright (c) 2021-2022 The Paladeum developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef AKILA_CHAINPARAMSBASE_H
-#define AKILA_CHAINPARAMSBASE_H
+#ifndef PLD_CHAINPARAMSBASE_H
+#define PLD_CHAINPARAMSBASE_H
 
 #include <memory>
 #include <string>
 #include <vector>
 
 /**
- * CBaseChainParams defines the base parameters (shared between akila-cli and akilad)
- * of a given instance of the Akila system.
+ * CBaseChainParams defines the base parameters (shared between paladeum-cli and paladeumd)
+ * of a given instance of the Paladeum system.
  */
 class CBaseChainParams
 {
@@ -61,4 +61,4 @@ void SelectBaseParams(const std::string& chain);
  */
 std::string ChainNameFromCommandLine();
 
-#endif // AKILA_CHAINPARAMSBASE_H
+#endif // PLD_CHAINPARAMSBASE_H

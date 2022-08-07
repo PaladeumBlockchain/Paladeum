@@ -1,13 +1,13 @@
 #!/usr/bin/env python3
 # Copyright (c) 2015-2016 The Bitcoin Core developers
-# Copyright (c) 2017-2020 The Akila developers
+# Copyright (c) 2017-2020 The Paladeum developers
 # Distributed under the MIT software license, see the accompanying
 # file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
 """Test restricted token related RPC commands."""
 
 import math
-from test_framework.test_framework import AkilaTestFramework
+from test_framework.test_framework import PaladeumTestFramework
 from test_framework.util import assert_equal
 
 BURN_ADDRESSES = {
@@ -37,8 +37,8 @@ def truncate(number, digits=8):
 def get_tx_issue_hex(node, to_address, token_name, token_quantity=1000, verifier_string="true", units=0, reissuable=1, has_ipfs=0, ipfs_hash="", owner_change_address=""):
     change_address = node.getnewaddress()
 
-    akila_unspent = next(u for u in node.listunspent() if u['amount'] > BURN_AMOUNTS['issue_restricted'])
-    akila_inputs = [{k: akila_unspent[k] for k in ['txid', 'vout']}]
+    paladeum_unspent = next(u for u in node.listunspent() if u['amount'] > BURN_AMOUNTS['issue_restricted'])
+    paladeum_inputs = [{k: paladeum_unspent[k] for k in ['txid', 'vout']}]
 
     owner_token_name = token_name[1:] + '!'
     owner_unspent = node.listmytokens(owner_token_name, True)[owner_token_name]['outpoints'][0]
@@ -46,7 +46,7 @@ def get_tx_issue_hex(node, to_address, token_name, token_quantity=1000, verifier
 
     outputs = {
         BURN_ADDRESSES['issue_restricted']: BURN_AMOUNTS['issue_restricted'],
-        change_address: truncate(float(akila_unspent['amount']) - BURN_AMOUNTS['issue_restricted'] - FEE_AMOUNT),
+        change_address: truncate(float(paladeum_unspent['amount']) - BURN_AMOUNTS['issue_restricted'] - FEE_AMOUNT),
         to_address: {
             'issue_restricted': {
                 'token_name': token_name,
@@ -63,7 +63,7 @@ def get_tx_issue_hex(node, to_address, token_name, token_quantity=1000, verifier
     if len(owner_change_address) > 0:
         outputs[to_address]['issue_restricted']['owner_change_address'] = owner_change_address
 
-    tx_issue = node.createrawtransaction(akila_inputs + owner_inputs, outputs)
+    tx_issue = node.createrawtransaction(paladeum_inputs + owner_inputs, outputs)
     tx_issue_signed = node.signrawtransaction(tx_issue)
     tx_issue_hex = tx_issue_signed['hex']
     return tx_issue_hex
@@ -72,8 +72,8 @@ def get_tx_issue_hex(node, to_address, token_name, token_quantity=1000, verifier
 def get_tx_reissue_hex(node, to_address, token_name, token_quantity, reissuable=1, verifier_string="", ipfs_hash="", owner_change_address=""):
     change_address = node.getnewaddress()
 
-    akila_unspent = next(u for u in node.listunspent() if u['amount'] > BURN_AMOUNTS['reissue_restricted'])
-    akila_inputs = [{k: akila_unspent[k] for k in ['txid', 'vout']}]
+    paladeum_unspent = next(u for u in node.listunspent() if u['amount'] > BURN_AMOUNTS['reissue_restricted'])
+    paladeum_inputs = [{k: paladeum_unspent[k] for k in ['txid', 'vout']}]
 
     owner_token_name = token_name[1:] + '!'
     owner_unspent = node.listmytokens(owner_token_name, True)[owner_token_name]['outpoints'][0]
@@ -81,7 +81,7 @@ def get_tx_reissue_hex(node, to_address, token_name, token_quantity, reissuable=
 
     outputs = {
         BURN_ADDRESSES['reissue_restricted']: BURN_AMOUNTS['reissue_restricted'],
-        change_address: truncate(float(akila_unspent['amount']) - BURN_AMOUNTS['reissue_restricted'] - FEE_AMOUNT),
+        change_address: truncate(float(paladeum_unspent['amount']) - BURN_AMOUNTS['reissue_restricted'] - FEE_AMOUNT),
         to_address: {
             'reissue_restricted': {
                 'token_name': token_name,
@@ -97,7 +97,7 @@ def get_tx_reissue_hex(node, to_address, token_name, token_quantity, reissuable=
     if len(owner_change_address) > 0:
         outputs[to_address]['reissue_restricted']['owner_change_address'] = owner_change_address
 
-    tx_issue = node.createrawtransaction(akila_inputs + owner_inputs, outputs)
+    tx_issue = node.createrawtransaction(paladeum_inputs + owner_inputs, outputs)
     tx_issue_signed = node.signrawtransaction(tx_issue)
     tx_issue_hex = tx_issue_signed['hex']
     return tx_issue_hex
@@ -108,8 +108,8 @@ def get_tx_issue_qualifier_hex(node, to_address, token_name, token_quantity=1, h
 
     is_sub_qualifier = len(token_name.split('/')) > 1
 
-    akila_unspent = next(u for u in node.listunspent() if u['amount'] > BURN_AMOUNTS['issue_qualifier'])
-    akila_inputs = [{k: akila_unspent[k] for k in ['txid', 'vout']}]
+    paladeum_unspent = next(u for u in node.listunspent() if u['amount'] > BURN_AMOUNTS['issue_qualifier'])
+    paladeum_inputs = [{k: paladeum_unspent[k] for k in ['txid', 'vout']}]
 
     root_inputs = []
     if is_sub_qualifier:
@@ -121,7 +121,7 @@ def get_tx_issue_qualifier_hex(node, to_address, token_name, token_quantity=1, h
     burn_amount = BURN_AMOUNTS['issue_subqualifier'] if is_sub_qualifier else BURN_AMOUNTS['issue_qualifier']
     outputs = {
         burn_address: burn_amount,
-        change_address: truncate(float(akila_unspent['amount']) - burn_amount - FEE_AMOUNT),
+        change_address: truncate(float(paladeum_unspent['amount']) - burn_amount - FEE_AMOUNT),
         to_address: {
             'issue_qualifier': {
                 'token_name': token_name,
@@ -137,7 +137,7 @@ def get_tx_issue_qualifier_hex(node, to_address, token_name, token_quantity=1, h
     if change_qty > 1:
         outputs[to_address]['issue_qualifier']['change_quantity'] = change_qty
 
-    tx_issue = node.createrawtransaction(akila_inputs + root_inputs, outputs)
+    tx_issue = node.createrawtransaction(paladeum_inputs + root_inputs, outputs)
     tx_issue_signed = node.signrawtransaction(tx_issue)
     tx_issue_hex = tx_issue_signed['hex']
     return tx_issue_hex
@@ -147,15 +147,15 @@ def get_tx_transfer_hex(node, to_address, token_name, token_quantity):
     change_address = node.getnewaddress()
     token_change_address = node.getnewaddress()
 
-    akila_unspent = next(u for u in node.listunspent() if u['amount'] > FEE_AMOUNT)
-    akila_inputs = [{k: akila_unspent[k] for k in ['txid', 'vout']}]
+    paladeum_unspent = next(u for u in node.listunspent() if u['amount'] > FEE_AMOUNT)
+    paladeum_inputs = [{k: paladeum_unspent[k] for k in ['txid', 'vout']}]
 
     token_unspent = node.listmytokens(token_name, True)[token_name]['outpoints'][0]
     token_unspent_qty = token_unspent['amount']
     token_inputs = [{k: token_unspent[k] for k in ['txid', 'vout']}]
 
     outputs = {
-        change_address: truncate(float(akila_unspent['amount']) - FEE_AMOUNT),
+        change_address: truncate(float(paladeum_unspent['amount']) - FEE_AMOUNT),
         to_address: {
             'transfer': {
                 token_name: token_quantity
@@ -169,7 +169,7 @@ def get_tx_transfer_hex(node, to_address, token_name, token_quantity):
             }
         }
 
-    tx_transfer = node.createrawtransaction(akila_inputs + token_inputs, outputs)
+    tx_transfer = node.createrawtransaction(paladeum_inputs + token_inputs, outputs)
     tx_transfer_signed = node.signrawtransaction(tx_transfer)
     tx_transfer_hex = tx_transfer_signed['hex']
     return tx_transfer_hex
@@ -180,15 +180,15 @@ def get_tx_tag_address_hex(node, op, qualifier_name, tag_addresses, qualifier_ch
 
     burn_amount = truncate(float(BURN_AMOUNTS['tag_address'] * len(tag_addresses)))
 
-    akila_unspent = next(u for u in node.listunspent() if u['amount'] > burn_amount)
-    akila_inputs = [{k: akila_unspent[k] for k in ['txid', 'vout']}]
+    paladeum_unspent = next(u for u in node.listunspent() if u['amount'] > burn_amount)
+    paladeum_inputs = [{k: paladeum_unspent[k] for k in ['txid', 'vout']}]
 
     qualifier_unspent = node.listmytokens(qualifier_name, True)[qualifier_name]['outpoints'][0]
     qualifier_inputs = [{k: qualifier_unspent[k] for k in ['txid', 'vout']}]
 
     outputs = {
         BURN_ADDRESSES['tag_address']: burn_amount,
-        change_address: truncate(float(akila_unspent['amount']) - burn_amount - FEE_AMOUNT),
+        change_address: truncate(float(paladeum_unspent['amount']) - burn_amount - FEE_AMOUNT),
         qualifier_change_address: {
             f"{op}_addresses": {
                 'qualifier': qualifier_name,
@@ -199,7 +199,7 @@ def get_tx_tag_address_hex(node, op, qualifier_name, tag_addresses, qualifier_ch
     if change_qty > 1:
         outputs[qualifier_change_address][f"{op}_addresses"]['change_quantity'] = change_qty
 
-    tx_tag = node.createrawtransaction(akila_inputs + qualifier_inputs, outputs)
+    tx_tag = node.createrawtransaction(paladeum_inputs + qualifier_inputs, outputs)
     tx_tag_signed = node.signrawtransaction(tx_tag)
     tx_tag_hex = tx_tag_signed['hex']
     return tx_tag_hex
@@ -208,15 +208,15 @@ def get_tx_tag_address_hex(node, op, qualifier_name, tag_addresses, qualifier_ch
 def get_tx_freeze_address_hex(node, op, token_name, freeze_addresses, owner_change_address):
     change_address = node.getnewaddress()
 
-    akila_unspent = next(u for u in node.listunspent() if u['amount'] > FEE_AMOUNT)
-    akila_inputs = [{k: akila_unspent[k] for k in ['txid', 'vout']}]
+    paladeum_unspent = next(u for u in node.listunspent() if u['amount'] > FEE_AMOUNT)
+    paladeum_inputs = [{k: paladeum_unspent[k] for k in ['txid', 'vout']}]
 
     owner_token_name = token_name[1:] + '!'
     owner_unspent = node.listmytokens(owner_token_name, True)[owner_token_name]['outpoints'][0]
     owner_inputs = [{k: owner_unspent[k] for k in ['txid', 'vout']}]
 
     outputs = {
-        change_address: truncate(float(akila_unspent['amount']) - FEE_AMOUNT),
+        change_address: truncate(float(paladeum_unspent['amount']) - FEE_AMOUNT),
         owner_change_address: {
             f"{op}_addresses": {
                 'token_name': token_name,
@@ -225,7 +225,7 @@ def get_tx_freeze_address_hex(node, op, token_name, freeze_addresses, owner_chan
         },
     }
 
-    tx_freeze = node.createrawtransaction(akila_inputs + owner_inputs, outputs)
+    tx_freeze = node.createrawtransaction(paladeum_inputs + owner_inputs, outputs)
     tx_freeze_signed = node.signrawtransaction(tx_freeze)
     tx_freeze_hex = tx_freeze_signed['hex']
     return tx_freeze_hex
@@ -235,15 +235,15 @@ def get_tx_freeze_address_hex(node, op, token_name, freeze_addresses, owner_chan
 def get_tx_freeze_token_hex(node, op, token_name, owner_change_address):
     change_address = node.getnewaddress()
 
-    akila_unspent = next(u for u in node.listunspent() if u['amount'] > FEE_AMOUNT)
-    akila_inputs = [{k: akila_unspent[k] for k in ['txid', 'vout']}]
+    paladeum_unspent = next(u for u in node.listunspent() if u['amount'] > FEE_AMOUNT)
+    paladeum_inputs = [{k: paladeum_unspent[k] for k in ['txid', 'vout']}]
 
     owner_token_name = token_name[1:] + '!'
     owner_unspent = node.listmytokens(owner_token_name, True)[owner_token_name]['outpoints'][0]
     owner_inputs = [{k: owner_unspent[k] for k in ['txid', 'vout']}]
 
     outputs = {
-        change_address: truncate(float(akila_unspent['amount']) - FEE_AMOUNT),
+        change_address: truncate(float(paladeum_unspent['amount']) - FEE_AMOUNT),
         owner_change_address: {
             f"{op}_token": {
                 'token_name': token_name,
@@ -251,20 +251,20 @@ def get_tx_freeze_token_hex(node, op, token_name, owner_change_address):
         },
     }
 
-    tx_freeze = node.createrawtransaction(akila_inputs + owner_inputs, outputs)
+    tx_freeze = node.createrawtransaction(paladeum_inputs + owner_inputs, outputs)
     tx_freeze_signed = node.signrawtransaction(tx_freeze)
     tx_freeze_hex = tx_freeze_signed['hex']
     return tx_freeze_hex
 
 
-class RawRestrictedTokensTest(AkilaTestFramework):
+class RawRestrictedTokensTest(PaladeumTestFramework):
     def set_test_params(self):
         self.setup_clean_chain = True
         self.num_nodes = 2
         self.extra_args = [['-tokenindex'], ['-tokenindex']]
 
     def activate_restricted_tokens(self):
-        self.log.info("Generating AKILA and activating restricted tokens...")
+        self.log.info("Generating PLD and activating restricted tokens...")
         n0 = self.nodes[0]
         n0.generate(432)
         self.sync_all()

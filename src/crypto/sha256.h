@@ -1,10 +1,10 @@
 // Copyright (c) 2014-2016 The Bitcoin Core developers
-// Copyright (c) 2021-2022 The Akila developers
+// Copyright (c) 2021-2022 The Paladeum developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef AKILA_CRYPTO_SHA256_H
-#define AKILA_CRYPTO_SHA256_H
+#ifndef PLD_CRYPTO_SHA256_H
+#define PLD_CRYPTO_SHA256_H
 
 #include <stdint.h>
 #include <stdlib.h>
@@ -32,4 +32,4 @@ public:
  */
 std::string SHA256AutoDetect();
 
-#endif // AKILA_CRYPTO_SHA256_H
+#endif // PLD_CRYPTO_SHA256_H

@@ -1,13 +1,13 @@
 // Copyright (c) 2011-2016 The Bitcoin Core developers
-// Copyright (c) 2021-2022 The Akila developers
+// Copyright (c) 2021-2022 The Paladeum developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef AKILA_QT_PAYMENTSERVER_H
-#define AKILA_QT_PAYMENTSERVER_H
+#ifndef PLD_QT_PAYMENTSERVER_H
+#define PLD_QT_PAYMENTSERVER_H
 
 // This class handles payment requests from clicking on
-// akila: URIs
+// paladeum: URIs
 //
 // This is somewhat tricky, because we have to deal with
 // the situation where the user clicks on a link during
@@ -146,4 +146,4 @@ private:
     OptionsModel *optionsModel;
 };
 
-#endif // AKILA_QT_PAYMENTSERVER_H
+#endif // PLD_QT_PAYMENTSERVER_H

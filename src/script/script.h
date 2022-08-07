@@ -2,12 +2,12 @@
 // Copyright (c) 2009-2016 The Bitcoin Core developers
 // Copyright (c) 2017-2019 The Raven Core developers
 // Copyright (c) 2014-2016 The BlackCoin developers
-// Copyright (c) 2021-2022 The Akila developers
+// Copyright (c) 2021-2022 The Paladeum developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef AKILA_SCRIPT_SCRIPT_H
-#define AKILA_SCRIPT_SCRIPT_H
+#ifndef PLD_SCRIPT_SCRIPT_H
+#define PLD_SCRIPT_SCRIPT_H
 
 #include "crypto/common.h"
 #include "prevector.h"
@@ -187,7 +187,7 @@ enum opcodetype
     OP_NOP10 = 0xb9,
 
     /** TOKENS START */
-    OP_AKILA_TOKEN = 0xc0,
+    OP_PLD_TOKEN = 0xc0,
     /** TOKENS END */
 
     OP_OFFLINE_STAKE = 0xc6,
@@ -584,9 +584,9 @@ public:
             pc += nSize;
         }
 
-        // If we see an op akila token, we consider all data after it has data, and not op codes
+        // If we see an op paladeum token, we consider all data after it has data, and not op codes
         // Move the pc to the end of the script
-        if (opcode == OP_AKILA_TOKEN) {
+        if (opcode == OP_PLD_TOKEN) {
             unsigned int nSize = end() - pc;
             if (pvchRet)
                 pvchRet->assign(pc, pc + nSize);
@@ -651,7 +651,7 @@ public:
     }
 
     /**
-     * Pre-version-0.6, Akila always counted CHECKMULTISIGs
+     * Pre-version-0.6, Paladeum always counted CHECKMULTISIGs
      * as 20 sigops. With pay-to-script-hash, that changed:
      * CHECKMULTISIGs serialized in scriptSigs are
      * counted more accurately, assuming they are of the form
@@ -754,4 +754,4 @@ bool ScriptReissueToken(const CScript& scriptPubKey, int& nStartingIndex);
 
 int SearchForYNA(const CScript& script, const int startingValue);
 
-#endif // AKILA_SCRIPT_SCRIPT_H
+#endif // PLD_SCRIPT_SCRIPT_H

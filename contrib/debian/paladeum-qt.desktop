@@ -1,0 +1,13 @@
+[Desktop Entry]
+Encoding=UTF-8
+Name=Paladeum Core
+Comment=Connect to the Paladeum P2P Network
+Comment[de]=Verbinde mit dem Paladeum peer-to-peer Netzwerk
+Comment[fr]=Paladeum, monnaie virtuelle cryptographique pair à pair
+Comment[tr]=Paladeum, eşten eşe kriptografik sanal para birimi
+Exec=paladeum-qt %u
+Terminal=false
+Type=Application
+Icon=paladeum128
+MimeType=x-scheme-handler/paladeum;
+Categories=Office;Finance;

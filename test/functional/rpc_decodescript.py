@@ -1,17 +1,17 @@
 #!/usr/bin/env python3
 # Copyright (c) 2015-2016 The Bitcoin Core developers
-# Copyright (c) 2017-2020 The Akila developers
+# Copyright (c) 2017-2020 The Paladeum developers
 # Distributed under the MIT software license, see the accompanying
 # file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
 """Test decoding scripts via decodescript RPC command."""
 
 from io import BytesIO
-from test_framework.test_framework import AkilaTestFramework
+from test_framework.test_framework import PaladeumTestFramework
 from test_framework.util import assert_equal
 from test_framework.mininode import CTransaction, hex_str_to_bytes, bytes_to_hex_str
 
-class DecodeScriptTest(AkilaTestFramework):
+class DecodeScriptTest(PaladeumTestFramework):
     def set_test_params(self):
         self.setup_clean_chain = True
         self.num_nodes = 1
@@ -173,7 +173,7 @@ class DecodeScriptTest(AkilaTestFramework):
         assert_equal('OP_RETURN 3011020701010101010101020601010101010101', rpc_result['vin'][0]['scriptSig']['asm'])
 
     def decodescript_tokens(self):
-        """Test decoding AKILA_TOKENS scripts (regtest scripts)."""
+        """Test decoding PLD_TOKENS scripts (regtest scripts)."""
 
         # make sure tokens are activated
         self.nodes[0].generate(500)
@@ -181,7 +181,7 @@ class DecodeScriptTest(AkilaTestFramework):
         # issue (main output)
         script = "76a91435a8d9b395f1594e2cf3e06e6ec357d1da89736888acc01a72766e710954455354415353455400e40b54020000000800000075"
         result = self.nodes[0].decodescript(script)
-        assert_equal('OP_DUP OP_HASH160 35a8d9b395f1594e2cf3e06e6ec357d1da897368 OP_EQUALVERIFY OP_CHECKSIG OP_AKILA_TOKEN 1a72766e710954455354415353455400e40b54020000000800000075', result['asm'])
+        assert_equal('OP_DUP OP_HASH160 35a8d9b395f1594e2cf3e06e6ec357d1da897368 OP_EQUALVERIFY OP_CHECKSIG OP_PLD_TOKEN 1a72766e710954455354415353455400e40b54020000000800000075', result['asm'])
         assert_equal(1, result['reqSigs'])
         assert_equal('new_token', result['type'])
         assert_equal(1, len(result['addresses']))

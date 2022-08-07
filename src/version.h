@@ -1,10 +1,10 @@
 // Copyright (c) 2012-2016 The Bitcoin Core developers
-// Copyright (c) 2021-2022 The Akila developers
+// Copyright (c) 2021-2022 The Paladeum developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef AKILA_VERSION_H
-#define AKILA_VERSION_H
+#ifndef PLD_VERSION_H
+#define PLD_VERSION_H
 
 /**
  * network protocol versioning
@@ -58,4 +58,4 @@ static const int TOKENDATA_VERSION_UPDATED = 70020;
 static const int MESSAGING_RESTRICTED_TOKENS_VERSION = 70026;
 
 
-#endif // AKILA_VERSION_H
+#endif // PLD_VERSION_H

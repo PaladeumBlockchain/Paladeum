@@ -1,14 +1,14 @@
 # Copyright (c) 2013-2016 The Bitcoin Core developers
-# Copyright (c) 2021-2022 The Akila developers
+# Copyright (c) 2021-2022 The Paladeum developers
 # Distributed under the MIT software license, see the accompanying
 # file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-TESTS += test/test_akila
-bin_PROGRAMS += test/test_akila
-noinst_PROGRAMS += test/test_akila_fuzzy
-noinst_PROGRAMS += test/test_akila_hash
+TESTS += test/test_paladeum
+bin_PROGRAMS += test/test_paladeum
+noinst_PROGRAMS += test/test_paladeum_fuzzy
+noinst_PROGRAMS += test/test_paladeum_hash
 TEST_SRCDIR = test
-TEST_BINARY=test/test_akila$(EXEEXT)
+TEST_BINARY=test/test_paladeum$(EXEEXT)
 
 JSON_TEST_FILES = \
   test/data/script_tests.json \
@@ -23,8 +23,8 @@ RAW_TEST_FILES =
 
 GENERATED_TEST_FILES = $(JSON_TEST_FILES:.json=.json.h) $(RAW_TEST_FILES:.raw=.raw.h)
 
-# test_akila binary #
-AKILA_TESTS =\
+# test_paladeum binary #
+PLD_TESTS =\
   test/tokens/token_tests.cpp \
   test/tokens/serialization_tests.cpp \
   test/tokens/token_p2sh_tests.cpp \
@@ -89,9 +89,9 @@ AKILA_TESTS =\
   test/sigopcount_tests.cpp \
   test/skiplist_tests.cpp \
   test/streams_tests.cpp \
-  test/test_akila.cpp \
-  test/test_akila.h \
-  test/test_akila_main.cpp \
+  test/test_paladeum.cpp \
+  test/test_paladeum.h \
+  test/test_paladeum_main.cpp \
   test/timedata_tests.cpp \
   test/torcontrol_tests.cpp \
   test/transaction_tests.cpp \
@@ -102,7 +102,7 @@ AKILA_TESTS =\
   test/util_tests.cpp
 
 if ENABLE_WALLET
-AKILA_TESTS += \
+PLD_TESTS += \
   wallet/test/wallet_test_fixture.cpp \
   wallet/test/wallet_test_fixture.h \
   wallet/test/accounting_tests.cpp \
@@ -110,77 +110,77 @@ AKILA_TESTS += \
   wallet/test/crypto_tests.cpp
 endif
 
-test_test_akila_SOURCES = $(AKILA_TESTS) $(JSON_TEST_FILES) $(RAW_TEST_FILES)
-test_test_akila_CPPFLAGS = $(AM_CPPFLAGS) $(AKILA_INCLUDES) -I$(builddir)/test/ $(TESTDEFS) $(EVENT_CFLAGS)
-test_test_akila_LDADD =
+test_test_paladeum_SOURCES = $(PLD_TESTS) $(JSON_TEST_FILES) $(RAW_TEST_FILES)
+test_test_paladeum_CPPFLAGS = $(AM_CPPFLAGS) $(PLD_INCLUDES) -I$(builddir)/test/ $(TESTDEFS) $(EVENT_CFLAGS)
+test_test_paladeum_LDADD =
 if ENABLE_WALLET
-test_test_akila_LDADD += $(LIBAKILA_WALLET)
+test_test_paladeum_LDADD += $(LIBPLD_WALLET)
 endif
-test_test_akila_LDADD += $(LIBAKILA_SERVER) $(LIBAKILA_CLI) $(LIBAKILA_COMMON) $(LIBAKILA_UTIL) $(LIBAKILA_CONSENSUS) $(LIBAKILA_CRYPTO) $(LIBUNIVALUE) \
+test_test_paladeum_LDADD += $(LIBPLD_SERVER) $(LIBPLD_CLI) $(LIBPLD_COMMON) $(LIBPLD_UTIL) $(LIBPLD_CONSENSUS) $(LIBPLD_CRYPTO) $(LIBUNIVALUE) \
   $(LIBLEVELDB) $(LIBLEVELDB_SSE42) $(LIBMEMENV) $(BOOST_LIBS) $(BOOST_UNIT_TEST_FRAMEWORK_LIB) $(LIBSECP256K1) $(EVENT_LIBS) $(EVENT_PTHREADS_LIBS)
-test_test_akila_CXXFLAGS = $(AM_CXXFLAGS) $(PIE_FLAGS)
+test_test_paladeum_CXXFLAGS = $(AM_CXXFLAGS) $(PIE_FLAGS)
 
-test_test_akila_LDADD += $(LIBAKILA_CONSENSUS) $(LIBAKILA_CRYPTO) $(BDB_LIBS) $(SSL_LIBS) $(CRYPTO_LIBS) $(MINIUPNPC_LIBS)
-test_test_akila_LDFLAGS = $(RELDFLAGS) $(AM_LDFLAGS) $(LIBTOOL_APP_LDFLAGS) -static
+test_test_paladeum_LDADD += $(LIBPLD_CONSENSUS) $(LIBPLD_CRYPTO) $(BDB_LIBS) $(SSL_LIBS) $(CRYPTO_LIBS) $(MINIUPNPC_LIBS)
+test_test_paladeum_LDFLAGS = $(RELDFLAGS) $(AM_LDFLAGS) $(LIBTOOL_APP_LDFLAGS) -static
 
 if ENABLE_ZMQ
-test_test_akila_LDADD += $(ZMQ_LIBS)
+test_test_paladeum_LDADD += $(ZMQ_LIBS)
 endif
 #
 
-# test_akila_fuzzy binary #
-test_test_akila_fuzzy_SOURCES = test/test_akila_fuzzy.cpp
-test_test_akila_fuzzy_CPPFLAGS = $(AM_CPPFLAGS) $(AKILA_INCLUDES)
-test_test_akila_fuzzy_CXXFLAGS = $(AM_CXXFLAGS) $(PIE_FLAGS)
-test_test_akila_fuzzy_LDFLAGS = $(RELDFLAGS) $(AM_LDFLAGS) $(LIBTOOL_APP_LDFLAGS)
+# test_paladeum_fuzzy binary #
+test_test_paladeum_fuzzy_SOURCES = test/test_paladeum_fuzzy.cpp
+test_test_paladeum_fuzzy_CPPFLAGS = $(AM_CPPFLAGS) $(PLD_INCLUDES)
+test_test_paladeum_fuzzy_CXXFLAGS = $(AM_CXXFLAGS) $(PIE_FLAGS)
+test_test_paladeum_fuzzy_LDFLAGS = $(RELDFLAGS) $(AM_LDFLAGS) $(LIBTOOL_APP_LDFLAGS)
 
-test_test_akila_fuzzy_LDADD = \
+test_test_paladeum_fuzzy_LDADD = \
   $(LIBUNIVALUE) \
-  $(LIBAKILA_SERVER) \
-  $(LIBAKILA_COMMON) \
-  $(LIBAKILA_UTIL) \
-  $(LIBAKILA_CONSENSUS) \
-  $(LIBAKILA_CRYPTO) \
+  $(LIBPLD_SERVER) \
+  $(LIBPLD_COMMON) \
+  $(LIBPLD_UTIL) \
+  $(LIBPLD_CONSENSUS) \
+  $(LIBPLD_CRYPTO) \
   $(LIBSECP256K1)
 
-test_test_akila_fuzzy_LDADD += $(BOOST_LIBS) $(CRYPTO_LIBS)
+test_test_paladeum_fuzzy_LDADD += $(BOOST_LIBS) $(CRYPTO_LIBS)
 #
 
-# test_akila_hash binary #
-test_test_akila_hash_SOURCES = test/test_akila_hash.cpp
-test_test_akila_hash_CPPFLAGS = $(AM_CPPFLAGS) $(AKILA_INCLUDES)
-test_test_akila_hash_CXXFLAGS = $(AM_CXXFLAGS) $(PIE_FLAGS)
-test_test_akila_hash_LDFLAGS = $(RELDFLAGS) $(AM_LDFLAGS) $(LIBTOOL_AP_LDFLAGS)
+# test_paladeum_hash binary #
+test_test_paladeum_hash_SOURCES = test/test_paladeum_hash.cpp
+test_test_paladeum_hash_CPPFLAGS = $(AM_CPPFLAGS) $(PLD_INCLUDES)
+test_test_paladeum_hash_CXXFLAGS = $(AM_CXXFLAGS) $(PIE_FLAGS)
+test_test_paladeum_hash_LDFLAGS = $(RELDFLAGS) $(AM_LDFLAGS) $(LIBTOOL_AP_LDFLAGS)
 
-test_test_akila_hash_LDADD = \
+test_test_paladeum_hash_LDADD = \
   $(LIBUNIVALUE) \
-  $(LIBAKILA_COMMON) \
-  $(LIBAKILA_UTIL) \
-  $(LIBAKILA_CONSENSUS) \
-  $(LIBAKILA_CRYPTO)
+  $(LIBPLD_COMMON) \
+  $(LIBPLD_UTIL) \
+  $(LIBPLD_CONSENSUS) \
+  $(LIBPLD_CRYPTO)
 
-test_test_akila_hash_LDADD += $(CRYPTO_LIBS)
+test_test_paladeum_hash_LDADD += $(CRYPTO_LIBS)
 #
 
-nodist_test_test_akila_SOURCES = $(GENERATED_TEST_FILES)
+nodist_test_test_paladeum_SOURCES = $(GENERATED_TEST_FILES)
 
-$(AKILA_TESTS): $(GENERATED_TEST_FILES)
+$(PLD_TESTS): $(GENERATED_TEST_FILES)
 
-CLEAN_AKILA_TEST = test/*.gcda test/*.gcno $(GENERATED_TEST_FILES)
+CLEAN_PLD_TEST = test/*.gcda test/*.gcno $(GENERATED_TEST_FILES)
 
-CLEANFILES += $(CLEAN_AKILA_TEST)
+CLEANFILES += $(CLEAN_PLD_TEST)
 
-akila_test: $(TEST_BINARY)
+paladeum_test: $(TEST_BINARY)
 
-akila_test_check: $(TEST_BINARY) FORCE
+paladeum_test_check: $(TEST_BINARY) FORCE
 	$(MAKE) check-TESTS TESTS=$^
 
-akila_test_clean : FORCE
-	rm -f $(CLEAN_AKILA_TEST) $(test_test_akila_OBJECTS) $(TEST_BINARY)
+paladeum_test_clean : FORCE
+	rm -f $(CLEAN_PLD_TEST) $(test_test_paladeum_OBJECTS) $(TEST_BINARY)
 
 check-local:
-	@echo "Running test/util/akila-util-test.py..."
-	$(PYTHON) $(top_builddir)/test/util/akila-util-test.py
+	@echo "Running test/util/paladeum-util-test.py..."
+	$(PYTHON) $(top_builddir)/test/util/paladeum-util-test.py
 	$(AM_V_at)$(MAKE) $(AM_MAKEFLAGS) -C secp256k1 check
 if EMBEDDED_UNIVALUE
 	$(AM_V_at)$(MAKE) $(AM_MAKEFLAGS) -C univalue check

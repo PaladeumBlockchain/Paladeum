@@ -1,4 +1,4 @@
-Build instructions for Akilacoin 
+Build instructions for Paladeumcoin 
 =================================
 FreeBSD 13.0
 ---------------------------------
@@ -25,12 +25,12 @@ libqrencode for QR Code support.
 
 Directory structure
 ------------------
-Akilacoin sources in `$HOME/src`
+Paladeumcoin sources in `$HOME/src`
 
 Berkeley DB will be installed to `$HOME/src/db4`
 
 
-Akilacoin
+Paladeumcoin
 ------------------
 
 Start in $HOME
@@ -41,11 +41,11 @@ Make the directory for sources and go into it.
 
 `cd src`
 
-__Download Akilacoin source.__
+__Download Paladeumcoin source.__
 
-`git clone https://github.com/AkilaProject/Akilacoin`
+`git clone https://github.com/PaladeumProject/Paladeumcoin`
 
-`cd Akilacoin`
+`cd Paladeumcoin`
 
 `git checkout develop` # this checks out the develop branch.
 
@@ -68,11 +68,11 @@ _Adjust to own needs. `--prefix=/usr/local` will install the binaries to `/usr/l
 
 `gmake -j8`  # 8 for 8 build threads, adjust to fit your setup.
 
-You can now start akila-qt from the build directory.
+You can now start paladeum-qt from the build directory.
 
-`src/qt/akila-qt`
+`src/qt/paladeum-qt`
 
-akilad and akila-cli are in `src/`
+paladeumd and paladeum-cli are in `src/`
 
 
 __Optional:__

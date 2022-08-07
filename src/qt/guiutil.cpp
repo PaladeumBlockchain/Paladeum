@@ -1,12 +1,12 @@
 // Copyright (c) 2011-2016 The Bitcoin Core developers
-// Copyright (c) 2021-2022 The Akila developers
+// Copyright (c) 2021-2022 The Paladeum developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
 #include "guiutil.h"
 
-#include "akilaaddressvalidator.h"
-#include "akilaunits.h"
+#include "paladeumaddressvalidator.h"
+#include "paladeumunits.h"
 #include "qvalidatedlineedit.h"
 #include "walletmodel.h"
 
@@ -205,11 +205,11 @@ void setupAddressWidget(QValidatedLineEdit *widget, QWidget *parent)
 #if QT_VERSION >= 0x040700
     // We don't want translators to use own addresses in translations
     // and this is the only place, where this address is supplied.
-    widget->setPlaceholderText(QObject::tr("Enter a Akila address (e.g. %1)").arg(
+    widget->setPlaceholderText(QObject::tr("Enter a Paladeum address (e.g. %1)").arg(
         QString::fromStdString(DummyAddress(GetParams()))));
 #endif
-    widget->setValidator(new AkilaAddressEntryValidator(parent));
-    widget->setCheckValidator(new AkilaAddressCheckValidator(parent));
+    widget->setValidator(new PaladeumAddressEntryValidator(parent));
+    widget->setCheckValidator(new PaladeumAddressCheckValidator(parent));
 }
 
 void setupAmountWidget(QLineEdit *widget, QWidget *parent)
@@ -221,10 +221,10 @@ void setupAmountWidget(QLineEdit *widget, QWidget *parent)
     widget->setAlignment(Qt::AlignRight|Qt::AlignVCenter);
 }
 
-bool parseAkilaURI(const QUrl &uri, SendCoinsRecipient *out)
+bool parsePaladeumURI(const QUrl &uri, SendCoinsRecipient *out)
 {
-    // return if URI is not valid or is no akila: URI
-    if(!uri.isValid() || uri.scheme() != QString("akila"))
+    // return if URI is not valid or is no paladeum: URI
+    if(!uri.isValid() || uri.scheme() != QString("paladeum"))
         return false;
 
     SendCoinsRecipient rv;
@@ -264,7 +264,7 @@ bool parseAkilaURI(const QUrl &uri, SendCoinsRecipient *out)
         {
             if(!i->second.isEmpty())
             {
-                if(!AkilaUnits::parse(AkilaUnits::AKILA, i->second, &rv.amount))
+                if(!PaladeumUnits::parse(PaladeumUnits::PLD, i->second, &rv.amount))
                 {
                     return false;
                 }
@@ -282,28 +282,28 @@ bool parseAkilaURI(const QUrl &uri, SendCoinsRecipient *out)
     return true;
 }
 
-bool parseAkilaURI(QString uri, SendCoinsRecipient *out)
+bool parsePaladeumURI(QString uri, SendCoinsRecipient *out)
 {
-    // Convert akila:// to akila:
+    // Convert paladeum:// to paladeum:
     //
-    //    Cannot handle this later, because akila:// will cause Qt to see the part after // as host,
+    //    Cannot handle this later, because paladeum:// will cause Qt to see the part after // as host,
     //    which will lower-case it (and thus invalidate the address).
-    if(uri.startsWith("akila://", Qt::CaseInsensitive))
+    if(uri.startsWith("paladeum://", Qt::CaseInsensitive))
     {
-        uri.replace(0, 10, "akila:");
+        uri.replace(0, 10, "paladeum:");
     }
     QUrl uriInstance(uri);
-    return parseAkilaURI(uriInstance, out);
+    return parsePaladeumURI(uriInstance, out);
 }
 
-QString formatAkilaURI(const SendCoinsRecipient &info)
+QString formatPaladeumURI(const SendCoinsRecipient &info)
 {
-    QString ret = QString("akila:%1").arg(info.address);
+    QString ret = QString("paladeum:%1").arg(info.address);
     int paramCount = 0;
 
     if (info.amount)
     {
-        ret += QString("?amount=%1").arg(AkilaUnits::format(AkilaUnits::AKILA, info.amount, false, AkilaUnits::separatorNever));
+        ret += QString("?amount=%1").arg(PaladeumUnits::format(PaladeumUnits::PLD, info.amount, false, PaladeumUnits::separatorNever));
         paramCount++;
     }
 
@@ -493,9 +493,9 @@ void openDebugLogfile()
         QDesktopServices::openUrl(QUrl::fromLocalFile(boostPathToQString(pathDebug)));
 }
 
-bool openAkilaConf()
+bool openPaladeumConf()
 {
-    boost::filesystem::path pathConfig = GetConfigFile(AKILA_CONF_FILENAME);
+    boost::filesystem::path pathConfig = GetConfigFile(PLD_CONF_FILENAME);
 
     /* Create the file */
     boost::filesystem::ofstream configFile(pathConfig, std::ios_base::app);
@@ -505,7 +505,7 @@ bool openAkilaConf()
     
     configFile.close();
     
-    /* Open akila.conf with the associated application */
+    /* Open paladeum.conf with the associated application */
     return QDesktopServices::openUrl(QUrl::fromLocalFile(boostPathToQString(pathConfig)));
 }
 
@@ -714,15 +714,15 @@ fs::path static StartupShortcutPath()
 {
     std::string chain = ChainNameFromCommandLine();
     if (chain == CBaseChainParams::MAIN)
-        return GetSpecialFolderPath(CSIDL_STARTUP) / "Akila.lnk";
+        return GetSpecialFolderPath(CSIDL_STARTUP) / "Paladeum.lnk";
     if (chain == CBaseChainParams::TESTNET) // Remove this special case when CBaseChainParams::TESTNET = "testnet4"
-        return GetSpecialFolderPath(CSIDL_STARTUP) / "Akila (testnet).lnk";
-    return GetSpecialFolderPath(CSIDL_STARTUP) / strprintf("Akila (%s).lnk", chain);
+        return GetSpecialFolderPath(CSIDL_STARTUP) / "Paladeum (testnet).lnk";
+    return GetSpecialFolderPath(CSIDL_STARTUP) / strprintf("Paladeum (%s).lnk", chain);
 }
 
 bool GetStartOnSystemStartup()
 {
-    // check for Akila*.lnk
+    // check for Paladeum*.lnk
     return fs::exists(StartupShortcutPath());
 }
 
@@ -812,8 +812,8 @@ fs::path static GetAutostartFilePath()
 {
     std::string chain = ChainNameFromCommandLine();
     if (chain == CBaseChainParams::MAIN)
-        return GetAutostartDir() / "akila.desktop";
-    return GetAutostartDir() / strprintf("akila-%s.lnk", chain);
+        return GetAutostartDir() / "paladeum.desktop";
+    return GetAutostartDir() / strprintf("paladeum-%s.lnk", chain);
 }
 
 bool GetStartOnSystemStartup()
@@ -853,13 +853,13 @@ bool SetStartOnSystemStartup(bool fAutoStart)
         if (!optionFile.good())
             return false;
         std::string chain = ChainNameFromCommandLine();
-        // Write a akila.desktop file to the autostart directory:
+        // Write a paladeum.desktop file to the autostart directory:
         optionFile << "[Desktop Entry]\n";
         optionFile << "Type=Application\n";
         if (chain == CBaseChainParams::MAIN)
-            optionFile << "Name=Akila\n";
+            optionFile << "Name=Paladeum\n";
         else
-            optionFile << strprintf("Name=Akila (%s)\n", chain);
+            optionFile << strprintf("Name=Paladeum (%s)\n", chain);
         optionFile << "Exec=" << pszExePath << strprintf(" -min -testnet=%d -regtest=%d\n", gArgs.GetBoolArg("-testnet", false), gArgs.GetBoolArg("-regtest", false));
         optionFile << "Terminal=false\n";
         optionFile << "Hidden=false\n";
@@ -885,7 +885,7 @@ LSSharedFileListItemRef findStartupItemInList(LSSharedFileListRef list, CFURLRef
         return nullptr;
     }
     
-    // loop through the list of startup items and try to find the akila app
+    // loop through the list of startup items and try to find the paladeum app
     for(int i = 0; i < CFArrayGetCount(listSnapshot); i++) {
         LSSharedFileListItemRef item = (LSSharedFileListItemRef)CFArrayGetValueAtIndex(listSnapshot, i);
         UInt32 resolutionFlags = kLSSharedFileListNoUserInteraction | kLSSharedFileListDoNotMountVolumes;
@@ -919,38 +919,38 @@ LSSharedFileListItemRef findStartupItemInList(LSSharedFileListRef list, CFURLRef
 
 bool GetStartOnSystemStartup()
 {
-    CFURLRef akilaAppUrl = CFBundleCopyBundleURL(CFBundleGetMainBundle());
-    if (akilaAppUrl == nullptr) {
+    CFURLRef paladeumAppUrl = CFBundleCopyBundleURL(CFBundleGetMainBundle());
+    if (paladeumAppUrl == nullptr) {
         return false;
     }
     
     LSSharedFileListRef loginItems = LSSharedFileListCreate(nullptr, kLSSharedFileListSessionLoginItems, nullptr);
-    LSSharedFileListItemRef foundItem = findStartupItemInList(loginItems, akilaAppUrl);
+    LSSharedFileListItemRef foundItem = findStartupItemInList(loginItems, paladeumAppUrl);
 
-    CFRelease(akilaAppUrl);
+    CFRelease(paladeumAppUrl);
     return !!foundItem; // return boolified object
 }
 
 bool SetStartOnSystemStartup(bool fAutoStart)
 {
-    CFURLRef akilaAppUrl = CFBundleCopyBundleURL(CFBundleGetMainBundle());
-    if (akilaAppUrl == nullptr) {
+    CFURLRef paladeumAppUrl = CFBundleCopyBundleURL(CFBundleGetMainBundle());
+    if (paladeumAppUrl == nullptr) {
         return false;
     }
     
     LSSharedFileListRef loginItems = LSSharedFileListCreate(nullptr, kLSSharedFileListSessionLoginItems, nullptr);
-    LSSharedFileListItemRef foundItem = findStartupItemInList(loginItems, akilaAppUrl);
+    LSSharedFileListItemRef foundItem = findStartupItemInList(loginItems, paladeumAppUrl);
 
     if(fAutoStart && !foundItem) {
-        // add akila app to startup item list
-        LSSharedFileListInsertItemURL(loginItems, kLSSharedFileListItemBeforeFirst, nullptr, nullptr, akilaAppUrl, nullptr, nullptr);
+        // add paladeum app to startup item list
+        LSSharedFileListInsertItemURL(loginItems, kLSSharedFileListItemBeforeFirst, nullptr, nullptr, paladeumAppUrl, nullptr, nullptr);
     }
     else if(!fAutoStart && foundItem) {
         // remove item
         LSSharedFileListItemRemove(loginItems, foundItem);
     }
     
-    CFRelease(akilaAppUrl);
+    CFRelease(paladeumAppUrl);
     return true;
 }
 #pragma GCC diagnostic pop

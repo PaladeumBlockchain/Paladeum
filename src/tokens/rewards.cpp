@@ -1,5 +1,5 @@
 // Copyright (c) 2017-2019 The Raven Core developers
-// Copyright (c) 2021-2022 The Akila developers
+// Copyright (c) 2021-2022 The Paladeum developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -62,13 +62,13 @@ bool GenerateDistributionList(const CRewardSnapshot& p_rewardSnapshot, std::vect
     //  Get details on the specified source token
     CNewToken distributionToken;
     UNUSED_VAR bool srcIsIndivisible = false;
-    CAmount srcUnitDivisor = COIN;  //  Default to divisor for AKILA
+    CAmount srcUnitDivisor = COIN;  //  Default to divisor for PLD
     const int8_t COIN_DIGITS_PAST_DECIMAL = 8;
 
     //  This value is in indivisible units of the source token
     CAmount modifiedPaymentInTokenUnits = p_rewardSnapshot.nDistributionAmount;
 
-    if (p_rewardSnapshot.strDistributionToken != "AKILA") {
+    if (p_rewardSnapshot.strDistributionToken != "PLD") {
         if (!ptokens->GetTokenMetaDataIfExists(p_rewardSnapshot.strDistributionToken, distributionToken)) {
             LogPrint(BCLog::REWARDS, "%s: Failed to retrieve token details for '%s'\n", __func__, p_rewardSnapshot.strDistributionToken.c_str());
             return false;
@@ -88,7 +88,7 @@ bool GenerateDistributionList(const CRewardSnapshot& p_rewardSnapshot, std::vect
                  p_rewardSnapshot.strDistributionToken.c_str(), distributionToken.units, srcUnitDivisor);
     }
     else {
-        LogPrint(BCLog::REWARDS, "%s: Distribution is AKILA with divisor %d\n", __func__, srcUnitDivisor);
+        LogPrint(BCLog::REWARDS, "%s: Distribution is PLD with divisor %d\n", __func__, srcUnitDivisor);
     }
 
     LogPrint(BCLog::REWARDS, "%s: Scaled payment amount in %s is %d\n", __func__,
@@ -270,8 +270,8 @@ bool BuildTransaction(
     CAmount totalPaymentAmt = 0;
 
 
-    //  Handle payouts using AKILA differently from those using an token
-    if (p_rewardSnapshot.strDistributionToken == "AKILA") {
+    //  Handle payouts using PLD differently from those using an token
+    if (p_rewardSnapshot.strDistributionToken == "PLD") {
         // Check amount
         CAmount curBalance = p_walletPtr->GetBalance();
 
@@ -288,7 +288,7 @@ bool BuildTransaction(
         for (int i = start; i < (int)p_pendingPayments.size() && i < stop; i++) {
             expectedCount++;
 
-            // Parse Akila address (already validated during ownership snapshot creation)
+            // Parse Paladeum address (already validated during ownership snapshot creation)
             CTxDestination dest = DecodeDestination(p_pendingPayments[i].address);
             CScript scriptPubKey = GetScriptForDestination(dest);
             CRecipient recipient = {scriptPubKey, p_pendingPayments[i].amount, false};

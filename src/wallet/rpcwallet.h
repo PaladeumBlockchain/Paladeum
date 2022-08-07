@@ -1,10 +1,10 @@
 // Copyright (c) 2016 The Bitcoin Core developers
-// Copyright (c) 2021-2022 The Akila developers
+// Copyright (c) 2021-2022 The Paladeum developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef AKILA_WALLET_RPCWALLET_H
-#define AKILA_WALLET_RPCWALLET_H
+#ifndef PLD_WALLET_RPCWALLET_H
+#define PLD_WALLET_RPCWALLET_H
 
 #include <string>
 
@@ -26,4 +26,4 @@ std::string HelpRequiringPassphrase(CWallet *);
 void EnsureWalletIsUnlocked(CWallet *);
 bool EnsureWalletIsAvailable(CWallet *, bool avoidException);
 
-#endif //AKILA_WALLET_RPCWALLET_H
+#endif //PLD_WALLET_RPCWALLET_H

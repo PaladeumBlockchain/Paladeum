@@ -33,27 +33,27 @@ RUN apt-get update && \
 	libzmq3-dev libminiupnpc-dev libdb4.8-dev libdb4.8++-dev && \
 	apt-get clean
 
-#Build Akilacoin from source
-COPY . /home/akila/build/Akilacoin/
-WORKDIR /home/akila/build/Akilacoin
+#Build Paladeumcoin from source
+COPY . /home/paladeum/build/Paladeumcoin/
+WORKDIR /home/paladeum/build/Paladeumcoin
 RUN ./autogen.sh && ./configure --disable-tests --with-gui=no && make
 
 FROM base AS final
 
 #Add our service account user
-RUN useradd -ms /bin/bash akila && \
-	mkdir /var/lib/akila && \
-	chown akila:akila /var/lib/akila && \
-	ln -s /var/lib/akila /home/akila/.akila && \
-	chown -h akila:akila /home/akila/.akila
+RUN useradd -ms /bin/bash paladeum && \
+	mkdir /var/lib/paladeum && \
+	chown paladeum:paladeum /var/lib/paladeum && \
+	ln -s /var/lib/paladeum /home/paladeum/.paladeum && \
+	chown -h paladeum:paladeum /home/paladeum/.paladeum
 
-VOLUME /var/lib/akila
+VOLUME /var/lib/paladeum
 
 #Copy the compiled binaries from the build
-COPY --from=build /home/akila/build/Akilacoin/src/akilad /usr/local/bin/akilad
-COPY --from=build /home/akila/build/Akilacoin/src/akila-cli /usr/local/bin/akila-cli
+COPY --from=build /home/paladeum/build/Paladeumcoin/src/paladeumd /usr/local/bin/paladeumd
+COPY --from=build /home/paladeum/build/Paladeumcoin/src/paladeum-cli /usr/local/bin/paladeum-cli
 
-WORKDIR /home/akila
-USER akila
+WORKDIR /home/paladeum
+USER paladeum
 
-CMD /usr/local/bin/akilad -datadir=/var/lib/akila -printtoconsole -onlynet=ipv4
+CMD /usr/local/bin/paladeumd -datadir=/var/lib/paladeum -printtoconsole -onlynet=ipv4

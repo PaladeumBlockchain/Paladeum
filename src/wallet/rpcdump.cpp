@@ -1,5 +1,5 @@
 // Copyright (c) 2009-2016 The Bitcoin Core developers
-// Copyright (c) 2021-2022 The Akila developers
+// Copyright (c) 2021-2022 The Paladeum developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -121,7 +121,7 @@ UniValue importprivkey(const JSONRPCRequest& request)
     if (fRescan && fPruneMode)
         throw JSONRPCError(RPC_WALLET_ERROR, "Rescan is disabled in pruned mode");
 
-    CAkilaSecret vchSecret;
+    CPaladeumSecret vchSecret;
     bool fGood = vchSecret.SetString(strSecret);
 
     if (!fGood) throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, "Invalid private key encoding");
@@ -278,7 +278,7 @@ UniValue importaddress(const JSONRPCRequest& request)
         std::vector<unsigned char> data(ParseHex(request.params[0].get_str()));
         ImportScript(pwallet, CScript(data.begin(), data.end()), strLabel, fP2SH);
     } else {
-        throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, "Invalid Akila address or script");
+        throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, "Invalid Paladeum address or script");
     }
 
     if (fRescan)
@@ -502,7 +502,7 @@ UniValue importwallet(const JSONRPCRequest& request)
         boost::split(vstr, line, boost::is_any_of(" "));
         if (vstr.size() < 2)
             continue;
-        CAkilaSecret vchSecret;
+        CPaladeumSecret vchSecret;
         if (!vchSecret.SetString(vstr[0]))
             continue;
         CKey key = vchSecret.GetKey();
@@ -563,7 +563,7 @@ UniValue dumpprivkey(const JSONRPCRequest& request)
             "\nReveals the private key corresponding to 'address'.\n"
             "Then the importprivkey can be used with this output\n"
             "\nArguments:\n"
-            "1. \"address\"   (string, required) The akila address for the private key\n"
+            "1. \"address\"   (string, required) The paladeum address for the private key\n"
             "\nResult:\n"
             "\"key\"                (string) The private key\n"
             "\nExamples:\n"
@@ -587,7 +587,7 @@ UniValue dumpprivkey(const JSONRPCRequest& request)
 
     CTxDestination dest = DecodeDestination(address);
     if (!IsValidDestination(dest)) {
-        throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, "Invalid Akila address");
+        throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, "Invalid Paladeum address");
     }
     const CKeyID *keyID = boost::get<CKeyID>(&dest);
     if (!keyID) {
@@ -597,7 +597,7 @@ UniValue dumpprivkey(const JSONRPCRequest& request)
     if (!pwallet->GetKey(*keyID, vchSecret)) {
         throw JSONRPCError(RPC_WALLET_ERROR, "Private key for address " + address + " is not known");
     }
-    return CAkilaSecret(vchSecret).ToString();
+    return CPaladeumSecret(vchSecret).ToString();
 }
 
 
@@ -613,7 +613,7 @@ UniValue dumpwallet(const JSONRPCRequest& request)
             "dumpwallet \"filename\"\n"
             "\nDumps all wallet keys in a human-readable format to a server-side file. This does not allow overwriting existing files.\n"
             "\nArguments:\n"
-            "1. \"filename\"    (string, required) The filename with path (either absolute or relative to akilad)\n"
+            "1. \"filename\"    (string, required) The filename with path (either absolute or relative to paladeumd)\n"
             "\nResult:\n"
             "{                           (json object)\n"
             "  \"filename\" : {        (string) The filename with full absolute path\n"
@@ -659,7 +659,7 @@ UniValue dumpwallet(const JSONRPCRequest& request)
     std::sort(vKeyBirth.begin(), vKeyBirth.end());
 
     // produce output
-    file << strprintf("# Wallet dump created by Akila %s\n", CLIENT_BUILD);
+    file << strprintf("# Wallet dump created by Paladeum %s\n", CLIENT_BUILD);
     file << strprintf("# * Created on %s\n", EncodeDumpTime(GetTime()));
     file << strprintf("# * Best block at time of backup was %i (%s),\n", chainActive.Height(), chainActive.Tip()->GetIndexHash().ToString());
     file << strprintf("#   mined on %s\n", EncodeDumpTime(chainActive.Tip()->GetBlockTime()));
@@ -676,13 +676,13 @@ UniValue dumpwallet(const JSONRPCRequest& request)
                 CExtKey masterKey;
                 masterKey.SetSeed(seed.begin(), seed.size());
 
-                CAkilaExtKey b58extkey;
+                CPaladeumExtKey b58extkey;
                 b58extkey.SetKey(masterKey);
 
                 CExtPubKey pubkey;
                 pubkey = masterKey.Neuter();
 
-                CAkilaExtPubKey b58extpubkey;
+                CPaladeumExtPubKey b58extpubkey;
                 b58extpubkey.SetKey(pubkey);
 
                 file << "# extended private masterkey: " << b58extkey.ToString() << "\n\n";
@@ -704,13 +704,13 @@ UniValue dumpwallet(const JSONRPCRequest& request)
             CExtKey masterKey;
             masterKey.SetSeed(vchSeed.data(), vchSeed.size());
 
-            CAkilaExtKey b58extkey;
+            CPaladeumExtKey b58extkey;
             b58extkey.SetKey(masterKey);
 
             CExtPubKey pubkey;
             pubkey = masterKey.Neuter();
 
-            CAkilaExtPubKey b58extpubkey;
+            CPaladeumExtPubKey b58extpubkey;
             b58extpubkey.SetKey(pubkey);
 
             file << "# extended private masterkey: " << b58extkey.ToString() << "\n\n";
@@ -728,7 +728,7 @@ UniValue dumpwallet(const JSONRPCRequest& request)
         std::string strAddr = EncodeDestination(keyid);
         CKey key;
         if (pwallet->GetKey(keyid, key)) {
-            file << strprintf("%s %s ", CAkilaSecret(key).ToString(), strTime);
+            file << strprintf("%s %s ", CPaladeumSecret(key).ToString(), strTime);
             if (pwallet->mapAddressBook.count(keyid)) {
                 file << strprintf("label=%s", EncodeDumpString(pwallet->mapAddressBook[keyid].name));
             } else if (keyid == seed_id) {
@@ -796,16 +796,16 @@ UniValue getmasterkeyinfo(const JSONRPCRequest& request)
                 CExtKey masterKey;
                 masterKey.SetSeed(seed.begin(), seed.size());;
 
-                // Get the Akila Ext Key from the master key
-                CAkilaExtKey b58extkey;
+                // Get the Paladeum Ext Key from the master key
+                CPaladeumExtKey b58extkey;
                 b58extkey.SetKey(masterKey);
 
                 // Get the public key from the master key
                 CExtPubKey pubkey;
                 pubkey = masterKey.Neuter();
 
-                // Get the Akila Ext Key from the public key
-                CAkilaExtPubKey b58extpubkey;
+                // Get the Paladeum Ext Key from the public key
+                CPaladeumExtPubKey b58extpubkey;
                 b58extpubkey.SetKey(pubkey);
 
                 // Add the private and public key to the output
@@ -821,12 +821,12 @@ UniValue getmasterkeyinfo(const JSONRPCRequest& request)
                 CExtPubKey account_extended_public_key;
                 account_extended_public_key = accountKey.Neuter();
 
-                // Create the Akila Account Ext Private Key
-                CAkilaExtKey b58accountextprivatekey;
+                // Create the Paladeum Account Ext Private Key
+                CPaladeumExtKey b58accountextprivatekey;
                 b58accountextprivatekey.SetKey(accountKey);
 
-                // Create the Akila Account Ext Public Key
-                CAkilaExtPubKey b58actextpubkey;
+                // Create the Paladeum Account Ext Public Key
+                CPaladeumExtPubKey b58actextpubkey;
                 b58actextpubkey.SetKey(account_extended_public_key);
 
                 // Add the account extended public and private keys to the return
@@ -851,16 +851,16 @@ UniValue getmasterkeyinfo(const JSONRPCRequest& request)
             CExtKey masterKey;
             masterKey.SetSeed(vchSeed.data(), vchSeed.size());
 
-            // Get the Akila Ext Key from the master key
-            CAkilaExtKey b58extkey;
+            // Get the Paladeum Ext Key from the master key
+            CPaladeumExtKey b58extkey;
             b58extkey.SetKey(masterKey);
 
             // Get the public key from the master key
             CExtPubKey pubkey;
             pubkey = masterKey.Neuter();
 
-            // Get the Akila Ext Key from the public key
-            CAkilaExtPubKey b58extpubkey;
+            // Get the Paladeum Ext Key from the public key
+            CPaladeumExtPubKey b58extpubkey;
             b58extpubkey.SetKey(pubkey);
 
             // Add the private and public key to the output
@@ -884,12 +884,12 @@ UniValue getmasterkeyinfo(const JSONRPCRequest& request)
             CExtPubKey account_extended_public_key;
             account_extended_public_key = accountKey.Neuter();
 
-            // Create the Akila Account Ext Private Key
-            CAkilaExtKey b58accountextprivatekey;
+            // Create the Paladeum Account Ext Private Key
+            CPaladeumExtKey b58accountextprivatekey;
             b58accountextprivatekey.SetKey(accountKey);
 
-            // Create the Akila Account Ext Public Key
-            CAkilaExtPubKey b58actextpubkey;
+            // Create the Paladeum Account Ext Public Key
+            CPaladeumExtPubKey b58actextpubkey;
             b58actextpubkey.SetKey(account_extended_public_key);
 
             // Add the account extended public and private keys to the return
@@ -1017,7 +1017,7 @@ UniValue ProcessImport(CWallet * const pwallet, const UniValue& data, const int6
                 for (size_t i = 0; i < keys.size(); i++) {
                     const std::string& privkey = keys[i].get_str();
 
-                    CAkilaSecret vchSecret;
+                    CPaladeumSecret vchSecret;
                     bool fGood = vchSecret.SetString(privkey);
 
                     if (!fGood) {
@@ -1124,7 +1124,7 @@ UniValue ProcessImport(CWallet * const pwallet, const UniValue& data, const int6
                 const std::string& strPrivkey = keys[0].get_str();
 
                 // Checks.
-                CAkilaSecret vchSecret;
+                CPaladeumSecret vchSecret;
                 bool fGood = vchSecret.SetString(strPrivkey);
 
                 if (!fGood) {
@@ -1358,7 +1358,7 @@ UniValue importmulti(const JSONRPCRequest& mainRequest)
                                       "block from time %d, which is after or within %d seconds of key creation, and "
                                       "could contain transactions pertaining to the key. As a result, transactions "
                                       "and coins using this key may not appear in the wallet. This error could be "
-                                      "caused by pruning or data corruption (see akilad log for details) and could "
+                                      "caused by pruning or data corruption (see paladeumd log for details) and could "
                                       "be dealt with by downloading and rescanning the relevant blocks (see -reindex "
                                       "and -rescan options).",
                                 GetImportTimestamp(request, now), scannedTime - TIMESTAMP_WINDOW - 1, TIMESTAMP_WINDOW)));

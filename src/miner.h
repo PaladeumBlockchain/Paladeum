@@ -1,12 +1,12 @@
 // Copyright (c) 2009-2010 Satoshi Nakamoto
 // Copyright (c) 2009-2016 The Bitcoin Core developers
 // Copyright (c) 2014-2016 The BlackCoin developers
-// Copyright (c) 2021-2022 The Akila developers
+// Copyright (c) 2021-2022 The Paladeum developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef AKILA_MINER_H
-#define AKILA_MINER_H
+#ifndef PLD_MINER_H
+#define PLD_MINER_H
 
 #include "primitives/block.h"
 #include "txmempool.h"
@@ -240,4 +240,4 @@ bool CheckFirstCoinstakeOutput(const CBlock& block);
 
 int GenerateCoins(bool fGenerate, int nThreads, const CChainParams& chainparams);
 
-#endif // AKILA_MINER_H
+#endif // PLD_MINER_H

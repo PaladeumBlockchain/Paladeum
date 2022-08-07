@@ -1,29 +1,29 @@
 Translations
 ============
 
-The Akilacoin project has been designed to support multiple localisations. This makes adding new phrases, and completely new languages easily achievable. For managing all application translations, Akilacoin makes use of the Transifex online translation management tool.
+The Paladeumcoin project has been designed to support multiple localisations. This makes adding new phrases, and completely new languages easily achievable. For managing all application translations, Paladeumcoin makes use of the Transifex online translation management tool.
 
 ### Helping to translate (using Transifex)
-Currently updating strings in Transifex requires a manual upload of the updated src/qt/locale/akila_en.ts.
+Currently updating strings in Transifex requires a manual upload of the updated src/qt/locale/paladeum_en.ts.
 This can easily be automated in the future.
 
-Multiple language support is critical in assisting Akilacoins global adoption, and growth. One of Akilacoins greatest strengths is cross-border money transfers, any help making that easier is greatly appreciated.
+Multiple language support is critical in assisting Paladeumcoins global adoption, and growth. One of Paladeumcoins greatest strengths is cross-border money transfers, any help making that easier is greatly appreciated.
 
-See the [Transifex Akila project](https://www.transifex.com/akilacoin) to assist in translations. You can also join the #translations in [Akilacoin Discord](https://discord.gg/jn6uhur).
+See the [Transifex Paladeum project](https://www.transifex.com/paladeumcoin) to assist in translations. You can also join the #translations in [Paladeumcoin Discord](https://discord.gg/jn6uhur).
 
 ### Writing code with translations
 We use automated scripts to help extract translations in both Qt, and non-Qt source files. It is rarely necessary to manually edit the files in `src/qt/locale/`. The translation source files must adhere to the following format:
-`akila_xx_YY.ts or akila_xx.ts`
+`paladeum_xx_YY.ts or paladeum_xx.ts`
 
-`src/qt/locale/akila_en.ts` is treated in a special way. It is used as the source for all other translations. Whenever a string in the source code is changed, this file must be updated to reflect those changes. A custom script is used to extract strings from the non-Qt parts. This script makes use of `gettext`, so make sure that utility is installed (ie, `apt-get install gettext` on Ubuntu/Debian). Once this has been updated, `lupdate` (included in the Qt SDK) is used to update `akila_en.ts`.
+`src/qt/locale/paladeum_en.ts` is treated in a special way. It is used as the source for all other translations. Whenever a string in the source code is changed, this file must be updated to reflect those changes. A custom script is used to extract strings from the non-Qt parts. This script makes use of `gettext`, so make sure that utility is installed (ie, `apt-get install gettext` on Ubuntu/Debian). Once this has been updated, `lupdate` (included in the Qt SDK) is used to update `paladeum_en.ts`.
 
-To automatically regenerate the `akila_en.ts` file, run the following commands:
+To automatically regenerate the `paladeum_en.ts` file, run the following commands:
 ```sh
 cd src/
 make translate
 ```
 
-`src/qt/akila_locale.qrc` takes care of generating `.qm` (binary compiled) files from `.ts` (source files) files. It’s mostly automated, and you shouldn’t need to worry about it.
+`src/qt/paladeum_locale.qrc` takes care of generating `.qm` (binary compiled) files from `.ts` (source files) files. It’s mostly automated, and you shouldn’t need to worry about it.
 
 **Example Qt translation**
 ```cpp
@@ -39,7 +39,7 @@ When an updated source file is uploaded to Transifex the new strings will show u
 ### Creating a Transifex account
 Visit the [Transifex Signup](https://www.transifex.com/signup/) page to create an account. Take note of your username and password, as they will be required to configure the command-line tool.
 
-You can find the Akila translation project at [https://www.transifex.com/akilacoin](https://www.transifex.com/akilacoin).
+You can find the Paladeum translation project at [https://www.transifex.com/paladeumcoin](https://www.transifex.com/paladeumcoin).
 
 ### Installing the Transifex client command-line tool
 The client it used to fetch updated translations. If you are having problems, or need more details, see [http://docs.transifex.com/developer/client/setup](http://docs.transifex.com/developer/client/setup)
@@ -64,16 +64,16 @@ username = USERNAME
 
 Please see [http://docs.transifex.com/developer/client/setup#windows](http://docs.transifex.com/developer/client/setup#windows) for details on installation.
 
-The Transifex Akila project config file is included as part of the repo. It can be found at `.tx/config`, however you shouldn’t need change anything.
+The Transifex Paladeum project config file is included as part of the repo. It can be found at `.tx/config`, however you shouldn’t need change anything.
 
 ### Synchronising translations
 To assist in updating translations, we have created a script to help.
 
 1. `python contrib/devtools/update-translations.py`
-2. Update `src/qt/akila_locale.qrc` manually or via
-   `ls src/qt/locale/*ts|xargs -n1 basename|sed 's/\(akila_\(.*\)\).ts/<file alias="\2">locale\/\1.qm<\/file>/'`
+2. Update `src/qt/paladeum_locale.qrc` manually or via
+   `ls src/qt/locale/*ts|xargs -n1 basename|sed 's/\(paladeum_\(.*\)\).ts/<file alias="\2">locale\/\1.qm<\/file>/'`
 3. Update `src/Makefile.qt.include` manually or via
-   `ls src/qt/locale/*ts|xargs -n1 basename|sed 's/\(akila_\(.*\)\).ts/  qt\/locale\/\1.ts \\/'`
+   `ls src/qt/locale/*ts|xargs -n1 basename|sed 's/\(paladeum_\(.*\)\).ts/  qt\/locale\/\1.ts \\/'`
 4. `git add` new translations from `src/qt/locale/`
 
 **Do not directly download translations** one by one from the Transifex website, as we do a few post-processing steps before committing the translations.
@@ -81,7 +81,7 @@ To assist in updating translations, we have created a script to help.
 ### Handling Plurals (in source files)
 When new plurals are added to the source file, it's important to do the following steps:
 
-1. Open `akila_en.ts` in Qt Linguist (included in the Qt SDK)
+1. Open `paladeum_en.ts` in Qt Linguist (included in the Qt SDK)
 2. Search for `%n`, which will take you to the parts in the translation that use plurals
 3. Look for empty `English Translation (Singular)` and `English Translation (Plural)` fields
 4. Add the appropriate strings for the singular and plural form of the base string
@@ -90,20 +90,20 @@ When new plurals are added to the source file, it's important to do the followin
 7. Save the source file
 
 ### Translating a new language
-To create a new language template, you will need to edit the languages manifest file `src/qt/akila_locale.qrc` and add a new entry. Below is an example of the English language entry.
+To create a new language template, you will need to edit the languages manifest file `src/qt/paladeum_locale.qrc` and add a new entry. Below is an example of the English language entry.
 
 ```xml
 <qresource prefix="/translations">
-    <file alias="en">locale/akila_en.qm</filer
+    <file alias="en">locale/paladeum_en.qm</filer
     ...
 </qresource>
 ```
 
 **Note:** that the language translation file **must end in `.qm`** (the compiled extension), and not `.ts`.
 
-This process can be automated by a [script](https://github.com/fdoving/akilacoin-maintainer-tools/blob/master/update-translations.py) in [akilacoin-maintainer-tools](https://github.com/fdoving/akilacoin-maintainer-tools/).
+This process can be automated by a [script](https://github.com/fdoving/paladeumcoin-maintainer-tools/blob/master/update-translations.py) in [paladeumcoin-maintainer-tools](https://github.com/fdoving/paladeumcoin-maintainer-tools/).
 
 ### Questions and general assistance
-The Akilacoin translation maintainers include *fdov and pocal*. You can find them, and others, in #translations in [Akilacoin Discord](https://discord.gg/jn6uhur).
+The Paladeumcoin translation maintainers include *fdov and pocal*. You can find them, and others, in #translations in [Paladeumcoin Discord](https://discord.gg/jn6uhur).
 
-Announcements will be posten in Discord and on the transifex.com [announcements page](https://www.transifex.com/akilacoin/qt-translation/announcements/).
+Announcements will be posten in Discord and on the transifex.com [announcements page](https://www.transifex.com/paladeumcoin/qt-translation/announcements/).

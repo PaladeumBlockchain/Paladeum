@@ -86,7 +86,7 @@
             <item>
              <layout class="QHBoxLayout" name="horizontalLayout_4">
               <item>
-               <widget class="QLabel" name="akilaBalancesLabel">
+               <widget class="QLabel" name="paladeumBalancesLabel">
                 <property name="font">
                  <font>
                   <weight>75</weight>
@@ -94,7 +94,7 @@
                  </font>
                 </property>
                 <property name="text">
-                 <string>AKILA Balances</string>
+                 <string>PLD Balances</string>
                 </property>
                </widget>
               </item>
@@ -110,7 +110,7 @@
                  </size>
                 </property>
                 <property name="toolTip">
-                 <string>The displayed information may be out of date. Your wallet automatically synchronizes with the Akila network after a connection is established, but this process has not completed yet.</string>
+                 <string>The displayed information may be out of date. Your wallet automatically synchronizes with the Paladeum network after a connection is established, but this process has not completed yet.</string>
                 </property>
                 <property name="text">
                  <string/>
@@ -173,7 +173,7 @@
                  <string>Total of transactions that have yet to be confirmed, and do not yet count toward the spendable balance</string>
                 </property>
                 <property name="text">
-                 <string notr="true">0.000 000 00 AKILA</string>
+                 <string notr="true">0.000 000 00 PLD</string>
                 </property>
                 <property name="alignment">
                  <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
@@ -205,7 +205,7 @@
                  <string>Mined balance in watch-only addresses that has not yet matured</string>
                 </property>
                 <property name="text">
-                 <string notr="true">0.000 000 00 AKILA</string>
+                 <string notr="true">0.000 000 00 PLD</string>
                 </property>
                 <property name="alignment">
                  <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
@@ -230,7 +230,7 @@
                  <string>Your current stake</string>
                 </property>
                 <property name="text">
-                 <string notr="true">0.000 000 00 AKILA</string>
+                 <string notr="true">0.000 000 00 PLD</string>
                 </property>
                 <property name="alignment">
                  <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
@@ -272,7 +272,7 @@
                  <string>Your current spendable balance</string>
                 </property>
                 <property name="text">
-                 <string notr="true">0.000 000 00 AKILA</string>
+                 <string notr="true">0.000 000 00 PLD</string>
                 </property>
                 <property name="alignment">
                  <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
@@ -285,7 +285,7 @@
               <item row="4" column="1">
                <widget class="QLabel" name="labelOffline">
                 <property name="text">
-                 <string>0.000 000 00 AKILA</string>
+                 <string>0.000 000 00 PLD</string>
                 </property>
                 <property name="alignment">
                  <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
@@ -307,7 +307,7 @@
                  <string>Unconfirmed transactions to watch-only addresses</string>
                 </property>
                 <property name="text">
-                 <string notr="true">0.000 000 00 AKILA</string>
+                 <string notr="true">0.000 000 00 PLD</string>
                 </property>
                 <property name="alignment">
                  <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
@@ -332,7 +332,7 @@
                  <string>Your current balance in watch-only addresses</string>
                 </property>
                 <property name="text">
-                 <string notr="true">0.000 000 00 AKILA</string>
+                 <string notr="true">0.000 000 00 PLD</string>
                 </property>
                 <property name="alignment">
                  <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
@@ -407,7 +407,7 @@
                  <string>Mined balance that has not yet matured</string>
                 </property>
                 <property name="text">
-                 <string notr="true">0.000 000 00 AKILA</string>
+                 <string notr="true">0.000 000 00 PLD</string>
                 </property>
                 <property name="alignment">
                  <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
@@ -432,7 +432,7 @@
                  <string>Your current total balance</string>
                 </property>
                 <property name="text">
-                 <string notr="true">0.000 000 00 AKILA</string>
+                 <string notr="true">0.000 000 00 PLD</string>
                 </property>
                 <property name="alignment">
                  <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
@@ -471,7 +471,7 @@
                  <string>Current total balance in watch-only addresses</string>
                 </property>
                 <property name="text">
-                 <string notr="true">0.000 000 00 AKILA</string>
+                 <string notr="true">0.000 000 00 PLD</string>
                 </property>
                 <property name="alignment">
                  <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
@@ -553,7 +553,7 @@
                  </size>
                 </property>
                 <property name="toolTip">
-                 <string>The displayed information may be out of date. Your wallet automatically synchronizes with the Akila network after a connection is established, but this process has not completed yet.</string>
+                 <string>The displayed information may be out of date. Your wallet automatically synchronizes with the Paladeum network after a connection is established, but this process has not completed yet.</string>
                 </property>
                 <property name="text">
                  <string/>
@@ -733,7 +733,7 @@
                  </size>
                 </property>
                 <property name="toolTip">
-                 <string>The displayed information may be out of date. Your wallet automatically synchronizes with the Akila network after a connection is established, but this process has not completed yet.</string>
+                 <string>The displayed information may be out of date. Your wallet automatically synchronizes with the Paladeum network after a connection is established, but this process has not completed yet.</string>
                 </property>
                 <property name="text">
                  <string/>

@@ -1,11 +1,11 @@
 // Copyright (c) 2009-2010 Satoshi Nakamoto
 // Copyright (c) 2009-2016 The Bitcoin Core developers
-// Copyright (c) 2021-2022 The Akila developers
+// Copyright (c) 2021-2022 The Paladeum developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef AKILA_CHAINPARAMS_H
-#define AKILA_CHAINPARAMS_H
+#ifndef PLD_CHAINPARAMS_H
+#define PLD_CHAINPARAMS_H
 
 #include "chainparamsbase.h"
 #include "consensus/params.h"
@@ -40,7 +40,7 @@ struct ChainTxData {
 
 /**
  * CChainParams defines various tweakable parameters of a given instance of the
- * Akila system. There are three: the main network on which people trade goods
+ * Paladeum system. There are three: the main network on which people trade goods
  * and services, the public test network which gets reset from time to time and
  * a regression test mode which is intended for private networks only. It has
  * minimal difficulty to ensure that blocks can be found instantly.
@@ -91,7 +91,7 @@ public:
     bool BIP66();
     bool CSVEnabled() const;
 
-    /** AKILA Start **/
+    /** PLD Start **/
     const CAmount& IssueTokenFeeAmount() const { return nIssueTokenFeeAmount; }
     const CAmount& ReissueTokenFeeAmount() const { return nReissueTokenFeeAmount; }
     const CAmount& IssueSubTokenFeeAmount() const { return nIssueSubTokenFeeAmount; }
@@ -122,7 +122,7 @@ public:
     }
 
     int MaxReorganizationDepth() const { return nMaxReorganizationDepth; }
-    /** AKILA End **/
+    /** PLD End **/
 
 protected:
     CChainParams() {}
@@ -144,7 +144,7 @@ protected:
     CCheckpointData checkpointData;
     ChainTxData chainTxData;
 
-    /** AKILA Start **/
+    /** PLD Start **/
     // Fee Amounts
     CAmount nIssueTokenFeeAmount;
     CAmount nReissueTokenFeeAmount;
@@ -161,7 +161,7 @@ protected:
     std::string strTokenFeeAddress;
 
     int nMaxReorganizationDepth;
-    /** AKILA End **/
+    /** PLD End **/
 };
 
 /**
@@ -198,4 +198,4 @@ void TurnOffBIP66();
 
 void TurnOffCSV();
 
-#endif // AKILA_CHAINPARAMS_H
+#endif // PLD_CHAINPARAMS_H

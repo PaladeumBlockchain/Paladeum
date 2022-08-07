@@ -1,12 +1,12 @@
 // Copyright (c) 2011-2016 The Bitcoin Core developers
-// Copyright (c) 2021-2022 The Akila developers
+// Copyright (c) 2021-2022 The Paladeum developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
 #include "overviewpage.h"
 #include "ui_overviewpage.h"
 
-#include "akilaunits.h"
+#include "paladeumunits.h"
 #include "clientmodel.h"
 #include "guiconstants.h"
 #include "guiutil.h"
@@ -46,7 +46,7 @@ class TxViewDelegate : public QAbstractItemDelegate
     Q_OBJECT
 public:
     explicit TxViewDelegate(const PlatformStyle *_platformStyle, QObject *parent=nullptr):
-        QAbstractItemDelegate(parent), unit(AkilaUnits::AKILA),
+        QAbstractItemDelegate(parent), unit(PaladeumUnits::PLD),
         platformStyle(_platformStyle)
     {
 
@@ -155,7 +155,7 @@ class TokenViewDelegate : public QAbstractItemDelegate
 Q_OBJECT
 public:
     explicit TokenViewDelegate(const PlatformStyle *_platformStyle, QObject *parent=nullptr):
-            QAbstractItemDelegate(parent), unit(AkilaUnits::AKILA),
+            QAbstractItemDelegate(parent), unit(PaladeumUnits::PLD),
             platformStyle(_platformStyle)
     {
 
@@ -295,7 +295,7 @@ public:
 
 };
 #include "overviewpage.moc"
-#include "akilagui.h"
+#include "paladeumgui.h"
 #include <QFontDatabase>
 
 OverviewPage::OverviewPage(const PlatformStyle *platformStyle, QWidget *parent) :
@@ -368,7 +368,7 @@ OverviewPage::OverviewPage(const PlatformStyle *platformStyle, QWidget *parent) 
 
     /** Update the labels colors */
     ui->tokenBalanceLabel->setStyleSheet(STRING_LABEL_COLOR);
-    ui->akilaBalancesLabel->setStyleSheet(STRING_LABEL_COLOR);
+    ui->paladeumBalancesLabel->setStyleSheet(STRING_LABEL_COLOR);
     ui->labelStakeText->setStyleSheet(STRING_LABEL_COLOR);
     ui->labelOfflineText->setStyleSheet(STRING_LABEL_COLOR);
     ui->labelBalanceText->setStyleSheet(STRING_LABEL_COLOR);
@@ -380,7 +380,7 @@ OverviewPage::OverviewPage(const PlatformStyle *platformStyle, QWidget *parent) 
     ui->recentTransactionsLabel->setStyleSheet(STRING_LABEL_COLOR);
 
     /** Update the labels font */
-    ui->akilaBalancesLabel->setFont(GUIUtil::getTopLabelFont());
+    ui->paladeumBalancesLabel->setFont(GUIUtil::getTopLabelFont());
     ui->tokenBalanceLabel->setFont(GUIUtil::getTopLabelFont());
     ui->recentTransactionsLabel->setFont(GUIUtil::getTopLabelFont());
 
@@ -572,17 +572,17 @@ void OverviewPage::setBalance(const CAmount& balance, const CAmount& unconfirmed
     currentWatchOnlyStake = watchOnlyStake;
     currentLockedBalance = lockedBalance;
 
-    ui->labelBalance->setText(AkilaUnits::formatWithUnit(unit, balance, false, AkilaUnits::separatorAlways));
-    ui->labelUnconfirmed->setText(AkilaUnits::formatWithUnit(unit, unconfirmedBalance + lockedBalance, false, AkilaUnits::separatorAlways));
-    ui->labelImmature->setText(AkilaUnits::formatWithUnit(unit, immatureBalance, false, AkilaUnits::separatorAlways));
-    ui->labelTotal->setText(AkilaUnits::formatWithUnit(unit, balance + unconfirmedBalance + immatureBalance, false, AkilaUnits::separatorAlways));
-    ui->labelStake->setText(AkilaUnits::formatWithUnit(unit, stake, false, AkilaUnits::separatorAlways));
-    ui->labelOffline->setText(AkilaUnits::formatWithUnit(unit, offline, false, AkilaUnits::separatorAlways));
-    ui->labelTotal->setText(AkilaUnits::formatWithUnit(unit, balance + unconfirmedBalance + immatureBalance + lockedBalance, false, AkilaUnits::separatorAlways));
-    ui->labelWatchAvailable->setText(AkilaUnits::formatWithUnit(unit, watchOnlyBalance, false, AkilaUnits::separatorAlways));
-    ui->labelWatchPending->setText(AkilaUnits::formatWithUnit(unit, watchUnconfBalance, false, AkilaUnits::separatorAlways));
-    ui->labelWatchImmature->setText(AkilaUnits::formatWithUnit(unit, watchImmatureBalance, false, AkilaUnits::separatorAlways));
-    ui->labelWatchTotal->setText(AkilaUnits::formatWithUnit(unit, watchOnlyBalance + watchUnconfBalance + watchImmatureBalance + watchOnlyStake, false, AkilaUnits::separatorAlways));
+    ui->labelBalance->setText(PaladeumUnits::formatWithUnit(unit, balance, false, PaladeumUnits::separatorAlways));
+    ui->labelUnconfirmed->setText(PaladeumUnits::formatWithUnit(unit, unconfirmedBalance + lockedBalance, false, PaladeumUnits::separatorAlways));
+    ui->labelImmature->setText(PaladeumUnits::formatWithUnit(unit, immatureBalance, false, PaladeumUnits::separatorAlways));
+    ui->labelTotal->setText(PaladeumUnits::formatWithUnit(unit, balance + unconfirmedBalance + immatureBalance, false, PaladeumUnits::separatorAlways));
+    ui->labelStake->setText(PaladeumUnits::formatWithUnit(unit, stake, false, PaladeumUnits::separatorAlways));
+    ui->labelOffline->setText(PaladeumUnits::formatWithUnit(unit, offline, false, PaladeumUnits::separatorAlways));
+    ui->labelTotal->setText(PaladeumUnits::formatWithUnit(unit, balance + unconfirmedBalance + immatureBalance + lockedBalance, false, PaladeumUnits::separatorAlways));
+    ui->labelWatchAvailable->setText(PaladeumUnits::formatWithUnit(unit, watchOnlyBalance, false, PaladeumUnits::separatorAlways));
+    ui->labelWatchPending->setText(PaladeumUnits::formatWithUnit(unit, watchUnconfBalance, false, PaladeumUnits::separatorAlways));
+    ui->labelWatchImmature->setText(PaladeumUnits::formatWithUnit(unit, watchImmatureBalance, false, PaladeumUnits::separatorAlways));
+    ui->labelWatchTotal->setText(PaladeumUnits::formatWithUnit(unit, watchOnlyBalance + watchUnconfBalance + watchImmatureBalance + watchOnlyStake, false, PaladeumUnits::separatorAlways));
 
     // only show immature (newly mined) balance if it's non-zero, so as not to complicate things
     // for the non-mining users
@@ -669,7 +669,7 @@ void OverviewPage::setWalletModel(WalletModel *model)
         connect(model, SIGNAL(notifyWatchonlyChanged(bool)), this, SLOT(updateWatchOnlyLabels(bool)));
     }
 
-    // update the display unit, to not use the default ("AKILA")
+    // update the display unit, to not use the default ("PLD")
     updateDisplayUnit();
 }
 
@@ -718,7 +718,7 @@ void OverviewPage::showTokens()
         ui->tokenBalanceLabel->hide();
         ui->labelTokenStatus->hide();
 
-        // This keeps the AKILA balance grid from expanding and looking terrible when token balance is hidden
+        // This keeps the PLD balance grid from expanding and looking terrible when token balance is hidden
         ui->tokenVerticalSpaceWidget->show();
         ui->tokenVerticalSpaceWidget2->show();
     }

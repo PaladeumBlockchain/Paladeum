@@ -3,14 +3,14 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef AKILA_ADDRESSINDEX_H
-#define AKILA_ADDRESSINDEX_H
+#ifndef PLD_ADDRESSINDEX_H
+#define PLD_ADDRESSINDEX_H
 
 #include "uint256.h"
 #include "amount.h"
 #include "script/script.h"
 
-static const std::string AKILA = "AKILA";
+static const std::string PLD = "PLD";
 
 struct CAddressUnspentKey {
     unsigned int type;
@@ -46,7 +46,7 @@ struct CAddressUnspentKey {
     CAddressUnspentKey(unsigned int addressType, uint160 addressHash, uint256 txid, size_t indexValue, int txTimeLock = 0) {
         type = addressType;
         hashBytes = addressHash;
-        token = AKILA;
+        token = PLD;
         txhash = txid;
         index = indexValue;
         timeLock = txTimeLock;
@@ -160,7 +160,7 @@ struct CAddressIndexKey {
                      uint256 txid, size_t indexValue, bool isSpending, int txTimeLock = 0) {
         type = addressType;
         hashBytes = addressHash;
-        token = AKILA;
+        token = PLD;
         blockHeight = height;
         txindex = blockindex;
         timeLock = txTimeLock;
@@ -260,7 +260,7 @@ struct CAddressIndexIteratorTokenKey {
     CAddressIndexIteratorTokenKey(unsigned int addressType, uint160 addressHash) {
         type = addressType;
         hashBytes = addressHash;
-        token = AKILA;
+        token = PLD;
     }
 
     CAddressIndexIteratorTokenKey(unsigned int addressType, uint160 addressHash, std::string tokenName) {
@@ -307,7 +307,7 @@ struct CAddressIndexIteratorHeightKey {
     CAddressIndexIteratorHeightKey(unsigned int addressType, uint160 addressHash, int height) {
         type = addressType;
         hashBytes = addressHash;
-        token = AKILA;
+        token = PLD;
         blockHeight = height;
     }
 
@@ -445,4 +445,4 @@ struct CMempoolAddressDeltaKeyCompare
     }
 };
 
-#endif // AKILA_ADDRESSINDEX_H
+#endif // PLD_ADDRESSINDEX_H

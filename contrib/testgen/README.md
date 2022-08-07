@@ -1,6 +1,6 @@
 ### TestGen ###
 
-Utilities to generate test vectors for the data-driven Akila tests.
+Utilities to generate test vectors for the data-driven Paladeum tests.
 
 Usage: 
 

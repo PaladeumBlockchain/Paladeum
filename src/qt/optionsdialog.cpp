@@ -1,16 +1,16 @@
 // Copyright (c) 2011-2016 The Bitcoin Core developers
-// Copyright (c) 2021-2022 The Akila developers
+// Copyright (c) 2021-2022 The Paladeum developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
 #if defined(HAVE_CONFIG_H)
-#include "config/akila-config.h"
+#include "config/paladeum-config.h"
 #endif
 
 #include "optionsdialog.h"
 #include "ui_optionsdialog.h"
 
-#include "akilaunits.h"
+#include "paladeumunits.h"
 #include "guiutil.h"
 #include "optionsmodel.h"
 #include "guiconstants.h" // for DEFAULT_IPFS_VIEWER and DEFAULT_THIRD_PARTY_BROWSERS
@@ -75,10 +75,10 @@ OptionsDialog::OptionsDialog(QWidget *parent, bool enableWallet) :
     /* Display elements init */
     QDir translations(":translations");
 
-    ui->akilaAtStartup->setToolTip(ui->akilaAtStartup->toolTip().arg(tr(PACKAGE_NAME)));
-    ui->akilaAtStartup->setText(ui->akilaAtStartup->text().arg(tr(PACKAGE_NAME)));
+    ui->paladeumAtStartup->setToolTip(ui->paladeumAtStartup->toolTip().arg(tr(PACKAGE_NAME)));
+    ui->paladeumAtStartup->setText(ui->paladeumAtStartup->text().arg(tr(PACKAGE_NAME)));
 
-    ui->openAkilaConfButton->setToolTip(ui->openAkilaConfButton->toolTip().arg(tr(PACKAGE_NAME)));
+    ui->openPaladeumConfButton->setToolTip(ui->openPaladeumConfButton->toolTip().arg(tr(PACKAGE_NAME)));
 
     ui->lang->setToolTip(ui->lang->toolTip().arg(tr(PACKAGE_NAME)));
     ui->lang->addItem(QString("(") + tr("default") + QString(")"), QVariant(""));
@@ -113,7 +113,7 @@ OptionsDialog::OptionsDialog(QWidget *parent, bool enableWallet) :
     ui->ipfsUrl->setPlaceholderText(DEFAULT_IPFS_VIEWER);
 #endif
 
-    ui->unit->setModel(new AkilaUnits(this));
+    ui->unit->setModel(new PaladeumUnits(this));
 
     /* Widget-to-option mapper */
     mapper = new QDataWidgetMapper(this);
@@ -178,7 +178,7 @@ void OptionsDialog::setModel(OptionsModel *_model)
 void OptionsDialog::setMapper()
 {
     /* Main */
-    mapper->addMapping(ui->akilaAtStartup, OptionsModel::StartAtStartup);
+    mapper->addMapping(ui->paladeumAtStartup, OptionsModel::StartAtStartup);
     mapper->addMapping(ui->threadsScriptVerif, OptionsModel::ThreadsScriptVerif);
     mapper->addMapping(ui->databaseCache, OptionsModel::DatabaseCache);
 
@@ -243,7 +243,7 @@ void OptionsDialog::on_ipfsUrlReset_clicked()
     ui->ipfsUrl->setText(DEFAULT_IPFS_VIEWER);
 }
 
-void OptionsDialog::on_openAkilaConfButton_clicked()
+void OptionsDialog::on_openPaladeumConfButton_clicked()
 {
     /* explain the purpose of the config file */
     QMessageBox::information(this, tr("Configuration options"),
@@ -251,7 +251,7 @@ void OptionsDialog::on_openAkilaConfButton_clicked()
            "Additionally, any command-line options will override this configuration file."));
 
     /* show an error if there was some problem opening the file */
-    if (!GUIUtil::openAkilaConf())
+    if (!GUIUtil::openPaladeumConf())
         QMessageBox::critical(this, tr("Error"), tr("The configuration file could not be opened."));
 }
 

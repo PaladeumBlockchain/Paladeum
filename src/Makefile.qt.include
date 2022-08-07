@@ -1,98 +1,98 @@
 # Copyright (c) 2013-2016 The Bitcoin Core developers
-# Copyright (c) 2021-2022 The Akila developers
+# Copyright (c) 2021-2022 The Paladeum developers
 # Distributed under the MIT software license, see the accompanying
 # file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-bin_PROGRAMS += qt/akila-qt
-EXTRA_LIBRARIES += qt/libakilaqt.a
+bin_PROGRAMS += qt/paladeum-qt
+EXTRA_LIBRARIES += qt/libpaladeumqt.a
 
-# akila qt core #
+# paladeum qt core #
 QT_TS = \
-  qt/locale/akila_af.ts \
-  qt/locale/akila_af_ZA.ts \
-  qt/locale/akila_ar.ts \
-  qt/locale/akila_be_BY.ts \
-  qt/locale/akila_bg_BG.ts \
-  qt/locale/akila_bg.ts \
-  qt/locale/akila_ca_ES.ts \
-  qt/locale/akila_ca.ts \
-  qt/locale/akila_ca@valencia.ts \
-  qt/locale/akila_cs.ts \
-  qt/locale/akila_cy.ts \
-  qt/locale/akila_da.ts \
-  qt/locale/akila_de.ts \
-  qt/locale/akila_el_GR.ts \
-  qt/locale/akila_el.ts \
-  qt/locale/akila_en_GB.ts \
-  qt/locale/akila_en.ts \
-  qt/locale/akila_eo.ts \
-  qt/locale/akila_es_AR.ts \
-  qt/locale/akila_es_CL.ts \
-  qt/locale/akila_es_CO.ts \
-  qt/locale/akila_es_DO.ts \
-  qt/locale/akila_es_ES.ts \
-  qt/locale/akila_es_MX.ts \
-  qt/locale/akila_es.ts \
-  qt/locale/akila_es_UY.ts \
-  qt/locale/akila_es_VE.ts \
-  qt/locale/akila_et_EE.ts \
-  qt/locale/akila_et.ts \
-  qt/locale/akila_eu_ES.ts \
-  qt/locale/akila_fa_IR.ts \
-  qt/locale/akila_fa.ts \
-  qt/locale/akila_fi.ts \
-  qt/locale/akila_fr_CA.ts \
-  qt/locale/akila_fr_FR.ts \
-  qt/locale/akila_fr.ts \
-  qt/locale/akila_gl.ts \
-  qt/locale/akila_he.ts \
-  qt/locale/akila_hi_IN.ts \
-  qt/locale/akila_hr.ts \
-  qt/locale/akila_hu.ts \
-  qt/locale/akila_id_ID.ts \
-  qt/locale/akila_it_IT.ts \
-  qt/locale/akila_it.ts \
-  qt/locale/akila_ja.ts \
-  qt/locale/akila_ka.ts \
-  qt/locale/akila_kk_KZ.ts \
-  qt/locale/akila_ko_KR.ts \
-  qt/locale/akila_ku_IQ.ts \
-  qt/locale/akila_ky.ts \
-  qt/locale/akila_la.ts \
-  qt/locale/akila_lt.ts \
-  qt/locale/akila_lv_LV.ts \
-  qt/locale/akila_mk_MK.ts \
-  qt/locale/akila_mn.ts \
-  qt/locale/akila_ms_MY.ts \
-  qt/locale/akila_nb.ts \
-  qt/locale/akila_ne.ts \
-  qt/locale/akila_nl.ts \
-  qt/locale/akila_pl.ts \
-  qt/locale/akila_pt_BR.ts \
-  qt/locale/akila_pt_PT.ts \
-  qt/locale/akila_ro_RO.ts \
-  qt/locale/akila_ro.ts \
-  qt/locale/akila_ru_RU.ts \
-  qt/locale/akila_ru.ts \
-  qt/locale/akila_sk.ts \
-  qt/locale/akila_sl_SI.ts \
-  qt/locale/akila_sq.ts \
-  qt/locale/akila_sr@latin.ts \
-  qt/locale/akila_sr.ts \
-  qt/locale/akila_sv.ts \
-  qt/locale/akila_ta.ts \
-  qt/locale/akila_th_TH.ts \
-  qt/locale/akila_tr_TR.ts \
-  qt/locale/akila_tr.ts \
-  qt/locale/akila_uk.ts \
-  qt/locale/akila_ur_PK.ts \
-  qt/locale/akila_uz@Cyrl.ts \
-  qt/locale/akila_vi.ts \
-  qt/locale/akila_vi_VN.ts \
-  qt/locale/akila_zh_CN.ts \
-  qt/locale/akila_zh_HK.ts \
-  qt/locale/akila_zh.ts \
-  qt/locale/akila_zh_TW.ts
+  qt/locale/paladeum_af.ts \
+  qt/locale/paladeum_af_ZA.ts \
+  qt/locale/paladeum_ar.ts \
+  qt/locale/paladeum_be_BY.ts \
+  qt/locale/paladeum_bg_BG.ts \
+  qt/locale/paladeum_bg.ts \
+  qt/locale/paladeum_ca_ES.ts \
+  qt/locale/paladeum_ca.ts \
+  qt/locale/paladeum_ca@valencia.ts \
+  qt/locale/paladeum_cs.ts \
+  qt/locale/paladeum_cy.ts \
+  qt/locale/paladeum_da.ts \
+  qt/locale/paladeum_de.ts \
+  qt/locale/paladeum_el_GR.ts \
+  qt/locale/paladeum_el.ts \
+  qt/locale/paladeum_en_GB.ts \
+  qt/locale/paladeum_en.ts \
+  qt/locale/paladeum_eo.ts \
+  qt/locale/paladeum_es_AR.ts \
+  qt/locale/paladeum_es_CL.ts \
+  qt/locale/paladeum_es_CO.ts \
+  qt/locale/paladeum_es_DO.ts \
+  qt/locale/paladeum_es_ES.ts \
+  qt/locale/paladeum_es_MX.ts \
+  qt/locale/paladeum_es.ts \
+  qt/locale/paladeum_es_UY.ts \
+  qt/locale/paladeum_es_VE.ts \
+  qt/locale/paladeum_et_EE.ts \
+  qt/locale/paladeum_et.ts \
+  qt/locale/paladeum_eu_ES.ts \
+  qt/locale/paladeum_fa_IR.ts \
+  qt/locale/paladeum_fa.ts \
+  qt/locale/paladeum_fi.ts \
+  qt/locale/paladeum_fr_CA.ts \
+  qt/locale/paladeum_fr_FR.ts \
+  qt/locale/paladeum_fr.ts \
+  qt/locale/paladeum_gl.ts \
+  qt/locale/paladeum_he.ts \
+  qt/locale/paladeum_hi_IN.ts \
+  qt/locale/paladeum_hr.ts \
+  qt/locale/paladeum_hu.ts \
+  qt/locale/paladeum_id_ID.ts \
+  qt/locale/paladeum_it_IT.ts \
+  qt/locale/paladeum_it.ts \
+  qt/locale/paladeum_ja.ts \
+  qt/locale/paladeum_ka.ts \
+  qt/locale/paladeum_kk_KZ.ts \
+  qt/locale/paladeum_ko_KR.ts \
+  qt/locale/paladeum_ku_IQ.ts \
+  qt/locale/paladeum_ky.ts \
+  qt/locale/paladeum_la.ts \
+  qt/locale/paladeum_lt.ts \
+  qt/locale/paladeum_lv_LV.ts \
+  qt/locale/paladeum_mk_MK.ts \
+  qt/locale/paladeum_mn.ts \
+  qt/locale/paladeum_ms_MY.ts \
+  qt/locale/paladeum_nb.ts \
+  qt/locale/paladeum_ne.ts \
+  qt/locale/paladeum_nl.ts \
+  qt/locale/paladeum_pl.ts \
+  qt/locale/paladeum_pt_BR.ts \
+  qt/locale/paladeum_pt_PT.ts \
+  qt/locale/paladeum_ro_RO.ts \
+  qt/locale/paladeum_ro.ts \
+  qt/locale/paladeum_ru_RU.ts \
+  qt/locale/paladeum_ru.ts \
+  qt/locale/paladeum_sk.ts \
+  qt/locale/paladeum_sl_SI.ts \
+  qt/locale/paladeum_sq.ts \
+  qt/locale/paladeum_sr@latin.ts \
+  qt/locale/paladeum_sr.ts \
+  qt/locale/paladeum_sv.ts \
+  qt/locale/paladeum_ta.ts \
+  qt/locale/paladeum_th_TH.ts \
+  qt/locale/paladeum_tr_TR.ts \
+  qt/locale/paladeum_tr.ts \
+  qt/locale/paladeum_uk.ts \
+  qt/locale/paladeum_ur_PK.ts \
+  qt/locale/paladeum_uz@Cyrl.ts \
+  qt/locale/paladeum_vi.ts \
+  qt/locale/paladeum_vi_VN.ts \
+  qt/locale/paladeum_zh_CN.ts \
+  qt/locale/paladeum_zh_HK.ts \
+  qt/locale/paladeum_zh.ts \
+  qt/locale/paladeum_zh_TW.ts
 
 QT_FORMS_UI = \
   qt/forms/addressbookpage.ui \
@@ -133,10 +133,10 @@ QT_MOC_CPP = \
   qt/moc_tokencontroltreewidget.cpp \
   qt/moc_tokenfilterproxy.cpp \
   qt/moc_bantablemodel.cpp \
-  qt/moc_akilaaddressvalidator.cpp \
-  qt/moc_akilaamountfield.cpp \
-  qt/moc_akilagui.cpp \
-  qt/moc_akilaunits.cpp \
+  qt/moc_paladeumaddressvalidator.cpp \
+  qt/moc_paladeumamountfield.cpp \
+  qt/moc_paladeumgui.cpp \
+  qt/moc_paladeumunits.cpp \
   qt/moc_callback.cpp \
   qt/moc_clientmodel.cpp \
   qt/moc_coincontroldialog.cpp \
@@ -188,28 +188,28 @@ QT_MOC_CPP = \
   qt/moc_sendtokensentry.cpp \
   qt/moc_mnemonicdialog.cpp
 
-AKILA_MM = \
+PLD_MM = \
   qt/macdockiconhandler.mm \
   qt/macnotificationhandler.mm
 
 QT_MOC = \
-  qt/akila.moc \
-  qt/akilaamountfield.moc \
+  qt/paladeum.moc \
+  qt/paladeumamountfield.moc \
   qt/callback.moc \
   qt/intro.moc \
   qt/overviewpage.moc \
   qt/rpcconsole.moc
 
-QT_QRC_CPP = qt/qrc_akila.cpp
-QT_QRC = qt/akila.qrc
-QT_QRC_LOCALE_CPP = qt/qrc_akila_locale.cpp
-QT_QRC_LOCALE = qt/akila_locale.qrc
+QT_QRC_CPP = qt/qrc_paladeum.cpp
+QT_QRC = qt/paladeum.qrc
+QT_QRC_LOCALE_CPP = qt/qrc_paladeum_locale.cpp
+QT_QRC_LOCALE = qt/paladeum_locale.qrc
 
 PROTOBUF_CC = qt/paymentrequest.pb.cc
 PROTOBUF_H = qt/paymentrequest.pb.h
 PROTOBUF_PROTO = qt/paymentrequest.proto
 
-AKILA_QT_H = \
+PLD_QT_H = \
   qt/addressbookpage.h \
   qt/addresstablemodel.h \
   qt/askpassphrasedialog.h \
@@ -220,10 +220,10 @@ AKILA_QT_H = \
   qt/tokensdialog.h \
   qt/createtokendialog.h \
   qt/bantablemodel.h \
-  qt/akilaaddressvalidator.h \
-  qt/akilaamountfield.h \
-  qt/akilagui.h \
-  qt/akilaunits.h \
+  qt/paladeumaddressvalidator.h \
+  qt/paladeumamountfield.h \
+  qt/paladeumgui.h \
+  qt/paladeumunits.h \
   qt/callback.h \
   qt/clientmodel.h \
   qt/coincontroldialog.h \
@@ -292,10 +292,10 @@ RES_ICONS = \
   qt/res/icons/token_overview.png \
   qt/res/icons/token_manage.png \
   qt/res/icons/token_transfer.png \
-  qt/res/icons/akila.ico \
-  qt/res/icons/akila_testnet.ico \
-  qt/res/icons/akila.png \
-  qt/res/icons/akila_white.png \
+  qt/res/icons/paladeum.ico \
+  qt/res/icons/paladeum_testnet.ico \
+  qt/res/icons/paladeum.png \
+  qt/res/icons/paladeum_white.png \
   qt/res/icons/chevron.png \
   qt/res/icons/clock1.png \
   qt/res/icons/clock2.png \
@@ -386,12 +386,12 @@ RES_ICONS = \
   qt/res/fonts/OpenSans-SemiBoldItalic.ttf
 
 
-AKILA_QT_BASE_CPP = \
+PLD_QT_BASE_CPP = \
   qt/bantablemodel.cpp \
-  qt/akilaaddressvalidator.cpp \
-  qt/akilaamountfield.cpp \
-  qt/akilagui.cpp \
-  qt/akilaunits.cpp \
+  qt/paladeumaddressvalidator.cpp \
+  qt/paladeumamountfield.cpp \
+  qt/paladeumgui.cpp \
+  qt/paladeumunits.cpp \
   qt/clientmodel.cpp \
   qt/csvmodelwriter.cpp \
   qt/darkstyle.cpp \
@@ -413,9 +413,9 @@ AKILA_QT_BASE_CPP = \
   qt/trafficgraphwidget.cpp \
   qt/utilitydialog.cpp
 
-AKILA_QT_WINDOWS_CPP = qt/winshutdownmonitor.cpp
+PLD_QT_WINDOWS_CPP = qt/winshutdownmonitor.cpp
 
-AKILA_QT_WALLET_CPP = \
+PLD_QT_WALLET_CPP = \
   qt/addressbookpage.cpp \
   qt/addresstablemodel.cpp \
   qt/askpassphrasedialog.cpp \
@@ -456,31 +456,31 @@ AKILA_QT_WALLET_CPP = \
   qt/walletview.cpp \
   qt/mnemonicdialog.cpp
 
-AKILA_QT_CPP = $(AKILA_QT_BASE_CPP)
+PLD_QT_CPP = $(PLD_QT_BASE_CPP)
 if TARGET_WINDOWS
-AKILA_QT_CPP += $(AKILA_QT_WINDOWS_CPP)
+PLD_QT_CPP += $(PLD_QT_WINDOWS_CPP)
 endif
 if ENABLE_WALLET
-AKILA_QT_CPP += $(AKILA_QT_WALLET_CPP)
+PLD_QT_CPP += $(PLD_QT_WALLET_CPP)
 endif
 
 RES_IMAGES = 
 
 RES_MOVIES = $(wildcard $(srcdir)/qt/res/movies/spinner-*.png)
 
-AKILA_RC = qt/res/akila-qt-res.rc
+PLD_RC = qt/res/paladeum-qt-res.rc
 
-AKILA_QT_INCLUDES = -I$(builddir)/qt -I$(srcdir)/qt -I$(srcdir)/qt/forms \
+PLD_QT_INCLUDES = -I$(builddir)/qt -I$(srcdir)/qt -I$(srcdir)/qt/forms \
   -I$(builddir)/qt/forms -DQT_NO_KEYWORDS
 
-qt_libakilaqt_a_CPPFLAGS = $(AM_CPPFLAGS) $(AKILA_INCLUDES) $(AKILA_QT_INCLUDES) \
+qt_libpaladeumqt_a_CPPFLAGS = $(AM_CPPFLAGS) $(PLD_INCLUDES) $(PLD_QT_INCLUDES) \
   $(QT_INCLUDES) $(QT_DBUS_INCLUDES) $(PROTOBUF_CFLAGS) $(QR_CFLAGS)
-qt_libakilaqt_a_CXXFLAGS = $(AM_CXXFLAGS) $(QT_PIE_FLAGS)
+qt_libpaladeumqt_a_CXXFLAGS = $(AM_CXXFLAGS) $(QT_PIE_FLAGS)
 
-qt_libakilaqt_a_SOURCES = $(AKILA_QT_CPP) $(AKILA_QT_H) $(QT_FORMS_UI) \
+qt_libpaladeumqt_a_SOURCES = $(PLD_QT_CPP) $(PLD_QT_H) $(QT_FORMS_UI) \
   $(QT_QRC) $(QT_QRC_LOCALE) $(QT_TS) $(PROTOBUF_PROTO) $(RES_ICONS) $(RES_IMAGES) $(RES_MOVIES)
 
-nodist_qt_libakilaqt_a_SOURCES = $(QT_MOC_CPP) $(QT_MOC) $(PROTOBUF_CC) \
+nodist_qt_libpaladeumqt_a_SOURCES = $(QT_MOC_CPP) $(QT_MOC) $(PROTOBUF_CC) \
   $(PROTOBUF_H) $(QT_QRC_CPP) $(QT_QRC_LOCALE_CPP)
 
 # forms/foo.h -> forms/ui_foo.h
@@ -489,71 +489,71 @@ QT_FORMS_H=$(join $(dir $(QT_FORMS_UI)),$(addprefix ui_, $(notdir $(QT_FORMS_UI:
 # Most files will depend on the forms and moc files as includes. Generate them
 # before anything else.
 $(QT_MOC): $(QT_FORMS_H)
-$(qt_libakilaqt_a_OBJECTS) $(qt_akila_qt_OBJECTS) : | $(QT_MOC)
+$(qt_libpaladeumqt_a_OBJECTS) $(qt_paladeum_qt_OBJECTS) : | $(QT_MOC)
 
 #Generating these with a half-written protobuf header leads to wacky results.
 #This makes sure it's done.
 $(QT_MOC): $(PROTOBUF_H)
 $(QT_MOC_CPP): $(PROTOBUF_H)
 
-# akila-qt binary #
-qt_akila_qt_CPPFLAGS = $(AM_CPPFLAGS) $(AKILA_INCLUDES) $(AKILA_QT_INCLUDES) \
+# paladeum-qt binary #
+qt_paladeum_qt_CPPFLAGS = $(AM_CPPFLAGS) $(PLD_INCLUDES) $(PLD_QT_INCLUDES) \
   $(QT_INCLUDES) $(PROTOBUF_CFLAGS) $(QR_CFLAGS)
-qt_akila_qt_CXXFLAGS = $(AM_CXXFLAGS) $(QT_PIE_FLAGS)
+qt_paladeum_qt_CXXFLAGS = $(AM_CXXFLAGS) $(QT_PIE_FLAGS)
 
-qt_akila_qt_SOURCES = qt/akila.cpp
+qt_paladeum_qt_SOURCES = qt/paladeum.cpp
 if TARGET_DARWIN
-  qt_akila_qt_SOURCES += $(AKILA_MM)
+  qt_paladeum_qt_SOURCES += $(PLD_MM)
 endif
 if TARGET_WINDOWS
-  qt_akila_qt_SOURCES += $(AKILA_RC)
+  qt_paladeum_qt_SOURCES += $(PLD_RC)
 endif
-qt_akila_qt_LDADD = qt/libakilaqt.a $(LIBAKILA_SERVER)
+qt_paladeum_qt_LDADD = qt/libpaladeumqt.a $(LIBPLD_SERVER)
 if ENABLE_WALLET
-qt_akila_qt_LDADD += $(LIBAKILA_WALLET)
+qt_paladeum_qt_LDADD += $(LIBPLD_WALLET)
 endif
 if ENABLE_ZMQ
-qt_akila_qt_LDADD += $(LIBAKILA_ZMQ) $(ZMQ_LIBS)
+qt_paladeum_qt_LDADD += $(LIBPLD_ZMQ) $(ZMQ_LIBS)
 endif
-qt_akila_qt_LDADD += $(LIBAKILA_CLI) $(LIBAKILA_COMMON) $(LIBAKILA_UTIL) $(LIBAKILA_CONSENSUS) $(LIBAKILA_CRYPTO) $(LIBUNIVALUE) $(LIBLEVELDB) $(LIBLEVELDB_SSE42) $(LIBMEMENV) \
+qt_paladeum_qt_LDADD += $(LIBPLD_CLI) $(LIBPLD_COMMON) $(LIBPLD_UTIL) $(LIBPLD_CONSENSUS) $(LIBPLD_CRYPTO) $(LIBUNIVALUE) $(LIBLEVELDB) $(LIBLEVELDB_SSE42) $(LIBMEMENV) \
   $(BOOST_LIBS) $(QT_LIBS) $(QT_DBUS_LIBS) $(QR_LIBS) $(PROTOBUF_LIBS) $(BDB_LIBS) $(SSL_LIBS) $(CRYPTO_LIBS) $(MINIUPNPC_LIBS) $(LIBSECP256K1) \
   $(EVENT_PTHREADS_LIBS) $(EVENT_LIBS)
-qt_akila_qt_LDFLAGS = $(RELDFLAGS) $(AM_LDFLAGS) $(QT_LDFLAGS) $(LIBTOOL_APP_LDFLAGS)
-qt_akila_qt_LIBTOOLFLAGS = --tag CXX
+qt_paladeum_qt_LDFLAGS = $(RELDFLAGS) $(AM_LDFLAGS) $(QT_LDFLAGS) $(LIBTOOL_APP_LDFLAGS)
+qt_paladeum_qt_LIBTOOLFLAGS = --tag CXX
 
 #locale/foo.ts -> locale/foo.qm
 QT_QM=$(QT_TS:.ts=.qm)
 
 SECONDARY: $(QT_QM)
 
-$(srcdir)/qt/akilastrings.cpp: $(libakila_server_a_SOURCES) $(libakila_wallet_a_SOURCES) $(libakila_common_a_SOURCES) $(libakila_zmq_a_SOURCES) $(libakila_consensus_a_SOURCES) $(libakila_util_a_SOURCES)
+$(srcdir)/qt/paladeumstrings.cpp: $(libpaladeum_server_a_SOURCES) $(libpaladeum_wallet_a_SOURCES) $(libpaladeum_common_a_SOURCES) $(libpaladeum_zmq_a_SOURCES) $(libpaladeum_consensus_a_SOURCES) $(libpaladeum_util_a_SOURCES)
 	@test -n $(XGETTEXT) || echo "xgettext is required for updating translations"
 	$(AM_V_GEN) cd $(srcdir); XGETTEXT=$(XGETTEXT) PACKAGE_NAME="$(PACKAGE_NAME)" COPYRIGHT_HOLDERS="$(COPYRIGHT_HOLDERS)" COPYRIGHT_HOLDERS_SUBSTITUTION="$(COPYRIGHT_HOLDERS_SUBSTITUTION)" $(PYTHON) ../share/qt/extract_strings_qt.py $^
 
-translate: $(srcdir)/qt/akilastrings.cpp $(QT_FORMS_UI) $(QT_FORMS_UI) $(AKILA_QT_BASE_CPP) qt/akila.cpp $(AKILA_QT_WINDOWS_CPP) $(AKILA_QT_WALLET_CPP) $(AKILA_QT_H) $(AKILA_MM)
+translate: $(srcdir)/qt/paladeumstrings.cpp $(QT_FORMS_UI) $(QT_FORMS_UI) $(PLD_QT_BASE_CPP) qt/paladeum.cpp $(PLD_QT_WINDOWS_CPP) $(PLD_QT_WALLET_CPP) $(PLD_QT_H) $(PLD_MM)
 	@test -n $(LUPDATE) || echo "lupdate is required for updating translations"
-	$(AM_V_GEN) QT_SELECT=$(QT_SELECT) $(LUPDATE) $^ -locations relative -no-obsolete -ts $(srcdir)/qt/locale/akila_en.ts
+	$(AM_V_GEN) QT_SELECT=$(QT_SELECT) $(LUPDATE) $^ -locations relative -no-obsolete -ts $(srcdir)/qt/locale/paladeum_en.ts
 
 $(QT_QRC_LOCALE_CPP): $(QT_QRC_LOCALE) $(QT_QM)
 	@test -f $(RCC)
 	@cp -f $< $(@D)/temp_$(<F)
-	$(AM_V_GEN) QT_SELECT=$(QT_SELECT) $(RCC) -name akila_locale $(@D)/temp_$(<F) | \
+	$(AM_V_GEN) QT_SELECT=$(QT_SELECT) $(RCC) -name paladeum_locale $(@D)/temp_$(<F) | \
 	  $(SED) -e '/^\*\*.*Created:/d' -e '/^\*\*.*by:/d' > $@
 	@rm $(@D)/temp_$(<F)
 
 $(QT_QRC_CPP): $(QT_QRC) $(QT_FORMS_H) $(RES_ICONS) $(RES_IMAGES) $(RES_MOVIES) $(PROTOBUF_H)
 	@test -f $(RCC)
-	$(AM_V_GEN) QT_SELECT=$(QT_SELECT) $(RCC) -name akila $< | \
+	$(AM_V_GEN) QT_SELECT=$(QT_SELECT) $(RCC) -name paladeum $< | \
 	  $(SED) -e '/^\*\*.*Created:/d' -e '/^\*\*.*by:/d' > $@
 
-CLEAN_QT = $(nodist_qt_libakilaqt_a_SOURCES) $(QT_QM) $(QT_FORMS_H) qt/*.gcda qt/*.gcno
+CLEAN_QT = $(nodist_qt_libpaladeumqt_a_SOURCES) $(QT_QM) $(QT_FORMS_H) qt/*.gcda qt/*.gcno
 
 CLEANFILES += $(CLEAN_QT)
 
-akila_qt_clean: FORCE
-	rm -f $(CLEAN_QT) $(qt_libakilaqt_a_OBJECTS) $(qt_akila_qt_OBJECTS) qt/akila-qt$(EXEEXT) $(LIBAKILAQT)
+paladeum_qt_clean: FORCE
+	rm -f $(CLEAN_QT) $(qt_libpaladeumqt_a_OBJECTS) $(qt_paladeum_qt_OBJECTS) qt/paladeum-qt$(EXEEXT) $(LIBPLDQT)
 
-akila_qt : qt/akila-qt$(EXEEXT)
+paladeum_qt : qt/paladeum-qt$(EXEEXT)
 
 ui_%.h: %.ui
 	@test -f $(UIC)
