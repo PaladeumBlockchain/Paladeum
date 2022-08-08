@@ -717,8 +717,6 @@ std::unique_ptr<CBlockTemplate> BlockAssembler::CreateNewBlock(const CScript& sc
 
     // Fill in header
     pblock->hashPrevBlock  = pindexPrev->GetIndexHash();
-    pblock->nNonce64         = 0;
-    pblock->nHeight          = nHeight;
 
     if (!fProofOfStake) {
         UpdateTime(pblock, chainparams.GetConsensus(), pindexPrev);
@@ -726,7 +724,7 @@ std::unique_ptr<CBlockTemplate> BlockAssembler::CreateNewBlock(const CScript& sc
     
     pblocktemplate->vTxSigOpsCost[0] = WITNESS_SCALE_FACTOR * GetLegacySigOpCount(*pblock->vtx[0]);
 
-    pblock->nBits = GetNextWorkRequired(pindexPrev, chainparams.GetConsensus(), fProofOfStake);
+    pblock->nBits = GetNextTargetRequired(pindexPrev, pblock, fProofOfStake, chainparams.GetConsensus());
 
     CValidationState state;
     if (!fProofOfStake && !TestBlockValidity(state, chainparams, *pblock, pindexPrev, false, false)) {
@@ -874,13 +872,11 @@ void static SoloMiner(const CChainParams& chainparams)
             {
 
                 uint256 hash;
-                uint256 mix_hash;
                 while (true)
                 {
-                    hash = pblock->GetWorkHash(mix_hash);
+                    hash = pblock->GetWorkHash();
                     if (UintToArith256(hash) <= hashTarget)
                     {
-                        pblock->mix_hash = mix_hash;
                         // Found a solution
                         SetThreadPriority(THREAD_PRIORITY_NORMAL);
                         LogPrintf("SoloMiner:\n  proof-of-work found\n  hash: %s\n  target: %s\n", hash.GetHex(), hashTarget.GetHex());
@@ -895,12 +891,12 @@ void static SoloMiner(const CChainParams& chainparams)
 
                         break;
                     }
-                    pblock->nNonce64 += 1;
+                    pblock->nNonce += 1;
                     nHashesDone += 1;
                     if (nHashesDone % 500000 == 0) {   //Calculate hashing speed
                         nHashesPerSec = nHashesDone / (((GetTimeMicros() - nMiningTimeStart) / 1000000) + 1);
                     } 
-                    if ((pblock->nNonce64 & 0xFF) == 0)
+                    if ((pblock->nNonce & 0xFF) == 0)
                         break;
                 }
 
@@ -909,7 +905,7 @@ void static SoloMiner(const CChainParams& chainparams)
                 // Regtest mode doesn't require peers
                 //if (vNodes.empty() && chainparams.MiningRequiresPeers())
                 //    break;
-                if (pblock->nNonce64 >= 0xffff0000)
+                if (pblock->nNonce >= 0xffff0000)
                     break;
                 if (mempool.GetTransactionsUpdated() != nTransactionsUpdatedLast && GetTime() - nStart > 60)
                     break;

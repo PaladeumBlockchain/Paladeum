@@ -42,11 +42,7 @@ public:
     uint256 hashMerkleRoot;
     uint32_t nTime;
     uint32_t nBits;
-    
-    // KAWPOW
-    uint32_t nHeight;
-    uint64_t nNonce64;
-    uint256 mix_hash;
+    uint32_t nNonce;
 
     CBlockHeader()
     {
@@ -62,11 +58,9 @@ public:
         READWRITE(hashMerkleRoot);
         READWRITE(nTime);
         READWRITE(nBits);
+        READWRITE(nNonce);
 
-        // KAWPOW
-        READWRITE(nHeight);
-        READWRITE(nNonce64);
-        READWRITE(mix_hash);
+
     }
 
     void SetNull()
@@ -76,11 +70,7 @@ public:
         hashMerkleRoot.SetNull();
         nTime = 0;
         nBits = 0;
-
-        // KAWPOW
-        nNonce64 = 0;
-        nHeight = 0;
-        mix_hash.SetNull();
+        nNonce = 0;
     }
 
     bool IsNull() const
@@ -90,9 +80,7 @@ public:
 
     uint256 GetIndexHash() const;
 
-    uint256 GetWorkHash(uint256& mix_hash) const;
-
-    uint256 GetKAWPOWHeaderHash() const;
+    uint256 GetWorkHash() const;
 
     std::string ToString() const;
 
@@ -162,11 +150,7 @@ public:
         block.hashMerkleRoot = hashMerkleRoot;
         block.nTime          = nTime;
         block.nBits          = nBits;
-        
-        // KAWPOW
-        block.nHeight        = nHeight;
-        block.nNonce64       = nNonce64;
-        block.mix_hash       = mix_hash;
+        block.nNonce         = nNonce;
 
         return block;
     }
@@ -209,32 +193,6 @@ struct CBlockLocator
     bool IsNull() const
     {
         return vHave.empty();
-    }
-};
-
-/**
- * Custom serializer for CBlockHeader that omits the nNonce and mixHash, for use
- * as input to ProgPow.
- */
-class CKAWPOWInput : private CBlockHeader
-{
-public:
-    CKAWPOWInput(const CBlockHeader &header)
-    {
-        CBlockHeader::SetNull();
-        *((CBlockHeader*)this) = header;
-    }
-
-    ADD_SERIALIZE_METHODS;
-
-    template <typename Stream, typename Operation>
-    inline void SerializationOp(Stream& s, Operation ser_action) {
-        READWRITE(this->nVersion);
-        READWRITE(hashPrevBlock);
-        READWRITE(hashMerkleRoot);
-        READWRITE(nTime);
-        READWRITE(nBits);
-        READWRITE(nHeight);
     }
 };
 

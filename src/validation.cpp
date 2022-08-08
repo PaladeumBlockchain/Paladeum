@@ -1295,8 +1295,7 @@ bool ReadBlockFromDisk(CBlock& block, const CDiskBlockPos& pos, const Consensus:
 
     // Check the header
     
-    uint256 mix_hash;
-    if (block.IsProofOfWork() && !CheckProofOfWork(block.GetWorkHash(mix_hash), block.nBits, consensusParams))
+    if (block.IsProofOfWork() && !CheckProofOfWork(block.GetWorkHash(), block.nBits, consensusParams))
         return error("ReadBlockFromDisk: Errors in block header at %s", pos.ToString());
 
     return true;
@@ -2465,7 +2464,7 @@ static bool ConnectBlock(const CBlock& block, CValidationState& state, CBlockInd
         return true;
     }
 
-    if (block.nBits != GetNextWorkRequired(pindex->pprev, chainparams.GetConsensus(), block.IsProofOfStake())) {
+    if (block.nBits != GetNextTargetRequired(pindex->pprev, &block, block.IsProofOfStake(), chainparams.GetConsensus())) {
         return state.DoS(100, false, REJECT_INVALID, "bad-diffbits", false, "incorrect difficulty value");
     }
 
@@ -4155,13 +4154,8 @@ static bool CheckBlockHeader(const CBlockHeader& block, CValidationState& state,
     }
 
     // Check proof of work matches claimed amount
-    uint256 mix_hash;
-    if (fCheckPOW && !CheckProofOfWork(block.GetWorkHash(mix_hash), block.nBits, consensusParams)) {
+    if (fCheckPOW && !CheckProofOfWork(block.GetWorkHash(), block.nBits, consensusParams)) {
         return state.DoS(50, false, REJECT_INVALID, "high-hash", false, "proof of work failed");
-    }
-
-    if (fCheckPOW && block.nHeight > 0 && mix_hash != block.mix_hash) {
-        return state.DoS(50, false, REJECT_INVALID, "invalid-mix-hash", false, "mix_hash validity failed");
     }
 
     // Check timestamp
