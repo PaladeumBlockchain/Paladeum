@@ -194,6 +194,7 @@ bool CGovernance::Init(bool fWipe, const CChainParams& chainparams) {
         batch.Write(DB_NUMBER_FROZEN, 0);
 
         // Add dummy entries will be first for searching the database
+        batch.Write(AuthorityEntry(), AuthorityDetails());
         batch.Write(FreezeEntry(), FreezeDetails());
         batch.Write(CostEntry(), CostDetails());
 
@@ -208,6 +209,14 @@ bool CGovernance::Init(bool fWipe, const CChainParams& chainparams) {
         batch.Write(CostEntry(GOVERNANCE_COST_SUB_QUALIFIER, 0), CostDetails(chainparams.IssueSubQualifierTokenFeeAmount()));
         batch.Write(CostEntry(GOVERNANCE_COST_NULL_QUALIFIER, 0), CostDetails(chainparams.AddNullQualifierTagFeeAmount()));
         batch.Write(CostEntry(GOVERNANCE_COST_RESTRICTED, 0), CostDetails(chainparams.IssueRestrictedTokenFeeAmount()));
+
+        // Init PoS-A addresses
+        const std::set<std::string> init_authorized = chainparams.GetInitAuthorized();
+        for (auto auth_address : init_authorized) {
+            CTxDestination auth_destination = DecodeDestination(auth_address);
+            CScript authScript = GetScriptForDestination(auth_destination);
+            batch.Write(AuthorityEntry(authScript), AuthorityDetails(true));
+        }
 
         // Add initial token fee address from chainparams
         CTxDestination destination = DecodeDestination(GetParams().TokenFeeAddress());

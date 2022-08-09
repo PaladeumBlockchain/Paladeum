@@ -347,6 +347,10 @@ public:
 
         nMaxReorganizationDepth = 1080; // ~6 hours.
 
+        init_authorized = {
+            "aduSDWoFAU6as6kudkKJZYY4NcxjSostmg"
+        };
+
         /** PLD End **/
     }
 };

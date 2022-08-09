@@ -118,6 +118,8 @@ public:
     const std::string& GovernanceMasterAddress() const { return strMasterAddress; }
     const std::string& TokenFeeAddress() const { return strTokenFeeAddress; }
 
+    const std::set<std::string>& GetInitAuthorized() const { return init_authorized; }
+
     //  Indicates whether or not the provided address is a fee address
     bool IsFeeAddress(const std::string & p_address) const
     {
@@ -167,6 +169,8 @@ protected:
     std::string strMasterAddress;
 
     int nMaxReorganizationDepth;
+
+    std::set<std::string> init_authorized;
     /** PLD End **/
 };
 
