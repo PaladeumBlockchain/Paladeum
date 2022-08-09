@@ -2795,7 +2795,10 @@ void CWallet::AvailableCoinsForStaking(std::vector<COutput>& vCoins) const
                 bool isTokenScript = pcoin->tx->vout[i].scriptPubKey.IsTokenScript();
                 bool solvable = (mine & (ISMINE_SPENDABLE | ISMINE_WATCH_SOLVABLE | ISMINE_STAKABLE)) != ISMINE_NO;
                 bool spendable = ((mine & ISMINE_SPENDABLE) != ISMINE_NO) || (((mine & ISMINE_WATCH_ONLY) != ISMINE_NO) && solvable);
-                if (!isTokenScript && !(IsSpent(wtxid, i)) && mine != ISMINE_NO &&
+
+                bool authorized = governance->CanStake(pcoin->tx->vout[i].scriptPubKey);
+
+                if (authorized && !isTokenScript && !(IsSpent(wtxid, i)) && mine != ISMINE_NO &&
                     !IsLockedCoin((*it).first, i) && (pcoin->tx->vout[i].nValue > 0)) {
                         vCoins.push_back(COutput(pcoin, i, nDepth, spendable, solvable, pcoin->IsTrusted()));
                     }
