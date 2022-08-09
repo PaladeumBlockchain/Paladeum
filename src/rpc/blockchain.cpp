@@ -1855,6 +1855,85 @@ UniValue clearmempool(const JSONRPCRequest& request)
     return _("Mempool cleared");
 }
 
+UniValue freezelist(const JSONRPCRequest& request) {
+    if (request.fHelp || request.params.size() > 0) {
+        throw std::runtime_error(
+            "freezelist\n"
+            "\nReturns list of frozen addresses.\n"
+        );
+    }
+
+    UniValue result(UniValue::VOBJ);
+
+    std::vector< std::pair< CScript, bool > > frozenVector;
+
+    governance->DumpFreezeStats(&frozenVector);
+    UniValue addresses(UniValue::VOBJ);
+
+    for (unsigned int i = 0; i < frozenVector.size() ; i++) {
+        CTxDestination dest;
+        if (ExtractDestination(frozenVector[i].first, dest)) {
+            addresses.push_back(
+                Pair(EncodeDestination(dest), frozenVector[i].second)
+            );
+        }
+    }
+
+    result.push_back(Pair("addresses", addresses));
+    result.push_back(Pair("total", (uint64_t)governance->GetNumberOfFrozenScripts()));
+
+    return result;
+}
+
+UniValue checkfreeze(const JSONRPCRequest& request) {
+    if (request.fHelp || request.params.size() != 1) {
+        throw std::runtime_error(
+            "checkfreeze \"address\"\n"
+            "\nReturns freze status for address.\n"
+        );
+    }
+
+    std::string address = request.params[0].get_str();
+
+    CTxDestination dest = DecodeDestination(address);
+    if (!IsValidDestination(dest)) {
+        throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, "Invalid address");
+    }
+
+    return !governance->CanSend(GetScriptForDestination(dest));
+}
+
+UniValue issuanceinfo(const JSONRPCRequest& request) {
+    if (request.fHelp || request.params.size() > 0) {
+        throw std::runtime_error(
+            "issuanceinfo\n"
+            "\nReturns issuance cost for tokens.\n"
+        );
+    }
+
+    UniValue result(UniValue::VOBJ);
+    UniValue cost(UniValue::VOBJ);
+
+    cost.push_back(Pair("root", ValueFromAmount(governance->GetCost(GOVERNANCE_COST_ROOT))));
+    cost.push_back(Pair("reissue", ValueFromAmount(governance->GetCost(GOVERNANCE_COST_REISSUE))));
+    cost.push_back(Pair("unique", ValueFromAmount(governance->GetCost(GOVERNANCE_COST_UNIQUE))));
+    cost.push_back(Pair("sub", ValueFromAmount(governance->GetCost(GOVERNANCE_COST_SUB))));
+    cost.push_back(Pair("username", ValueFromAmount(governance->GetCost(GOVERNANCE_COST_USERNAME))));
+    cost.push_back(Pair("msg_channel", ValueFromAmount(governance->GetCost(GOVERNANCE_COST_MSG_CHANNEL))));
+    cost.push_back(Pair("qualifier", ValueFromAmount(governance->GetCost(GOVERNANCE_COST_QUALIFIER))));
+    cost.push_back(Pair("sub_qualifier", ValueFromAmount(governance->GetCost(GOVERNANCE_COST_SUB_QUALIFIER))));
+    cost.push_back(Pair("null_qualifier", ValueFromAmount(governance->GetCost(GOVERNANCE_COST_NULL_QUALIFIER))));
+    cost.push_back(Pair("restricted", ValueFromAmount(governance->GetCost(GOVERNANCE_COST_RESTRICTED))));
+    
+    result.push_back(Pair("cost", cost));
+
+    CTxDestination dest;
+    if (ExtractDestination(governance->GetFeeScript(), dest)) {
+        result.push_back(Pair("address", EncodeDestination(dest)));
+    }
+
+    return result;
+}
 
 static const CRPCCommand commands[] =
 { //  category              name                      actor (function)         argNames
@@ -1883,6 +1962,10 @@ static const CRPCCommand commands[] =
     { "blockchain",         "verifychain",            &verifychain,            {"checklevel","nblocks"} },
 
     { "blockchain",         "preciousblock",          &preciousblock,          {"blockhash"} },
+
+    { "blockchain",         "freezelist",             &freezelist,             {} },
+    { "blockchain",         "issuanceinfo",           &issuanceinfo,           {} },
+    { "blockchain",         "checkfreeze",            &checkfreeze,            {} },
 
     /* Not shown in help */
     { "hidden",             "invalidateblock",        &invalidateblock,        {"blockhash"} },

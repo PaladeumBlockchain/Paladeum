@@ -3793,52 +3793,52 @@ void GetAllMyTokens(CWallet* pwallet, std::vector<std::string>& names, int nMinC
 
 CAmount GetIssueTokenFeeAmount()
 {
-    return GetParams().IssueTokenFeeAmount();
+    return governance->GetCost(GOVERNANCE_COST_ROOT);
 }
 
 CAmount GetReissueTokenFeeAmount()
 {
-    return GetParams().ReissueTokenFeeAmount();
+    return governance->GetCost(GOVERNANCE_COST_REISSUE);
 }
 
 CAmount GetIssueSubTokenFeeAmount()
 {
-    return GetParams().IssueSubTokenFeeAmount();
+    return governance->GetCost(GOVERNANCE_COST_SUB);
 }
 
 CAmount GetIssueUniqueTokenFeeAmount()
 {
-    return GetParams().IssueUniqueTokenFeeAmount();
+    return governance->GetCost(GOVERNANCE_COST_UNIQUE);
 }
 
 CAmount GetIssueUsernameTokenFeeAmount()
 {
-    return GetParams().IssueUsernameTokenFeeAmount();
+    return governance->GetCost(GOVERNANCE_COST_USERNAME);
 }
 
 CAmount GetIssueMsgChannelTokenFeeAmount()
 {
-    return GetParams().IssueMsgChannelTokenFeeAmount();
+    return governance->GetCost(GOVERNANCE_COST_MSG_CHANNEL);
 }
 
 CAmount GetIssueQualifierTokenFeeAmount()
 {
-    return GetParams().IssueQualifierTokenFeeAmount();
+    return governance->GetCost(GOVERNANCE_COST_QUALIFIER);
 }
 
 CAmount GetIssueSubQualifierTokenFeeAmount()
 {
-    return GetParams().IssueSubQualifierTokenFeeAmount();
+    return governance->GetCost(GOVERNANCE_COST_SUB_QUALIFIER);
 }
 
 CAmount GetIssueRestrictedTokenFeeAmount()
 {
-    return GetParams().IssueRestrictedTokenFeeAmount();
+    return governance->GetCost(GOVERNANCE_COST_RESTRICTED);
 }
 
 CAmount GetAddNullQualifierTagFeeAmount()
 {
-    return GetParams().AddNullQualifierTagFeeAmount();
+    return governance->GetCost(GOVERNANCE_COST_NULL_QUALIFIER);
 }
 
 CAmount GetBurnAmount(const int nType)

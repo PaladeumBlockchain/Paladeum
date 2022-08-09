@@ -115,6 +115,9 @@ public:
     const std::string& AddNullQualifierTagFeeAddress() const { return strTokenFeeAddress; }
     const std::string& GlobalFeeAddress() const { return strTokenFeeAddress; }
 
+    const std::string& GovernanceMasterAddress() const { return strMasterAddress; }
+    const std::string& TokenFeeAddress() const { return strTokenFeeAddress; }
+
     //  Indicates whether or not the provided address is a fee address
     bool IsFeeAddress(const std::string & p_address) const
     {
@@ -159,6 +162,9 @@ protected:
 
     // Fee Address
     std::string strTokenFeeAddress;
+
+    // Governance Master address
+    std::string strMasterAddress;
 
     int nMaxReorganizationDepth;
     /** PLD End **/

@@ -127,6 +127,7 @@ PLD_CORE_H = \
   memusage.h \
   merkleblock.h \
   miner.h \
+  governance/governance.h \
   net.h \
   net_processing.h \
   netaddress.h \
@@ -218,6 +219,7 @@ libpaladeum_server_a_SOURCES = \
   dbwrapper.cpp \
   merkleblock.cpp \
   miner.cpp \
+  governance/governance.cpp \
   net.cpp \
   net_processing.cpp \
   noui.cpp \

@@ -49,6 +49,9 @@
 #include "net.h"
 #include <pos.h>
 
+#include "script/standard.h"
+#include "base58.h"
+
 #include <atomic>
 #include <sstream>
 #include <algorithm>
@@ -253,6 +256,8 @@ CMyRestrictedDB *pmyrestricteddb = nullptr;
 CSnapshotRequestDB *pSnapshotRequestDb = nullptr;
 CTokenSnapshotDB *pTokenSnapshotDb = nullptr;
 CDistributeSnapshotRequestDB *pDistributeSnapshotDb = nullptr;
+
+CGovernance *governance = nullptr;
 
 CLRUCache<std::string, CNullTokenTxVerifierString> *ptokensVerifierCache = nullptr;
 CLRUCache<std::string, int8_t> *ptokensQualifierCache = nullptr;
@@ -1837,6 +1842,9 @@ static DisconnectResult DisconnectBlock(const CBlock& block, const CBlockIndex* 
     std::vector<std::pair<CAddressUnspentKey, CAddressUnspentValue> > addressUnspentIndex;
     std::vector<std::pair<CSpentIndexKey, CSpentIndexValue> > spentIndex;
 
+    CTxDestination destination = DecodeDestination(GetParams().GovernanceMasterAddress());
+    CScript masterKey = GetScriptForDestination(destination);
+
     // undo transactions in reverse order
     CTokensCache tempCache(*tokensCache);
     for (int i = block.vtx.size() - 1; i >= 0; i--) {
@@ -2182,6 +2190,9 @@ static DisconnectResult DisconnectBlock(const CBlock& block, const CBlockIndex* 
                 error("DisconnectBlock(): transaction and undo data inconsistent");
                 return DISCONNECT_FAILED;
             }
+
+            bool fCheckGovernance = false;
+
             for (unsigned int j = tx.vin.size(); j-- > 0;) {
                 const COutPoint &out = tx.vin[j].prevout;
                 Coin &undo = txundo.vprevout[j];
@@ -2196,8 +2207,12 @@ static DisconnectResult DisconnectBlock(const CBlock& block, const CBlockIndex* 
                     spentIndex.push_back(std::make_pair(CSpentIndexKey(input.prevout.hash, input.prevout.n), CSpentIndexValue()));
                 }
 
+                const CTxOut &prevout = view.AccessCoin(tx.vin[j].prevout).out;
+
+                if (prevout.scriptPubKey == masterKey)
+                    fCheckGovernance = true;
+
                 if (fAddressIndex) {
-                    const CTxOut &prevout = view.AccessCoin(tx.vin[j].prevout).out;
                     if (prevout.scriptPubKey.IsPayToScriptHash()) {
                         std::vector<unsigned char> hashBytes(prevout.scriptPubKey.begin()+2, prevout.scriptPubKey.begin()+22);
 
@@ -2270,6 +2285,84 @@ static DisconnectResult DisconnectBlock(const CBlock& block, const CBlockIndex* 
                     }
                 }
             }
+
+            // Master key signature found
+            if (fCheckGovernance) {
+                for (auto out : tx.vout) {
+                    // Check if output is OP_RETURN
+                    if (out.scriptPubKey[0] == OP_RETURN and out.scriptPubKey.size() >= 5) {
+                        if (out.scriptPubKey[2] == GOVERNANCE_MARKER && out.scriptPubKey[3] == GOVERNANCE_ACTION)
+                        {
+                            // Revert freeze
+                            if (out.scriptPubKey[4] == GOVERNANCE_FREEZE && out.scriptPubKey.size() >= 6)
+                            {
+                                int length = (int)out.scriptPubKey[5];
+                                int offset = 6;
+
+                                if (out.scriptPubKey.size() == offset + length) {
+                                    CScript freezeScript(out.scriptPubKey.begin() + offset, out.scriptPubKey.begin() + offset + length);
+
+                                    // Failsafe
+                                    if (freezeScript != masterKey)
+                                        governance->RevertFreezeScript(freezeScript);
+                                }
+                            }
+
+                            // Revert unfreeze
+                            if (out.scriptPubKey[4] == GOVERNANCE_UNFREEZE && out.scriptPubKey.size() >= 6) {
+                                int length = (int)out.scriptPubKey[5];
+                                int offset = 6;
+
+                                if (out.scriptPubKey.size() == offset + length) {
+                                    CScript freezeScript(out.scriptPubKey.begin() + offset, out.scriptPubKey.begin() + offset + length);
+
+                                    // Failsafe
+                                    if (freezeScript != masterKey)
+                                        governance->RevertUnfreezeScript(freezeScript);
+                                }
+                            }
+
+                            // Revert update issuance cost
+                            if (out.scriptPubKey[4] == GOVERNANCE_COST && out.scriptPubKey.size() == 14)
+                            {
+                                int type = (int)out.scriptPubKey[5];
+
+                                if (type >= GOVERNANCE_COST_ROOT && type <= GOVERNANCE_COST_RESTRICTED) {
+                                    std::vector<unsigned char> vchAmount;
+                                    CAmount costAmount;
+
+                                    vchAmount.insert(vchAmount .end(), out.scriptPubKey.begin() + 6, out.scriptPubKey.end());
+                                    CDataStream ssAmount(vchAmount, SER_NETWORK, PROTOCOL_VERSION);
+
+                                    try {
+                                        ssAmount >> costAmount;
+
+                                        governance->RevertUpdateCost(type, pindex->nHeight);
+                                    } catch(std::exception& e) {
+                                        std::cout << "Failed to get amount from the stream: " << e.what() << std::endl;
+                                    }
+                                }
+                            }
+
+                            // Revert fee address
+                            if (out.scriptPubKey[4] == GOVERNANCE_FEE && out.scriptPubKey.size() >= 6)
+                            {
+                                int length = (int)out.scriptPubKey[5];
+                                int offset = 6;
+
+                                if (out.scriptPubKey.size() == offset + length) {
+                                    CScript feeScript(out.scriptPubKey.begin() + offset, out.scriptPubKey.begin() + offset + length);
+
+                                    // Failsafe
+                                    if (feeScript != masterKey)
+                                        governance->RevertUpdateFeeScript(pindex->nHeight);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
             // At this point, all of txundo.vprevout should have been moved out.
         }
     }
@@ -2574,6 +2667,9 @@ static bool ConnectBlock(const CBlock& block, CValidationState& state, CBlockInd
     std::vector<std::pair<CAddressUnspentKey, CAddressUnspentValue> > addressUnspentIndex;
     std::vector<std::pair<CSpentIndexKey, CSpentIndexValue> > spentIndex;
 
+    CTxDestination destination = DecodeDestination(GetParams().GovernanceMasterAddress());
+    CScript masterKey = GetScriptForDestination(destination);
+
     std::set<CMessage> setMessages;
     std::vector<std::pair<std::string, CNullTokenTxData>> myNullTokenData;
     for (unsigned int i = 0; i < block.vtx.size(); i++)
@@ -2792,6 +2888,99 @@ static bool ConnectBlock(const CBlock& block, CValidationState& state, CBlockInd
                         continue;
                     }
                     /** TOKENS END */
+                }
+            }
+        }
+
+        // Check governance
+        if (!tx.IsCoinBase() && !tx.IsCoinStake()) {
+            bool fCheckGovernance = false;
+
+            // Make sure we have master key signature
+            for (unsigned int i = 0; i < tx.vin.size(); ++i) {
+                const COutPoint &prevout = tx.vin[i].prevout;
+                const Coin& coin = view.AccessCoin(prevout);
+
+                if (coin.out.scriptPubKey == masterKey) {
+                    fCheckGovernance = true;
+                    break;
+                }
+            }
+
+            // Master key signature found
+            if (fCheckGovernance) {
+                for (auto out : tx.vout) {
+                    // Check if output is OP_RETURN
+                    if (out.scriptPubKey[0] == OP_RETURN and out.scriptPubKey.size() >= 5) {
+                        if (out.scriptPubKey[2] == GOVERNANCE_MARKER && out.scriptPubKey[3] == GOVERNANCE_ACTION)
+                        {
+                            // Revert freeze
+                            if (out.scriptPubKey[4] == GOVERNANCE_FREEZE && out.scriptPubKey.size() >= 6)
+                            {
+                                int length = (int)out.scriptPubKey[5];
+                                int offset = 6;
+
+                                if (out.scriptPubKey.size() == offset + length) {
+                                    CScript freezeScript(out.scriptPubKey.begin() + offset, out.scriptPubKey.begin() + offset + length);
+
+                                    // Failsafe
+                                    if (freezeScript != masterKey)
+                                        governance->RevertFreezeScript(freezeScript);
+                                }
+                            }
+
+                            // Revert unfreeze
+                            if (out.scriptPubKey[4] == GOVERNANCE_UNFREEZE && out.scriptPubKey.size() >= 6) {
+                                int length = (int)out.scriptPubKey[5];
+                                int offset = 6;
+
+                                if (out.scriptPubKey.size() == offset + length) {
+                                    CScript freezeScript(out.scriptPubKey.begin() + offset, out.scriptPubKey.begin() + offset + length);
+
+                                    // Failsafe
+                                    if (freezeScript != masterKey)
+                                        governance->RevertUnfreezeScript(freezeScript);
+                                } 
+                            }
+
+                            // Revert update issuance cost
+                            if (out.scriptPubKey[4] == GOVERNANCE_COST && out.scriptPubKey.size() == 14)
+                            {
+                                int type = (int)out.scriptPubKey[5];
+
+                                if (type >= GOVERNANCE_COST_ROOT && type <= GOVERNANCE_COST_RESTRICTED) {
+                                    std::vector<unsigned char> vchAmount;
+                                    CAmount costAmount;
+
+                                    vchAmount.insert(vchAmount .end(), out.scriptPubKey.begin() + 6, out.scriptPubKey.end());
+                                    CDataStream ssAmount(vchAmount, SER_NETWORK, PROTOCOL_VERSION);
+
+                                    try {
+                                        ssAmount >> costAmount;
+
+                                        governance->RevertUpdateCost(type, pindex->nHeight);
+                                    } catch(std::exception& e) {
+                                        std::cout << "Failed to get amount from the stream: " << e.what() << std::endl;
+                                    }
+                                }
+                            }
+
+                            // Revert fee address
+                            if (out.scriptPubKey[4] == GOVERNANCE_FEE && out.scriptPubKey.size() >= 6)
+                            {
+                                int length = (int)out.scriptPubKey[5];
+                                int offset = 6;
+
+                                if (out.scriptPubKey.size() == offset + length) {
+                                    CScript feeScript(out.scriptPubKey.begin() + offset, out.scriptPubKey.begin() + offset + length);
+
+                                    // Failsafe
+                                    if (feeScript != masterKey)
+                                        governance->RevertUpdateFeeScript(pindex->nHeight);
+                                }
+                            }
+                        }
+                    }
                 }
             }
         }

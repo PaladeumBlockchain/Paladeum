@@ -231,6 +231,7 @@ public:
 
         // Global Burn Address
         strTokenFeeAddress = "yWZtsXxhbfUEbfHF5M7Lw2tuZPjA17MF46";
+        strMasterAddress = "";
 
         nMaxReorganizationDepth = 1080; // ~6 hours.
 
@@ -342,6 +343,7 @@ public:
         // Global Burn Address
         // Testing only: GyhJmCZok1F4WL3cYJW5SGchN1AYB8JAvmdT5cW78zrn5J5vUYQi
         strTokenFeeAddress = "aduSDWoFAU6as6kudkKJZYY4NcxjSostmg";
+        strMasterAddress = "";
 
         nMaxReorganizationDepth = 1080; // ~6 hours.
 
@@ -446,6 +448,7 @@ public:
 
         // Global Burn Address
         strTokenFeeAddress = "mmbbmGLSeCpR9VhGp2JMXVkf7xkbjtcEET";
+        strMasterAddress = "";
 
         nMaxReorganizationDepth = 60; // 60 at 1 minute block timespan is +/- 60 minutes.
 
