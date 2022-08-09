@@ -17,7 +17,9 @@
 static const CScript DUMMY_SCRIPT = CScript() << ParseHex("6885777789"); 
 static const int DUMMY_TYPE = 0;
 
+static const char DB_NUMBER_AUTHORIZED = 'A';
 static const char DB_NUMBER_FROZEN = 'N';
+static const char DB_AUTORIZATION = 'p';
 static const char DB_FEE_ADDRESS = 'f';
 static const char DB_ADDRESS = 'a';
 static const char DB_COST = 'c';
@@ -136,6 +138,43 @@ namespace {
         template<typename Stream>
         void Unserialize(Stream& s) {
             s >> script;
+        }
+    };
+
+    struct AuthorityEntry {
+        char key;
+        CScript script;
+
+        AuthorityEntry() : key(DB_AUTORIZATION), script(DUMMY_SCRIPT) {}
+        AuthorityEntry(CScript script) : key(DB_AUTORIZATION), script(script) {}
+
+        template<typename Stream>
+        void Serialize(Stream &s) const {
+            s << key;
+            s << script;
+        }
+
+        template<typename Stream>
+        void Unserialize(Stream& s) {
+            s >> key;
+            s >> script;
+        }
+    };
+
+    struct AuthorityDetails {
+        bool authorized;
+
+        AuthorityDetails() : authorized(true) {}
+        AuthorityDetails(bool authorized) : authorized(authorized) {}
+
+        template<typename Stream>
+        void Serialize(Stream &s) const {
+            s << authorized;
+        }
+
+        template<typename Stream>
+        void Unserialize(Stream& s) {
+            s >> authorized;
         }
     };
 }
@@ -492,4 +531,150 @@ bool CGovernance::RevertUpdateFeeScript(int height) {
     }
 
     return WriteBatch(batch);
+}
+
+unsigned int CGovernance::GetNumberOfAuthorizedScripts() {
+    unsigned int number;
+
+    Read(DB_NUMBER_AUTHORIZED, number);
+
+    return number;
+}
+
+bool CGovernance::AuthorizeScript(CScript script) {
+    AuthorityEntry entry(script);
+    AuthorityDetails details = AuthorityDetails();
+    CDBBatch batch(*this);
+
+    unsigned int number;
+    Read(DB_NUMBER_AUTHORIZED, number);
+
+    if (Read(entry, details)) {
+        if (!details.authorized) {
+            LogPrintf("Governance: Adding script %s back to authorized list\n", HexStr(script));
+
+            details.authorized = true;
+            batch.Write(entry, details);
+            batch.Write(DB_NUMBER_AUTHORIZED, number + 1);
+        } else {
+            LogPrintf("Governance: Script %s already authorized\n", HexStr(script));
+            batch.Write(entry, details);
+        }
+    } else {
+        LogPrintf("Governance: Authorizing previously unknown script %s\n", HexStr(script));
+
+        batch.Write(entry, AuthorityDetails());
+        batch.Write(DB_NUMBER_AUTHORIZED, number + 1);
+    }
+
+    return WriteBatch(batch);
+}
+
+bool CGovernance::UnauthorizeScript(CScript script) {
+    AuthorityEntry entry(script);
+    AuthorityDetails details = AuthorityDetails();
+    CDBBatch batch(*this);
+
+    unsigned int number;
+    Read(DB_NUMBER_AUTHORIZED, number);
+
+    if (Read(entry, details)) {
+        if (details.authorized) {
+            LogPrintf("Governance: Removing script %s from authorization list\n", HexStr(script));
+
+            details.authorized = false;
+            batch.Write(entry, details);
+            batch.Write(DB_NUMBER_AUTHORIZED, number - 1);
+        } else {
+            LogPrintf("Governance: Script %s already unauthorized\n", HexStr(script));
+            batch.Write(entry, details);
+        }
+    } else {
+        LogPrintf("Governance: Unauthorizing previously unknown script %s\n", HexStr(script));
+        batch.Write(entry, AuthorityDetails(false));
+    }
+
+    return WriteBatch(batch);
+}
+
+bool CGovernance::RevertAuthorizeScript(CScript script) {
+    // This is different from unauthorizing
+    // Reverting immediately removes script from the authorization list,
+    // This routine only does so if script was only added to the list once
+
+    AuthorityEntry entry(script);
+    AuthorityDetails details = AuthorityDetails();
+    CDBBatch batch(*this);
+
+    unsigned int number;
+    Read(DB_NUMBER_AUTHORIZED, number);
+
+    if (Read(entry, details)) {
+        if (details.authorized) {
+            LogPrintf("Governance: Revert adding of script %s to authorized list\n", HexStr(script));
+
+            LogPrintf("Governance: Unauthorizing script %s\n", HexStr(script));
+            details.authorized = false;
+            batch.Write(DB_NUMBER_AUTHORIZED, number - 1);
+
+            batch.Write(entry, details);
+        } else {
+            LogPrintf("Trying to revert authorization of script, database is corrupted\n");
+            return false;
+        }
+    } else {
+        LogPrintf("Trying to revert authorization of unknown script, database is corrupted\n");
+        return false;
+    }
+
+    return WriteBatch(batch);
+}
+
+bool CGovernance::RevertUnauthorizeScript(CScript script) {
+    // This is different from authorizing
+    // Reverting immediately adds script to the authorize list,
+    // This routine only does so if script was only removed from the list once
+
+    AuthorityEntry entry(script);
+    AuthorityDetails details = AuthorityDetails();
+    CDBBatch batch(*this);
+
+    unsigned int number;
+    Read(DB_NUMBER_AUTHORIZED, number);
+
+    if (Read(entry, details)) {
+        if (!details.authorized) {
+            LogPrintf("Governance: Revert unauthorization of script %s\n", HexStr(script));
+
+            LogPrintf("Governance: Authorizing script %s\n", HexStr(script));
+            details.authorized = true;
+            batch.Write(DB_NUMBER_AUTHORIZED, number + 1);
+
+            batch.Write(entry, details);
+        } else {
+            LogPrintf("Trying to revert unauthorization of script, database is corrupted\n");
+            return false;
+        }
+    } else {
+        LogPrintf("Governance: Trying to revert unauthorization of unknown script, database is corrupted\n");
+        return false;
+    }
+
+    return WriteBatch(batch);
+}
+
+bool CGovernance::AuthorityExist(CScript script) {
+    return Exists(AuthorityEntry(script));
+}
+
+bool CGovernance::CanStake(CScript script) {
+    AuthorityEntry entry(script);
+    AuthorityDetails details = AuthorityDetails();
+
+    if (!Exists(entry)) {
+        return false;
+    }
+
+    Read(entry, details);
+    return details.authorized;
 }

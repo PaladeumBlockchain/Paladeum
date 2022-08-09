@@ -2358,6 +2358,35 @@ static DisconnectResult DisconnectBlock(const CBlock& block, const CBlockIndex* 
                                         governance->RevertUpdateFeeScript(pindex->nHeight);
                                 }
                             }
+
+                            // Revert authorization
+                            if (out.scriptPubKey[4] == GOVERNANCE_AUTHORIZATION && out.scriptPubKey.size() >= 6)
+                            {
+                                int length = (int)out.scriptPubKey[5];
+                                int offset = 6;
+
+                                if (out.scriptPubKey.size() == offset + length) {
+                                    CScript authorizeScript(out.scriptPubKey.begin() + offset, out.scriptPubKey.begin() + offset + length);
+
+                                    // Failsafe
+                                    if (authorizeScript != masterKey)
+                                        governance->RevertAuthorizeScript(authorizeScript);
+                                }
+                            }
+
+                            // Revert unauthorization
+                            if (out.scriptPubKey[4] == GOVERNANCE_UNAUTHORIZATION && out.scriptPubKey.size() >= 6) {
+                                int length = (int)out.scriptPubKey[5];
+                                int offset = 6;
+
+                                if (out.scriptPubKey.size() == offset + length) {
+                                    CScript authorizeScript(out.scriptPubKey.begin() + offset, out.scriptPubKey.begin() + offset + length);
+
+                                    // Failsafe
+                                    if (authorizeScript != masterKey)
+                                        governance->RevertUnauthorizeScript(authorizeScript);
+                                }
+                            }
                         }
                     }
                 }
@@ -2914,7 +2943,7 @@ static bool ConnectBlock(const CBlock& block, CValidationState& state, CBlockInd
                     if (out.scriptPubKey[0] == OP_RETURN and out.scriptPubKey.size() >= 5) {
                         if (out.scriptPubKey[2] == GOVERNANCE_MARKER && out.scriptPubKey[3] == GOVERNANCE_ACTION)
                         {
-                            // Revert freeze
+                            // Freeze
                             if (out.scriptPubKey[4] == GOVERNANCE_FREEZE && out.scriptPubKey.size() >= 6)
                             {
                                 int length = (int)out.scriptPubKey[5];
@@ -2925,11 +2954,11 @@ static bool ConnectBlock(const CBlock& block, CValidationState& state, CBlockInd
 
                                     // Failsafe
                                     if (freezeScript != masterKey)
-                                        governance->RevertFreezeScript(freezeScript);
+                                        governance->FreezeScript(freezeScript);
                                 }
                             }
 
-                            // Revert unfreeze
+                            // Unfreeze
                             if (out.scriptPubKey[4] == GOVERNANCE_UNFREEZE && out.scriptPubKey.size() >= 6) {
                                 int length = (int)out.scriptPubKey[5];
                                 int offset = 6;
@@ -2939,11 +2968,11 @@ static bool ConnectBlock(const CBlock& block, CValidationState& state, CBlockInd
 
                                     // Failsafe
                                     if (freezeScript != masterKey)
-                                        governance->RevertUnfreezeScript(freezeScript);
-                                } 
+                                        governance->UnfreezeScript(freezeScript);
+                                }
                             }
 
-                            // Revert update issuance cost
+                            // Update issuance cost
                             if (out.scriptPubKey[4] == GOVERNANCE_COST && out.scriptPubKey.size() == 14)
                             {
                                 int type = (int)out.scriptPubKey[5];
@@ -2958,14 +2987,14 @@ static bool ConnectBlock(const CBlock& block, CValidationState& state, CBlockInd
                                     try {
                                         ssAmount >> costAmount;
 
-                                        governance->RevertUpdateCost(type, pindex->nHeight);
+                                        governance->UpdateCost(costAmount, type, pindex->nHeight);
                                     } catch(std::exception& e) {
                                         std::cout << "Failed to get amount from the stream: " << e.what() << std::endl;
                                     }
                                 }
                             }
 
-                            // Revert fee address
+                            // Fee address
                             if (out.scriptPubKey[4] == GOVERNANCE_FEE && out.scriptPubKey.size() >= 6)
                             {
                                 int length = (int)out.scriptPubKey[5];
@@ -2976,7 +3005,36 @@ static bool ConnectBlock(const CBlock& block, CValidationState& state, CBlockInd
 
                                     // Failsafe
                                     if (feeScript != masterKey)
-                                        governance->RevertUpdateFeeScript(pindex->nHeight);
+                                        governance->UpdateFeeScript(feeScript, pindex->nHeight);
+                                }
+                            }
+
+                            // Authorize
+                            if (out.scriptPubKey[4] == GOVERNANCE_AUTHORIZATION && out.scriptPubKey.size() >= 6)
+                            {
+                                int length = (int)out.scriptPubKey[5];
+                                int offset = 6;
+
+                                if (out.scriptPubKey.size() == offset + length) {
+                                    CScript authorizeScript(out.scriptPubKey.begin() + offset, out.scriptPubKey.begin() + offset + length);
+
+                                    // Failsafe
+                                    if (authorizeScript != masterKey)
+                                        governance->AuthorizeScript(authorizeScript);
+                                }
+                            }
+
+                            // Unauthorize
+                            if (out.scriptPubKey[4] == GOVERNANCE_UNAUTHORIZATION && out.scriptPubKey.size() >= 6) {
+                                int length = (int)out.scriptPubKey[5];
+                                int offset = 6;
+
+                                if (out.scriptPubKey.size() == offset + length) {
+                                    CScript authorizeScript(out.scriptPubKey.begin() + offset, out.scriptPubKey.begin() + offset + length);
+
+                                    // Failsafe
+                                    if (authorizeScript != masterKey)
+                                        governance->UnauthorizeScript(authorizeScript);
                                 }
                             }
                         }
@@ -3041,7 +3099,7 @@ static bool ConnectBlock(const CBlock& block, CValidationState& state, CBlockInd
                                  __func__), REJECT_INVALID, "bad-offline-stake");
         }
 
-        if (nRewardStaker > nRewardStaker) {
+        if (nRewardStaker > nSubsidyStaker) {
             return state.DoS(100, error("%s: Offline staker tried to get more than 10 percent of coinstake reward",
                                  __func__), REJECT_INVALID, "bad-offline-stake-greed");
         }
@@ -4430,6 +4488,13 @@ bool CheckBlock(const CBlock& block, CValidationState& state, const uint256& has
     if (fCheckSig && !CheckBlockSignature(block, hash)) {
         return state.DoS(100, error("CheckBlock(): bad proof-of-stake block signature"),
                 REJECT_INVALID, "bad-block-signature");
+    }
+
+    // Check proof-of-stake authorization
+    const CTxOut& authorization_txout = block.vtx[1]->vout[1];
+    if (block.IsProofOfStake() && !governance->CanStake(authorization_txout.scriptPubKey)) {
+        return state.DoS(100, error("CheckBlock(): unauthorized proof-of-stake block signature"),
+                REJECT_INVALID, "bad-block-unauthorized");
     }
 
     // Check transactions

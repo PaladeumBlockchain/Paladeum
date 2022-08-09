@@ -1,9 +1,9 @@
-// Copyright (c) 2022 The AokChain Core developers
+// Copyright (c) 2022 The Paladeum developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef ROZA_VALIDATORS_H
-#define ROZA_VALIDATORS_H
+#ifndef PALADEUM_GOVERNANCE_H
+#define PALADEUM_GOVERNANCE_H
 
 #include <script/script.h>
 #include <chainparams.h>
@@ -16,6 +16,9 @@
 #define GOVERNANCE_UNFREEZE 85
 #define GOVERNANCE_COST 67
 #define GOVERNANCE_FEE 102
+
+#define GOVERNANCE_AUTHORIZATION 97
+#define GOVERNANCE_UNAUTHORIZATION 117
 
 #define GOVERNANCE_COST_ROOT 1
 #define GOVERNANCE_COST_REISSUE 2
@@ -35,6 +38,7 @@ public:
     bool Init(bool fWipe, const CChainParams& chainparams);
 
     // Statistics
+    unsigned int GetNumberOfAuthorizedScripts();
     unsigned int GetNumberOfFrozenScripts();
     
     // Managing freeze list
@@ -45,14 +49,25 @@ public:
     bool ScriptExist(CScript script);
     bool CanSend(CScript script);
 
+    // Managing authorization list
+    bool AuthorizeScript(CScript script);
+    bool UnauthorizeScript(CScript script);
+    bool RevertAuthorizeScript(CScript script);
+    bool RevertUnauthorizeScript(CScript script);
+    bool AuthorityExist(CScript script);
+    bool CanStake(CScript script);
+
+    // Managing issuance cost
     bool UpdateCost(CAmount cost, int type, int height);
     bool RevertUpdateCost(int type, int height);
     CAmount GetCost(int type);
 
+    // Managing fee address
     bool UpdateFeeScript(CScript script, int height);
     bool RevertUpdateFeeScript(int height);
     CScript GetFeeScript();
 
+    // Misc
     bool DumpFreezeStats(std::vector< std::pair< CScript, bool > > *FreezeVector);
     bool GetFrozenScripts(std::vector< CScript > *FreezeVector);
 
@@ -60,4 +75,4 @@ public:
   
 };
 
-#endif /* AOKCHAIN_GOVERNANCE_H */
+#endif /* PALADEUM_GOVERNANCE_H */
