@@ -88,8 +88,8 @@
 // Application startup time (used for uptime calculation)
 const int64_t nStartupTime = GetTime();
 
-const char *const PLD_CONF_FILENAME = "paladeum.conf";
-const char *const PLD_PID_FILENAME = "paladeumd.pid";
+const char *const PLB_CONF_FILENAME = "paladeum.conf";
+const char *const PLB_PID_FILENAME = "paladeumd.pid";
 
 ArgsManager gArgs;
 bool fPrintToConsole = false;
@@ -656,7 +656,7 @@ void ArgsManager::ReadConfigFile(const std::string &confPath)
 
 fs::path GetPidFile()
 {
-    fs::path pathPidFile(gArgs.GetArg("-pid", PLD_PID_FILENAME));
+    fs::path pathPidFile(gArgs.GetArg("-pid", PLB_PID_FILENAME));
     if (!pathPidFile.is_complete()) pathPidFile = GetDataDir() / pathPidFile;
     return pathPidFile;
 }

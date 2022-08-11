@@ -3,8 +3,8 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef PLD_QT_TOKENRECORD_H
-#define PLD_QT_TOKENRECORD_H
+#ifndef PLB_QT_TOKENRECORD_H
+#define PLB_QT_TOKENRECORD_H
 
 #include "math.h"
 #include "amount.h"
@@ -54,4 +54,4 @@ public:
 
 };
 
-#endif // PLD_QT_TOKENRECORD_H
+#endif // PLB_QT_TOKENRECORD_H

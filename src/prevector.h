@@ -3,8 +3,8 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef PLD_PREVECTOR_H
-#define PLD_PREVECTOR_H
+#ifndef PLB_PREVECTOR_H
+#define PLB_PREVECTOR_H
 
 #include <assert.h>
 #include <stdlib.h>
@@ -515,4 +515,4 @@ public:
 };
 #pragma pack(pop)
 
-#endif // PLD_PREVECTOR_H
+#endif // PLB_PREVECTOR_H

@@ -3,8 +3,8 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef PLD_QT_TOKENSDIALOG_H
-#define PLD_QT_TOKENSDIALOG_H
+#ifndef PLB_QT_TOKENSDIALOG_H
+#define PLB_QT_TOKENSDIALOG_H
 
 #include "walletmodel.h"
 
@@ -119,4 +119,4 @@ private Q_SLOTS:
             void message(const QString &title, const QString &message, unsigned int style);
 };
 
-#endif // PLD_QT_TOKENSSDIALOG_H
+#endif // PLB_QT_TOKENSSDIALOG_H

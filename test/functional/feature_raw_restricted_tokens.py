@@ -264,7 +264,7 @@ class RawRestrictedTokensTest(PaladeumTestFramework):
         self.extra_args = [['-tokenindex'], ['-tokenindex']]
 
     def activate_restricted_tokens(self):
-        self.log.info("Generating PLD and activating restricted tokens...")
+        self.log.info("Generating PLB and activating restricted tokens...")
         n0 = self.nodes[0]
         n0.generate(432)
         self.sync_all()

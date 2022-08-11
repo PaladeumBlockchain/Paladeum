@@ -3,8 +3,8 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef PLD_QT_TEST_URITESTS_H
-#define PLD_QT_TEST_URITESTS_H
+#ifndef PLB_QT_TEST_URITESTS_H
+#define PLB_QT_TEST_URITESTS_H
 
 #include <QObject>
 #include <QTest>
@@ -17,4 +17,4 @@ private Q_SLOTS:
     void uriTests();
 };
 
-#endif // PLD_QT_TEST_URITESTS_H
+#endif // PLB_QT_TEST_URITESTS_H

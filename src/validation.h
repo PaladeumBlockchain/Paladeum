@@ -6,8 +6,8 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef PLD_VALIDATION_H
-#define PLD_VALIDATION_H
+#ifndef PLB_VALIDATION_H
+#define PLB_VALIDATION_H
 
 #if defined(HAVE_CONFIG_H)
 #include "config/paladeum-config.h"
@@ -620,4 +620,4 @@ bool AreRestrictedTokensDeployed();
 CTokensCache* GetCurrentTokenCache();
 /** TOKENS END */
 
-#endif // PLD_VALIDATION_H
+#endif // PLB_VALIDATION_H

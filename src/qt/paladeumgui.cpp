@@ -1231,7 +1231,7 @@ void PaladeumGUI::incomingTransaction(const QString& date, int unit, const CAmou
 {
     // On new transaction, make an info balloon
     QString msg = tr("Date: %1\n").arg(date);
-    if (tokenName == "PLD")
+    if (tokenName == "PLB")
         msg += tr("Amount: %1\n").arg(PaladeumUnits::formatWithUnit(unit, amount, true));
     else
         msg += tr("Amount: %1\n").arg(PaladeumUnits::formatWithCustomName(tokenName, amount, MAX_TOKEN_UNITS, true));

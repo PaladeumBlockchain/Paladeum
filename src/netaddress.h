@@ -3,8 +3,8 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef PLD_NETADDRESS_H
-#define PLD_NETADDRESS_H
+#ifndef PLB_NETADDRESS_H
+#define PLB_NETADDRESS_H
 
 #if defined(HAVE_CONFIG_H)
 #include "config/paladeum-config.h"
@@ -175,4 +175,4 @@ class CService : public CNetAddr
         }
 };
 
-#endif // PLD_NETADDRESS_H
+#endif // PLB_NETADDRESS_H

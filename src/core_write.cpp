@@ -113,8 +113,8 @@ std::string ScriptToAsmStr(const CScript& script, const bool fAttemptSighashDeco
             return str;
         }
 
-        if (opcode == OP_PLD_TOKEN) {
-            // Once we hit an OP_PLD_TOKEN, we know that all the next data should be considered as hex
+        if (opcode == OP_PLB_TOKEN) {
+            // Once we hit an OP_PLB_TOKEN, we know that all the next data should be considered as hex
             str += GetOpName(opcode);
             str += " ";
             str += HexStr(vch);

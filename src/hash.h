@@ -4,8 +4,8 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef PLD_HASH_H
-#define PLD_HASH_H
+#ifndef PLB_HASH_H
+#define PLB_HASH_H
 #include <iostream>
 #include <chrono>
 #include "crypto/ripemd160.h"
@@ -322,5 +322,5 @@ inline uint256 blake2b(const T* pbegin, const T* pend)
     return hash;
 }
 
-#endif // PLD_HASH_H
+#endif // PLB_HASH_H
 

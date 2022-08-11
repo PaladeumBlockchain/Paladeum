@@ -4,8 +4,8 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef PLD_ADDRMAN_H
-#define PLD_ADDRMAN_H
+#ifndef PLB_ADDRMAN_H
+#define PLB_ADDRMAN_H
 
 #include "netaddress.h"
 #include "protocol.h"
@@ -603,4 +603,4 @@ public:
 
 };
 
-#endif // PLD_ADDRMAN_H
+#endif // PLB_ADDRMAN_H

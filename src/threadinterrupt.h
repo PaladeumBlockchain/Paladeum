@@ -3,8 +3,8 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef PLD_THREADINTERRUPT_H
-#define PLD_THREADINTERRUPT_H
+#ifndef PLB_THREADINTERRUPT_H
+#define PLB_THREADINTERRUPT_H
 
 #include <atomic>
 #include <chrono>
@@ -32,4 +32,4 @@ private:
     std::atomic<bool> flag;
 };
 
-#endif //PLD_THREADINTERRUPT_H
+#endif //PLB_THREADINTERRUPT_H

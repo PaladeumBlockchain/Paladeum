@@ -24,7 +24,7 @@ RAW_TEST_FILES =
 GENERATED_TEST_FILES = $(JSON_TEST_FILES:.json=.json.h) $(RAW_TEST_FILES:.raw=.raw.h)
 
 # test_paladeum binary #
-PLD_TESTS =\
+PLB_TESTS =\
   test/tokens/token_tests.cpp \
   test/tokens/serialization_tests.cpp \
   test/tokens/token_p2sh_tests.cpp \
@@ -102,7 +102,7 @@ PLD_TESTS =\
   test/util_tests.cpp
 
 if ENABLE_WALLET
-PLD_TESTS += \
+PLB_TESTS += \
   wallet/test/wallet_test_fixture.cpp \
   wallet/test/wallet_test_fixture.h \
   wallet/test/accounting_tests.cpp \
@@ -110,17 +110,17 @@ PLD_TESTS += \
   wallet/test/crypto_tests.cpp
 endif
 
-test_test_paladeum_SOURCES = $(PLD_TESTS) $(JSON_TEST_FILES) $(RAW_TEST_FILES)
-test_test_paladeum_CPPFLAGS = $(AM_CPPFLAGS) $(PLD_INCLUDES) -I$(builddir)/test/ $(TESTDEFS) $(EVENT_CFLAGS)
+test_test_paladeum_SOURCES = $(PLB_TESTS) $(JSON_TEST_FILES) $(RAW_TEST_FILES)
+test_test_paladeum_CPPFLAGS = $(AM_CPPFLAGS) $(PLB_INCLUDES) -I$(builddir)/test/ $(TESTDEFS) $(EVENT_CFLAGS)
 test_test_paladeum_LDADD =
 if ENABLE_WALLET
-test_test_paladeum_LDADD += $(LIBPLD_WALLET)
+test_test_paladeum_LDADD += $(LIBPLB_WALLET)
 endif
-test_test_paladeum_LDADD += $(LIBPLD_SERVER) $(LIBPLD_CLI) $(LIBPLD_COMMON) $(LIBPLD_UTIL) $(LIBPLD_CONSENSUS) $(LIBPLD_CRYPTO) $(LIBUNIVALUE) \
+test_test_paladeum_LDADD += $(LIBPLB_SERVER) $(LIBPLB_CLI) $(LIBPLB_COMMON) $(LIBPLB_UTIL) $(LIBPLB_CONSENSUS) $(LIBPLB_CRYPTO) $(LIBUNIVALUE) \
   $(LIBLEVELDB) $(LIBLEVELDB_SSE42) $(LIBMEMENV) $(BOOST_LIBS) $(BOOST_UNIT_TEST_FRAMEWORK_LIB) $(LIBSECP256K1) $(EVENT_LIBS) $(EVENT_PTHREADS_LIBS)
 test_test_paladeum_CXXFLAGS = $(AM_CXXFLAGS) $(PIE_FLAGS)
 
-test_test_paladeum_LDADD += $(LIBPLD_CONSENSUS) $(LIBPLD_CRYPTO) $(BDB_LIBS) $(SSL_LIBS) $(CRYPTO_LIBS) $(MINIUPNPC_LIBS)
+test_test_paladeum_LDADD += $(LIBPLB_CONSENSUS) $(LIBPLB_CRYPTO) $(BDB_LIBS) $(SSL_LIBS) $(CRYPTO_LIBS) $(MINIUPNPC_LIBS)
 test_test_paladeum_LDFLAGS = $(RELDFLAGS) $(AM_LDFLAGS) $(LIBTOOL_APP_LDFLAGS) -static
 
 if ENABLE_ZMQ
@@ -130,17 +130,17 @@ endif
 
 # test_paladeum_fuzzy binary #
 test_test_paladeum_fuzzy_SOURCES = test/test_paladeum_fuzzy.cpp
-test_test_paladeum_fuzzy_CPPFLAGS = $(AM_CPPFLAGS) $(PLD_INCLUDES)
+test_test_paladeum_fuzzy_CPPFLAGS = $(AM_CPPFLAGS) $(PLB_INCLUDES)
 test_test_paladeum_fuzzy_CXXFLAGS = $(AM_CXXFLAGS) $(PIE_FLAGS)
 test_test_paladeum_fuzzy_LDFLAGS = $(RELDFLAGS) $(AM_LDFLAGS) $(LIBTOOL_APP_LDFLAGS)
 
 test_test_paladeum_fuzzy_LDADD = \
   $(LIBUNIVALUE) \
-  $(LIBPLD_SERVER) \
-  $(LIBPLD_COMMON) \
-  $(LIBPLD_UTIL) \
-  $(LIBPLD_CONSENSUS) \
-  $(LIBPLD_CRYPTO) \
+  $(LIBPLB_SERVER) \
+  $(LIBPLB_COMMON) \
+  $(LIBPLB_UTIL) \
+  $(LIBPLB_CONSENSUS) \
+  $(LIBPLB_CRYPTO) \
   $(LIBSECP256K1)
 
 test_test_paladeum_fuzzy_LDADD += $(BOOST_LIBS) $(CRYPTO_LIBS)
@@ -148,27 +148,27 @@ test_test_paladeum_fuzzy_LDADD += $(BOOST_LIBS) $(CRYPTO_LIBS)
 
 # test_paladeum_hash binary #
 test_test_paladeum_hash_SOURCES = test/test_paladeum_hash.cpp
-test_test_paladeum_hash_CPPFLAGS = $(AM_CPPFLAGS) $(PLD_INCLUDES)
+test_test_paladeum_hash_CPPFLAGS = $(AM_CPPFLAGS) $(PLB_INCLUDES)
 test_test_paladeum_hash_CXXFLAGS = $(AM_CXXFLAGS) $(PIE_FLAGS)
 test_test_paladeum_hash_LDFLAGS = $(RELDFLAGS) $(AM_LDFLAGS) $(LIBTOOL_AP_LDFLAGS)
 
 test_test_paladeum_hash_LDADD = \
   $(LIBUNIVALUE) \
-  $(LIBPLD_COMMON) \
-  $(LIBPLD_UTIL) \
-  $(LIBPLD_CONSENSUS) \
-  $(LIBPLD_CRYPTO)
+  $(LIBPLB_COMMON) \
+  $(LIBPLB_UTIL) \
+  $(LIBPLB_CONSENSUS) \
+  $(LIBPLB_CRYPTO)
 
 test_test_paladeum_hash_LDADD += $(CRYPTO_LIBS)
 #
 
 nodist_test_test_paladeum_SOURCES = $(GENERATED_TEST_FILES)
 
-$(PLD_TESTS): $(GENERATED_TEST_FILES)
+$(PLB_TESTS): $(GENERATED_TEST_FILES)
 
-CLEAN_PLD_TEST = test/*.gcda test/*.gcno $(GENERATED_TEST_FILES)
+CLEAN_PLB_TEST = test/*.gcda test/*.gcno $(GENERATED_TEST_FILES)
 
-CLEANFILES += $(CLEAN_PLD_TEST)
+CLEANFILES += $(CLEAN_PLB_TEST)
 
 paladeum_test: $(TEST_BINARY)
 
@@ -176,7 +176,7 @@ paladeum_test_check: $(TEST_BINARY) FORCE
 	$(MAKE) check-TESTS TESTS=$^
 
 paladeum_test_clean : FORCE
-	rm -f $(CLEAN_PLD_TEST) $(test_test_paladeum_OBJECTS) $(TEST_BINARY)
+	rm -f $(CLEAN_PLB_TEST) $(test_test_paladeum_OBJECTS) $(TEST_BINARY)
 
 check-local:
 	@echo "Running test/util/paladeum-util-test.py..."

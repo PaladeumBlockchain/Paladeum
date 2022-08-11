@@ -4,8 +4,8 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef PLD_WALLET_FEES_H
-#define PLD_WALLET_FEES_H
+#ifndef PLB_WALLET_FEES_H
+#define PLB_WALLET_FEES_H
 
 #include "amount.h"
 
@@ -32,4 +32,4 @@ CAmount GetMinimumFee(unsigned int nTxBytes, const CCoinControl& coin_control, c
  */
 CFeeRate GetDiscardRate(const CBlockPolicyEstimator& estimator);
 
-#endif // PLD_WALLET_FEES_H
+#endif // PLB_WALLET_FEES_H

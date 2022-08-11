@@ -3,8 +3,8 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef PLDCOIN_MYTOKENSDB_H
-#define PLDCOIN_MYTOKENSDB_H
+#ifndef PLBCOIN_MYTOKENSDB_H
+#define PLBCOIN_MYTOKENSDB_H
 
 #include <dbwrapper.h>
 
@@ -80,4 +80,4 @@ public:
 };
 
 
-#endif //PLDCOIN_MYTOKENSDB_H
+#endif //PLBCOIN_MYTOKENSDB_H

@@ -3,8 +3,8 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef PLD_WALLET_RPCWALLET_H
-#define PLD_WALLET_RPCWALLET_H
+#ifndef PLB_WALLET_RPCWALLET_H
+#define PLB_WALLET_RPCWALLET_H
 
 #include <string>
 
@@ -26,4 +26,4 @@ std::string HelpRequiringPassphrase(CWallet *);
 void EnsureWalletIsUnlocked(CWallet *);
 bool EnsureWalletIsAvailable(CWallet *, bool avoidException);
 
-#endif //PLD_WALLET_RPCWALLET_H
+#endif //PLB_WALLET_RPCWALLET_H

@@ -3,8 +3,8 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef PLD_BENCH_BENCH_H
-#define PLD_BENCH_BENCH_H
+#ifndef PLB_BENCH_BENCH_H
+#define PLB_BENCH_BENCH_H
 
 #include <functional>
 #include <limits>
@@ -78,4 +78,4 @@ namespace benchmark {
 #define BENCHMARK(n) \
     benchmark::BenchRunner BOOST_PP_CAT(bench_, BOOST_PP_CAT(__LINE__, n))(BOOST_PP_STRINGIZE(n), n);
 
-#endif // PLD_BENCH_BENCH_H
+#endif // PLB_BENCH_BENCH_H

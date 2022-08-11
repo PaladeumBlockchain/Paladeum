@@ -4,8 +4,8 @@
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
 
-#ifndef PLDCOIN_TOKEN_PROTOCOL_H
-#define PLDCOIN_TOKEN_PROTOCOL_H
+#ifndef PLBCOIN_TOKEN_PROTOCOL_H
+#define PLBCOIN_TOKEN_PROTOCOL_H
 
 #include "amount.h"
 #include "tinyformat.h"
@@ -478,10 +478,10 @@ bool CheckIssueBurnTx(const CTxOut& txOut, const KnownTokenType& type);
 bool CheckReissueBurnTx(const CTxOut& txOut);
 
 //! issue token scripts to make sure script meets the standards
-bool CheckIssueDataTx(const CTxOut& txOut); // OP_PLD_TOKEN PLDQ (That is a Q as in Que not an O)
-bool CheckOwnerDataTx(const CTxOut& txOut);// OP_PLD_TOKEN PLDO
-bool CheckReissueDataTx(const CTxOut& txOut);// OP_PLD_TOKEN PLDR
-bool CheckTransferOwnerTx(const CTxOut& txOut);// OP_PLD_TOKEN PLDT
+bool CheckIssueDataTx(const CTxOut& txOut); // OP_PLB_TOKEN PLBQ (That is a Q as in Que not an O)
+bool CheckOwnerDataTx(const CTxOut& txOut);// OP_PLB_TOKEN PLBO
+bool CheckReissueDataTx(const CTxOut& txOut);// OP_PLB_TOKEN PLBR
+bool CheckTransferOwnerTx(const CTxOut& txOut);// OP_PLB_TOKEN PLBT
 
 //! Check the Encoded hash and make sure it is either an IPFS hash or a OIP hash
 bool CheckEncoded(const std::string& hash, std::string& strError);
@@ -601,4 +601,4 @@ bool ContextualCheckUniqueToken(CTokensCache* tokenCache, const CNewToken& uniqu
 bool ContextualCheckUsernameTokenTx(CTokensCache* tokenCache, std::string& strError, const CTransaction& tx);
 bool ContextualCheckUsernameToken(CTokensCache* tokenCache, const CNewToken& username_token, std::string& strError);
 
-#endif //PLDCOIN_TOKEN_PROTOCOL_H
+#endif //PLBCOIN_TOKEN_PROTOCOL_H

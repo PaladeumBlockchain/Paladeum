@@ -3,8 +3,8 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef PLD_QT_TRANSACTIONFILTERPROXY_H
-#define PLD_QT_TRANSACTIONFILTERPROXY_H
+#ifndef PLB_QT_TRANSACTIONFILTERPROXY_H
+#define PLB_QT_TRANSACTIONFILTERPROXY_H
 
 #include "amount.h"
 
@@ -67,4 +67,4 @@ private:
     int limitRows;
     bool showInactive;
 };
-#endif // PLD_QT_TRANSACTIONFILTERPROXY_H
+#endif // PLB_QT_TRANSACTIONFILTERPROXY_H

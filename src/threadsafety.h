@@ -4,8 +4,8 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef PLD_THREADSAFETY_H
-#define PLD_THREADSAFETY_H
+#ifndef PLB_THREADSAFETY_H
+#define PLB_THREADSAFETY_H
 
 #ifdef __clang__
 // TL;DR Add GUARDED_BY(mutex) to member variables. The others are
@@ -53,4 +53,4 @@
 #define NO_THREAD_SAFETY_ANALYSIS
 #endif // __GNUC__
 
-#endif // PLD_THREADSAFETY_H
+#endif // PLB_THREADSAFETY_H

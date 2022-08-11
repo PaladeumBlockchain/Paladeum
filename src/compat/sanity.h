@@ -3,10 +3,10 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef PLD_COMPAT_SANITY_H
-#define PLD_COMPAT_SANITY_H
+#ifndef PLB_COMPAT_SANITY_H
+#define PLB_COMPAT_SANITY_H
 
 bool glibc_sanity_test();
 bool glibcxx_sanity_test();
 
-#endif // PLD_COMPAT_SANITY_H
+#endif // PLB_COMPAT_SANITY_H

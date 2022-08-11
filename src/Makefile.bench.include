@@ -32,14 +32,14 @@ bench_bench_paladeum_SOURCES = \
 
 nodist_bench_bench_paladeum_SOURCES = $(GENERATED_BENCH_FILES)
 
-bench_bench_paladeum_CPPFLAGS = $(AM_CPPFLAGS) $(PLD_INCLUDES) $(EVENT_CLFAGS) $(EVENT_PTHREADS_CFLAGS) -I$(builddir)/bench/
+bench_bench_paladeum_CPPFLAGS = $(AM_CPPFLAGS) $(PLB_INCLUDES) $(EVENT_CLFAGS) $(EVENT_PTHREADS_CFLAGS) -I$(builddir)/bench/
 bench_bench_paladeum_CXXFLAGS = $(AM_CXXFLAGS) $(PIE_FLAGS)
 bench_bench_paladeum_LDADD = \
-  $(LIBPLD_SERVER) \
-  $(LIBPLD_COMMON) \
-  $(LIBPLD_UTIL) \
-  $(LIBPLD_CONSENSUS) \
-  $(LIBPLD_CRYPTO) \
+  $(LIBPLB_SERVER) \
+  $(LIBPLB_COMMON) \
+  $(LIBPLB_UTIL) \
+  $(LIBPLB_CONSENSUS) \
+  $(LIBPLB_CRYPTO) \
   $(LIBLEVELDB) \
   $(LIBLEVELDB_SSE42) \
   $(LIBMEMENV) \
@@ -47,20 +47,20 @@ bench_bench_paladeum_LDADD = \
   $(LIBUNIVALUE)
 
 if ENABLE_ZMQ
-bench_bench_paladeum_LDADD += $(LIBPLD_ZMQ) $(ZMQ_LIBS)
+bench_bench_paladeum_LDADD += $(LIBPLB_ZMQ) $(ZMQ_LIBS)
 endif
 
 if ENABLE_WALLET
 bench_bench_paladeum_SOURCES += bench/coin_selection.cpp
-bench_bench_paladeum_LDADD += $(LIBPLD_WALLET) $(LIBPLD_CRYPTO)
+bench_bench_paladeum_LDADD += $(LIBPLB_WALLET) $(LIBPLB_CRYPTO)
 endif
 
 bench_bench_paladeum_LDADD += $(BOOST_LIBS) $(BDB_LIBS) $(SSL_LIBS) $(CRYPTO_LIBS) $(MINIUPNPC_LIBS) $(EVENT_PTHREADS_LIBS) $(EVENT_LIBS)
 bench_bench_paladeum_LDFLAGS = $(RELDFLAGS) $(AM_LDFLAGS) $(LIBTOOL_APP_LDFLAGS)
 
-CLEAN_PLD_BENCH = bench/*.gcda bench/*.gcno $(GENERATED_BENCH_FILES)
+CLEAN_PLB_BENCH = bench/*.gcda bench/*.gcno $(GENERATED_BENCH_FILES)
 
-CLEANFILES += $(CLEAN_PLD_BENCH)
+CLEANFILES += $(CLEAN_PLB_BENCH)
 
 bench/checkblock.cpp: bench/data/block566553.raw.h
 
@@ -70,7 +70,7 @@ bench: $(BENCH_BINARY) FORCE
 	$(BENCH_BINARY)
 
 paladeum_bench_clean : FORCE
-	rm -f $(CLEAN_PLD_BENCH) $(bench_bench_paladeum_OBJECTS) $(BENCH_BINARY)
+	rm -f $(CLEAN_PLB_BENCH) $(bench_bench_paladeum_OBJECTS) $(BENCH_BINARY)
 
 %.raw.h: %.raw
 	@$(MKDIR_P) $(@D)

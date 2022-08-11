@@ -3,8 +3,8 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef PLD_CHECKPOINTS_H
-#define PLD_CHECKPOINTS_H
+#ifndef PLB_CHECKPOINTS_H
+#define PLB_CHECKPOINTS_H
 
 #include "uint256.h"
 
@@ -28,4 +28,4 @@ CBlockIndex* GetLastCheckpoint(const CCheckpointData& data);
 
 } //namespace Checkpoints
 
-#endif // PLD_CHECKPOINTS_H
+#endif // PLB_CHECKPOINTS_H

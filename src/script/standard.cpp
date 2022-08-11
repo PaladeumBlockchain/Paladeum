@@ -140,7 +140,7 @@ bool Solver(const CScript& scriptPubKey, txnouttype& typeRet, txnouttype& script
     //
     // So long as script passes the IsUnspendable() test and all but the first three
     // byte passes the IsPushOnly()
-    if (scriptPubKey.size() >= 1 && scriptPubKey[0] == OP_PLD_TOKEN && scriptPubKey.IsPushOnly(scriptPubKey.begin()+1)) {
+    if (scriptPubKey.size() >= 1 && scriptPubKey[0] == OP_PLB_TOKEN && scriptPubKey.IsPushOnly(scriptPubKey.begin()+1)) {
         typeRet = TX_RESTRICTED_TOKEN_DATA;
 
         if (scriptPubKey.size() >= 23 && scriptPubKey[1] != OP_RESERVED) {
@@ -409,13 +409,13 @@ namespace
 
         bool operator()(const CKeyID &keyID) const {
             script->clear();
-            *script << OP_PLD_TOKEN << ToByteVector(keyID);
+            *script << OP_PLB_TOKEN << ToByteVector(keyID);
             return true;
         }
 
         bool operator()(const CScriptID &scriptID) const {
             script->clear();
-            *script << OP_PLD_TOKEN << ToByteVector(scriptID);
+            *script << OP_PLB_TOKEN << ToByteVector(scriptID);
             return true;
         }
     };

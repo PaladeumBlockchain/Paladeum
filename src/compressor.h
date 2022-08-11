@@ -4,8 +4,8 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef PLD_COMPRESSOR_H
-#define PLD_COMPRESSOR_H
+#ifndef PLB_COMPRESSOR_H
+#define PLB_COMPRESSOR_H
 
 #include "primitives/transaction.h"
 #include "script/script.h"
@@ -119,4 +119,4 @@ public:
     }
 };
 
-#endif // PLD_COMPRESSOR_H
+#endif // PLB_COMPRESSOR_H

@@ -31,12 +31,12 @@ public:
     static const int RecommendedNumConfirmations = 6;
 
     MyRestrictedTokenRecord():
-            hash(), time(0), type(Other), address(""), tokenName("PLD"), idx(0)
+            hash(), time(0), type(Other), address(""), tokenName("PLB"), idx(0)
     {
     }
 
     MyRestrictedTokenRecord(uint256 _hash, qint64 _time):
-            hash(_hash), time(_time), type(Other), address(""), tokenName("PLD"), idx(0)
+            hash(_hash), time(_time), type(Other), address(""), tokenName("PLB"), idx(0)
     {
     }
 
@@ -44,7 +44,7 @@ public:
                       Type _type, const std::string &_address,
                       const CAmount& _debit, const CAmount& _credit):
             hash(_hash), time(_time), type(_type), address(_address),
-            tokenName("PLD"), idx(0)
+            tokenName("PLB"), idx(0)
     {
     }
 

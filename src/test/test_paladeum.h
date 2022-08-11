@@ -3,8 +3,8 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef PLD_TEST_TEST_PLD_H
-#define PLD_TEST_TEST_PLD_H
+#ifndef PLB_TEST_TEST_PLB_H
+#define PLB_TEST_TEST_PLB_H
 
 #include "chainparamsbase.h"
 #include "fs.h"

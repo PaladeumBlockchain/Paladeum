@@ -16,7 +16,7 @@ class TokenReorgTest(PaladeumTestFramework):
 
 
     def activate_tokens(self):
-        self.log.info("Generating PLD and activating tokens...")
+        self.log.info("Generating PLB and activating tokens...")
         n0, n1 = self.nodes[0], self.nodes[1]
 
         n0.generate(1)

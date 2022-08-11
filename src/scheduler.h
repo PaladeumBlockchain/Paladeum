@@ -3,8 +3,8 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef PLD_SCHEDULER_H
-#define PLD_SCHEDULER_H
+#ifndef PLB_SCHEDULER_H
+#define PLB_SCHEDULER_H
 
 //
 // NOTE:

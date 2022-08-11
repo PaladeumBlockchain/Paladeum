@@ -4,8 +4,8 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef PLD_TEST_SCRIPTNUM10_H
-#define PLD_TEST_SCRIPTNUM10_H
+#ifndef PLB_TEST_SCRIPTNUM10_H
+#define PLB_TEST_SCRIPTNUM10_H
 
 #include <algorithm>
 #include <limits>
@@ -218,4 +218,4 @@ private:
 };
 
 
-#endif // PLD_TEST_BIGNUM_H
+#endif // PLB_TEST_BIGNUM_H

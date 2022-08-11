@@ -3,8 +3,8 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef PLD_CORE_MEMUSAGE_H
-#define PLD_CORE_MEMUSAGE_H
+#ifndef PLB_CORE_MEMUSAGE_H
+#define PLB_CORE_MEMUSAGE_H
 
 #include "primitives/transaction.h"
 #include "primitives/block.h"
@@ -69,4 +69,4 @@ static inline size_t RecursiveDynamicUsage(const std::shared_ptr<X>& p) {
     return p ? memusage::DynamicUsage(p) + RecursiveDynamicUsage(*p) : 0;
 }
 
-#endif // PLD_CORE_MEMUSAGE_H
+#endif // PLB_CORE_MEMUSAGE_H

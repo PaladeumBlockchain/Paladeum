@@ -19,28 +19,28 @@ else
 LIBUNIVALUE = $(UNIVALUE_LIBS)
 endif
 
-PLD_INCLUDES=-I$(builddir) -I$(builddir)/obj $(BDB_CPPFLAGS) $(BOOST_CPPFLAGS) $(LEVELDB_CPPFLAGS) $(CRYPTO_CFLAGS) $(SSL_CFLAGS)
+PLB_INCLUDES=-I$(builddir) -I$(builddir)/obj $(BDB_CPPFLAGS) $(BOOST_CPPFLAGS) $(LEVELDB_CPPFLAGS) $(CRYPTO_CFLAGS) $(SSL_CFLAGS)
 
-PLD_INCLUDES += -I$(srcdir)/secp256k1/include
-PLD_INCLUDES += $(UNIVALUE_CFLAGS)
+PLB_INCLUDES += -I$(srcdir)/secp256k1/include
+PLB_INCLUDES += $(UNIVALUE_CFLAGS)
 
-LIBPLD_SERVER=libpaladeum_server.a
-LIBPLD_COMMON=libpaladeum_common.a
-LIBPLD_CONSENSUS=libpaladeum_consensus.a
-LIBPLD_CLI=libpaladeum_cli.a
-LIBPLD_UTIL=libpaladeum_util.a
-LIBPLD_CRYPTO=crypto/libpaladeum_crypto.a
-LIBPLDQT=qt/libpaladeumqt.a
+LIBPLB_SERVER=libpaladeum_server.a
+LIBPLB_COMMON=libpaladeum_common.a
+LIBPLB_CONSENSUS=libpaladeum_consensus.a
+LIBPLB_CLI=libpaladeum_cli.a
+LIBPLB_UTIL=libpaladeum_util.a
+LIBPLB_CRYPTO=crypto/libpaladeum_crypto.a
+LIBPLBQT=qt/libpaladeumqt.a
 LIBSECP256K1=secp256k1/libsecp256k1.la
 
 if ENABLE_ZMQ
-LIBPLD_ZMQ=libpaladeum_zmq.a
+LIBPLB_ZMQ=libpaladeum_zmq.a
 endif
-if BUILD_PLD_LIBS
-LIBPLDCONSENSUS=libpaladeumconsensus.la
+if BUILD_PLB_LIBS
+LIBPLBCONSENSUS=libpaladeumconsensus.la
 endif
 if ENABLE_WALLET
-LIBPLD_WALLET=libpaladeum_wallet.a
+LIBPLB_WALLET=libpaladeum_wallet.a
 endif
 
 $(LIBSECP256K1): $(wildcard secp256k1/src/*) $(wildcard secp256k1/include/*)
@@ -49,37 +49,37 @@ $(LIBSECP256K1): $(wildcard secp256k1/src/*) $(wildcard secp256k1/include/*)
 # Make is not made aware of per-object dependencies to avoid limiting building parallelization
 # But to build the less dependent modules first, we manually select their order here:
 EXTRA_LIBRARIES += \
-  $(LIBPLD_CRYPTO) \
-  $(LIBPLD_UTIL) \
-  $(LIBPLD_COMMON) \
-  $(LIBPLD_CONSENSUS) \
-  $(LIBPLD_SERVER) \
-  $(LIBPLD_CLI) \
-  $(LIBPLD_WALLET) \
-  $(LIBPLD_ZMQ)
+  $(LIBPLB_CRYPTO) \
+  $(LIBPLB_UTIL) \
+  $(LIBPLB_COMMON) \
+  $(LIBPLB_CONSENSUS) \
+  $(LIBPLB_SERVER) \
+  $(LIBPLB_CLI) \
+  $(LIBPLB_WALLET) \
+  $(LIBPLB_ZMQ)
 
-lib_LTLIBRARIES = $(LIBPLDCONSENSUS)
+lib_LTLIBRARIES = $(LIBPLBCONSENSUS)
 
 bin_PROGRAMS =
 noinst_PROGRAMS =
 TESTS =
 BENCHMARKS =
 
-if BUILD_PLDD
+if BUILD_PLBD
   bin_PROGRAMS += paladeumd
 endif
 
-if BUILD_PLD_CLI
+if BUILD_PLB_CLI
   bin_PROGRAMS += paladeum-cli
 endif
 
-if BUILD_PLD_TX
+if BUILD_PLB_TX
   bin_PROGRAMS += paladeum-tx
 endif
 
 .PHONY: FORCE check-symbols check-security
 # paladeum core #
-PLD_CORE_H = \
+PLB_CORE_H = \
   addrdb.h \
   addressindex.h \
   spentindex.h \
@@ -202,7 +202,7 @@ obj/build.h: FORCE
 libpaladeum_util_a-clientversion.$(OBJEXT): obj/build.h
 
 # server: shared between paladeumd and paladeum-qt
-libpaladeum_server_a_CPPFLAGS = $(AM_CPPFLAGS) $(PLD_INCLUDES) $(MINIUPNPC_CPPFLAGS) $(EVENT_CFLAGS) $(EVENT_PTHREADS_CFLAGS)
+libpaladeum_server_a_CPPFLAGS = $(AM_CPPFLAGS) $(PLB_INCLUDES) $(MINIUPNPC_CPPFLAGS) $(EVENT_CFLAGS) $(EVENT_PTHREADS_CFLAGS)
 libpaladeum_server_a_CXXFLAGS = $(AM_CXXFLAGS) $(PIE_FLAGS)
 libpaladeum_server_a_SOURCES = \
   addrdb.cpp \
@@ -258,10 +258,10 @@ libpaladeum_server_a_SOURCES = \
   validation.cpp \
   validationinterface.cpp \
   versionbits.cpp \
-  $(PLD_CORE_H)
+  $(PLB_CORE_H)
 
 if ENABLE_ZMQ
-libpaladeum_zmq_a_CPPFLAGS = $(PLD_INCLUDES) $(ZMQ_CFLAGS)
+libpaladeum_zmq_a_CPPFLAGS = $(PLB_INCLUDES) $(ZMQ_CFLAGS)
 libpaladeum_zmq_a_CXXFLAGS = $(AM_CXXFLAGS) $(PIE_FLAGS)
 libpaladeum_zmq_a_SOURCES = \
   zmq/zmqabstractnotifier.cpp \
@@ -272,7 +272,7 @@ endif
 
 # wallet: shared between paladeumd and paladeum-qt, but only linked
 # when wallet enabled
-libpaladeum_wallet_a_CPPFLAGS = $(AM_CPPFLAGS) $(PLD_INCLUDES)
+libpaladeum_wallet_a_CPPFLAGS = $(AM_CPPFLAGS) $(PLB_INCLUDES)
 libpaladeum_wallet_a_CXXFLAGS = $(AM_CXXFLAGS) $(PIE_FLAGS)
 libpaladeum_wallet_a_SOURCES = \
   wallet/crypter.cpp \
@@ -285,7 +285,7 @@ libpaladeum_wallet_a_SOURCES = \
   wallet/wallet.cpp \
   wallet/walletdb.cpp \
   wallet/bip39.cpp \
-  $(PLD_CORE_H)
+  $(PLB_CORE_H)
 
 # crypto primitives library
 crypto_libpaladeum_crypto_a_CPPFLAGS = $(AM_CPPFLAGS)
@@ -316,7 +316,7 @@ crypto_libpaladeum_crypto_a_SOURCES += crypto/sha256_sse4.cpp
 endif
 
 # consensus: shared between all executables that validate any consensus rules.
-libpaladeum_consensus_a_CPPFLAGS = $(AM_CPPFLAGS) $(PLD_INCLUDES)
+libpaladeum_consensus_a_CPPFLAGS = $(AM_CPPFLAGS) $(PLB_INCLUDES)
 libpaladeum_consensus_a_CXXFLAGS = $(AM_CXXFLAGS) $(PIE_FLAGS)
 libpaladeum_consensus_a_SOURCES = \
   amount.h \
@@ -353,10 +353,10 @@ libpaladeum_consensus_a_SOURCES = \
   version.h \
   LibBoolEE.cpp \
   LibBoolEE.h \
-  $(PLD_CORE_H)
+  $(PLB_CORE_H)
 
 # common: shared between paladeumd, and paladeum-qt and non-server tools
-libpaladeum_common_a_CPPFLAGS = $(AM_CPPFLAGS) $(PLD_INCLUDES)
+libpaladeum_common_a_CPPFLAGS = $(AM_CPPFLAGS) $(PLB_INCLUDES)
 libpaladeum_common_a_CXXFLAGS = $(AM_CXXFLAGS) $(PIE_FLAGS)
 libpaladeum_common_a_SOURCES = \
   base58.cpp \
@@ -375,12 +375,12 @@ libpaladeum_common_a_SOURCES = \
   script/sign.cpp \
   script/standard.cpp \
   warnings.cpp \
-  $(PLD_CORE_H)
+  $(PLB_CORE_H)
 
 # util: shared between all executables.
 # This library *must* be included to make sure that the glibc
 # backward-compatibility objects and their sanity checks are linked.
-libpaladeum_util_a_CPPFLAGS = $(AM_CPPFLAGS) $(PLD_INCLUDES)
+libpaladeum_util_a_CPPFLAGS = $(AM_CPPFLAGS) $(PLB_INCLUDES)
 libpaladeum_util_a_CXXFLAGS = $(AM_CXXFLAGS) $(PIE_FLAGS)
 libpaladeum_util_a_SOURCES = \
   support/lockedpool.cpp \
@@ -398,7 +398,7 @@ libpaladeum_util_a_SOURCES = \
   utilmoneystr.cpp \
   utilstrencodings.cpp \
   utiltime.cpp \
-  $(PLD_CORE_H)
+  $(PLB_CORE_H)
 
 if GLIBC_BACK_COMPAT
 libpaladeum_util_a_SOURCES += compat/glibc_compat.cpp
@@ -406,18 +406,18 @@ AM_LDFLAGS += $(COMPAT_LDFLAGS)
 endif
 
 # cli: shared between paladeum-cli and paladeum-qt
-libpaladeum_cli_a_CPPFLAGS = $(AM_CPPFLAGS) $(PLD_INCLUDES)
+libpaladeum_cli_a_CPPFLAGS = $(AM_CPPFLAGS) $(PLB_INCLUDES)
 libpaladeum_cli_a_CXXFLAGS = $(AM_CXXFLAGS) $(PIE_FLAGS)
 libpaladeum_cli_a_SOURCES = \
   rpc/client.cpp \
-  $(PLD_CORE_H)
+  $(PLB_CORE_H)
 
 nodist_libpaladeum_util_a_SOURCES = $(srcdir)/obj/build.h
 #
 
 # paladeumd binary #
 paladeumd_SOURCES = paladeumd.cpp
-paladeumd_CPPFLAGS = $(AM_CPPFLAGS) $(PLD_INCLUDES)
+paladeumd_CPPFLAGS = $(AM_CPPFLAGS) $(PLB_INCLUDES)
 paladeumd_CXXFLAGS = $(AM_CXXFLAGS) $(PIE_FLAGS)
 paladeumd_LDFLAGS = $(RELDFLAGS) $(AM_LDFLAGS) $(LIBTOOL_APP_LDFLAGS)
 
@@ -426,14 +426,14 @@ paladeumd_SOURCES += paladeumd-res.rc
 endif
 
 paladeumd_LDADD = \
-  $(LIBPLD_SERVER) \
-  $(LIBPLD_COMMON) \
+  $(LIBPLB_SERVER) \
+  $(LIBPLB_COMMON) \
   $(LIBUNIVALUE) \
-  $(LIBPLD_UTIL) \
-  $(LIBPLD_WALLET) \
-  $(LIBPLD_ZMQ) \
-  $(LIBPLD_CONSENSUS) \
-  $(LIBPLD_CRYPTO) \
+  $(LIBPLB_UTIL) \
+  $(LIBPLB_WALLET) \
+  $(LIBPLB_ZMQ) \
+  $(LIBPLB_CONSENSUS) \
+  $(LIBPLB_CRYPTO) \
   $(LIBLEVELDB) \
   $(LIBLEVELDB_SSE42) \
   $(LIBMEMENV) \
@@ -443,7 +443,7 @@ paladeumd_LDADD += $(BOOST_LIBS) $(BDB_LIBS) $(SSL_LIBS) $(CRYPTO_LIBS) $(MINIUP
 
 # paladeum-cli binary #
 paladeum_cli_SOURCES = paladeum-cli.cpp
-paladeum_cli_CPPFLAGS = $(AM_CPPFLAGS) $(PLD_INCLUDES) $(EVENT_CFLAGS)
+paladeum_cli_CPPFLAGS = $(AM_CPPFLAGS) $(PLB_INCLUDES) $(EVENT_CFLAGS)
 paladeum_cli_CXXFLAGS = $(AM_CXXFLAGS) $(PIE_FLAGS)
 paladeum_cli_LDFLAGS = $(RELDFLAGS) $(AM_LDFLAGS) $(LIBTOOL_APP_LDFLAGS)
 
@@ -452,17 +452,17 @@ paladeum_cli_SOURCES += paladeum-cli-res.rc
 endif
 
 paladeum_cli_LDADD = \
-  $(LIBPLD_CLI) \
+  $(LIBPLB_CLI) \
   $(LIBUNIVALUE) \
-  $(LIBPLD_UTIL) \
-  $(LIBPLD_CRYPTO)
+  $(LIBPLB_UTIL) \
+  $(LIBPLB_CRYPTO)
 
 paladeum_cli_LDADD += $(BOOST_LIBS) $(SSL_LIBS) $(CRYPTO_LIBS) $(EVENT_LIBS)
 #
 
 # paladeum-tx binary #
 paladeum_tx_SOURCES = paladeum-tx.cpp
-paladeum_tx_CPPFLAGS = $(AM_CPPFLAGS) $(PLD_INCLUDES)
+paladeum_tx_CPPFLAGS = $(AM_CPPFLAGS) $(PLB_INCLUDES)
 paladeum_tx_CXXFLAGS = $(AM_CXXFLAGS) $(PIE_FLAGS)
 paladeum_tx_LDFLAGS = $(RELDFLAGS) $(AM_LDFLAGS) $(LIBTOOL_APP_LDFLAGS)
 
@@ -472,17 +472,17 @@ endif
 
 paladeum_tx_LDADD = \
   $(LIBUNIVALUE) \
-  $(LIBPLD_COMMON) \
-  $(LIBPLD_UTIL) \
-  $(LIBPLD_CONSENSUS) \
-  $(LIBPLD_CRYPTO) \
+  $(LIBPLB_COMMON) \
+  $(LIBPLB_UTIL) \
+  $(LIBPLB_CONSENSUS) \
+  $(LIBPLB_CRYPTO) \
   $(LIBSECP256K1)
 
 paladeum_tx_LDADD += $(BOOST_LIBS) $(CRYPTO_LIBS)
 #
 
 # paladeumconsensus library #
-if BUILD_PLD_LIBS
+if BUILD_PLB_LIBS
 include_HEADERS = script/paladeumconsensus.h
 libpaladeumconsensus_la_SOURCES = $(crypto_libpaladeum_crypto_a_SOURCES) $(libpaladeum_consensus_a_SOURCES)
 
@@ -492,7 +492,7 @@ endif
 
 libpaladeumconsensus_la_LDFLAGS = $(AM_LDFLAGS) -no-undefined $(RELDFLAGS)
 libpaladeumconsensus_la_LIBADD = $(LIBSECP256K1) $(BOOST_LIBS)
-libpaladeumconsensus_la_CPPFLAGS = $(AM_CPPFLAGS) -I$(builddir)/obj -I$(srcdir)/secp256k1/include -DBUILD_PLD_INTERNAL
+libpaladeumconsensus_la_CPPFLAGS = $(AM_CPPFLAGS) -I$(builddir)/obj -I$(srcdir)/secp256k1/include -DBUILD_PLB_INTERNAL
 libpaladeumconsensus_la_CXXFLAGS = $(AM_CXXFLAGS) $(PIE_FLAGS)
 
 endif

@@ -4,8 +4,8 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef PLD_SUPPORT_ALLOCATORS_SECURE_H
-#define PLD_SUPPORT_ALLOCATORS_SECURE_H
+#ifndef PLB_SUPPORT_ALLOCATORS_SECURE_H
+#define PLB_SUPPORT_ALLOCATORS_SECURE_H
 
 #include "support/lockedpool.h"
 #include "support/cleanse.h"
@@ -58,4 +58,4 @@ struct secure_allocator : public std::allocator<T> {
 typedef std::basic_string<char, std::char_traits<char>, secure_allocator<char> > SecureString;
 typedef std::vector<unsigned char, secure_allocator<unsigned char> >             SecureVector;
 
-#endif // PLD_SUPPORT_ALLOCATORS_SECURE_H
+#endif // PLB_SUPPORT_ALLOCATORS_SECURE_H

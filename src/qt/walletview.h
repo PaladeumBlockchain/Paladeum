@@ -3,8 +3,8 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef PLD_QT_WALLETVIEW_H
-#define PLD_QT_WALLETVIEW_H
+#ifndef PLB_QT_WALLETVIEW_H
+#define PLB_QT_WALLETVIEW_H
 
 #include "amount.h"
 
@@ -168,4 +168,4 @@ Q_SIGNALS:
     void checkTokens();
 };
 
-#endif // PLD_QT_WALLETVIEW_H
+#endif // PLB_QT_WALLETVIEW_H

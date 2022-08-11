@@ -3,8 +3,8 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef PLD_QT_TOKENCONTROLTREEWIDGET_H
-#define PLD_QT_TOKENCONTROLTREEWIDGET_H
+#ifndef PLB_QT_TOKENCONTROLTREEWIDGET_H
+#define PLB_QT_TOKENCONTROLTREEWIDGET_H
 
 #include <QKeyEvent>
 #include <QTreeWidget>
@@ -20,4 +20,4 @@ protected:
     virtual void keyPressEvent(QKeyEvent *event);
 };
 
-#endif // PLD_QT_TOKENCONTROLTREEWIDGET_H
+#endif // PLB_QT_TOKENCONTROLTREEWIDGET_H

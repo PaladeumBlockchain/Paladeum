@@ -3,8 +3,8 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef PLD_CRYPTO_HMAC_SHA512_H
-#define PLD_CRYPTO_HMAC_SHA512_H
+#ifndef PLB_CRYPTO_HMAC_SHA512_H
+#define PLB_CRYPTO_HMAC_SHA512_H
 
 #include "crypto/sha512.h"
 
@@ -30,4 +30,4 @@ public:
     void Finalize(unsigned char hash[OUTPUT_SIZE]);
 };
 
-#endif // PLD_CRYPTO_HMAC_SHA512_H
+#endif // PLB_CRYPTO_HMAC_SHA512_H

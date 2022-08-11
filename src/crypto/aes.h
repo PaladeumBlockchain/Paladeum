@@ -5,8 +5,8 @@
 //
 // C++ wrapper around ctaes, a constant-time AES implementation
 
-#ifndef PLD_CRYPTO_AES_H
-#define PLD_CRYPTO_AES_H
+#ifndef PLB_CRYPTO_AES_H
+#define PLB_CRYPTO_AES_H
 
 extern "C" {
 #include "crypto/ctaes/ctaes.h"
@@ -116,4 +116,4 @@ private:
     unsigned char iv[AES_BLOCKSIZE];
 };
 
-#endif // PLD_CRYPTO_AES_H
+#endif // PLB_CRYPTO_AES_H

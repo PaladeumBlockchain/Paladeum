@@ -62,7 +62,7 @@ class RawTokenTransactionsTest(PaladeumTestFramework):
         self.num_nodes = 3
 
     def activate_tokens(self):
-        self.log.info("Generating PLD for node[0] and activating tokens...")
+        self.log.info("Generating PLB for node[0] and activating tokens...")
         n0 = self.nodes[0]
 
         n0.generate(1)
@@ -264,13 +264,13 @@ class RawTokenTransactionsTest(PaladeumTestFramework):
         f = BytesIO(hex_str_to_bytes(tx_issue_hex))
         tx.deserialize(f)
         paladeumo = '72766e6f'  # paladeumo
-        PLDO = '52564e4f'  # PLDO
+        PLBO = '52564e4f'  # PLBO
         # change the owner output script type to be invalid
         for n in range(0, len(tx.vout)):
             out = tx.vout[n]
             if paladeumo in bytes_to_hex_str(out.scriptPubKey):
                 owner_script_hex = bytes_to_hex_str(out.scriptPubKey)
-                tampered_script = owner_script_hex.replace(paladeumo, PLDO)
+                tampered_script = owner_script_hex.replace(paladeumo, PLBO)
                 tx.vout[n].scriptPubKey = hex_str_to_bytes(tampered_script)
         tx_bad_issue = bytes_to_hex_str(tx.serialize())
         tx_bad_issue_signed = n0.signrawtransaction(tx_bad_issue)['hex']
@@ -1498,7 +1498,7 @@ class RawTokenTransactionsTest(PaladeumTestFramework):
         ########################################
         # paladeum for tokens
 
-        # n1 buys 400 ANDUIN from n2 for 4000 PLD
+        # n1 buys 400 ANDUIN from n2 for 4000 PLB
         price = 4000
         amount = 400
         fee = 0.01
@@ -1547,7 +1547,7 @@ class RawTokenTransactionsTest(PaladeumTestFramework):
         ########################################
         # paladeum for owner
 
-        # n2 buys JAINA! from n1 for 20000 PLD
+        # n2 buys JAINA! from n1 for 20000 PLB
         price = 20000
         amount = 1
         balance1 = newbalance1
@@ -1740,7 +1740,7 @@ class RawTokenTransactionsTest(PaladeumTestFramework):
         self.log.info("Testing fundrawtransaction with transfer outputs...")
         n0 = self.nodes[0]
         n2 = self.nodes[2]
-        token_name = "DONT_FUND_PLD"
+        token_name = "DONT_FUND_PLB"
         token_amount = 100
         paladeum_amount = 100
 

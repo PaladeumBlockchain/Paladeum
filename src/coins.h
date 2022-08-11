@@ -5,8 +5,8 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef PLD_COINS_H
-#define PLD_COINS_H
+#ifndef PLB_COINS_H
+#define PLB_COINS_H
 
 #include "primitives/transaction.h"
 #include "compressor.h"
@@ -333,4 +333,4 @@ void AddCoins(CCoinsViewCache& cache, const CTransaction& tx, int nHeight, uint2
 // lookups to database, so it should be used with care.
 const Coin& AccessByTxid(const CCoinsViewCache& cache, const uint256& txid);
 
-#endif // PLD_COINS_H
+#endif // PLB_COINS_H

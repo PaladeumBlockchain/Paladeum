@@ -3,8 +3,8 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef PLD_ZMQ_ZMQCONFIG_H
-#define PLD_ZMQ_ZMQCONFIG_H
+#ifndef PLB_ZMQ_ZMQCONFIG_H
+#define PLB_ZMQ_ZMQCONFIG_H
 
 #if defined(HAVE_CONFIG_H)
 #include "config/paladeum-config.h"
@@ -22,4 +22,4 @@
 
 void zmqError(const char *str);
 
-#endif // PLD_ZMQ_ZMQCONFIG_H
+#endif // PLB_ZMQ_ZMQCONFIG_H

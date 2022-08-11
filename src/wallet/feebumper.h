@@ -3,8 +3,8 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef PLD_WALLET_FEEBUMPER_H
-#define PLD_WALLET_FEEBUMPER_H
+#ifndef PLB_WALLET_FEEBUMPER_H
+#define PLB_WALLET_FEEBUMPER_H
 
 #include <primitives/transaction.h>
 
@@ -59,4 +59,4 @@ private:
     CAmount nNewFee;
 };
 
-#endif // PLD_WALLET_FEEBUMPER_H
+#endif // PLB_WALLET_FEEBUMPER_H

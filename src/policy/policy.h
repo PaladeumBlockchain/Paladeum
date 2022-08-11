@@ -5,8 +5,8 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef PLD_POLICY_POLICY_H
-#define PLD_POLICY_POLICY_H
+#ifndef PLB_POLICY_POLICY_H
+#define PLB_POLICY_POLICY_H
 
 #include "consensus/consensus.h"
 #include "feerate.h"
@@ -101,4 +101,4 @@ int64_t GetVirtualTransactionSize(int64_t nWeight, int64_t nSigOpCost);
 int64_t GetVirtualTransactionSize(const CTransaction& tx, int64_t nSigOpCost = 0);
 int64_t FutureDrift(int64_t nTime);
 
-#endif // PLD_POLICY_POLICY_H
+#endif // PLB_POLICY_POLICY_H

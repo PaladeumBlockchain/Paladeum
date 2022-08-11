@@ -86,7 +86,7 @@ WalletView::WalletView(const PlatformStyle *_platformStyle, QWidget *parent):
     QActionGroup *tabGroup = new QActionGroup(this);
 
     QAction *transferTokenAction = new QAction(platformStyle->SingleColorIconOnOff(":/icons/token_transfer", ":/icons/token_transfer"), tr("&Transfer Tokens"), this);
-    transferTokenAction->setStatusTip(tr("Transfer tokens to PLD addresses"));
+    transferTokenAction->setStatusTip(tr("Transfer tokens to PLB addresses"));
     transferTokenAction->setToolTip(transferTokenAction->statusTip());
     transferTokenAction->setCheckable(true);
     tabGroup->addAction(transferTokenAction);

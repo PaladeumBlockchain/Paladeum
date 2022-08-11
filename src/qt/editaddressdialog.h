@@ -3,8 +3,8 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef PLD_QT_EDITADDRESSDIALOG_H
-#define PLD_QT_EDITADDRESSDIALOG_H
+#ifndef PLB_QT_EDITADDRESSDIALOG_H
+#define PLB_QT_EDITADDRESSDIALOG_H
 
 #include <QDialog>
 
@@ -55,4 +55,4 @@ private:
     QString address;
 };
 
-#endif // PLD_QT_EDITADDRESSDIALOG_H
+#endif // PLB_QT_EDITADDRESSDIALOG_H

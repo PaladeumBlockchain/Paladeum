@@ -3,8 +3,8 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef PLD_QT_BANTABLEMODEL_H
-#define PLD_QT_BANTABLEMODEL_H
+#ifndef PLB_QT_BANTABLEMODEL_H
+#define PLB_QT_BANTABLEMODEL_H
 
 #include "net.h"
 
@@ -71,4 +71,4 @@ private:
     std::unique_ptr<BanTablePriv> priv;
 };
 
-#endif // PLD_QT_BANTABLEMODEL_H
+#endif // PLB_QT_BANTABLEMODEL_H

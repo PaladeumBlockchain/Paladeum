@@ -4,8 +4,8 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef PLD_KEY_H
-#define PLD_KEY_H
+#ifndef PLB_KEY_H
+#define PLB_KEY_H
 
 #include "pubkey.h"
 #include "serialize.h"
@@ -184,4 +184,4 @@ void ECC_Stop(void);
 /** Check that required EC support is available at runtime. */
 bool ECC_InitSanityCheck(void);
 
-#endif // PLD_KEY_H
+#endif // PLB_KEY_H

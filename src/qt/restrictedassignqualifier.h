@@ -2,8 +2,8 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef PLD_QT_ASSIGNQUALIFIER_H
-#define PLD_QT_ASSIGNQUALIFIER_H
+#ifndef PLB_QT_ASSIGNQUALIFIER_H
+#define PLB_QT_ASSIGNQUALIFIER_H
 
 #include "amount.h"
 
@@ -64,4 +64,4 @@ private Q_SLOTS:
     void changeAddressChanged(int);
 };
 
-#endif // PLD_QT_ASSIGNQUALIFIER_H
+#endif // PLB_QT_ASSIGNQUALIFIER_H

@@ -53,7 +53,7 @@ public:
                 TxPlainTextRole,
         /** Unprocessed icon */
                 RawDecorationRole,
-        /** PLD or name of an token */
+        /** PLB or name of an token */
                 TokenNameRole,
     };
 

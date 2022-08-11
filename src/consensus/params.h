@@ -4,8 +4,8 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef PLD_CONSENSUS_PARAMS_H
-#define PLD_CONSENSUS_PARAMS_H
+#ifndef PLB_CONSENSUS_PARAMS_H
+#define PLB_CONSENSUS_PARAMS_H
 
 #include "uint256.h"
 #include <map>
@@ -79,4 +79,4 @@ struct Params {
 };
 } // namespace Consensus
 
-#endif // PLD_CONSENSUS_PARAMS_H
+#endif // PLB_CONSENSUS_PARAMS_H

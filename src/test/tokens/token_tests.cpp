@@ -47,20 +47,20 @@ BOOST_FIXTURE_TEST_SUITE(token_tests, BasicTestingSetup)
         BOOST_CHECK(!IsTokenNameValid("A._BC", type));
         BOOST_CHECK(!IsTokenNameValid("AB_.C", type));
 
-        //- Versions of PLDCOIN NOT allowed
-        BOOST_CHECK(!IsTokenNameValid("PLD", type));
-        BOOST_CHECK(!IsTokenNameValid("PLD", type));
-        BOOST_CHECK(!IsTokenNameValid("PLDCOIN", type));
+        //- Versions of PLBCOIN NOT allowed
+        BOOST_CHECK(!IsTokenNameValid("PLB", type));
+        BOOST_CHECK(!IsTokenNameValid("PLB", type));
+        BOOST_CHECK(!IsTokenNameValid("PLBCOIN", type));
 
-        //- Versions of PLDCOIN ALLOWED
-        BOOST_CHECK(IsTokenNameValid("PLD.COIN", type));
-        BOOST_CHECK(IsTokenNameValid("PLD_COIN", type));
-        BOOST_CHECK(IsTokenNameValid("PLDSPYDER", type));
-        BOOST_CHECK(IsTokenNameValid("SPYDERPLD", type));
-        BOOST_CHECK(IsTokenNameValid("PLDSPYDER", type));
-        BOOST_CHECK(IsTokenNameValid("SPYDEPLD", type));
-        BOOST_CHECK(IsTokenNameValid("BLACK_PLDS", type));
-        BOOST_CHECK(IsTokenNameValid("SEPLDOT", type));
+        //- Versions of PLBCOIN ALLOWED
+        BOOST_CHECK(IsTokenNameValid("PLB.COIN", type));
+        BOOST_CHECK(IsTokenNameValid("PLB_COIN", type));
+        BOOST_CHECK(IsTokenNameValid("PLBSPYDER", type));
+        BOOST_CHECK(IsTokenNameValid("SPYDERPLB", type));
+        BOOST_CHECK(IsTokenNameValid("PLBSPYDER", type));
+        BOOST_CHECK(IsTokenNameValid("SPYDEPLB", type));
+        BOOST_CHECK(IsTokenNameValid("BLACK_PLBS", type));
+        BOOST_CHECK(IsTokenNameValid("SEPLBOT", type));
 
         // subs
         BOOST_CHECK(IsTokenNameValid("ABC/A", type));
@@ -227,7 +227,7 @@ BOOST_FIXTURE_TEST_SUITE(token_tests, BasicTestingSetup)
         SelectParams(CBaseChainParams::MAIN);
 
         // Create the token scriptPubKey
-        CTokenTransfer token("PLD", 1000);
+        CTokenTransfer token("PLB", 1000);
         CScript scriptPubKey = GetScriptForDestination(DecodeDestination(GetParams().GlobalFeeAddress()));
         token.ConstructTransaction(scriptPubKey);
 
@@ -248,7 +248,7 @@ BOOST_FIXTURE_TEST_SUITE(token_tests, BasicTestingSetup)
         SelectParams(CBaseChainParams::MAIN);
 
         // Create the token scriptPubKey
-        CNewToken token("PLD", 1000, 8, 1, 0, "");
+        CNewToken token("PLB", 1000, 8, 1, 0, "");
         CScript scriptPubKey = GetScriptForDestination(DecodeDestination(GetParams().GlobalFeeAddress()));
         token.ConstructTransaction(scriptPubKey);
 

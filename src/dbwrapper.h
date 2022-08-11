@@ -3,8 +3,8 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef PLD_DBWRAPPER_H
-#define PLD_DBWRAPPER_H
+#ifndef PLB_DBWRAPPER_H
+#define PLB_DBWRAPPER_H
 
 #include "clientversion.h"
 #include "fs.h"
@@ -341,4 +341,4 @@ public:
 
 };
 
-#endif // PLD_DBWRAPPER_H
+#endif // PLB_DBWRAPPER_H

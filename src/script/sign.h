@@ -4,8 +4,8 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef PLD_SCRIPT_SIGN_H
-#define PLD_SCRIPT_SIGN_H
+#ifndef PLB_SCRIPT_SIGN_H
+#define PLB_SCRIPT_SIGN_H
 
 #include "script/interpreter.h"
 #include "coins.h"
@@ -84,4 +84,4 @@ SignatureData CombineSignatures(const CScript& scriptPubKey, const BaseSignature
 SignatureData DataFromTransaction(const CMutableTransaction& tx, unsigned int nIn);
 void UpdateTransaction(CMutableTransaction& tx, unsigned int nIn, const SignatureData& data);
 
-#endif // PLD_SCRIPT_SIGN_H
+#endif // PLB_SCRIPT_SIGN_H

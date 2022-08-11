@@ -3,8 +3,8 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef PLD_RPC_BLOCKCHAIN_H
-#define PLD_RPC_BLOCKCHAIN_H
+#ifndef PLB_RPC_BLOCKCHAIN_H
+#define PLB_RPC_BLOCKCHAIN_H
 
 class CBlock;
 class CBlockIndex;

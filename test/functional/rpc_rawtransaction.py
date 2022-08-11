@@ -68,7 +68,7 @@ class RawTransactionsTest(PaladeumTestFramework):
         #use balance deltas instead of absolute values
         bal = self.nodes[2].getbalance()
 
-        # send 1.2 PLD to msig adr
+        # send 1.2 PLB to msig adr
         self.nodes[0].sendtoaddress(mSigObj, 1.2)
         self.sync_all()
         self.nodes[0].generate(1)

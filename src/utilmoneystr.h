@@ -7,8 +7,8 @@
 /**
  * Money parsing/formatting utilities.
  */
-#ifndef PLD_UTILMONEYSTR_H
-#define PLD_UTILMONEYSTR_H
+#ifndef PLB_UTILMONEYSTR_H
+#define PLB_UTILMONEYSTR_H
 
 #include <stdint.h>
 #include <string>
@@ -22,4 +22,4 @@ std::string FormatMoney(const CAmount& n);
 bool ParseMoney(const std::string& str, CAmount& nRet);
 bool ParseMoney(const char* pszIn, CAmount& nRet);
 
-#endif // PLD_UTILMONEYSTR_H
+#endif // PLB_UTILMONEYSTR_H

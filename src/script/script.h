@@ -6,8 +6,8 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef PLD_SCRIPT_SCRIPT_H
-#define PLD_SCRIPT_SCRIPT_H
+#ifndef PLB_SCRIPT_SCRIPT_H
+#define PLB_SCRIPT_SCRIPT_H
 
 #include "crypto/common.h"
 #include "prevector.h"
@@ -187,7 +187,7 @@ enum opcodetype
     OP_NOP10 = 0xb9,
 
     /** TOKENS START */
-    OP_PLD_TOKEN = 0xc0,
+    OP_PLB_TOKEN = 0xc0,
     /** TOKENS END */
 
     OP_OFFLINE_STAKE = 0xc6,
@@ -586,7 +586,7 @@ public:
 
         // If we see an op paladeum token, we consider all data after it has data, and not op codes
         // Move the pc to the end of the script
-        if (opcode == OP_PLD_TOKEN) {
+        if (opcode == OP_PLB_TOKEN) {
             unsigned int nSize = end() - pc;
             if (pvchRet)
                 pvchRet->assign(pc, pc + nSize);
@@ -754,4 +754,4 @@ bool ScriptReissueToken(const CScript& scriptPubKey, int& nStartingIndex);
 
 int SearchForYNA(const CScript& script, const int startingValue);
 
-#endif // PLD_SCRIPT_SCRIPT_H
+#endif // PLB_SCRIPT_SCRIPT_H

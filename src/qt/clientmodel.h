@@ -3,8 +3,8 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef PLD_QT_CLIENTMODEL_H
-#define PLD_QT_CLIENTMODEL_H
+#ifndef PLB_QT_CLIENTMODEL_H
+#define PLB_QT_CLIENTMODEL_H
 
 #include <QObject>
 #include <QDateTime>
@@ -117,4 +117,4 @@ public Q_SLOTS:
     void updateBanlist();
 };
 
-#endif // PLD_QT_CLIENTMODEL_H
+#endif // PLB_QT_CLIENTMODEL_H

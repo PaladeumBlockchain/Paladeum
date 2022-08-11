@@ -3,8 +3,8 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef PLD_QT_GUIUTIL_H
-#define PLD_QT_GUIUTIL_H
+#ifndef PLB_QT_GUIUTIL_H
+#define PLB_QT_GUIUTIL_H
 
 #include "amount.h"
 #include "fs.h"
@@ -309,4 +309,4 @@ namespace GUIUtil
 
 } // namespace GUIUtil
 
-#endif // PLD_QT_GUIUTIL_H
+#endif // PLB_QT_GUIUTIL_H

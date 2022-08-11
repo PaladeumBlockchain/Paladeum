@@ -148,7 +148,7 @@ const char* GetOpName(opcodetype opcode)
     case OP_OFFLINE_STAKE              : return "OP_OFFLINE_STAKE";
 
     /** TOKENS START */
-    case OP_PLD_TOKEN             : return "OP_PLD_TOKEN";
+    case OP_PLB_TOKEN             : return "OP_PLB_TOKEN";
     /** TOKENS END */
 
     case OP_INVALIDOPCODE          : return "OP_INVALIDOPCODE";
@@ -294,13 +294,13 @@ bool CScript::IsTokenScript(int& nType, int& nScriptType, bool& fIsOwner, int& n
         // Initialize the index
         int index = -1;
 
-        // OP_PLD_TOKEN is always in the 23 index of the P2SH script if it exists
-        if (nScriptType == TX_SCRIPTHASH && (*this)[23] == OP_PLD_TOKEN) {
+        // OP_PLB_TOKEN is always in the 23 index of the P2SH script if it exists
+        if (nScriptType == TX_SCRIPTHASH && (*this)[23] == OP_PLB_TOKEN) {
             // We have a potential token interacting with a P2SH
             index = SearchForYNA(*this, 25);
 
         }
-        else if ((*this)[25] == OP_PLD_TOKEN) { // OP_PLD_TOKEN is always in the 25 index of the P2PKH script if it exists
+        else if ((*this)[25] == OP_PLB_TOKEN) { // OP_PLB_TOKEN is always in the 25 index of the P2PKH script if it exists
             // We have a potential token interacting with a P2PKH
             index = SearchForYNA(*this, 27);
         }
@@ -387,15 +387,15 @@ bool CScript::IsNullToken() const
 bool CScript::IsNullTokenTxDataScript() const
 {
     return (this->size() > 23 &&
-            (*this)[0] == OP_PLD_TOKEN &&
+            (*this)[0] == OP_PLB_TOKEN &&
             (*this)[1] == 0x14);
 }
 
 bool CScript::IsNullGlobalRestrictionTokenTxDataScript() const
 {
-    // 1 OP_PLD_TOKEN followed by two OP_RESERVED + atleast 4 characters for the restricted name $ABC
+    // 1 OP_PLB_TOKEN followed by two OP_RESERVED + atleast 4 characters for the restricted name $ABC
     return (this->size() > 6 &&
-            (*this)[0] == OP_PLD_TOKEN &&
+            (*this)[0] == OP_PLB_TOKEN &&
             (*this)[1] == OP_RESERVED &&
             (*this)[2] == OP_RESERVED);
 }
@@ -403,9 +403,9 @@ bool CScript::IsNullGlobalRestrictionTokenTxDataScript() const
 
 bool CScript::IsNullTokenVerifierTxDataScript() const
 {
-    // 1 OP_PLD_TOKEN followed by one OP_RESERVED
+    // 1 OP_PLB_TOKEN followed by one OP_RESERVED
     return (this->size() > 3 &&
-            (*this)[0] == OP_PLD_TOKEN &&
+            (*this)[0] == OP_PLB_TOKEN &&
             (*this)[1] == OP_RESERVED &&
             (*this)[2] != OP_RESERVED);
 }
@@ -524,7 +524,7 @@ bool CScript::HasValidOps() const
 bool CScript::IsUnspendable() const
 {
     CAmount nAmount;
-    return (size() > 0 && *begin() == OP_RETURN) || (size() > 0 && *begin() == OP_PLD_TOKEN) || (size() > MAX_SCRIPT_SIZE) || (GetTokenAmountFromScript(*this, nAmount) && nAmount == 0);
+    return (size() > 0 && *begin() == OP_RETURN) || (size() > 0 && *begin() == OP_PLB_TOKEN) || (size() > MAX_SCRIPT_SIZE) || (GetTokenAmountFromScript(*this, nAmount) && nAmount == 0);
 }
 
 //!--------------------------------------------------------------------------------------------------------------------------!//

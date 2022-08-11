@@ -5,8 +5,8 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef PLD_WALLET_WALLET_H
-#define PLD_WALLET_WALLET_H
+#ifndef PLB_WALLET_WALLET_H
+#define PLB_WALLET_WALLET_H
 
 #include "amount.h"
 #include "policy/feerate.h"
@@ -886,7 +886,7 @@ public:
      * populate vCoins with vector of available COutputs, and populates vTokenCoins in fWithTokens is set to true.
      */
     void AvailableCoinsAll(std::vector<COutput>& vCoins, std::map<std::string, std::vector<COutput> >& mapTokenCoins,
-                            bool fGetPLD = true, bool fOnlyTokens = false,
+                            bool fGetPLB = true, bool fOnlyTokens = false,
                             bool fOnlySafe = true, const CCoinControl *coinControl = nullptr,
                             const CAmount& nMinimumAmount = 1, const CAmount& nMaximumAmount = MAX_MONEY,
                             const CAmount& nMinimumSumAmount = MAX_MONEY, const uint64_t& nMaximumCount = 0,
@@ -909,7 +909,7 @@ public:
                          const uint64_t &nMaximumCount = 0, const int &nMinDepth = 0, const int &nMaxDepth = 9999999) const;
 
     /**
-     * Helper function that calls AvailableCoinsAll, used to receive all coins, Tokens and PLD
+     * Helper function that calls AvailableCoinsAll, used to receive all coins, Tokens and PLB
      */
     void AvailableCoinsWithTokens(std::vector<COutput> &vCoins, std::map<std::string, std::vector<COutput> > &mapTokenCoins,
                                   bool fOnlySafe = true, const CCoinControl *coinControl = nullptr, const CAmount &nMinimumAmount = 1,
@@ -1381,4 +1381,4 @@ bool CWallet::DummySignTx(CMutableTransaction &txNew, const ContainerType &coins
     return allSigned;
 }
 
-#endif // PLD_WALLET_WALLET_H
+#endif // PLB_WALLET_WALLET_H

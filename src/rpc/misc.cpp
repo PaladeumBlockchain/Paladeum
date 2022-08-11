@@ -756,7 +756,7 @@ UniValue getaddressmempool(const JSONRPCRequest& request)
             "[\n"
             "  {\n"
             "    \"address\"  (string) The base58check encoded address\n"
-            "    \"tokenName\"  (string) The name of the associated token (PLD for Paladeumcoin)\n"
+            "    \"tokenName\"  (string) The name of the associated token (PLB for Paladeumcoin)\n"
             "    \"txid\"  (string) The related txid\n"
             "    \"index\"  (number) The related input or output index\n"
             "    \"satoshis\"  (number) The difference of satoshis\n"
@@ -794,7 +794,7 @@ UniValue getaddressmempool(const JSONRPCRequest& request)
             throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, "No information available for address");
         }
     } else {
-        if (!mempool.getAddressIndex(addresses, PLD, indexes)) {
+        if (!mempool.getAddressIndex(addresses, PLB, indexes)) {
             throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, "No information available for address");
         }
     }
@@ -859,7 +859,7 @@ UniValue getaddressutxos(const JSONRPCRequest& request)
         requiredAmount = AmountFromValue(request.params[1]);
     }
 
-    std::string tokenName = PLD;
+    std::string tokenName = PLB;
     if (!request.params[2].isNull()) {
         if (request.params[2].isStr()) {
             if (!AreTokensDeployed()) {
@@ -908,15 +908,15 @@ UniValue getaddressutxos(const JSONRPCRequest& request)
             throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, "Unknown address type");
         }
 
-        std::string tokenNameOut = PLD;
-        if (tokenName != PLD) {
+        std::string tokenNameOut = PLB;
+        if (tokenName != PLB) {
             CAmount _amount;
             if (!GetTokenInfoFromScript(it->second.script, tokenNameOut, _amount, nTimeLock)) {
                 throw JSONRPCError(RPC_INTERNAL_ERROR, "Couldn't decode token script");
             }
         }
 
-        int64_t timeLock = (tokenName == PLD) ? it->first.timeLock : nTimeLock;
+        int64_t timeLock = (tokenName == PLB) ? it->first.timeLock : nTimeLock;
         if (timeLock < ((int64_t)timeLock < LOCKTIME_THRESHOLD ? nHeight : (int64_t)chainActive.Tip()->GetMedianTimePast())) {
             output.pushKV("address", address);
             output.pushKV("token_name", tokenNameOut);
@@ -951,12 +951,12 @@ UniValue getaddressdeltas(const JSONRPCRequest& request)
             "  \"start\" (number) The start block height\n"
             "  \"end\" (number) The end block height\n"
             "  \"chainInfo\" (boolean) Include chain info in results, only applies if start and end specified\n"
-            "  \"tokenName\"   (string, optional) Get deltas for a particular token instead of PLD.\n"
+            "  \"tokenName\"   (string, optional) Get deltas for a particular token instead of PLB.\n"
             "}\n"
             "\nResult:\n"
             "[\n"
             "  {\n"
-            "    \"tokenName\"  (string) The token associated with the deltas (PLD for Paladeumcoin)\n"
+            "    \"tokenName\"  (string) The token associated with the deltas (PLB for Paladeumcoin)\n"
             "    \"satoshis\"  (number) The difference of satoshis\n"
             "    \"txid\"  (string) The related txid\n"
             "    \"index\"  (number) The related input or output index\n"
@@ -981,7 +981,7 @@ UniValue getaddressdeltas(const JSONRPCRequest& request)
         includeChainInfo = chainInfo.get_bool();
     }
 
-    std::string tokenName = PLD;
+    std::string tokenName = PLB;
     UniValue tokenNameParam = find_value(request.params[0].get_obj(), "tokenName");
     if (tokenNameParam.isStr()) {
         if (!AreTokensDeployed())
@@ -1172,7 +1172,7 @@ UniValue getaddressbalance(const JSONRPCRequest& request)
         std::vector<std::pair<CAddressIndexKey, CAmount> > addressIndex;
 
         for (std::vector<std::pair<uint160, int> >::iterator it = addresses.begin(); it != addresses.end(); it++) {
-            if (!GetAddressIndex((*it).first, (*it).second, PLD, addressIndex)) {
+            if (!GetAddressIndex((*it).first, (*it).second, PLB, addressIndex)) {
                 throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, "No information available for address");
             }
         }
@@ -1263,11 +1263,11 @@ UniValue getaddresstxids(const JSONRPCRequest& request)
             }
         } else {
             if (start > 0 && end > 0) {
-                if (!GetAddressIndex((*it).first, (*it).second, PLD, addressIndex, start, end)) {
+                if (!GetAddressIndex((*it).first, (*it).second, PLB, addressIndex, start, end)) {
                     throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, "No information available for address");
                 }
             } else {
-                if (!GetAddressIndex((*it).first, (*it).second, PLD, addressIndex)) {
+                if (!GetAddressIndex((*it).first, (*it).second, PLB, addressIndex)) {
                     throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, "No information available for address");
                 }
             }

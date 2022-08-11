@@ -3,8 +3,8 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef PLD_CONSENSUS_VERSIONBITS
-#define PLD_CONSENSUS_VERSIONBITS
+#ifndef PLB_CONSENSUS_VERSIONBITS
+#define PLB_CONSENSUS_VERSIONBITS
 
 #include "chain.h"
 #include <map>

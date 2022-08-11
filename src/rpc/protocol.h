@@ -4,8 +4,8 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef PLD_RPCPROTOCOL_H
-#define PLD_RPCPROTOCOL_H
+#ifndef PLB_RPCPROTOCOL_H
+#define PLB_RPCPROTOCOL_H
 
 #include "fs.h"
 
@@ -102,4 +102,4 @@ void DeleteAuthCookie();
 /** Parse JSON-RPC batch reply into a vector */
 std::vector<UniValue> JSONRPCProcessBatchReply(const UniValue &in, size_t num);
 
-#endif // PLD_RPCPROTOCOL_H
+#endif // PLB_RPCPROTOCOL_H

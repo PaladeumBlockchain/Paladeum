@@ -3,8 +3,8 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef PLD_TOKENDB_H
-#define PLD_TOKENDB_H
+#ifndef PLB_TOKENDB_H
+#define PLB_TOKENDB_H
 
 #include "fs.h"
 #include "serialize.h"
@@ -98,4 +98,4 @@ public:
 };
 
 
-#endif //PLD_TOKENDB_H
+#endif //PLB_TOKENDB_H

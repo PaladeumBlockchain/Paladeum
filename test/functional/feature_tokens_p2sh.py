@@ -19,7 +19,7 @@ class TokenTest(PaladeumTestFramework):
         self.extra_args = [['-tokenindex'], ['-tokenindex'], ['-tokenindex']]
 
     def activate_p2sh_tokens(self):
-        self.log.info("Generating PLD for node[0] and activating tokens...")
+        self.log.info("Generating PLB for node[0] and activating tokens...")
         n0 = self.nodes[0]
 
         n0.generate(1)
@@ -99,7 +99,7 @@ class TokenTest(PaladeumTestFramework):
         # Building createrawtransaction data
         paladeum_destination_address = n0.getnewaddress()
 
-        self.log.info("Get PLD for tx fee()...")
+        self.log.info("Get PLB for tx fee()...")
         unspent_paladeum_inputs = n0.listunspent(100)[0]
 
         self.log.info("Get private key for unspent input")
@@ -214,7 +214,7 @@ class TokenTest(PaladeumTestFramework):
         # Building createrawtransaction data
         paladeum_destination_address = n0.getnewaddress()
 
-        self.log.info("Get PLD for tx fee()...")
+        self.log.info("Get PLB for tx fee()...")
         unspent_paladeum_inputs = n0.listunspent(100)[0]
 
         self.log.info("Get private key for unspent input")
@@ -456,7 +456,7 @@ class TokenTest(PaladeumTestFramework):
         # Building createrawtransaction data
         paladeum_destination_address = n0.getnewaddress()
 
-        self.log.info("Get PLD for tx fee()...")
+        self.log.info("Get PLB for tx fee()...")
         unspent_paladeum_inputs = n0.listunspent(100)[0]
 
         self.log.info("Get private key for unspent input")

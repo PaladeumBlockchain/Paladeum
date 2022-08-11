@@ -1,5 +1,5 @@
-#ifndef PLD_QT_CALLBACK_H
-#define PLD_QT_CALLBACK_H
+#ifndef PLB_QT_CALLBACK_H
+#define PLB_QT_CALLBACK_H
 
 #include <QObject>
 
@@ -27,4 +27,4 @@ FunctionCallback<F>* makeCallback(F f)
     return new FunctionCallback<F>(std::move(f));
 }
 
-#endif // PLD_QT_CALLBACK_H
+#endif // PLB_QT_CALLBACK_H

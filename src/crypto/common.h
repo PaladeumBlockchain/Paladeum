@@ -3,8 +3,8 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef PLD_CRYPTO_COMMON_H
-#define PLD_CRYPTO_COMMON_H
+#ifndef PLB_CRYPTO_COMMON_H
+#define PLB_CRYPTO_COMMON_H
 
 #if defined(HAVE_CONFIG_H)
 #include "config/paladeum-config.h"
@@ -101,4 +101,4 @@ uint64_t static inline CountBits(uint64_t x)
     return ret;
 }
 
-#endif // PLD_CRYPTO_COMMON_H
+#endif // PLB_CRYPTO_COMMON_H

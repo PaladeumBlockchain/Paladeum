@@ -1,5 +1,5 @@
-#ifndef PLD_QT_TEST_WALLETTESTS_H
-#define PLD_QT_TEST_WALLETTESTS_H
+#ifndef PLB_QT_TEST_WALLETTESTS_H
+#define PLB_QT_TEST_WALLETTESTS_H
 
 #include <QObject>
 #include <QTest>
@@ -12,4 +12,4 @@ private Q_SLOTS:
     void walletTests();
 };
 
-#endif // PLD_QT_TEST_WALLETTESTS_H
+#endif // PLB_QT_TEST_WALLETTESTS_H

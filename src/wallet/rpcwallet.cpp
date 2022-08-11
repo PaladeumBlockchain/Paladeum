@@ -3537,7 +3537,7 @@ UniValue fundrawtransaction(const JSONRPCRequest& request)
 
 UniValue bumpfee(const JSONRPCRequest& request)
 {
-    throw std::runtime_error("bumpfee has been deprecated on the PLD Wallet.");
+    throw std::runtime_error("bumpfee has been deprecated on the PLB Wallet.");
 
 //    CWallet * const pwallet = GetWalletForJSONRPCRequest(request);
 //

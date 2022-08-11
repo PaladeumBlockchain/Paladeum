@@ -25,7 +25,7 @@ class TxnMallTest(PaladeumTestFramework):
         disconnect_nodes(self.nodes[2], 1)
 
     def run_test(self):
-        # All nodes should start with 125,000 PLD:
+        # All nodes should start with 125,000 PLB:
         starting_balance = 125000
         for i in range(4):
             assert_equal(self.nodes[i].getbalance(), starting_balance)
@@ -46,7 +46,7 @@ class TxnMallTest(PaladeumTestFramework):
         # Coins are sent to node1_address
         node1_address = self.nodes[1].getnewaddress("from0")
 
-        # First: use raw transaction API to send 1240 PLD to node1_address,
+        # First: use raw transaction API to send 1240 PLB to node1_address,
         # but don't broadcast:
         doublespend_fee = Decimal('-.02')
         rawtx_input_0 = {"txid": fund_foo_txid, "vout": find_output(self.nodes[0], fund_foo_txid, 121900)}
@@ -58,7 +58,7 @@ class TxnMallTest(PaladeumTestFramework):
         doublespend = self.nodes[0].signrawtransaction(rawtx)
         assert_equal(doublespend["complete"], True)
 
-        # Create two spends using 1 50 PLD coin each
+        # Create two spends using 1 50 PLB coin each
         txid1 = self.nodes[0].sendfrom("foo", node1_address, 4000, 0)
         txid2 = self.nodes[0].sendfrom("bar", node1_address, 2000, 0)
         
@@ -70,7 +70,7 @@ class TxnMallTest(PaladeumTestFramework):
         tx1 = self.nodes[0].gettransaction(txid1)
         tx2 = self.nodes[0].gettransaction(txid2)
 
-        # Node0's balance should be starting balance, plus 50PLD for another
+        # Node0's balance should be starting balance, plus 50PLB for another
         # matured block, minus 40, minus 20, and minus transaction fees:
         expected = starting_balance + fund_foo_tx["fee"] + fund_bar_tx["fee"]
         if self.options.mine_block: expected += 5000
@@ -112,7 +112,7 @@ class TxnMallTest(PaladeumTestFramework):
         assert_equal(tx1["confirmations"], -2)
         assert_equal(tx2["confirmations"], -2)
 
-        # Node0's total balance should be starting balance, plus 100PLD for 
+        # Node0's total balance should be starting balance, plus 100PLB for 
         # two more matured blocks, minus 1240 for the double-spend, plus fees (which are
         # negative):
         expected = starting_balance + 10000 - 124000 + fund_foo_tx["fee"] + fund_bar_tx["fee"] + doublespend_fee

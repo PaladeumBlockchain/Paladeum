@@ -3,8 +3,8 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef PLD_CHECKQUEUE_H
-#define PLD_CHECKQUEUE_H
+#ifndef PLB_CHECKQUEUE_H
+#define PLB_CHECKQUEUE_H
 
 #include "sync.h"
 
@@ -215,4 +215,4 @@ public:
     }
 };
 
-#endif // PLD_CHECKQUEUE_H
+#endif // PLB_CHECKQUEUE_H

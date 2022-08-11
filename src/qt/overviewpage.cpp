@@ -46,7 +46,7 @@ class TxViewDelegate : public QAbstractItemDelegate
     Q_OBJECT
 public:
     explicit TxViewDelegate(const PlatformStyle *_platformStyle, QObject *parent=nullptr):
-        QAbstractItemDelegate(parent), unit(PaladeumUnits::PLD),
+        QAbstractItemDelegate(parent), unit(PaladeumUnits::PLB),
         platformStyle(_platformStyle)
     {
 
@@ -155,7 +155,7 @@ class TokenViewDelegate : public QAbstractItemDelegate
 Q_OBJECT
 public:
     explicit TokenViewDelegate(const PlatformStyle *_platformStyle, QObject *parent=nullptr):
-            QAbstractItemDelegate(parent), unit(PaladeumUnits::PLD),
+            QAbstractItemDelegate(parent), unit(PaladeumUnits::PLB),
             platformStyle(_platformStyle)
     {
 
@@ -669,7 +669,7 @@ void OverviewPage::setWalletModel(WalletModel *model)
         connect(model, SIGNAL(notifyWatchonlyChanged(bool)), this, SLOT(updateWatchOnlyLabels(bool)));
     }
 
-    // update the display unit, to not use the default ("PLD")
+    // update the display unit, to not use the default ("PLB")
     updateDisplayUnit();
 }
 
@@ -718,7 +718,7 @@ void OverviewPage::showTokens()
         ui->tokenBalanceLabel->hide();
         ui->labelTokenStatus->hide();
 
-        // This keeps the PLD balance grid from expanding and looking terrible when token balance is hidden
+        // This keeps the PLB balance grid from expanding and looking terrible when token balance is hidden
         ui->tokenVerticalSpaceWidget->show();
         ui->tokenVerticalSpaceWidget2->show();
     }

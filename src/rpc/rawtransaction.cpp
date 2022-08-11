@@ -351,13 +351,13 @@ UniValue createrawtransaction(const JSONRPCRequest& request)
             "createrawtransaction [{\"txid\":\"id\",\"vout\":n},...] {\"address\":(amount or object),\"data\":\"hex\",...}\n"
             "                     ( locktime ) ( replaceable )\n"
             "\nCreate a transaction spending the given inputs and creating new outputs.\n"
-            "Outputs are addresses (paired with a PLD amount, data or object specifying an token operation) or data.\n"
+            "Outputs are addresses (paired with a PLB amount, data or object specifying an token operation) or data.\n"
             "Returns hex-encoded raw transaction.\n"
             "Note that the transaction's inputs are not signed, and\n"
             "it is not stored in the wallet or transmitted to the network.\n"
 
             "\nPaying for Token Operations:\n"
-            "  Some operations require an amount of PLD to be sent to a burn address:\n"
+            "  Some operations require an amount of PLB to be sent to a burn address:\n"
             "\n"
             "    Operation          Amount + Burn Address\n"
             "    transfer                 0\n"
@@ -415,7 +415,7 @@ UniValue createrawtransaction(const JSONRPCRequest& request)
             "     {\n"
             "       \"address\":                          (string, required) The destination paladeum address.\n"
             "                                               Each output must have a different address.\n"
-            "         x.xxx                             (number or string, required) The PLD amount\n"
+            "         x.xxx                             (number or string, required) The PLB amount\n"
             "           or\n"
             "         {                                 (object) A json object of tokens to send\n"
             "           \"transfer\":\n"
@@ -690,7 +690,7 @@ UniValue createrawtransaction(const JSONRPCRequest& request)
                 CTxOut out(nAmount, scriptPubKey);
                 rawTx.vout.push_back(out);
             }
-            /** PLD COIN START **/
+            /** PLB COIN START **/
             else if (sendTo[name_].type() == UniValue::VOBJ) {
                 auto token_ = sendTo[name_].get_obj();
                 auto tokenKey_ = token_.getKeys()[0];
@@ -1499,7 +1499,7 @@ UniValue createrawtransaction(const JSONRPCRequest& request)
             } else {
                 throw JSONRPCError(RPC_INVALID_PARAMETER, std::string("Invalid parameter, Output must be of the type object"));
             }
-            /** PLD COIN STOP **/
+            /** PLB COIN STOP **/
         }
     }
 

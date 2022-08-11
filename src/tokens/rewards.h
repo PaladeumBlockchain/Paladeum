@@ -3,8 +3,8 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef PLDCOIN_REWARDS_H
-#define PLDCOIN_REWARDS_H
+#ifndef PLBCOIN_REWARDS_H
+#define PLBCOIN_REWARDS_H
 
 #include "amount.h"
 #include "tinyformat.h"
@@ -168,4 +168,4 @@ void CheckRewardDistributions(CWallet * p_wallet);
 
 
 
-#endif //PLDCOIN_REWARDS_H
+#endif //PLBCOIN_REWARDS_H

@@ -4,8 +4,8 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef PLD_ADDRDB_H
-#define PLD_ADDRDB_H
+#ifndef PLB_ADDRDB_H
+#define PLB_ADDRDB_H
 
 #include "fs.h"
 #include "serialize.h"
@@ -100,4 +100,4 @@ public:
     bool Read(banmap_t& banSet);
 };
 
-#endif // PLD_ADDRDB_H
+#endif // PLB_ADDRDB_H

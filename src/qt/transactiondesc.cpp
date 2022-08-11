@@ -50,7 +50,7 @@ QString TransactionDesc::toHTML(CWallet *wallet, CWalletTx &wtx, TransactionReco
 {
     QString strHTML;
 
-    if (rec->tokenName != "PLD") {
+    if (rec->tokenName != "PLB") {
         return toTokenHTML(wallet, wtx, rec, unit);
     }
 
@@ -372,7 +372,7 @@ QString TransactionDesc::toTokenHTML(CWallet *wallet, CWalletTx &wtx, Transactio
         strHTML += "<b>" + tr("Debit") + ":</b> " + PaladeumUnits::formatWithCustomName(QString::fromStdString(rec->tokenName), nTokensRec, rec->units, true) + "<br>";
     }
 
-    strHTML += "<b>" + tr("Net PLD amount") + ":</b> " + PaladeumUnits::formatHtmlWithUnit(unit, nNet, true) + "<br>";
+    strHTML += "<b>" + tr("Net PLB amount") + ":</b> " + PaladeumUnits::formatHtmlWithUnit(unit, nNet, true) + "<br>";
 
     //
     // Message

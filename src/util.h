@@ -8,8 +8,8 @@
  * Server/client environment: argument handling, config file parsing,
  * logging, thread wrappers, startup time
  */
-#ifndef PLD_UTIL_H
-#define PLD_UTIL_H
+#ifndef PLB_UTIL_H
+#define PLB_UTIL_H
 
 #if defined(HAVE_CONFIG_H)
 #include "config/paladeum-config.h"
@@ -54,8 +54,8 @@ extern bool fLogIPs;
 extern std::atomic<bool> fReopenDebugLog;
 extern CTranslationInterface translationInterface;
 
-extern const char *const PLD_CONF_FILENAME;
-extern const char *const PLD_PID_FILENAME;
+extern const char *const PLB_CONF_FILENAME;
+extern const char *const PLB_PID_FILENAME;
 
 extern std::atomic<uint32_t> logCategories;
 
@@ -363,4 +363,4 @@ std::string CopyrightHolders(const std::string &strPrefix);
 
 void SetThreadPriority(int nPriority);
 
-#endif // PLD_UTIL_H
+#endif // PLB_UTIL_H

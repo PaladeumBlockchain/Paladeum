@@ -586,7 +586,7 @@ WId PaladeumApplication::getMainWinId() const
     return window->winId();
 }
 
-#ifndef PLD_QT_TEST
+#ifndef PLB_QT_TEST
 int main(int argc, char *argv[])
 {
     SetupEnvironment();
@@ -673,7 +673,7 @@ int main(int argc, char *argv[])
         return EXIT_FAILURE;
     }
     try {
-        gArgs.ReadConfigFile(gArgs.GetArg("-conf", PLD_CONF_FILENAME));
+        gArgs.ReadConfigFile(gArgs.GetArg("-conf", PLB_CONF_FILENAME));
     } catch (const std::exception& e) {
         QMessageBox::critical(0, QObject::tr(PACKAGE_NAME),
                               QObject::tr("Error: Cannot parse configuration file: %1. Only use key=value syntax.").arg(e.what()));
@@ -781,4 +781,4 @@ int main(int argc, char *argv[])
     }
     return rv;
 }
-#endif // PLD_QT_TEST
+#endif // PLB_QT_TEST

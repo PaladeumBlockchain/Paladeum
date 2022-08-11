@@ -1,4 +1,4 @@
-TOR SUPPORT IN PLD
+TOR SUPPORT IN PLB
 ======================
 
 It is possible to run Paladeum as a Tor hidden service, and connect to such services.

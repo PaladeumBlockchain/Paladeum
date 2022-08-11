@@ -3,8 +3,8 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef PLD_CHAINPARAMSBASE_H
-#define PLD_CHAINPARAMSBASE_H
+#ifndef PLB_CHAINPARAMSBASE_H
+#define PLB_CHAINPARAMSBASE_H
 
 #include <memory>
 #include <string>
@@ -61,4 +61,4 @@ void SelectBaseParams(const std::string& chain);
  */
 std::string ChainNameFromCommandLine();
 
-#endif // PLD_CHAINPARAMSBASE_H
+#endif // PLB_CHAINPARAMSBASE_H

@@ -5,8 +5,8 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef PLD_POW_H
-#define PLD_POW_H
+#ifndef PLB_POW_H
+#define PLB_POW_H
 
 #include "consensus/params.h"
 
@@ -22,4 +22,4 @@ unsigned int CalculateNextTargetRequired(const CBlockIndex* pindexLast, int64_t 
 /** Check whether a block hash satisfies the proof-of-work requirement specified by nBits */
 bool CheckProofOfWork(uint256 hash, unsigned int nBits, const Consensus::Params&);
 
-#endif // PLD_POW_H
+#endif // PLB_POW_H

@@ -88,7 +88,7 @@ bool AppInit(int argc, char* argv[])
             strUsage += "\n" + _("Usage:") + "\n" +
                   "  paladeumd [options]                     " + strprintf(_("Start %s Daemon"), _(PACKAGE_NAME)) + "\n";
 
-            strUsage += "\n" + HelpMessage(HMM_PLDD);
+            strUsage += "\n" + HelpMessage(HMM_PLBD);
         }
 
         fprintf(stdout, "%s", strUsage.c_str());
@@ -104,7 +104,7 @@ bool AppInit(int argc, char* argv[])
         }
         try
         {
-            gArgs.ReadConfigFile(gArgs.GetArg("-conf", PLD_CONF_FILENAME));
+            gArgs.ReadConfigFile(gArgs.GetArg("-conf", PLB_CONF_FILENAME));
         } catch (const std::exception& e) {
             fprintf(stderr,"Error reading configuration file: %s\n", e.what());
             return false;

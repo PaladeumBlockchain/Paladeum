@@ -3,8 +3,8 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef PLD_MERKLE
-#define PLD_MERKLE
+#ifndef PLB_MERKLE
+#define PLB_MERKLE
 
 #include <stdint.h>
 #include <vector>

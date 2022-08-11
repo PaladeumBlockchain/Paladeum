@@ -5,8 +5,8 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef PLD_CHAIN_H
-#define PLD_CHAIN_H
+#ifndef PLB_CHAIN_H
+#define PLB_CHAIN_H
 
 #include "arith_uint256.h"
 #include "primitives/block.h"
@@ -528,4 +528,4 @@ public:
 
 const CBlockIndex* GetLastBlockIndex(const CBlockIndex* pindex, bool fProofOfStake);
 
-#endif // PLD_CHAIN_H
+#endif // PLB_CHAIN_H

@@ -4,8 +4,8 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef PLD_POLICY_FEERATE_H
-#define PLD_POLICY_FEERATE_H
+#ifndef PLB_POLICY_FEERATE_H
+#define PLB_POLICY_FEERATE_H
 
 #include "amount.h"
 #include "serialize.h"
@@ -57,4 +57,4 @@ public:
     }
 };
 
-#endif //  PLD_POLICY_FEERATE_H
+#endif //  PLB_POLICY_FEERATE_H

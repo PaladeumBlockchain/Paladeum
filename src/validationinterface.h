@@ -4,8 +4,8 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef PLD_VALIDATIONINTERFACE_H
-#define PLD_VALIDATIONINTERFACE_H
+#ifndef PLB_VALIDATIONINTERFACE_H
+#define PLB_VALIDATIONINTERFACE_H
 
 #include <memory>
 
@@ -108,4 +108,4 @@ public:
 
 CMainSignals& GetMainSignals();
 
-#endif // PLD_VALIDATIONINTERFACE_H
+#endif // PLB_VALIDATIONINTERFACE_H

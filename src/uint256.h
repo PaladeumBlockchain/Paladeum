@@ -4,8 +4,8 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef PLD_UINT256_H
-#define PLD_UINT256_H
+#ifndef PLB_UINT256_H
+#define PLB_UINT256_H
 
 #include <assert.h>
 #include <cstring>
@@ -176,4 +176,4 @@ public:
         return result;
     }
 };
-#endif // PLD_UINT256_H
+#endif // PLB_UINT256_H

@@ -2,8 +2,8 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef PLDCOIN_TOKENFILTERPROXY_H
-#define PLDCOIN_TOKENFILTERPROXY_H
+#ifndef PLBCOIN_TOKENFILTERPROXY_H
+#define PLBCOIN_TOKENFILTERPROXY_H
 
 #include <QSortFilterProxyModel>
 
@@ -24,4 +24,4 @@ private:
 };
 
 
-#endif //PLDCOIN_TOKENFILTERPROXY_H
+#endif //PLBCOIN_TOKENFILTERPROXY_H

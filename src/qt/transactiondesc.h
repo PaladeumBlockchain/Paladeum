@@ -3,8 +3,8 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef PLD_QT_TRANSACTIONDESC_H
-#define PLD_QT_TRANSACTIONDESC_H
+#ifndef PLB_QT_TRANSACTIONDESC_H
+#define PLB_QT_TRANSACTIONDESC_H
 
 #include <QObject>
 #include <QString>
@@ -31,4 +31,4 @@ private:
     static QString FormatTxStatus(const CWalletTx& wtx);
 };
 
-#endif // PLD_QT_TRANSACTIONDESC_H
+#endif // PLB_QT_TRANSACTIONDESC_H

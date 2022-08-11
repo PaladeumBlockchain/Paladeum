@@ -1,33 +1,33 @@
 # /etc/conf.d/paladeumd: config file for /etc/init.d/paladeumd
 
 # Config file location
-#PLDD_CONFIGFILE="/etc/paladeum/paladeum.conf"
+#PLBD_CONFIGFILE="/etc/paladeum/paladeum.conf"
 
-# What directory to write pidfile to?  (created and owned by $PLDD_USER)
-#PLDD_PIDDIR="/var/run/paladeumd"
+# What directory to write pidfile to?  (created and owned by $PLBD_USER)
+#PLBD_PIDDIR="/var/run/paladeumd"
 
 # What filename to give the pidfile
-#PLDD_PIDFILE="${PLDD_PIDDIR}/paladeumd.pid"
+#PLBD_PIDFILE="${PLBD_PIDDIR}/paladeumd.pid"
 
 # Where to write paladeumd data (be mindful that the blockchain is large)
-#PLDD_DATADIR="/var/lib/paladeumd"
+#PLBD_DATADIR="/var/lib/paladeumd"
 
 # User and group to own paladeumd process
-#PLDD_USER="paladeum"
-#PLDD_GROUP="paladeum"
+#PLBD_USER="paladeum"
+#PLBD_GROUP="paladeum"
 
 # Path to paladeumd executable
-#PLDD_BIN="/usr/bin/paladeumd"
+#PLBD_BIN="/usr/bin/paladeumd"
 
 # Nice value to run paladeumd under
-#PLDD_NICE=0
+#PLBD_NICE=0
 
 # Additional options (avoid -conf and -datadir, use flags above)
-#PLDD_OPTS=""
+#PLBD_OPTS=""
 
 # The timeout in seconds OpenRC will wait for paladeumd to terminate
 # after a SIGTERM has been raised.
 # Note that this will be mapped as argument to start-stop-daemon's
 # '--retry' option, which means you can specify a retry schedule
 # here. For more information see man 8 start-stop-daemon.
-PLDD_SIGTERM_TIMEOUT=60
+PLBD_SIGTERM_TIMEOUT=60

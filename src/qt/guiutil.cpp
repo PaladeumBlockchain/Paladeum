@@ -264,7 +264,7 @@ bool parsePaladeumURI(const QUrl &uri, SendCoinsRecipient *out)
         {
             if(!i->second.isEmpty())
             {
-                if(!PaladeumUnits::parse(PaladeumUnits::PLD, i->second, &rv.amount))
+                if(!PaladeumUnits::parse(PaladeumUnits::PLB, i->second, &rv.amount))
                 {
                     return false;
                 }
@@ -303,7 +303,7 @@ QString formatPaladeumURI(const SendCoinsRecipient &info)
 
     if (info.amount)
     {
-        ret += QString("?amount=%1").arg(PaladeumUnits::format(PaladeumUnits::PLD, info.amount, false, PaladeumUnits::separatorNever));
+        ret += QString("?amount=%1").arg(PaladeumUnits::format(PaladeumUnits::PLB, info.amount, false, PaladeumUnits::separatorNever));
         paramCount++;
     }
 
@@ -495,7 +495,7 @@ void openDebugLogfile()
 
 bool openPaladeumConf()
 {
-    boost::filesystem::path pathConfig = GetConfigFile(PLD_CONF_FILENAME);
+    boost::filesystem::path pathConfig = GetConfigFile(PLB_CONF_FILENAME);
 
     /* Create the file */
     boost::filesystem::ofstream configFile(pathConfig, std::ios_base::app);

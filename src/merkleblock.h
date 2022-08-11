@@ -4,8 +4,8 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef PLD_MERKLEBLOCK_H
-#define PLD_MERKLEBLOCK_H
+#ifndef PLB_MERKLEBLOCK_H
+#define PLB_MERKLEBLOCK_H
 
 #include "serialize.h"
 #include "uint256.h"
@@ -165,4 +165,4 @@ private:
     CMerkleBlock(const CBlock& block, CBloomFilter* filter, const std::set<uint256>* txids);
 };
 
-#endif // PLD_MERKLEBLOCK_H
+#endif // PLB_MERKLEBLOCK_H

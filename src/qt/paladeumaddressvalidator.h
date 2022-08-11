@@ -3,8 +3,8 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef PLD_QT_PLDADDRESSVALIDATOR_H
-#define PLD_QT_PLDADDRESSVALIDATOR_H
+#ifndef PLB_QT_PLBADDRESSVALIDATOR_H
+#define PLB_QT_PLBADDRESSVALIDATOR_H
 
 #include <QValidator>
 
@@ -33,4 +33,4 @@ public:
     State validate(QString &input, int &pos) const;
 };
 
-#endif // PLD_QT_PLDADDRESSVALIDATOR_H
+#endif // PLB_QT_PLBADDRESSVALIDATOR_H

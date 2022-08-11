@@ -8,8 +8,8 @@
 #error This header can only be compiled as C++.
 #endif
 
-#ifndef PLD_PROTOCOL_H
-#define PLD_PROTOCOL_H
+#ifndef PLB_PROTOCOL_H
+#define PLB_PROTOCOL_H
 
 #include "netaddress.h"
 #include "serialize.h"
@@ -443,4 +443,4 @@ public:
     std::string name; // block height that token data should come from
 };
 
-#endif // PLD_PROTOCOL_H
+#endif // PLB_PROTOCOL_H

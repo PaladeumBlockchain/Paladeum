@@ -4,8 +4,8 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef PLD_SYNC_H
-#define PLD_SYNC_H
+#ifndef PLB_SYNC_H
+#define PLB_SYNC_H
 
 #include "threadsafety.h"
 
@@ -287,4 +287,4 @@ public:
     }
 };
 
-#endif // PLD_SYNC_H
+#endif // PLB_SYNC_H

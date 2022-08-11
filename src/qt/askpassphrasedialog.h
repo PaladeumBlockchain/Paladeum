@@ -3,8 +3,8 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef PLD_QT_ASKPASSPHRASEDIALOG_H
-#define PLD_QT_ASKPASSPHRASEDIALOG_H
+#ifndef PLB_QT_ASKPASSPHRASEDIALOG_H
+#define PLB_QT_ASKPASSPHRASEDIALOG_H
 
 #include <QDialog>
 
@@ -50,4 +50,4 @@ protected:
     bool eventFilter(QObject *object, QEvent *event);
 };
 
-#endif // PLD_QT_ASKPASSPHRASEDIALOG_H
+#endif // PLB_QT_ASKPASSPHRASEDIALOG_H

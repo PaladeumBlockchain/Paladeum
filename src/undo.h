@@ -4,8 +4,8 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef PLD_UNDO_H
-#define PLD_UNDO_H
+#ifndef PLB_UNDO_H
+#define PLB_UNDO_H
 
 #include "compressor.h" 
 #include "consensus/consensus.h"
@@ -109,4 +109,4 @@ public:
     }
 };
 
-#endif // PLD_UNDO_H
+#endif // PLB_UNDO_H

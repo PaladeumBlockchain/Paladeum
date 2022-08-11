@@ -635,7 +635,7 @@ UniValue issueunique(const JSONRPCRequest& request)
                 "root_name must be an token you own.\n"
                 "An token will be created for each element of token_tags.\n"
                 "If provided ipfs_hashes must be the same length as token_tags.\n"
-                "Five (5) PLD will be burned for each token created.\n"
+                "Five (5) PLB will be burned for each token created.\n"
 
                 "\nArguments:\n"
                 "1. \"root_name\"             (string, required) name of the token the unique token(s) are being issued under\n"
@@ -1481,7 +1481,7 @@ UniValue transfer(const JSONRPCRequest& request)
                 "5. \"message\"                  (string, optional, default="") Message attached to transaction. \n"
                 "6. \"token_message\"            (string, optional) Once messaging is voted in ipfs hash or txid hash to send along with the transfer\n"
                 "7. \"expire_time\"              (numeric, optional) UTC timestamp of when the message expires\n"
-                "8. \"change_address\"           (string, optional, default = \"\") the transactions PLD change will be sent to this address\n"
+                "8. \"change_address\"           (string, optional, default = \"\") the transactions PLB change will be sent to this address\n"
                 "9. \"token_change_address\"     (string, optional, default = \"\") the transactions Token change will be sent to this address\n"
 
                 "\nResult:\n"
@@ -1576,7 +1576,7 @@ UniValue transfer(const JSONRPCRequest& request)
 
     CTxDestination paladeum_change_dest = DecodeDestination(paladeum_change_address);
     if (!paladeum_change_address.empty() && !IsValidDestination(paladeum_change_dest))
-        throw JSONRPCError(RPC_INVALID_PARAMETER, std::string("PLD change address must be a valid address. Invalid address: ") + paladeum_change_address);
+        throw JSONRPCError(RPC_INVALID_PARAMETER, std::string("PLB change address must be a valid address. Invalid address: ") + paladeum_change_address);
 
     CTxDestination token_change_dest = DecodeDestination(token_change_address);
     if (!token_change_address.empty() && !IsValidDestination(token_change_dest))
@@ -1631,7 +1631,7 @@ UniValue transferfromaddresses(const JSONRPCRequest& request)
             "6. \"message\"                  (string, optional, default="") Message attached to transaction. \n"
             "7. \"token_message\"            (string, optional) Once messaging is voted in ipfs hash or txid hash to send along with the transfer\n"
             "8. \"expire_time\"              (numeric, optional) UTC timestamp of when the message expires\n"
-            "9. \"paladeum_change_address\"      (string, optional, default = \"\") the transactions PLD change will be sent to this address\n"
+            "9. \"paladeum_change_address\"      (string, optional, default = \"\") the transactions PLB change will be sent to this address\n"
             "10. \"token_change_address\"    (string, optional, default = \"\") the transactions Token change will be sent to this address\n"
 
             "\nResult:\n"
@@ -1731,7 +1731,7 @@ UniValue transferfromaddresses(const JSONRPCRequest& request)
 
     CTxDestination paladeum_change_dest = DecodeDestination(paladeum_change_address);
     if (!paladeum_change_address.empty() && !IsValidDestination(paladeum_change_dest))
-        throw JSONRPCError(RPC_INVALID_PARAMETER, std::string("PLD change address must be a valid address. Invalid address: ") + paladeum_change_address);
+        throw JSONRPCError(RPC_INVALID_PARAMETER, std::string("PLB change address must be a valid address. Invalid address: ") + paladeum_change_address);
 
     CTxDestination token_change_dest = DecodeDestination(token_change_address);
     if (!token_change_address.empty() && !IsValidDestination(token_change_dest))
@@ -1808,7 +1808,7 @@ UniValue transferfromaddress(const JSONRPCRequest& request)
                 "6. \"message\"                  (string, optional, default="") Message attached to transaction. \n"
                 "7. \"token_message\"            (string, optional) Once messaging is voted in ipfs hash or txid hash to send along with the transfer\n"
                 "8. \"expire_time\"              (numeric, optional) UTC timestamp of when the message expires\n"
-                "9. \"paladeum_change_address\"      (string, optional, default = \"\") the transaction PLD change will be sent to this address\n"
+                "9. \"paladeum_change_address\"      (string, optional, default = \"\") the transaction PLB change will be sent to this address\n"
                 "10. \"token_change_address\"    (string, optional, default = \"\") the transaction Token change will be sent to this address\n"
 
                 "\nResult:\n"
@@ -1889,7 +1889,7 @@ UniValue transferfromaddress(const JSONRPCRequest& request)
 
     CTxDestination paladeum_change_dest = DecodeDestination(paladeum_change_address);
     if (!paladeum_change_address.empty() && !IsValidDestination(paladeum_change_dest))
-        throw JSONRPCError(RPC_INVALID_PARAMETER, std::string("PLD change address must be a valid address. Invalid address: ") + paladeum_change_address);
+        throw JSONRPCError(RPC_INVALID_PARAMETER, std::string("PLB change address must be a valid address. Invalid address: ") + paladeum_change_address);
 
     CTxDestination token_change_dest = DecodeDestination(token_change_address);
     if (!token_change_address.empty() && !IsValidDestination(token_change_dest))
@@ -2062,7 +2062,7 @@ UniValue reissue(const JSONRPCRequest& request)
  * Sweep
  *
  * Attempts to sweep from a private key. The default is to sweep all tokens and
- * PLD, but can be limited to either all of the PLD or one token type by passing
+ * PLB, but can be limited to either all of the PLB or one token type by passing
  * the optional argument `token_filter`.
  */
 UniValue sweep(const JSONRPCRequest& request)
@@ -2077,17 +2077,17 @@ UniValue sweep(const JSONRPCRequest& request)
     //   arguments then just show the help.
     if (request.fHelp || !AreTokensDeployed() || request.params.size() > 2 || request.params.size() < 1)
         throw std::runtime_error(
-                "sweep \"privkey\" ( \"token_name\" | \"PLD\" ) \n"
+                "sweep \"privkey\" ( \"token_name\" | \"PLB\" ) \n"
                 + TokenActivationWarning() +
-                "\nCreates a transaction to transfer all PLD, and all Tokens from a given address -- with only the private key as input.\n"
-                "\nDefault to funding from PLD held in the address, fallback to using PLD held in wallet for transaction fee."
-                "\nDefault to sweeping all tokens, but can also all with PLD to sweep only PLD, or to sweep only one token."
+                "\nCreates a transaction to transfer all PLB, and all Tokens from a given address -- with only the private key as input.\n"
+                "\nDefault to funding from PLB held in the address, fallback to using PLB held in wallet for transaction fee."
+                "\nDefault to sweeping all tokens, but can also all with PLB to sweep only PLB, or to sweep only one token."
                 "\nThis differs from import because a paper certficate provided with artwork or a one-of-a-kind item can include a paper"
                 " certficate-of-authenticity. Once swept it the paper certificate can be safely discarded as the token is secured by the new address.\n"
 
                 "\nArguments:\n"
                 "1. \"privkey\"               (string, required) private key of addresses from which to sweep\n"
-                "2. \"token_name\"            (string, optional, default=\"\") name of the token to sweep or PLD"
+                "2. \"token_name\"            (string, optional, default=\"\") name of the token to sweep or PLB"
 
                 "\nResult:\n"
                 "\"txhex\"                    (string) The transaction hash in hex\n"
@@ -2095,11 +2095,11 @@ UniValue sweep(const JSONRPCRequest& request)
                 "\nExamples:\n"
                 + HelpExampleCli("sweep", "\"privkey\"")
                 + HelpExampleRpc("sweep", "\"privkey\" \"TOKEN_NAME\"")
-                + HelpExampleRpc("sweep", "\"privkey\" \"PLD\"")
+                + HelpExampleRpc("sweep", "\"privkey\" \"PLB\"")
         );
 
     // See whether we should sweep everything or only a specific token
-    // Default is to sweep everything (TODO: Should default be `PLD`?)
+    // Default is to sweep everything (TODO: Should default be `PLB`?)
     std::string token_name = "";
     if (!request.params[1].isNull()) {
         token_name = request.params[1].get_str();
@@ -2163,7 +2163,7 @@ UniValue sweep(const JSONRPCRequest& request)
         throw JSONRPCError(
             RPC_WALLET_INSUFFICIENT_FUNDS,
             tfm::format(
-                "Please add PLD to address '%s' to be able to sweep token '%s'",
+                "Please add PLB to address '%s' to be able to sweep token '%s'",
                 addr_str,
                 token_name
             )
@@ -2171,7 +2171,7 @@ UniValue sweep(const JSONRPCRequest& request)
     }
 
     // Get two new addresses to sweep into: one for all of the tokens and another
-    //   for the PLD
+    //   for the PLB
     // TODO: Does generating multiple addresses which may not be used cause a performance hit?
     std::string dest_ast_str = CallRPC("getnewaddress", UniValue(UniValue::VOBJ)).getValStr();
     std::string dest_paladeum_str = CallRPC("getnewaddress", UniValue(UniValue::VOBJ)).getValStr();
@@ -2203,10 +2203,10 @@ UniValue sweep(const JSONRPCRequest& request)
         // Get the specified token UTXOs
         unspent = get_unspent(addr_str, token_name);
 
-        // We also get just the unspent PLD from the swept address for potential fee funding
-        unspent_paladeum = get_unspent(addr_str, PLD);
+        // We also get just the unspent PLB from the swept address for potential fee funding
+        unspent_paladeum = get_unspent(addr_str, PLB);
 
-        // Get our unspent PLD for funding if the swept address does not have enough
+        // Get our unspent PLB for funding if the swept address does not have enough
         unspent_our_paladeum = CallRPC("listunspent", UniValue(UniValue::VNULL));
     }
 
@@ -2222,7 +2222,7 @@ UniValue sweep(const JSONRPCRequest& request)
         UniValue create_input = UniValue(UniValue::VARR);
         UniValue create_dest = UniValue(UniValue::VOBJ);
 
-        // Keep track of how much more PLD we will need from either the swept
+        // Keep track of how much more PLB we will need from either the swept
         //   address or our own wallet.
         // TODO: I think that there is a more accurate way to calculate the fee,
         //   as just always using the min transaction fee seems wrong.
@@ -2244,11 +2244,11 @@ UniValue sweep(const JSONRPCRequest& request)
                 throw JSONRPCError(RPC_DESERIALIZATION_ERROR, "Invalid amount in UTXOs!");
             }
 
-            // Subtract from the fee if PLD is being added to the list of inputs and
+            // Subtract from the fee if PLB is being added to the list of inputs and
             //   subtract from the total sent.
-            // Note: We do this because this allows for any PLD being swept to pay
+            // Note: We do this because this allows for any PLB being swept to pay
             //   the fee rather than our own address.
-            if (fee_left != 0 && curr_token_name == PLD) {
+            if (fee_left != 0 && curr_token_name == PLB) {
                 CAmount fee_diff = fee_left - curr_amount;
 
                 fee_paid_by_us += (fee_diff > 0) ? curr_amount : fee_left;
@@ -2266,12 +2266,12 @@ UniValue sweep(const JSONRPCRequest& request)
         }
 
         // If we still have some fee left, then try to fund from the swept address
-        //   first (assumming we haven't swept for PLD or everything [which includes PLD])
+        //   first (assumming we haven't swept for PLB or everything [which includes PLB])
         //   and then try to fund from our own wallets. Since we checked above
         //   if the balances worked out, then there is no way it will fail here.
         if (fee_left != 0) {
             if (
-                (token_name != PLD && token_name != "") && // We haven't already considered PLD in our sweep above
+                (token_name != PLB && token_name != "") && // We haven't already considered PLB in our sweep above
                 swept_balance != 0                         // We have funds to try
             ) {
                 // Add as many UTXOs as needed until we either run out or successfully
@@ -2326,7 +2326,7 @@ UniValue sweep(const JSONRPCRequest& request)
                     create_input.push_back(current_input);
 
                     // Add it to the totals
-                    token_totals[PLD] += curr_amount;
+                    token_totals[PLB] += curr_amount;
 
                     // Add our private key to the transaction for signing
                     UniValue utxo_nested = UniValue(UniValue::VARR);
@@ -2356,7 +2356,7 @@ UniValue sweep(const JSONRPCRequest& request)
         // {
         //     "DESTINATION ADDRESS": {
         //         "transfer": {
-        //             "PLD": Total PLD to sweep,
+        //             "PLB": Total PLB to sweep,
         //             "Example Token": Total Token count,
         //             ...
         //         }
@@ -2367,17 +2367,17 @@ UniValue sweep(const JSONRPCRequest& request)
             std::string curr_token_name = it.first;
             CAmount curr_amount = it.second;
 
-            // We skip PLD here becuase we need to send that to another of our addresses
-            if (curr_token_name == PLD) continue;
+            // We skip PLB here becuase we need to send that to another of our addresses
+            if (curr_token_name == PLB) continue;
 
             curr_transfer.pushKV(curr_token_name, ValueFromAmount(curr_amount));
         }
 
-        // Add the PLD output, if available
-        if (token_totals.find(PLD) != token_totals.end()) {
-            CAmount paladeum_amount = token_totals[PLD] - fee_paid_by_us;
+        // Add the PLB output, if available
+        if (token_totals.find(PLB) != token_totals.end()) {
+            CAmount paladeum_amount = token_totals[PLB] - fee_paid_by_us;
 
-            // Only add PLD to the output if there is some left over after the fee
+            // Only add PLB to the output if there is some left over after the fee
             if (paladeum_amount != 0) {
                 create_dest.pushKV(dest_paladeum_str, ValueFromAmount(paladeum_amount));
             }
@@ -2823,7 +2823,7 @@ UniValue listtagsforaddress(const JSONRPCRequest &request)
     // Check to make sure the given from address is valid
     CTxDestination dest = DecodeDestination(address);
     if (!IsValidDestination(dest))
-        throw JSONRPCError(RPC_INVALID_PARAMETER, std::string("Not valid PLD address: ") + address);
+        throw JSONRPCError(RPC_INVALID_PARAMETER, std::string("Not valid PLB address: ") + address);
 
     std::vector<std::string> qualifiers;
 
@@ -2916,7 +2916,7 @@ UniValue listaddressrestrictions(const JSONRPCRequest& request)
     // Check to make sure the given from address is valid
     CTxDestination dest = DecodeDestination(address);
     if (!IsValidDestination(dest))
-        throw JSONRPCError(RPC_INVALID_PARAMETER, std::string("Not valid PLD address: ") + address);
+        throw JSONRPCError(RPC_INVALID_PARAMETER, std::string("Not valid PLB address: ") + address);
 
     std::vector<std::string> restrictions;
 
@@ -3013,7 +3013,7 @@ UniValue checkaddresstag(const JSONRPCRequest& request)
                 "\nChecks to see if an address has the given tag\n"
 
                 "\nArguments:\n"
-                "1. \"address\"          (string, required) the PLD address to search\n"
+                "1. \"address\"          (string, required) the PLB address to search\n"
                 "1. \"tag_name\"         (string, required) the tag to search\n"
 
                 "\nResult:\n"
@@ -3040,7 +3040,7 @@ UniValue checkaddresstag(const JSONRPCRequest& request)
     // Check to make sure the given from address is valid
     CTxDestination dest = DecodeDestination(address);
     if (!IsValidDestination(dest))
-        throw JSONRPCError(RPC_INVALID_PARAMETER, std::string("Not valid PLD address: ") + address);
+        throw JSONRPCError(RPC_INVALID_PARAMETER, std::string("Not valid PLB address: ") + address);
 
     return ptokens->CheckForAddressQualifier(qualifier_name, address);
 }
@@ -3054,7 +3054,7 @@ UniValue checkaddressrestriction(const JSONRPCRequest& request)
                 "\nChecks to see if an address has been frozen by the given restricted token\n"
 
                 "\nArguments:\n"
-                "1. \"address\"          (string, required) the PLD address to search\n"
+                "1. \"address\"          (string, required) the PLB address to search\n"
                 "1. \"restricted_name\"   (string, required) the restricted token to search\n"
 
                 "\nResult:\n"
@@ -3080,7 +3080,7 @@ UniValue checkaddressrestriction(const JSONRPCRequest& request)
     // Check to make sure the given from address is valid
     CTxDestination dest = DecodeDestination(address);
     if (!IsValidDestination(dest))
-        throw JSONRPCError(RPC_INVALID_PARAMETER, std::string("Not valid PLD address: ") + address);
+        throw JSONRPCError(RPC_INVALID_PARAMETER, std::string("Not valid PLB address: ") + address);
 
     return ptokens->CheckForAddressRestriction(restricted_name, address);
 }

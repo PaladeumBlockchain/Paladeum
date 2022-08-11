@@ -3,8 +3,8 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef PLD_CRYPTO_SHA512_H
-#define PLD_CRYPTO_SHA512_H
+#ifndef PLB_CRYPTO_SHA512_H
+#define PLB_CRYPTO_SHA512_H
 
 #include <stdint.h>
 #include <stdlib.h>
@@ -26,4 +26,4 @@ public:
     CSHA512& Reset();
 };
 
-#endif // PLD_CRYPTO_SHA512_H
+#endif // PLB_CRYPTO_SHA512_H

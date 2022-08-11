@@ -3,8 +3,8 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef PLDCOIN_NEWTOKEN_H
-#define PLDCOIN_NEWTOKEN_H
+#ifndef PLBCOIN_NEWTOKEN_H
+#define PLBCOIN_NEWTOKEN_H
 
 #include <string>
 #include <sstream>
@@ -685,4 +685,4 @@ private:
     size_t maxSize;
 };
 
-#endif //PLDCOIN_NEWTOKEN_H
+#endif //PLBCOIN_NEWTOKEN_H

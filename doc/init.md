@@ -78,7 +78,7 @@ files out-of-the-box. This is because the command line options specified in the
 init files take precedence over the configurations in
 `/etc/paladeum/paladeum.conf`. However, some init systems have their own
 configuration mechanisms that would allow for overriding the command line
-options specified in the init files (e.g. setting `PLDD_DATADIR` for
+options specified in the init files (e.g. setting `PLBD_DATADIR` for
 OpenRC).
 
 ### macOS
@@ -120,7 +120,7 @@ use old versions of Upstart and do not supply the start-stop-daemon utility.
 Copy paladeumd.init to /etc/init.d/paladeumd. Test by running `service paladeumd start`.
 
 Using this script, you can adjust the path and flags to the paladeumd program by
-setting the PLDD and FLAGS environment variables in the file
+setting the PLBD and FLAGS environment variables in the file
 /etc/sysconfig/paladeumd. You can also use the DAEMONOPTS environment variable here.
 
 ### Mac OS X

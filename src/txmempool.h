@@ -4,8 +4,8 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef PLD_TXMEMPOOL_H
-#define PLD_TXMEMPOOL_H
+#ifndef PLB_TXMEMPOOL_H
+#define PLB_TXMEMPOOL_H
 
 #include <memory>
 #include <set>
@@ -847,4 +847,4 @@ struct ConnectedBlockTokenData
     std::set<CTokenCacheQualifierAddress> newQualifiersToAdd;
 };
 
-#endif // PLD_TXMEMPOOL_H
+#endif // PLB_TXMEMPOOL_H

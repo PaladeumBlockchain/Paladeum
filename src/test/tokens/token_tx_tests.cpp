@@ -28,7 +28,7 @@ BOOST_FIXTURE_TEST_SUITE(token_tx_tests, BasicTestingSetup)
         SelectParams(CBaseChainParams::MAIN);
 
         // Create the token scriptPubKey
-        CTokenTransfer token("PLDTEST", 1000);
+        CTokenTransfer token("PLBTEST", 1000);
         CScript scriptPubKey = GetScriptForDestination(DecodeDestination(GetParams().GlobalFeeAddress()));
         token.ConstructTransaction(scriptPubKey);
 
@@ -76,7 +76,7 @@ BOOST_FIXTURE_TEST_SUITE(token_tx_tests, BasicTestingSetup)
         SelectParams(CBaseChainParams::MAIN);
 
         // Create the token scriptPubKey
-        CTokenTransfer token("PLDTEST", 1000);
+        CTokenTransfer token("PLBTEST", 1000);
         CScript scriptPubKey = GetScriptForDestination(DecodeDestination(GetParams().GlobalFeeAddress()));
         token.ConstructTransaction(scriptPubKey);
 
@@ -103,8 +103,8 @@ BOOST_FIXTURE_TEST_SUITE(token_tx_tests, BasicTestingSetup)
         in.prevout = outpoint;
 
         // Create CTxOut that will only send 100 of the token
-        // This should fail because 900 PLD doesn't have a destination
-        CTokenTransfer tokenTransfer("PLDTEST", 100);
+        // This should fail because 900 PLB doesn't have a destination
+        CTokenTransfer tokenTransfer("PLBTEST", 100);
         CScript scriptLess = GetScriptForDestination(DecodeDestination(GetParams().GlobalFeeAddress()));
         tokenTransfer.ConstructTransaction(scriptLess);
 
@@ -133,7 +133,7 @@ BOOST_FIXTURE_TEST_SUITE(token_tx_tests, BasicTestingSetup)
         SelectParams(CBaseChainParams::MAIN);
 
         // Create the token scriptPubKey
-        CTokenTransfer token("PLDTEST", 1000);
+        CTokenTransfer token("PLBTEST", 1000);
         CScript scriptPubKey = GetScriptForDestination(DecodeDestination(GetParams().GlobalFeeAddress()));
         token.ConstructTransaction(scriptPubKey);
 
@@ -162,7 +162,7 @@ BOOST_FIXTURE_TEST_SUITE(token_tx_tests, BasicTestingSetup)
         // Create CTxOut that will only send 100 of the token 10 times total = 1000
         for (int i = 0; i < 10; i++)
         {
-            CTokenTransfer token2("PLDTEST", 100);
+            CTokenTransfer token2("PLBTEST", 100);
             CScript scriptPubKey2 = GetScriptForDestination(DecodeDestination(GetParams().GlobalFeeAddress()));
             token2.ConstructTransaction(scriptPubKey2);
 
@@ -194,7 +194,7 @@ BOOST_FIXTURE_TEST_SUITE(token_tx_tests, BasicTestingSetup)
         SelectParams(CBaseChainParams::MAIN);
 
         // Create the token scriptPubKey
-        CTokenTransfer token("PLDTEST", 1000);
+        CTokenTransfer token("PLBTEST", 1000);
         CScript scriptPubKey = GetScriptForDestination(DecodeDestination(GetParams().GlobalFeeAddress()));
         token.ConstructTransaction(scriptPubKey);
 
@@ -223,7 +223,7 @@ BOOST_FIXTURE_TEST_SUITE(token_tx_tests, BasicTestingSetup)
         // Create CTxOut that will only send 100 of the token 12 times, total = 1200
         for (int i = 0; i < 12; i++)
         {
-            CTokenTransfer token2("PLDTEST", 100);
+            CTokenTransfer token2("PLBTEST", 100);
             CScript scriptPubKey2 = GetScriptForDestination(DecodeDestination(GetParams().GlobalFeeAddress()));
             token2.ConstructTransaction(scriptPubKey2);
 
@@ -255,15 +255,15 @@ BOOST_FIXTURE_TEST_SUITE(token_tx_tests, BasicTestingSetup)
         SelectParams(CBaseChainParams::MAIN);
 
         // Create the token scriptPubKeys
-        CTokenTransfer token("PLDTEST", 1000);
+        CTokenTransfer token("PLBTEST", 1000);
         CScript scriptPubKey = GetScriptForDestination(DecodeDestination(GetParams().GlobalFeeAddress()));
         token.ConstructTransaction(scriptPubKey);
 
-        CTokenTransfer token2("PLDTESTTEST", 1000);
+        CTokenTransfer token2("PLBTESTTEST", 1000);
         CScript scriptPubKey2 = GetScriptForDestination(DecodeDestination(GetParams().GlobalFeeAddress()));
         token2.ConstructTransaction(scriptPubKey2);
 
-        CTokenTransfer token3("PLDTESTTESTTEST", 1000);
+        CTokenTransfer token3("PLBTESTTESTTEST", 1000);
         CScript scriptPubKey3 = GetScriptForDestination(DecodeDestination(GetParams().GlobalFeeAddress()));
         token3.ConstructTransaction(scriptPubKey3);
 
@@ -320,7 +320,7 @@ BOOST_FIXTURE_TEST_SUITE(token_tx_tests, BasicTestingSetup)
         for (int i = 0; i < 10; i++)
         {
             // Add the first token
-            CTokenTransfer outToken("PLDTEST", 100);
+            CTokenTransfer outToken("PLBTEST", 100);
             CScript outScript = GetScriptForDestination(DecodeDestination(GetParams().GlobalFeeAddress()));
             outToken.ConstructTransaction(outScript);
 
@@ -331,7 +331,7 @@ BOOST_FIXTURE_TEST_SUITE(token_tx_tests, BasicTestingSetup)
             mutTx.vout.emplace_back(txOutNew);
 
             // Add the second token
-            CTokenTransfer outToken2("PLDTESTTEST", 100);
+            CTokenTransfer outToken2("PLBTESTTEST", 100);
             CScript outScript2 = GetScriptForDestination(DecodeDestination(GetParams().GlobalFeeAddress()));
             outToken2.ConstructTransaction(outScript2);
 
@@ -342,7 +342,7 @@ BOOST_FIXTURE_TEST_SUITE(token_tx_tests, BasicTestingSetup)
             mutTx.vout.emplace_back(txOutNew2);
 
             // Add the third token
-            CTokenTransfer outToken3("PLDTESTTESTTEST", 100);
+            CTokenTransfer outToken3("PLBTESTTESTTEST", 100);
             CScript outScript3 = GetScriptForDestination(DecodeDestination(GetParams().GlobalFeeAddress()));
             outToken3.ConstructTransaction(outScript3);
 
@@ -361,8 +361,8 @@ BOOST_FIXTURE_TEST_SUITE(token_tx_tests, BasicTestingSetup)
         CTransaction tx(mutTx);
         CValidationState state;
 
-        // The inputs are spending 3000 Tokens (1000 of each PLD, PLDTEST, PLDTESTTEST)
-        // The outputs are spending 100 Tokens to 10 destinations (10 * 100 = 1000) (of each PLD, PLDTEST, PLDTESTTEST)
+        // The inputs are spending 3000 Tokens (1000 of each PLB, PLBTEST, PLBTESTTEST)
+        // The outputs are spending 100 Tokens to 10 destinations (10 * 100 = 1000) (of each PLB, PLBTEST, PLBTESTTEST)
         // This test should pass because for each token that is spent. It is assigned a destination
         std::vector<std::pair<std::string, uint256>> vReissueTokens;
         BOOST_CHECK_MESSAGE(Consensus::CheckTxTokens(tx, state, coins, nullptr, false, vReissueTokens, true), state.GetDebugMessage());
@@ -375,7 +375,7 @@ BOOST_FIXTURE_TEST_SUITE(token_tx_tests, BasicTestingSetup)
         for (int i = 0; i < 9; i++)
         {
             // Add the first token
-            CTokenTransfer outToken("PLDTEST", 100);
+            CTokenTransfer outToken("PLBTEST", 100);
             CScript outScript = GetScriptForDestination(DecodeDestination(GetParams().GlobalFeeAddress()));
             outToken.ConstructTransaction(outScript);
 
@@ -386,7 +386,7 @@ BOOST_FIXTURE_TEST_SUITE(token_tx_tests, BasicTestingSetup)
             mutTx2.vout.emplace_back(txOutNew);
 
             // Add the second token
-            CTokenTransfer outToken2("PLDTESTTEST", 100);
+            CTokenTransfer outToken2("PLBTESTTEST", 100);
             CScript outScript2 = GetScriptForDestination(DecodeDestination(GetParams().GlobalFeeAddress()));
             outToken2.ConstructTransaction(outScript2);
 
@@ -397,7 +397,7 @@ BOOST_FIXTURE_TEST_SUITE(token_tx_tests, BasicTestingSetup)
             mutTx2.vout.emplace_back(txOutNew2);
 
             // Add the third token
-            CTokenTransfer outToken3("PLDTESTTESTTEST", 100);
+            CTokenTransfer outToken3("PLBTESTTESTTEST", 100);
             CScript outScript3 = GetScriptForDestination(DecodeDestination(GetParams().GlobalFeeAddress()));
             outToken3.ConstructTransaction(outScript3);
 

@@ -173,7 +173,7 @@ class DecodeScriptTest(PaladeumTestFramework):
         assert_equal('OP_RETURN 3011020701010101010101020601010101010101', rpc_result['vin'][0]['scriptSig']['asm'])
 
     def decodescript_tokens(self):
-        """Test decoding PLD_TOKENS scripts (regtest scripts)."""
+        """Test decoding PLB_TOKENS scripts (regtest scripts)."""
 
         # make sure tokens are activated
         self.nodes[0].generate(500)
@@ -181,7 +181,7 @@ class DecodeScriptTest(PaladeumTestFramework):
         # issue (main output)
         script = "76a91435a8d9b395f1594e2cf3e06e6ec357d1da89736888acc01a72766e710954455354415353455400e40b54020000000800000075"
         result = self.nodes[0].decodescript(script)
-        assert_equal('OP_DUP OP_HASH160 35a8d9b395f1594e2cf3e06e6ec357d1da897368 OP_EQUALVERIFY OP_CHECKSIG OP_PLD_TOKEN 1a72766e710954455354415353455400e40b54020000000800000075', result['asm'])
+        assert_equal('OP_DUP OP_HASH160 35a8d9b395f1594e2cf3e06e6ec357d1da897368 OP_EQUALVERIFY OP_CHECKSIG OP_PLB_TOKEN 1a72766e710954455354415353455400e40b54020000000800000075', result['asm'])
         assert_equal(1, result['reqSigs'])
         assert_equal('new_token', result['type'])
         assert_equal(1, len(result['addresses']))

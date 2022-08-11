@@ -69,7 +69,7 @@ from test_framework.blocktools import create_block, create_coinbase
 class AcceptBlockTest(PaladeumTestFramework):
     def add_options(self, parser):
         parser.add_option("--testbinary", dest="testbinary",
-                          default=os.getenv("PLDD", "paladeumd"),
+                          default=os.getenv("PLBD", "paladeumd"),
                           help="paladeumd binary to test")
 
     def set_test_params(self):

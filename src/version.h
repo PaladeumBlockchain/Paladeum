@@ -3,8 +3,8 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef PLD_VERSION_H
-#define PLD_VERSION_H
+#ifndef PLB_VERSION_H
+#define PLB_VERSION_H
 
 /**
  * network protocol versioning
@@ -58,4 +58,4 @@ static const int TOKENDATA_VERSION_UPDATED = 70020;
 static const int MESSAGING_RESTRICTED_TOKENS_VERSION = 70026;
 
 
-#endif // PLD_VERSION_H
+#endif // PLB_VERSION_H

@@ -164,7 +164,7 @@ bool IsStandardTx(const CTransaction& tx, std::string& reason, const bool witnes
         return false;
     }
 
-    // only one hundred OP_PLD_TOKEN txout is permitted
+    // only one hundred OP_PLB_TOKEN txout is permitted
     if (nTokenDataOut > 100) {
         reason = "tomany-op-paladeum-token";
         return false;

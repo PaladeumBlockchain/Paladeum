@@ -2526,7 +2526,7 @@ void CWallet::AvailableCoinsWithTokens(std::vector<COutput> &vCoins, std::map<st
     AvailableCoinsAll(vCoins, mapTokenCoins, true, AreTokensDeployed(), fOnlySafe, coinControl, nMinimumAmount, nMaximumAmount, nMinimumSumAmount, nMaximumCount, nMinDepth, nMaxDepth);
 }
 
-void CWallet::AvailableCoinsAll(std::vector<COutput>& vCoins, std::map<std::string, std::vector<COutput> >& mapTokenCoins, bool fGetPLD, bool fGetTokens, bool fOnlySafe, const CCoinControl *coinControl, const CAmount& nMinimumAmount, const CAmount& nMaximumAmount, const CAmount& nMinimumSumAmount, const uint64_t& nMaximumCount, const int& nMinDepth, const int& nMaxDepth, bool fLockedTokens) const {
+void CWallet::AvailableCoinsAll(std::vector<COutput>& vCoins, std::map<std::string, std::vector<COutput> >& mapTokenCoins, bool fGetPLB, bool fGetTokens, bool fOnlySafe, const CCoinControl *coinControl, const CAmount& nMinimumAmount, const CAmount& nMaximumAmount, const CAmount& nMinimumSumAmount, const uint64_t& nMaximumCount, const int& nMinDepth, const int& nMaxDepth, bool fLockedTokens) const {
     vCoins.clear();
 
     {
@@ -2535,7 +2535,7 @@ void CWallet::AvailableCoinsAll(std::vector<COutput>& vCoins, std::map<std::stri
         CAmount nTotal = 0;
 
         /** TOKENS START */
-        bool fPLDLimitHit = false;
+        bool fPLBLimitHit = false;
         // A set of the hashes that have already been used
         std::set<uint256> usedMempoolHashes;
 
@@ -2684,11 +2684,11 @@ void CWallet::AvailableCoinsAll(std::vector<COutput>& vCoins, std::map<std::stri
                     }
                 }
 
-                if (fGetPLD) { // Looking for PLD Tx OutPoints Only
-                    if (fPLDLimitHit) // We hit our limit
+                if (fGetPLB) { // Looking for PLB Tx OutPoints Only
+                    if (fPLBLimitHit) // We hit our limit
                         continue;
 
-                    // We only want PLD OutPoints. Don't include Token OutPoints
+                    // We only want PLB OutPoints. Don't include Token OutPoints
                     if (isTokenScript)
                         continue;
 
@@ -2699,13 +2699,13 @@ void CWallet::AvailableCoinsAll(std::vector<COutput>& vCoins, std::map<std::stri
                         nTotal += pcoin->tx->vout[i].nValue;
 
                         if (nTotal >= nMinimumSumAmount) {
-                            fPLDLimitHit = true;
+                            fPLBLimitHit = true;
                         }
                     }
 
                     // Checks the maximum number of UTXO's.
                     if (nMaximumCount > 0 && vCoins.size() >= nMaximumCount) {
-                        fPLDLimitHit = true;
+                        fPLBLimitHit = true;
                     }
                     continue;
                 }
@@ -3965,7 +3965,7 @@ bool CWallet::CreateTransactionAll(const std::vector<CRecipient>& vecSend, CWall
                     CTxOut txout(recipient.nAmount, recipient.scriptPubKey);
 
                     /** TOKENS START */
-                    // Check to see if you need to make an token data outpoint OP_PLD_TOKEN data
+                    // Check to see if you need to make an token data outpoint OP_PLB_TOKEN data
                     if (recipient.scriptPubKey.IsNullTokenTxDataScript()) {
                         assert(txout.nValue == 0);
                         txNew.vout.push_back(txout);

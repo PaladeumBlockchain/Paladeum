@@ -37,7 +37,7 @@ class UniqueTokenTest(PaladeumTestFramework):
         self.extra_args = [['-tokenindex'], ['-tokenindex'], ['-tokenindex']]
 
     def activate_tokens(self):
-        self.log.info("Generating PLD for node[0] and activating tokens...")
+        self.log.info("Generating PLB for node[0] and activating tokens...")
         n0 = self.nodes[0]
         n0.generate(432)
         self.sync_all()

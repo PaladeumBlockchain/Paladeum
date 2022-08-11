@@ -3,8 +3,8 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef PLD_QT_TOKENTABLEMODEL_H
-#define PLD_QT_TOKENTABLEMODEL_H
+#ifndef PLB_QT_TOKENTABLEMODEL_H
+#define PLB_QT_TOKENTABLEMODEL_H
 
 #include "amount.h"
 
@@ -38,13 +38,13 @@ public:
     enum RoleIndex {
         /** Net amount of transaction */
             AmountRole = 100,
-        /** PLD or name of an token */
+        /** PLB or name of an token */
             TokenNameRole = 101,
         /** Formatted amount, without brackets when unconfirmed */
             FormattedAmountRole = 102,
         /** AdministratorRole */
             AdministratorRole = 103,
-        /** PLD or name of an token */
+        /** PLB or name of an token */
             TokenIPFSHashRole = 104,
         /** IPFS Decoration Role */
             TokenIPFSHashDecorationRole = 105,
@@ -72,4 +72,4 @@ private:
     friend class TokenTablePriv;
 };
 
-#endif // PLD_QT_TOKENTABLEMODEL_H
+#endif // PLB_QT_TOKENTABLEMODEL_H

@@ -4,8 +4,8 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef PLD_SCRIPT_ISMINE_H
-#define PLD_SCRIPT_ISMINE_H
+#ifndef PLB_SCRIPT_ISMINE_H
+#define PLB_SCRIPT_ISMINE_H
 
 #include "script/standard.h"
 #include "chain.h"
@@ -45,4 +45,4 @@ isminetype IsMine(const CKeyStore& keystore, const CTxDestination& dest, CBlockI
 bool IsTimeLock(const CKeyStore &keystore, const CScript& scriptPubKey, CScriptNum& nLockTime);
 bool IsTimeLock(const CScript& scriptPubKey, CScriptNum& nLockTime);
 
-#endif // PLD_SCRIPT_ISMINE_H
+#endif // PLB_SCRIPT_ISMINE_H

@@ -4,12 +4,12 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef PLD_PLDCONSENSUS_H
-#define PLD_PLDCONSENSUS_H
+#ifndef PLB_PLBCONSENSUS_H
+#define PLB_PLBCONSENSUS_H
 
 #include <stdint.h>
 
-#if defined(BUILD_PLD_INTERNAL) && defined(HAVE_CONFIG_H)
+#if defined(BUILD_PLB_INTERNAL) && defined(HAVE_CONFIG_H)
 #include "config/paladeum-config.h"
   #if defined(_WIN32)
     #if defined(DLL_EXPORT)
@@ -22,7 +22,7 @@
   #elif defined(HAVE_FUNC_ATTRIBUTE_VISIBILITY)
     #define EXPORT_SYMBOL __attribute__ ((visibility ("default")))
   #endif
-#elif defined(MSC_VER) && !defined(STATIC_LIBPLDCONSENSUS)
+#elif defined(MSC_VER) && !defined(STATIC_LIBPLBCONSENSUS)
   #define EXPORT_SYMBOL __declspec(dllimport)
 #endif
 
@@ -34,7 +34,7 @@
 extern "C" {
 #endif
 
-#define PLDCONSENSUS_API_VER 1
+#define PLBCONSENSUS_API_VER 1
 
 typedef enum paladeumconsensus_error_t
 {
@@ -81,4 +81,4 @@ EXPORT_SYMBOL unsigned int paladeumconsensus_version();
 
 #undef EXPORT_SYMBOL
 
-#endif // PLD_PLDCONSENSUS_H
+#endif // PLB_PLBCONSENSUS_H

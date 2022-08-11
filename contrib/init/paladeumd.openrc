@@ -3,40 +3,40 @@
 # backward compatibility for existing gentoo layout 
 #
 if [ -d "/var/lib/paladeum/.paladeum" ]; then
-	PLDD_DEFAULT_DATADIR="/var/lib/paladeum/.paladeum"
+	PLBD_DEFAULT_DATADIR="/var/lib/paladeum/.paladeum"
 else
-	PLDD_DEFAULT_DATADIR="/var/lib/paladeumd"
+	PLBD_DEFAULT_DATADIR="/var/lib/paladeumd"
 fi
 
-PLDD_CONFIGFILE=${PLDD_CONFIGFILE:-/etc/paladeum/paladeum.conf}
-PLDD_PIDDIR=${PLDD_PIDDIR:-/var/run/paladeumd}
-PLDD_PIDFILE=${PLDD_PIDFILE:-${PLDD_PIDDIR}/paladeumd.pid}
-PLDD_DATADIR=${PLDD_DATADIR:-${PLDD_DEFAULT_DATADIR}}
-PLDD_USER=${PLDD_USER:-${PLD_USER:-paladeum}}
-PLDD_GROUP=${PLDD_GROUP:-paladeum}
-PLDD_BIN=${PLDD_BIN:-/usr/bin/paladeumd}
-PLDD_NICE=${PLDD_NICE:-${NICELEVEL:-0}}
-PLDD_OPTS="${PLDD_OPTS:-${PLD_OPTS}}"
+PLBD_CONFIGFILE=${PLBD_CONFIGFILE:-/etc/paladeum/paladeum.conf}
+PLBD_PIDDIR=${PLBD_PIDDIR:-/var/run/paladeumd}
+PLBD_PIDFILE=${PLBD_PIDFILE:-${PLBD_PIDDIR}/paladeumd.pid}
+PLBD_DATADIR=${PLBD_DATADIR:-${PLBD_DEFAULT_DATADIR}}
+PLBD_USER=${PLBD_USER:-${PLB_USER:-paladeum}}
+PLBD_GROUP=${PLBD_GROUP:-paladeum}
+PLBD_BIN=${PLBD_BIN:-/usr/bin/paladeumd}
+PLBD_NICE=${PLBD_NICE:-${NICELEVEL:-0}}
+PLBD_OPTS="${PLBD_OPTS:-${PLB_OPTS}}"
 
 name="Paladeum Core Daemon"
 description="Paladeum cryptocurrency P2P network daemon"
 
 command="/usr/bin/paladeumd"
-command_args="-pid=\"${PLDD_PIDFILE}\" \
-		-conf=\"${PLDD_CONFIGFILE}\" \
-		-datadir=\"${PLDD_DATADIR}\" \
+command_args="-pid=\"${PLBD_PIDFILE}\" \
+		-conf=\"${PLBD_CONFIGFILE}\" \
+		-datadir=\"${PLBD_DATADIR}\" \
 		-daemon \
-		${PLDD_OPTS}"
+		${PLBD_OPTS}"
 
-required_files="${PLDD_CONFIGFILE}"
-start_stop_daemon_args="-u ${PLDD_USER} \
-			-N ${PLDD_NICE} -w 2000"
-pidfile="${PLDD_PIDFILE}"
+required_files="${PLBD_CONFIGFILE}"
+start_stop_daemon_args="-u ${PLBD_USER} \
+			-N ${PLBD_NICE} -w 2000"
+pidfile="${PLBD_PIDFILE}"
 
 # The retry schedule to use when stopping the daemon. Could be either
 # a timeout in seconds or multiple signal/timeout pairs (like
 # "SIGKILL/180 SIGTERM/300")
-retry="${PLDD_SIGTERM_TIMEOUT}"
+retry="${PLBD_SIGTERM_TIMEOUT}"
 
 depend() {
 	need localmount net
@@ -50,29 +50,29 @@ start_pre() {
 	checkpath \
 	-d \
 	--mode 0750 \
-	--owner "${PLDD_USER}:${PLDD_GROUP}" \
-	"${PLDD_DATADIR}"
+	--owner "${PLBD_USER}:${PLBD_GROUP}" \
+	"${PLBD_DATADIR}"
 
 	checkpath \
 	-d \
 	--mode 0755 \
-	--owner "${PLDD_USER}:${PLDD_GROUP}" \
-	"${PLDD_PIDDIR}"
+	--owner "${PLBD_USER}:${PLBD_GROUP}" \
+	"${PLBD_PIDDIR}"
 
 	checkpath -f \
-	-o ${PLDD_USER}:${PLDD_GROUP} \
+	-o ${PLBD_USER}:${PLBD_GROUP} \
 	-m 0660 \
-	${PLDD_CONFIGFILE}
+	${PLBD_CONFIGFILE}
 
 	checkconfig || return 1
 }
 
 checkconfig()
 {
-	if ! grep -qs '^rpcpassword=' "${PLDD_CONFIGFILE}" ; then
+	if ! grep -qs '^rpcpassword=' "${PLBD_CONFIGFILE}" ; then
 		eerror ""
 		eerror "ERROR: You must set a secure rpcpassword to run paladeumd."
-		eerror "The setting must appear in ${PLDD_CONFIGFILE}"
+		eerror "The setting must appear in ${PLBD_CONFIGFILE}"
 		eerror ""
 		eerror "This password is security critical to securing wallets "
 		eerror "and must not be the same as the rpcuser setting."

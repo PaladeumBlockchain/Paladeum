@@ -590,7 +590,7 @@ QVariant TransactionTableModel::data(const QModelIndex &index, int role) const
         case Amount:
             return formatTxAmount(rec, true, PaladeumUnits::separatorAlways);
         case TokenName:
-            if (rec->tokenName != "PLD")
+            if (rec->tokenName != "PLB")
                return QString::fromStdString(rec->tokenName);
             else
                return QString(PaladeumUnits::name(walletModel->getOptionsModel()->getDisplayUnit()));
@@ -640,7 +640,7 @@ QVariant TransactionTableModel::data(const QModelIndex &index, int role) const
         }
         if(index.column() == TokenName)
         {
-            if (rec->tokenName != "PLD")
+            if (rec->tokenName != "PLB")
                return platformStyle->TokenTxColor();
         }
         break;
@@ -702,7 +702,7 @@ QVariant TransactionTableModel::data(const QModelIndex &index, int role) const
     case TokenNameRole:
         {
             QString tokenName;
-            if (rec->tokenName != "PLD")
+            if (rec->tokenName != "PLB")
                tokenName.append(QString::fromStdString(rec->tokenName));
             else
                tokenName.append(QString(PaladeumUnits::name(walletModel->getOptionsModel()->getDisplayUnit())));
@@ -742,7 +742,7 @@ QVariant TransactionTableModel::headerData(int section, Qt::Orientation orientat
             case Amount:
                 return tr("Amount removed from or added to balance.");
             case TokenName:
-                return tr("The token (or PLD) removed or added to balance.");
+                return tr("The token (or PLB) removed or added to balance.");
             }
         }
     }

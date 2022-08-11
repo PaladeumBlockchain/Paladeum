@@ -216,7 +216,7 @@ public:
             0
         };
 
-        /** PLD Start **/
+        /** PLB Start **/
         // Fee Amounts
         nIssueTokenFeeAmount = 10 * COIN;
         nReissueTokenFeeAmount = 2 * COIN;
@@ -237,7 +237,7 @@ public:
 
         // BIP44 cointype
         nExtCoinType = 1;
-        /** PLD End **/
+        /** PLB End **/
     }
 };
 
@@ -327,7 +327,7 @@ public:
             0
         };
 
-        /** PLD Start **/
+        /** PLB Start **/
         // Fee Amounts
         nIssueTokenFeeAmount = 10 * COIN;
         nReissueTokenFeeAmount = 2 * COIN;
@@ -351,7 +351,7 @@ public:
             "aduSDWoFAU6as6kudkKJZYY4NcxjSostmg"
         };
 
-        /** PLD End **/
+        /** PLB End **/
     }
 };
 
@@ -437,7 +437,7 @@ public:
         // Paladeum BIP44 cointype in regtest
         nExtCoinType = 1;
 
-        /** PLD Start **/
+        /** PLB Start **/
         // Fee Amounts
         nIssueTokenFeeAmount = 10 * COIN;
         nReissueTokenFeeAmount = 2 * COIN;
@@ -459,7 +459,7 @@ public:
         // TODO, we need to figure out what to do with this for regtest. This effects the unit tests
         // For now we can use a timestamp very far away
         // If you are looking to test the kawpow hashing function in regtest. You will need to change this number
-        /** PLD End **/
+        /** PLB End **/
     }
 };
 

@@ -3,8 +3,8 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef PLD_WALLET_COINCONTROL_H
-#define PLD_WALLET_COINCONTROL_H
+#ifndef PLB_WALLET_COINCONTROL_H
+#define PLB_WALLET_COINCONTROL_H
 
 #include "policy/feerate.h"
 #include "policy/fees.h"
@@ -130,4 +130,4 @@ private:
     std::set<COutPoint> setTokensSelected;
 };
 
-#endif // PLD_WALLET_COINCONTROL_H
+#endif // PLB_WALLET_COINCONTROL_H

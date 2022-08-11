@@ -5,8 +5,8 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef PLD_PRIMITIVES_BLOCK_H
-#define PLD_PRIMITIVES_BLOCK_H
+#ifndef PLB_PRIMITIVES_BLOCK_H
+#define PLB_PRIMITIVES_BLOCK_H
 
 #include "primitives/transaction.h"
 #include "serialize.h"
@@ -196,4 +196,4 @@ struct CBlockLocator
     }
 };
 
-#endif // PLD_PRIMITIVES_BLOCK_H
+#endif // PLB_PRIMITIVES_BLOCK_H

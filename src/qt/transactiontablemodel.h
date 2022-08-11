@@ -3,8 +3,8 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef PLD_QT_TRANSACTIONTABLEMODEL_H
-#define PLD_QT_TRANSACTIONTABLEMODEL_H
+#ifndef PLB_QT_TRANSACTIONTABLEMODEL_H
+#define PLB_QT_TRANSACTIONTABLEMODEL_H
 
 #include "paladeumunits.h"
 
@@ -74,7 +74,7 @@ public:
         StatusRole,
         /** Unprocessed icon */
         RawDecorationRole,
-        /** PLD or name of an token */
+        /** PLB or name of an token */
         TokenNameRole,
     };
 
@@ -121,4 +121,4 @@ public Q_SLOTS:
     friend class TransactionTablePriv;
 };
 
-#endif // PLD_QT_TRANSACTIONTABLEMODEL_H
+#endif // PLB_QT_TRANSACTIONTABLEMODEL_H

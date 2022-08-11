@@ -3,8 +3,8 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef PLD_QT_WALLETMODEL_H
-#define PLD_QT_WALLETMODEL_H
+#ifndef PLB_QT_WALLETMODEL_H
+#define PLB_QT_WALLETMODEL_H
 
 #include "paymentrequestplus.h"
 #include "walletmodeltransaction.h"
@@ -395,4 +395,4 @@ public Q_SLOTS:
     void pollBalanceChanged();
 };
 
-#endif // PLD_QT_WALLETMODEL_H
+#endif // PLB_QT_WALLETMODEL_H

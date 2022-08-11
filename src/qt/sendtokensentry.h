@@ -3,8 +3,8 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef PLD_QT_SENDTOKENSENTRY_H
-#define PLD_QT_SENDTOKENSENTRY_H
+#ifndef PLB_QT_SENDTOKENSENTRY_H
+#define PLB_QT_SENDTOKENSENTRY_H
 
 #include "walletmodel.h"
 
@@ -93,4 +93,4 @@ private:
     bool updateLabel(const QString &address);
 };
 
-#endif // PLD_QT_SENDTOKENSENTRY_H
+#endif // PLB_QT_SENDTOKENSENTRY_H

@@ -4,8 +4,8 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef PLD_STREAMS_H
-#define PLD_STREAMS_H
+#ifndef PLB_STREAMS_H
+#define PLB_STREAMS_H
 
 #include "support/allocators/zeroafterfree.h"
 #include "serialize.h"
@@ -707,4 +707,4 @@ public:
     }
 };
 
-#endif // PLD_STREAMS_H
+#endif // PLB_STREAMS_H

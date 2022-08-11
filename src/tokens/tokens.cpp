@@ -79,7 +79,7 @@ static const std::regex QUALIFIER_INDICATOR("^[#][A-Z0-9._]{3,}$"); // Starts wi
 static const std::regex SUB_QUALIFIER_INDICATOR("^#[A-Z0-9._]+\\/#[A-Z0-9._]+$"); // Starts with #
 static const std::regex RESTRICTED_INDICATOR("^[\\$][A-Z0-9._]{3,}$"); // Starts with $
 
-static const std::regex PLD_NAMES("^PLD$|^PLD$|^PLDCOIN$");
+static const std::regex PLB_NAMES("^PLB$|^PLB$|^PLBCOIN$");
 
 bool IsRootNameValid(const std::string& name)
 {
@@ -87,7 +87,7 @@ bool IsRootNameValid(const std::string& name)
         && !std::regex_match(name, DOUBLE_PUNCTUATION)
         && !std::regex_match(name, LEADING_PUNCTUATION)
         && !std::regex_match(name, TRAILING_PUNCTUATION)
-        && !std::regex_match(name, PLD_NAMES);
+        && !std::regex_match(name, PLB_NAMES);
 }
 
 bool IsQualifierNameValid(const std::string& name)
@@ -96,7 +96,7 @@ bool IsQualifierNameValid(const std::string& name)
            && !std::regex_match(name, DOUBLE_PUNCTUATION)
            && !std::regex_match(name, QUALIFIER_LEADING_PUNCTUATION)
            && !std::regex_match(name, TRAILING_PUNCTUATION)
-           && !std::regex_match(name, PLD_NAMES);
+           && !std::regex_match(name, PLB_NAMES);
 }
 
 bool IsRestrictedNameValid(const std::string& name)
@@ -105,7 +105,7 @@ bool IsRestrictedNameValid(const std::string& name)
            && !std::regex_match(name, DOUBLE_PUNCTUATION)
            && !std::regex_match(name, LEADING_PUNCTUATION)
            && !std::regex_match(name, TRAILING_PUNCTUATION)
-           && !std::regex_match(name, PLD_NAMES);
+           && !std::regex_match(name, PLB_NAMES);
 }
 
 bool IsSubQualifierNameValid(const std::string& name)
@@ -582,7 +582,7 @@ void CNewToken::ConstructTransaction(CScript& script) const
     vchMessage.push_back(TOKEN_Q); // q
 
     vchMessage.insert(vchMessage.end(), ssToken.begin(), ssToken.end());
-    script << OP_PLD_TOKEN << ToByteVector(vchMessage) << OP_DROP;
+    script << OP_PLB_TOKEN << ToByteVector(vchMessage) << OP_DROP;
 }
 
 void CNewToken::ConstructOwnerTransaction(CScript& script) const
@@ -597,7 +597,7 @@ void CNewToken::ConstructOwnerTransaction(CScript& script) const
     vchMessage.push_back(TOKEN_O); // o
 
     vchMessage.insert(vchMessage.end(), ssOwner.begin(), ssOwner.end());
-    script << OP_PLD_TOKEN << ToByteVector(vchMessage) << OP_DROP;
+    script << OP_PLB_TOKEN << ToByteVector(vchMessage) << OP_DROP;
 }
 
 bool TokenFromTransaction(const CTransaction& tx, CNewToken& token, std::string& strAddress)
@@ -974,7 +974,7 @@ bool CTransaction::IsNewToken() const
     // New Token transaction will always have at least three outputs.
     // 1. Owner Token output
     // 2. Issue Token output
-    // 3. PLD Burn Fee
+    // 3. PLB Burn Fee
     if (vout.size() < 3) {
         return false;
     }
@@ -1077,7 +1077,7 @@ bool CTransaction::IsNewUniqueToken() const
 //! Call this function after IsNewUniqueToken
 bool CTransaction::VerifyNewUniqueToken(std::string& strError) const
 {
-    // Must contain at least 3 outpoints (PLD burn, owner change and one or more new unique tokens that share a root (should be in trailing position))
+    // Must contain at least 3 outpoints (PLB burn, owner change and one or more new unique tokens that share a root (should be in trailing position))
     if (vout.size() < 3) {
         strError  = "bad-txns-unique-vout-size-to-small";
         return false;
@@ -1750,7 +1750,7 @@ void CTokenTransfer::ConstructTransaction(CScript& script) const
     vchMessage.push_back(TOKEN_T); // t
 
     vchMessage.insert(vchMessage.end(), ssTransfer.begin(), ssTransfer.end());
-    script << OP_PLD_TOKEN << ToByteVector(vchMessage) << OP_DROP;
+    script << OP_PLB_TOKEN << ToByteVector(vchMessage) << OP_DROP;
 }
 
 CReissueToken::CReissueToken(const std::string &strTokenName, const CAmount &nAmount, const int &nUnits, const int &nReissuable,
@@ -1781,7 +1781,7 @@ void CReissueToken::ConstructTransaction(CScript& script) const
     vchMessage.push_back(TOKEN_R); // r
 
     vchMessage.insert(vchMessage.end(), ssReissue.begin(), ssReissue.end());
-    script << OP_PLD_TOKEN << ToByteVector(vchMessage) << OP_DROP;
+    script << OP_PLB_TOKEN << ToByteVector(vchMessage) << OP_DROP;
 }
 
 bool CReissueToken::IsNull() const
@@ -3248,7 +3248,7 @@ bool CheckIssueBurnTx(const CTxOut& txOut, const KnownTokenType& type)
 
 bool CheckReissueBurnTx(const CTxOut& txOut)
 {
-    // Check the first transaction and verify that the correct PLD Amount
+    // Check the first transaction and verify that the correct PLB Amount
     if (txOut.nValue != GetReissueTokenFeeAmount())
         return false;
 
@@ -4135,7 +4135,7 @@ bool CreateTokenTransaction(CWallet* pwallet, CCoinControl& coinControl, const s
 
     CAmount curBalance = pwallet->GetBalance();
 
-    // Check to make sure the wallet has the PLD required by the burnAmount
+    // Check to make sure the wallet has the PLB required by the burnAmount
     if (curBalance < burnAmount) {
         error = std::make_pair(RPC_WALLET_INSUFFICIENT_FUNDS, "Insufficient funds");
         return false;
@@ -4338,7 +4338,7 @@ bool CreateReissueTokenTransaction(CWallet* pwallet, CCoinControl& coinControl, 
     // Get the current burn amount for issuing an token
     CAmount burnAmount = GetReissueTokenFeeAmount();
 
-    // Check to make sure the wallet has the PLD required by the burnAmount
+    // Check to make sure the wallet has the PLB required by the burnAmount
     if (curBalance < burnAmount) {
         error = std::make_pair(RPC_WALLET_INSUFFICIENT_FUNDS, "Insufficient funds");
         return false;
@@ -4438,7 +4438,7 @@ bool CreateTransferTokenTransaction(CWallet* pwallet, const CCoinControl& coinCo
     // Check for a balance before processing transfers
     CAmount curBalance = pwallet->GetBalance();
     if (curBalance == 0) {
-        error = std::make_pair(RPC_WALLET_INSUFFICIENT_FUNDS, std::string("This wallet doesn't contain any PLD, transfering an token requires a network fee"));
+        error = std::make_pair(RPC_WALLET_INSUFFICIENT_FUNDS, std::string("This wallet doesn't contain any PLB, transfering an token requires a network fee"));
         return false;
     }
 
@@ -4521,7 +4521,7 @@ bool CreateTransferTokenTransaction(CWallet* pwallet, const CCoinControl& coinCo
         vecSend.push_back(recipient);
     }
 
-    // If tokenTxData is not nullptr, the user wants to add some OP_PLD_TOKEN data transactions into the transaction
+    // If tokenTxData is not nullptr, the user wants to add some OP_PLB_TOKEN data transactions into the transaction
     if (nullTokenTxData) {
         std::string strError = "";
         int nAddTagCount = 0;
@@ -4556,7 +4556,7 @@ bool CreateTransferTokenTransaction(CWallet* pwallet, const CCoinControl& coinCo
         }
     }
 
-    // nullGlobalRestiotionData, the user wants to add OP_PLD_TOKEN OP_PLD_TOKEN OP_PLD_TOKENS data transaction to the transaction
+    // nullGlobalRestiotionData, the user wants to add OP_PLB_TOKEN OP_PLB_TOKEN OP_PLB_TOKENS data transaction to the transaction
     if (nullGlobalRestrictionData) {
         std::string strError = "";
         for (auto dataObject : *nullGlobalRestrictionData) {
@@ -4776,7 +4776,7 @@ void CNullTokenTxData::ConstructGlobalRestrictionTransaction(CScript &script) co
 
     std::vector<unsigned char> vchMessage;
     vchMessage.insert(vchMessage.end(), ssTokenTxData.begin(), ssTokenTxData.end());
-    script << OP_PLD_TOKEN << OP_RESERVED << OP_RESERVED << ToByteVector(vchMessage);
+    script << OP_PLB_TOKEN << OP_RESERVED << OP_RESERVED << ToByteVector(vchMessage);
 }
 
 CNullTokenTxVerifierString::CNullTokenTxVerifierString(const std::string &verifier)
@@ -4792,7 +4792,7 @@ void CNullTokenTxVerifierString::ConstructTransaction(CScript &script) const
 
     std::vector<unsigned char> vchMessage;
     vchMessage.insert(vchMessage.end(), ssTokenTxData.begin(), ssTokenTxData.end());
-    script << OP_PLD_TOKEN << OP_RESERVED << ToByteVector(vchMessage);
+    script << OP_PLB_TOKEN << OP_RESERVED << ToByteVector(vchMessage);
 }
 
 bool CTokensCache::GetTokenVerifierStringIfExists(const std::string &name, CNullTokenTxVerifierString& verifierString, bool fSkipTempCache)

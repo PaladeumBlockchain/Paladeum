@@ -11,8 +11,8 @@
 ###############################################################################
 */
 
-#ifndef PLDCOIN_DARKSTYLE_H
-#define PLDCOIN_DARKSTYLE_H
+#ifndef PLBCOIN_DARKSTYLE_H
+#define PLBCOIN_DARKSTYLE_H
 
 #include <QApplication>
 #include <QProxyStyle>
@@ -37,4 +37,4 @@ private:
     QStyle *styleBase(QStyle *style = Q_NULLPTR) const;
 };
 
-#endif //PLDCOIN_DARKSTYLE_H
+#endif //PLBCOIN_DARKSTYLE_H

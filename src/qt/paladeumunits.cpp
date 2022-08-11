@@ -18,9 +18,9 @@ PaladeumUnits::PaladeumUnits(QObject *parent):
 QList<PaladeumUnits::Unit> PaladeumUnits::availableUnits()
 {
     QList<PaladeumUnits::Unit> unitlist;
-    unitlist.append(PLD);
-    unitlist.append(mPLD);
-    unitlist.append(uPLD);
+    unitlist.append(PLB);
+    unitlist.append(mPLB);
+    unitlist.append(uPLB);
     return unitlist;
 }
 
@@ -28,9 +28,9 @@ bool PaladeumUnits::valid(int unit)
 {
     switch(unit)
     {
-    case PLD:
-    case mPLD:
-    case uPLD:
+    case PLB:
+    case mPLB:
+    case uPLB:
         return true;
     default:
         return false;
@@ -41,9 +41,9 @@ QString PaladeumUnits::name(int unit)
 {
     switch(unit)
     {
-    case PLD: return QString("PLD");
-    case mPLD: return QString("mPLD");
-    case uPLD: return QString::fromUtf8("μPLD");
+    case PLB: return QString("PLB");
+    case mPLB: return QString("mPLB");
+    case uPLB: return QString::fromUtf8("μPLB");
     default: return QString("???");
     }
 }
@@ -52,9 +52,9 @@ QString PaladeumUnits::description(int unit)
 {
     switch(unit)
     {
-    case PLD: return QString("Paladeums");
-    case mPLD: return QString("Milli-Paladeums (1 / 1" THIN_SP_UTF8 "000)");
-    case uPLD: return QString("Micro-Paladeums (1 / 1" THIN_SP_UTF8 "000" THIN_SP_UTF8 "000)");
+    case PLB: return QString("Paladeums");
+    case mPLB: return QString("Milli-Paladeums (1 / 1" THIN_SP_UTF8 "000)");
+    case uPLB: return QString("Micro-Paladeums (1 / 1" THIN_SP_UTF8 "000" THIN_SP_UTF8 "000)");
     default: return QString("???");
     }
 }
@@ -63,9 +63,9 @@ qint64 PaladeumUnits::factor(int unit)
 {
     switch(unit)
     {
-    case PLD:  return 100000000;
-    case mPLD: return 100000;
-    case uPLD: return 100;
+    case PLB:  return 100000000;
+    case mPLB: return 100000;
+    case uPLB: return 100;
     default:   return 100000000;
     }
 }
@@ -91,9 +91,9 @@ int PaladeumUnits::decimals(int unit)
 {
     switch(unit)
     {
-    case PLD: return 8;
-    case mPLD: return 5;
-    case uPLD: return 2;
+    case PLB: return 8;
+    case mPLB: return 5;
+    case uPLB: return 2;
     default: return 0;
     }
 }
@@ -150,7 +150,7 @@ QString PaladeumUnits::formatWithUnit(int unit, const CAmount& amount, bool plus
 
 QString PaladeumUnits::formatWithCustomName(QString customName, const CAmount& amount, int unit, bool plussign, SeparatorStyle separators)
 {
-    return format(PLD, amount / factorToken(MAX_TOKEN_UNITS - unit), plussign, separators, unit) + QString(" ") + customName;
+    return format(PLB, amount / factorToken(MAX_TOKEN_UNITS - unit), plussign, separators, unit) + QString(" ") + customName;
 }
 
 QString PaladeumUnits::formatHtmlWithUnit(int unit, const CAmount& amount, bool plussign, SeparatorStyle separators)

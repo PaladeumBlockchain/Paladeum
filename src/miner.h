@@ -5,8 +5,8 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef PLD_MINER_H
-#define PLD_MINER_H
+#ifndef PLB_MINER_H
+#define PLB_MINER_H
 
 #include "primitives/block.h"
 #include "txmempool.h"
@@ -240,4 +240,4 @@ bool CheckFirstCoinstakeOutput(const CBlock& block);
 
 int GenerateCoins(bool fGenerate, int nThreads, const CChainParams& chainparams);
 
-#endif // PLD_MINER_H
+#endif // PLB_MINER_H

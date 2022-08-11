@@ -4,8 +4,8 @@
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
 
-#ifndef PLDCOIN_MESSAGES_H
-#define PLDCOIN_MESSAGES_H
+#ifndef PLBCOIN_MESSAGES_H
+#define PLBCOIN_MESSAGES_H
 
 #include <uint256.h>
 #include <serialize.h>
@@ -141,4 +141,4 @@ public:
     std::string createJsonString();
 };
 
-#endif //PLDCOIN_MESSAGES_H
+#endif //PLBCOIN_MESSAGES_H

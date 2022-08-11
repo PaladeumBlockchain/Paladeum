@@ -19,14 +19,14 @@ fi
 RETVAL=0
 
 prog=paladeumd
-# you can override the lockfile via PLDD_LOCKFILE in /etc/sysconfig/paladeumd
-lockfile=${PLDD_LOCKFILE-/var/lock/subsys/paladeumd}
+# you can override the lockfile via PLBD_LOCKFILE in /etc/sysconfig/paladeumd
+lockfile=${PLBD_LOCKFILE-/var/lock/subsys/paladeumd}
 
-# paladeumd defaults to /usr/bin/paladeumd, override with PLDD_BIN
-paladeumd=${PLDD_BIN-/usr/bin/paladeumd}
+# paladeumd defaults to /usr/bin/paladeumd, override with PLBD_BIN
+paladeumd=${PLBD_BIN-/usr/bin/paladeumd}
 
-# paladeumd opts default to -disablewallet, override with PLDD_OPTS
-paladeumd_opts=${PLDD_OPTS--disablewallet}
+# paladeumd opts default to -disablewallet, override with PLBD_OPTS
+paladeumd_opts=${PLBD_OPTS--disablewallet}
 
 start() {
     echo -n $"Starting $prog: "

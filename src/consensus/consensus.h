@@ -4,8 +4,8 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef PLD_CONSENSUS_CONSENSUS_H
-#define PLD_CONSENSUS_CONSENSUS_H
+#ifndef PLB_CONSENSUS_CONSENSUS_H
+#define PLB_CONSENSUS_CONSENSUS_H
 
 #include <stdlib.h>
 #include <stdint.h>
@@ -49,4 +49,4 @@ enum {
     LOCKTIME_MEDIAN_TIME_PAST = (1 << 1),
 };
 
-#endif // PLD_CONSENSUS_CONSENSUS_H
+#endif // PLB_CONSENSUS_CONSENSUS_H

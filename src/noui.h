@@ -3,9 +3,9 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef PLD_NOUI_H
-#define PLD_NOUI_H
+#ifndef PLB_NOUI_H
+#define PLB_NOUI_H
 
 extern void noui_connect();
 
-#endif // PLD_NOUI_H
+#endif // PLB_NOUI_H

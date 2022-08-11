@@ -4,8 +4,8 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef PLD_CHAINPARAMS_H
-#define PLD_CHAINPARAMS_H
+#ifndef PLB_CHAINPARAMS_H
+#define PLB_CHAINPARAMS_H
 
 #include "chainparamsbase.h"
 #include "consensus/params.h"
@@ -91,7 +91,7 @@ public:
     bool BIP66();
     bool CSVEnabled() const;
 
-    /** PLD Start **/
+    /** PLB Start **/
     const CAmount& IssueTokenFeeAmount() const { return nIssueTokenFeeAmount; }
     const CAmount& ReissueTokenFeeAmount() const { return nReissueTokenFeeAmount; }
     const CAmount& IssueSubTokenFeeAmount() const { return nIssueSubTokenFeeAmount; }
@@ -127,7 +127,7 @@ public:
     }
 
     int MaxReorganizationDepth() const { return nMaxReorganizationDepth; }
-    /** PLD End **/
+    /** PLB End **/
 
 protected:
     CChainParams() {}
@@ -149,7 +149,7 @@ protected:
     CCheckpointData checkpointData;
     ChainTxData chainTxData;
 
-    /** PLD Start **/
+    /** PLB Start **/
     // Fee Amounts
     CAmount nIssueTokenFeeAmount;
     CAmount nReissueTokenFeeAmount;
@@ -171,7 +171,7 @@ protected:
     int nMaxReorganizationDepth;
 
     std::set<std::string> init_authorized;
-    /** PLD End **/
+    /** PLB End **/
 };
 
 /**
@@ -208,4 +208,4 @@ void TurnOffBIP66();
 
 void TurnOffCSV();
 
-#endif // PLD_CHAINPARAMS_H
+#endif // PLB_CHAINPARAMS_H

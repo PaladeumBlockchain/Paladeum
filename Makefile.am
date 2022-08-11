@@ -13,16 +13,16 @@ endif
 override GZIP_ENV = "-9n"
 export PYTHONPATH
 
-if BUILD_PLD_LIBS
+if BUILD_PLB_LIBS
 pkgconfigdir = $(libdir)/pkgconfig
 pkgconfig_DATA = libpaladeumconsensus.pc
 endif
 
-PLDD_BIN=$(top_builddir)/src/$(PLD_DAEMON_NAME)$(EXEEXT)
-PLD_QT_BIN=$(top_builddir)/src/qt/$(PLD_GUI_NAME)$(EXEEXT)
-PLD_CLI_BIN=$(top_builddir)/src/$(PLD_CLI_NAME)$(EXEEXT)
-PLD_WIN_INSTALLER=$(PACKAGE)-$(PACKAGE_VERSION)-win$(WINDOWS_BITS)-setup$(EXEEXT)
-PLD_CLI_INSTALL=$(top_builddir)/contrib/install_cli.sh
+PLBD_BIN=$(top_builddir)/src/$(PLB_DAEMON_NAME)$(EXEEXT)
+PLB_QT_BIN=$(top_builddir)/src/qt/$(PLB_GUI_NAME)$(EXEEXT)
+PLB_CLI_BIN=$(top_builddir)/src/$(PLB_CLI_NAME)$(EXEEXT)
+PLB_WIN_INSTALLER=$(PACKAGE)-$(PACKAGE_VERSION)-win$(WINDOWS_BITS)-setup$(EXEEXT)
+PLB_CLI_INSTALL=$(top_builddir)/contrib/install_cli.sh
 
 empty :=
 space := $(empty) $(empty)
@@ -72,11 +72,11 @@ COVERAGE_INFO = baseline.info \
 dist-hook:
 	-$(GIT) archive --format=tar HEAD -- src/clientversion.cpp | $(AMTAR) -C $(top_distdir) -xf -
 
-$(PLD_WIN_INSTALLER): all-recursive
+$(PLB_WIN_INSTALLER): all-recursive
 	$(MKDIR_P) $(top_builddir)/release
-	STRIPPROG="$(STRIP)" $(INSTALL_STRIP_PROGRAM) $(PLDD_BIN) $(top_builddir)/release
-	STRIPPROG="$(STRIP)" $(INSTALL_STRIP_PROGRAM) $(PLD_QT_BIN) $(top_builddir)/release
-	STRIPPROG="$(STRIP)" $(INSTALL_STRIP_PROGRAM) $(PLD_CLI_BIN) $(top_builddir)/release
+	STRIPPROG="$(STRIP)" $(INSTALL_STRIP_PROGRAM) $(PLBD_BIN) $(top_builddir)/release
+	STRIPPROG="$(STRIP)" $(INSTALL_STRIP_PROGRAM) $(PLB_QT_BIN) $(top_builddir)/release
+	STRIPPROG="$(STRIP)" $(INSTALL_STRIP_PROGRAM) $(PLB_CLI_BIN) $(top_builddir)/release
 	@test -f $(MAKENSIS) && $(MAKENSIS) -V2 $(top_builddir)/share/setup.nsi || \
 	  echo error: could not build $@
 	@echo built $@
@@ -97,19 +97,19 @@ $(OSX_APP)/Contents/Resources/paladeum.icns: $(OSX_INSTALLER_ICONS)
 	$(MKDIR_P) $(@D)
 	$(INSTALL_DATA) $< $@
 
-$(OSX_APP)/Contents/MacOS/install_cli.sh: $(PLD_CLI_INSTALL)
+$(OSX_APP)/Contents/MacOS/install_cli.sh: $(PLB_CLI_INSTALL)
 	$(MKDIR_P) $(@D)
 	$(INSTALL_DATA) $< $@
 
-$(OSX_APP)/Contents/MacOS/Paladeum-Qt: $(PLD_QT_BIN)
+$(OSX_APP)/Contents/MacOS/Paladeum-Qt: $(PLB_QT_BIN)
 	$(MKDIR_P) $(@D)
 	STRIPPROG="$(STRIP)" $(INSTALL_STRIP_PROGRAM)  $< $@
 
-$(OSX_APP)/Contents/MacOS/paladeumd: $(PLDD_BIN)
+$(OSX_APP)/Contents/MacOS/paladeumd: $(PLBD_BIN)
 	$(MKDIR_P) $(@D)
 	STRIPPROG="$(STRIP)" $(INSTALL_STRIP_PROGRAM)  $< $@
 
-$(OSX_APP)/Contents/MacOS/paladeum-cli: $(PLD_CLI_BIN)
+$(OSX_APP)/Contents/MacOS/paladeum-cli: $(PLB_CLI_BIN)
 	$(MKDIR_P) $(@D)
 	STRIPPROG="$(STRIP)" $(INSTALL_STRIP_PROGRAM)  $< $@
 
@@ -171,16 +171,16 @@ appbundle: $(OSX_APP_BUILT)
 deploy: $(OSX_DMG)
 endif
 if TARGET_WINDOWS
-deploy: $(PLD_WIN_INSTALLER)
+deploy: $(PLB_WIN_INSTALLER)
 endif
 
-$(PLD_QT_BIN): FORCE
+$(PLB_QT_BIN): FORCE
 	$(MAKE) -C src qt/$(@F)
 
-$(PLDD_BIN): FORCE
+$(PLBD_BIN): FORCE
 	$(MAKE) -C src $(@F)
 
-$(PLD_CLI_BIN): FORCE
+$(PLB_CLI_BIN): FORCE
 	$(MAKE) -C src $(@F)
 
 if USE_LCOV
@@ -286,7 +286,7 @@ EXTRA_DIST += \
     test/util/data/txcreatesignv1.json \
     test/util/data/txcreatesignv2.hex
 
-CLEANFILES = $(OSX_DMG) $(PLD_WIN_INSTALLER)
+CLEANFILES = $(OSX_DMG) $(PLB_WIN_INSTALLER)
 
 .INTERMEDIATE: $(COVERAGE_INFO)
 

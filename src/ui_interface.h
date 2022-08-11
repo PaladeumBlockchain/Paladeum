@@ -4,8 +4,8 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef PLD_UI_INTERFACE_H
-#define PLD_UI_INTERFACE_H
+#ifndef PLB_UI_INTERFACE_H
+#define PLB_UI_INTERFACE_H
 
 #include <stdint.h>
 #include <string>
@@ -127,4 +127,4 @@ std::string AmountErrMsg(const char* const optname, const std::string& strValue)
 
 extern CClientUIInterface uiInterface;
 
-#endif // PLD_UI_INTERFACE_H
+#endif // PLB_UI_INTERFACE_H

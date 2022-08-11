@@ -19,7 +19,7 @@ class TokenTest(PaladeumTestFramework):
         self.extra_args = [['-tokenindex'], ['-tokenindex'], ['-tokenindex']]
 
     def activate_tokens(self):
-        self.log.info("Generating PLD for node[0] and activating tokens...")
+        self.log.info("Generating PLB for node[0] and activating tokens...")
         n0 = self.nodes[0]
 
         n0.generate(1)
@@ -136,13 +136,13 @@ class TokenTest(PaladeumTestFramework):
         assert_equal(n0.listtokenbalancesbyaddress(address0)["MY_TOKEN"], 2000)
 
         self.log.info("Checking listtokens()...")
-        n0.issue("PLD1", 1000)
-        n0.issue("PLD2", 1000)
-        n0.issue("PLD3", 1000)
+        n0.issue("PLB1", 1000)
+        n0.issue("PLB2", 1000)
+        n0.issue("PLB3", 1000)
         n0.generate(1)
         self.sync_all()
 
-        n0.listtokens(token="PLD*", verbose=False, count=2, start=-2)
+        n0.listtokens(token="PLB*", verbose=False, count=2, start=-2)
 
         self.log.info("Creating some sub-tokens...")
         n0.issue(token_name="MY_TOKEN/SUB1", qty=1000, to_address=address0, change_address=address0, units=4, reissuable=True, has_ipfs=True, ipfs_hash=ipfs_hash)
@@ -161,10 +161,10 @@ class TokenTest(PaladeumTestFramework):
         assert_equal(tokendata["has_ipfs"], 1)
         assert_equal(tokendata["ipfs_hash"], ipfs_hash)
 
-        paladeum_tokens = n0.listtokens(token="PLD*", verbose=False, count=2, start=-2)
+        paladeum_tokens = n0.listtokens(token="PLB*", verbose=False, count=2, start=-2)
         assert_equal(len(paladeum_tokens), 2)
-        assert_equal(paladeum_tokens[0], "PLD2")
-        assert_equal(paladeum_tokens[1], "PLD3")
+        assert_equal(paladeum_tokens[0], "PLB2")
+        assert_equal(paladeum_tokens[1], "PLB3")
         self.sync_all()
 
     def issue_param_checks(self):

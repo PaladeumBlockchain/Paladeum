@@ -3,8 +3,8 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef PLD_HTTPRPC_H
-#define PLD_HTTPRPC_H
+#ifndef PLB_HTTPRPC_H
+#define PLB_HTTPRPC_H
 
 #include <string>
 #include <map>

@@ -18,10 +18,10 @@
 #define NUM_MULTIPLES_CENT 10000
 
 // amounts 1 .. 10000
-#define NUM_MULTIPLES_1PLD 10000
+#define NUM_MULTIPLES_1PLB 10000
 
 // amounts 50 .. 21000000
-#define NUM_MULTIPLES_50PLD 420000
+#define NUM_MULTIPLES_50PLB 420000
 
 BOOST_FIXTURE_TEST_SUITE(compress_tests, BasicTestingSetup)
 
@@ -58,10 +58,10 @@ BOOST_FIXTURE_TEST_SUITE(compress_tests, BasicTestingSetup)
         for (uint64_t i = 1; i <= NUM_MULTIPLES_CENT; i++)
             BOOST_CHECK(TestEncode(i * CENT));
 
-        for (uint64_t i = 1; i <= NUM_MULTIPLES_1PLD; i++)
+        for (uint64_t i = 1; i <= NUM_MULTIPLES_1PLB; i++)
             BOOST_CHECK(TestEncode(i * COIN));
 
-        for (uint64_t i = 1; i <= NUM_MULTIPLES_50PLD; i++)
+        for (uint64_t i = 1; i <= NUM_MULTIPLES_50PLB; i++)
             BOOST_CHECK(TestEncode(i * 5000 * COIN));
 
         for (uint64_t i = 0; i < 100000; i++)

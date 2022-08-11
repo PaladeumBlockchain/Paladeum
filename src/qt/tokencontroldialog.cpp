@@ -563,7 +563,7 @@ void TokenControlDialog::updateLabels(WalletModel *model, QDialog* dialog)
     }
 
     // actually update labels
-    int nDisplayUnit = PaladeumUnits::PLD;
+    int nDisplayUnit = PaladeumUnits::PLB;
     if (model && model->getOptionsModel())
         nDisplayUnit = model->getOptionsModel()->getDisplayUnit();
 

@@ -6,8 +6,8 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef PLD_SCRIPT_STANDARD_H
-#define PLD_SCRIPT_STANDARD_H
+#ifndef PLB_SCRIPT_STANDARD_H
+#define PLB_SCRIPT_STANDARD_H
 
 #include "script/interpreter.h"
 #include "uint256.h"
@@ -76,7 +76,7 @@ enum txnouttype
     TX_NEW_TOKEN = 8,
     TX_REISSUE_TOKEN = 9,
     TX_TRANSFER_TOKEN = 10,
-    TX_RESTRICTED_TOKEN_DATA = 11, //!< unspendable OP_PLD_TOKEN script that carries data
+    TX_RESTRICTED_TOKEN_DATA = 11, //!< unspendable OP_PLB_TOKEN script that carries data
     /** TOKENS END */
     TX_CLTV = 12,
     TX_OFFLINE_STAKING = 13
@@ -157,4 +157,4 @@ CScript GetScriptForNullTokenDataDestination(const CTxDestination &dest);
  */
 CScript GetScriptForWitness(const CScript& redeemscript);
 
-#endif // PLD_SCRIPT_STANDARD_H
+#endif // PLB_SCRIPT_STANDARD_H

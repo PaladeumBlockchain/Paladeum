@@ -1129,7 +1129,7 @@ bool EvalScript(std::vector<std::vector<unsigned char> > &stack, const CScript &
                         break;
 
                     /** TOKENS START */
-                    case OP_PLD_TOKEN:
+                    case OP_PLB_TOKEN:
                         break;
                     /** TOKENS END */
 

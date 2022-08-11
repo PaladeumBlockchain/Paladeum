@@ -126,5 +126,5 @@ int paladeumconsensus_verify_script(const unsigned char *scriptPubKey, unsigned 
 unsigned int paladeumconsensus_version()
 {
     // Just use the API version for now
-    return PLDCONSENSUS_API_VER;
+    return PLBCONSENSUS_API_VER;
 }

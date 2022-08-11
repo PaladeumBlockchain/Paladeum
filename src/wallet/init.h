@@ -4,8 +4,8 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef PLD_WALLET_INIT_H
-#define PLD_WALLET_INIT_H
+#ifndef PLB_WALLET_INIT_H
+#define PLB_WALLET_INIT_H
 
 #include <string>
 
@@ -41,4 +41,4 @@ void StopWallets();
 //! Close all wallets.
 void CloseWallets();
 
-#endif // PLD_WALLET_INIT_H
+#endif // PLB_WALLET_INIT_H

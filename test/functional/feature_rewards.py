@@ -18,7 +18,7 @@ class RewardsTest(PaladeumTestFramework):
                            ["-tokenindex"]]
 
     def activate_tokens(self):
-        self.log.info("Generating PLD for node[0] and activating tokens...")
+        self.log.info("Generating PLB for node[0] and activating tokens...")
         n0, n1, n2 = self.nodes[0], self.nodes[1], self.nodes[2]
 
         n0.generate(1)
@@ -27,18 +27,18 @@ class RewardsTest(PaladeumTestFramework):
         self.sync_all()
         assert_equal("active", n0.getblockchaininfo()["bip9_softforks"]["tokens"]["status"])
 
-    # Basic functionality test - PLD reward
+    # Basic functionality test - PLB reward
     # - create the main owner address
-    # - mine blocks to have enough PLD for the reward payments, plus purchasing the token
+    # - mine blocks to have enough PLB for the reward payments, plus purchasing the token
     # - issue the STOCK1 token to the owner
     # - create 5 shareholder addresses
     # - distribute different amounts of the STOCK1 token to each of the shareholder addresses
     # - mine some blocks
     # - retrieve the current chain height
-    # - distribute an PLD reward amongst the shareholders
-    # - verify that each one receives the expected amount of reward PLD
+    # - distribute an PLB reward amongst the shareholders
+    # - verify that each one receives the expected amount of reward PLB
     def basic_test_paladeum(self):
-        self.log.info("Running basic PLD reward test!")
+        self.log.info("Running basic PLB reward test!")
         n0, n1, n2 = self.nodes[0], self.nodes[1], self.nodes[2]
 
         self.log.info("Creating owner address")
@@ -179,14 +179,14 @@ class RewardsTest(PaladeumTestFramework):
         # assert_equal(n0.listtokenbalancesbyaddress(shareholder_addr4)["STOCK1"], 700)
 
         self.log.info("Initiating reward payout")
-        n0.distributereward(token_name="STOCK1", snapshot_height=tgt_block_height, distribution_token_name="PLD",
+        n0.distributereward(token_name="STOCK1", snapshot_height=tgt_block_height, distribution_token_name="PLB",
                             gross_distribution_amount=2000, exception_addresses=dist_addr0)
         n0.generate(10)
         self.sync_all()
 
         #  Inexplicably, order matters here. We need to verify the amount
         #      using the node that created the address (?!)
-        self.log.info("Verifying PLD holdings after payout")
+        self.log.info("Verifying PLB holdings after payout")
         assert_equal(n0.getreceivedbyaddress(shareholder_addr0, 0), 200)
         assert_equal(n1.getreceivedbyaddress(shareholder_addr1, 0), 300)
         assert_equal(n2.getreceivedbyaddress(shareholder_addr2, 0), 400)
@@ -195,7 +195,7 @@ class RewardsTest(PaladeumTestFramework):
 
     # Basic functionality test - TOKEN reward
     # - create the main owner address
-    # - mine blocks to have enough PLD for the reward fees, plus purchasing the token
+    # - mine blocks to have enough PLB for the reward fees, plus purchasing the token
     # - issue the STOCK2 token to the owner
     # - create 5 shareholder addresses
     # - issue the PAYOUT1 token to the owner
@@ -367,7 +367,7 @@ class RewardsTest(PaladeumTestFramework):
 
         self.log.info("Initiating failing reward payout")
         assert_raises_rpc_error(-32600, "Snapshot request not found",
-                                n0.distributereward, "STOCK3", tgt_block_height, "PLD", 2000, owner_addr0)
+                                n0.distributereward, "STOCK3", tgt_block_height, "PLB", 2000, owner_addr0)
 
     # Attempts a payout for an invalid ownership token
     def payout_with_invalid_ownership_token(self):
@@ -391,7 +391,7 @@ class RewardsTest(PaladeumTestFramework):
 
         self.log.info("Initiating failing reward payout")
         assert_raises_rpc_error(-32600, "The token hasn't been created: STOCK4",
-                                n0.distributereward, "STOCK4", tgt_block_height, "PLD", 2000, owner_addr0)
+                                n0.distributereward, "STOCK4", tgt_block_height, "PLB", 2000, owner_addr0)
 
     # Attempts a payout for an invalid payout token
     def payout_with_invalid_payout_token(self):
@@ -454,7 +454,7 @@ class RewardsTest(PaladeumTestFramework):
             "Initiating failing reward payout because we are only 15 block ahead of the snapshot instead of 60")
         assert_raises_rpc_error(-32600,
                                 "For security of the rewards payout, it is recommended to wait until chain is 60 blocks ahead of the snapshot height. You can modify this by using the -minrewardsheight.",
-                                n0.distributereward, "STOCK6", tgt_block_height, "PLD", 2000, owner_addr0)
+                                n0.distributereward, "STOCK6", tgt_block_height, "PLB", 2000, owner_addr0)
 
     # Attempts a payout using a custom rewards height of 15, and they have low paladeum balance
     def payout_custom_height_set_with_low_funds(self):
@@ -494,12 +494,12 @@ class RewardsTest(PaladeumTestFramework):
         self.sync_all()
 
         self.log.info("Initiating reward payout should succeed because -minrewardheight=15 on node1")
-        n1.distributereward("STOCK7", tgt_block_height, "PLD", 2000, owner_addr0)
+        n1.distributereward("STOCK7", tgt_block_height, "PLB", 2000, owner_addr0)
 
         n1.generate(2)
         self.sync_all()
 
-        assert_equal(n1.getdistributestatus("STOCK7", tgt_block_height, "PLD", 2000, owner_addr0)['Status'], 3)
+        assert_equal(n1.getdistributestatus("STOCK7", tgt_block_height, "PLB", 2000, owner_addr0)['Status'], 3)
 
         n0.sendtoaddress(n1.getnewaddress(), 3000)
         n0.generate(5)
@@ -1143,7 +1143,7 @@ class RewardsTest(PaladeumTestFramework):
         assert_equal(n0.listtokenbalancesbyaddress(shareholder_addr3)["PAYOUT12"], Decimal(str(0.6)))
 
     def test_paladeum_bulk(self):
-        self.log.info("Running basic PLD reward test!")
+        self.log.info("Running basic PLB reward test!")
         n0, n1, n2, n3 = self.nodes[0], self.nodes[1], self.nodes[2], self.nodes[3]
 
         self.log.info("Creating owner address")

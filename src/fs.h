@@ -3,8 +3,8 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef PLD_FS_H
-#define PLD_FS_H
+#ifndef PLB_FS_H
+#define PLB_FS_H
 
 #include <stdio.h>
 #include <string>
@@ -25,4 +25,4 @@ namespace fsbridge {
     FILE *freopen(const fs::path& p, const char *mode, FILE *stream);
 };
 
-#endif // PLD_FS_H
+#endif // PLB_FS_H

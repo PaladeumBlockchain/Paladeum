@@ -4,8 +4,8 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef PLD_INIT_H
-#define PLD_INIT_H
+#ifndef PLB_INIT_H
+#define PLB_INIT_H
 
 #include <string>
 
@@ -71,8 +71,8 @@ void PrepareShutdown();
 /** The help message mode determines what help message to show */
 enum HelpMessageMode
 {
-    HMM_PLDD,
-    HMM_PLD_QT
+    HMM_PLBD,
+    HMM_PLB_QT
 };
 
 /** Help for options shared between UI and daemon (for -help) */
@@ -81,4 +81,4 @@ std::string HelpMessage(HelpMessageMode mode);
 /** Returns licensing information (for -version) */
 std::string LicenseInfo();
 
-#endif // PLD_INIT_H
+#endif // PLB_INIT_H

@@ -3,8 +3,8 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef PLD_HTTPSERVER_H
-#define PLD_HTTPSERVER_H
+#ifndef PLB_HTTPSERVER_H
+#define PLB_HTTPSERVER_H
 
 #include <string>
 #include <stdint.h>
@@ -151,4 +151,4 @@ private:
 
 std::string urlDecode(const std::string &urlEncoded);
 
-#endif // PLD_HTTPSERVER_H
+#endif // PLB_HTTPSERVER_H

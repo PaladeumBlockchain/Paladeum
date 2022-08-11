@@ -4,8 +4,8 @@
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
 
-#ifndef PLDCOIN_RESTRICTEDDB_H
-#define PLDCOIN_RESTRICTEDDB_H
+#ifndef PLBCOIN_RESTRICTEDDB_H
+#define PLBCOIN_RESTRICTEDDB_H
 
 #include <dbwrapper.h>
 
@@ -57,4 +57,4 @@ public:
 };
 
 
-#endif //PLDCOIN_RESTRICTEDDB_H
+#endif //PLBCOIN_RESTRICTEDDB_H

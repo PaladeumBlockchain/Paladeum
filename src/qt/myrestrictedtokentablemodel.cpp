@@ -455,7 +455,7 @@ QVariant MyRestrictedTokensTableModel::headerData(int section, Qt::Orientation o
                 case ToAddress:
                     return tr("User-defined intent/purpose of the transaction.");
                 case TokenName:
-                    return tr("The token (or PLD) removed or added to balance.");
+                    return tr("The token (or PLB) removed or added to balance.");
             }
         }
     }

@@ -3,8 +3,8 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef PLD_CLIENTVERSION_H
-#define PLD_CLIENTVERSION_H
+#ifndef PLB_CLIENTVERSION_H
+#define PLB_CLIENTVERSION_H
 
 #if defined(HAVE_CONFIG_H)
 #include "config/paladeum-config.h"
@@ -51,4 +51,4 @@ std::string FormatSubVersion(const std::string& name, int nClientVersion, const 
 
 #endif // WINDRES_PREPROC
 
-#endif // PLD_CLIENTVERSION_H
+#endif // PLB_CLIENTVERSION_H

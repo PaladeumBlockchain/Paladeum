@@ -3,8 +3,8 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef PLD_BLOCK_ENCODINGS_H
-#define PLD_BLOCK_ENCODINGS_H
+#ifndef PLB_BLOCK_ENCODINGS_H
+#define PLB_BLOCK_ENCODINGS_H
 
 #include "primitives/block.h"
 
