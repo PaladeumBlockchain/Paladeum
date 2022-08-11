@@ -4491,10 +4491,19 @@ bool CheckBlock(const CBlock& block, CValidationState& state, const uint256& has
     }
 
     // Check proof-of-stake authorization
-    const CTxOut& authorization_txout = block.vtx[1]->vout[1];
-    if (block.IsProofOfStake() && !governance->CanStake(authorization_txout.scriptPubKey)) {
-        return state.DoS(100, error("CheckBlock(): unauthorized proof-of-stake block signature"),
-                REJECT_INVALID, "bad-block-unauthorized");
+    if (block.IsProofOfStake()) {
+        const CTxOut& authorization_txout = block.vtx[1]->vout[1];
+        CScript authorizationScript = authorization_txout.scriptPubKey;
+
+        // Handle pay-to-public-keu outputs properly
+        if (authorizationScript.IsPayToPublicKey()) {
+            uint160 hashBytes(Hash160(authorizationScript.begin() + 1, authorizationScript.end() - 1));
+            authorizationScript = CScript() << OP_DUP << OP_HASH160 << ToByteVector(hashBytes) << OP_EQUALVERIFY << OP_CHECKSIG;
+        }
+
+        if (!governance->CanStake(authorizationScript))
+            return state.DoS(100, error("CheckBlock(): unauthorized proof-of-stake block signature"),
+                    REJECT_INVALID, "bad-block-unauthorized");
     }
 
     // Check transactions

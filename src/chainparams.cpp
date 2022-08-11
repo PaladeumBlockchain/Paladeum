@@ -144,9 +144,9 @@ public:
         consensus.nSegwitEnabled = false;
         consensus.nCSVEnabled = true;
         consensus.powLimit = uint256S("003fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff");
-        consensus.posLimit = uint256S("003fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff");
-        consensus.nTargetTimespan = 1000;
-        consensus.nTargetSpacing = 20;
+        consensus.posLimit = uint256S("00000000ffffffffffffffffffffffffffffffffffffffffffffffffffffffff");
+        consensus.nTargetTimespan = 16 * 60; // 16 mins
+        consensus.nTargetSpacing = 64;
         consensus.fDiffNoRetargeting = false;
         consensus.fDiffAllowMinDifficultyBlocks = false;
         consensus.nRuleChangeActivationThreshold = 1613; // Approx 80% of 2016
@@ -161,7 +161,7 @@ public:
         consensus.nMinimumChainWork = uint256S("0x");
 
         // By default assume that the signatures in ancestors of this block are valid.
-        consensus.defaultAssumeValid = uint256S("0x0020f74ccfaddbcbbc71041ed0ce985e9b89701847c6b4a824f0a44cdd95e0f5"); // Block 1186833
+        consensus.defaultAssumeValid = uint256S("0xe8b61dd5d266cf5e610520daf9dfa57eb9eafd389a17a0adc81b6d1974eb7540"); // Block 1186833
 
         // Proof-of-Stake
         consensus.nTxMessages = std::numeric_limits<int>::max();
@@ -179,21 +179,21 @@ public:
         pchMessageStart[1] = 0x6e;
         pchMessageStart[2] = 0x61;
         pchMessageStart[3] = 0x56;
-        nDefaultPort = 7768;
+        nDefaultPort = 6465;
         nPruneAfterHeight = 100000;
 
-        const char* pszTimestamp = "New Species of Mouse Opossum Discovered in Panama | Dec 10, 2021 Sci-News";
+        const char* pszTimestamp = "TEST MESSAGE (REPLACE ME)";
 
-        genesis = CreateGenesisBlock(pszTimestamp, 1640816880, 4900, 0x1f3fffff, 1, 1 * COIN);
+        genesis = CreateGenesisBlock(pszTimestamp, 1660202949, 979, 0x1f3fffff, 1, 1 * COIN);
         consensus.hashGenesisBlock = genesis.GetIndexHash();
 
-        // assert(consensus.hashGenesisBlock == uint256S("0x0020f74ccfaddbcbbc71041ed0ce985e9b89701847c6b4a824f0a44cdd95e0f5"));
-        // assert(genesis.hashMerkleRoot == uint256S("0xa8361e55f50f1764c1d25f82ae29caed27f0fff3ca83f1af36532787e4abd9b2"));
+        assert(consensus.hashGenesisBlock == uint256S("0xe8b61dd5d266cf5e610520daf9dfa57eb9eafd389a17a0adc81b6d1974eb7540"));
+        assert(genesis.hashMerkleRoot == uint256S("0xa11738b04ac97e8f71f39d4cf24716ad549f31cf1097e5ade1fd28869757c137"));
 
-        base58Prefixes[PUBKEY_ADDRESS] = std::vector<unsigned char>(1,140);
-        base58Prefixes[SCRIPT_ADDRESS] = std::vector<unsigned char>(1,143);
-        base58Prefixes[SECRET_KEY]     = std::vector<unsigned char>(1,108);
-        base58Prefixes[OFFLINE_STAKING_ADDRESS] = std::vector<unsigned char>(1,21);
+        base58Prefixes[PUBKEY_ADDRESS] = std::vector<unsigned char>(1,23);
+        base58Prefixes[SCRIPT_ADDRESS] = std::vector<unsigned char>(1,26);
+        base58Prefixes[SECRET_KEY]     = std::vector<unsigned char>(1,71);
+        base58Prefixes[OFFLINE_STAKING_ADDRESS] = std::vector<unsigned char>(1,78);
         base58Prefixes[EXT_PUBLIC_KEY] = {0x04, 0x35, 0x87, 0xCF};
         base58Prefixes[EXT_SECRET_KEY] = {0x04, 0x35, 0x83, 0x94};
 
@@ -229,11 +229,11 @@ public:
         nIssueRestrictedTokenFeeAmount = 10 * COIN;
         nAddNullQualifierTagFeeAmount = 0.01 * COIN;
 
-        // Global Burn Address
-        strTokenFeeAddress = "yWZtsXxhbfUEbfHF5M7Lw2tuZPjA17MF46";
+        // Global fee address
+        strTokenFeeAddress = "";
         strMasterAddress = "";
 
-        nMaxReorganizationDepth = 1080; // ~6 hours.
+        nMaxReorganizationDepth = 500;
 
         // BIP44 cointype
         nExtCoinType = 1;
@@ -255,8 +255,8 @@ public:
         consensus.nCSVEnabled = true;
         consensus.powLimit = uint256S("003fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff");
         consensus.posLimit = uint256S("00000000ffffffffffffffffffffffffffffffffffffffffffffffffffffffff");
-        consensus.nTargetTimespan = 25;
-        consensus.nTargetSpacing = 25 * 2; // * 2 is needed for hybrid PoW/PoS (actual block time will be 25)
+        consensus.nTargetTimespan = 16 * 60; // 16 mins
+        consensus.nTargetSpacing = 64; // * 2 is needed for hybrid PoW/PoS (actual block time will be 25)
         consensus.fDiffNoRetargeting = false;
         consensus.fDiffAllowMinDifficultyBlocks = false;
         consensus.nRuleChangeActivationThreshold = 1310; // Approx 65% for testchains
@@ -271,7 +271,7 @@ public:
         consensus.nMinimumChainWork = uint256S("0x");
 
         // By default assume that the signatures in ancestors of this block are valid.
-        consensus.defaultAssumeValid = uint256S("0x356fa4873a18832e58c4dee0480c8846dc1a145e7935f7f66c0cd0b39bbf2768");
+        consensus.defaultAssumeValid = uint256S("0xd69d49840bf9ec171f17db647c147653922e70e9441ede37b945205aa3a8e5ae");
 
         // Proof-of-Stake
         consensus.nTxMessages = 10;
@@ -280,20 +280,20 @@ public:
         // Fork to enable offline staking and remove the block limiter
         consensus.offlineStakingFork = 10;
 
-        pchMessageStart[0] = 0xa1;
-        pchMessageStart[1] = 0xb2;
-        pchMessageStart[2] = 0xc3;
-        pchMessageStart[3] = 0xd4;
-        nDefaultPort = 17992;
+        pchMessageStart[0] = 0xab;
+        pchMessageStart[1] = 0xbb;
+        pchMessageStart[2] = 0xba;
+        pchMessageStart[3] = 0xaa;
+        nDefaultPort = 16465;
         nPruneAfterHeight = 1000;
 
-        const char* pszTimestamp = "Mars Express Orbiter’s Instrument Gets Major Software Upgrade | Jun 29, 2022 Sci-News";
+        const char* pszTimestamp = "Webb Images Earendel, Farthest Known Star | Aug 9, 2022 Sci-News";
 
-        genesis = CreateGenesisBlock(pszTimestamp, 1656336395, 1662, 0x1f3fffff, 1, 1 * COIN);
+        genesis = CreateGenesisBlock(pszTimestamp, 1660202992, 433, 0x1f3fffff, 1, 1 * COIN);
         consensus.hashGenesisBlock = genesis.GetIndexHash();
 
-        assert(consensus.hashGenesisBlock == uint256S("0x356fa4873a18832e58c4dee0480c8846dc1a145e7935f7f66c0cd0b39bbf2768"));
-        assert(genesis.hashMerkleRoot == uint256S("0x0cb152079a81842c8ee3c7607af49e9dbfd2ed91a7ac7de83783ff2c563186b6"));
+        assert(consensus.hashGenesisBlock == uint256S("0xd69d49840bf9ec171f17db647c147653922e70e9441ede37b945205aa3a8e5ae"));
+        assert(genesis.hashMerkleRoot == uint256S("0xa1bf0039f67fdf42925339a5265cb93fce4f2528ec84a38ec0ae404a17eb3829"));
 
         vFixedSeeds.clear();
         vSeeds.clear();
@@ -313,7 +313,7 @@ public:
         fDefaultConsistencyChecks = false;
         fRequireStandard = false;
         fMineBlocksOnDemand = false;
-        fMiningRequiresPeers = true;
+        fMiningRequiresPeers = false;
 
         checkpointData = (CCheckpointData) {
             {
@@ -340,15 +340,20 @@ public:
         nIssueRestrictedTokenFeeAmount = 10 * COIN;
         nAddNullQualifierTagFeeAmount = 0.01 * COIN;
 
-        // Global Burn Address
-        // Testing only: GyhJmCZok1F4WL3cYJW5SGchN1AYB8JAvmdT5cW78zrn5J5vUYQi
-        strTokenFeeAddress = "aduSDWoFAU6as6kudkKJZYY4NcxjSostmg";
+        // Global fee address
+        // Testing only: H5HT6QCM37sJ52QMe5Mm3oooDDTgZvqdJoJitZA62DBneguiUYga
+        strTokenFeeAddress = "aeqWq9ovJZivVXnZYjTP8WLnJsjKTMybhR";
         strMasterAddress = "";
 
-        nMaxReorganizationDepth = 1080; // ~6 hours.
+        nMaxReorganizationDepth = 500;
 
         init_authorized = {
-            "aduSDWoFAU6as6kudkKJZYY4NcxjSostmg"
+            // Testing only: H1RniRW5Ad64PMgn6mCzAnWZ5bgErwYfCFxoWHXncFMj3VNQm8Zn
+            "adWfR3GWw4faVmdcT6He9ztwahEKHRXZYs",
+            // Testing only: H17JdgJe5EvWFYHXLLJPgx4Wkq25sBBuLBsmLKdp7t3MtBjiqUbZ
+            "abZmftHzCpKtam2V4L27KCrrXpQ4uTeoZm",
+            // Testing only: H1Mi9CyYHbRqYiMg3S4Ny1Y6FHsg54GohCjjpbHN9SEsSHY2i668
+            "aW3dcTH2HzgKgNMZxJxrPuw4H5NsJoXgZz"
         };
 
         /** PLB End **/
@@ -369,7 +374,7 @@ public:
         consensus.nCSVEnabled = true;
         consensus.powLimit = uint256S("7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff");
         consensus.posLimit = uint256S("7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff");
-        consensus.nTargetTimespan = 16 * 60;
+        consensus.nTargetTimespan = 16 * 60; // 16 mins
         consensus.nTargetSpacing = 64;
         consensus.fDiffNoRetargeting = true;
         consensus.fDiffAllowMinDifficultyBlocks = true;
@@ -385,7 +390,7 @@ public:
         consensus.nMinimumChainWork = uint256S("0x00");
 
         // By default assume that the signatures in ancestors of this block are valid.
-        consensus.defaultAssumeValid = uint256S("0x00");
+        consensus.defaultAssumeValid = uint256S("0x9d7805d5ce13abc52658fe089aa01ea4d6be2594b8d97f65c912030059a6e6b9");
 
         // Proof-of-Stake
         consensus.nTxMessages = 10;
@@ -398,16 +403,16 @@ public:
         pchMessageStart[1] = 0x6a;
         pchMessageStart[2] = 0x62;
         pchMessageStart[3] = 0x52;
-        nDefaultPort = 5566;
+        nDefaultPort = 26465;
         nPruneAfterHeight = 1000;
 
-        const char* pszTimestamp = "New Species of Mouse Opossum Discovered in Panama | Dec 10, 2021 Sci-News";
+        const char* pszTimestamp = "Webb Images Earendel, Farthest Known Star | Aug 9, 2022 Sci-News";
 
         genesis = CreateGenesisBlock(pszTimestamp, 1524179366, 5, 0x207fffff, 4, 5000 * COIN);
         consensus.hashGenesisBlock = genesis.GetIndexHash();
 
-        assert(consensus.hashGenesisBlock == uint256S("0x0c68d38b0e2774ada15a4b2296a9f5bbace8a7ab3f465e8b51e14cfd49b64b53 "));
-        assert(genesis.hashMerkleRoot == uint256S("0x5979cd840953b850000a3d33eaeaed731f08eb4a8b95111e72dba141ee760651"));
+        assert(consensus.hashGenesisBlock == uint256S("0x9d7805d5ce13abc52658fe089aa01ea4d6be2594b8d97f65c912030059a6e6b9 "));
+        assert(genesis.hashMerkleRoot == uint256S("0xe3e448034a4053c8d60567a6f3fe861c4ece9092a70f97a612fe1e0a13aa7b09"));
 
         vFixedSeeds.clear(); //!< Regtest mode doesn't have any fixed seeds.
         vSeeds.clear();      //!< Regtest mode doesn't have any DNS seeds.
@@ -450,15 +455,14 @@ public:
         nIssueRestrictedTokenFeeAmount = 10 * COIN;
         nAddNullQualifierTagFeeAmount = 0.01 * COIN;
 
-        // Global Burn Address
+        // Global fee address
         strTokenFeeAddress = "mmbbmGLSeCpR9VhGp2JMXVkf7xkbjtcEET";
         strMasterAddress = "";
 
-        nMaxReorganizationDepth = 60; // 60 at 1 minute block timespan is +/- 60 minutes.
+        nMaxReorganizationDepth = 500;
 
         // TODO, we need to figure out what to do with this for regtest. This effects the unit tests
         // For now we can use a timestamp very far away
-        // If you are looking to test the kawpow hashing function in regtest. You will need to change this number
         /** PLB End **/
     }
 };

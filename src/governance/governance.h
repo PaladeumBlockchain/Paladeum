@@ -50,6 +50,7 @@ public:
     bool CanSend(CScript script);
 
     // Managing authorization list
+    bool GetActiveValidators(std::vector< CScript > *ValidatorsVector);
     bool AuthorizeScript(CScript script);
     bool UnauthorizeScript(CScript script);
     bool RevertAuthorizeScript(CScript script);

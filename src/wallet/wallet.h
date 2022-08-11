@@ -880,7 +880,7 @@ public:
     bool CanSupportFeature(enum WalletFeature wf) const { AssertLockHeld(cs_wallet); return nWalletMaxVersion >= wf; }
 
     //! select coins for staking from the available coins for staking.
-    bool SelectCoinsForStaking(CAmount& nTargetValue, std::set<std::pair<const CWalletTx*,unsigned int> >& setCoinsRet, CAmount& nValueRet) const;
+    bool SelectCoinsForStaking(CAmount& nTargetValue, std::set<std::pair<const CWalletTx*,unsigned int> >& setCoinsRet, CAmount& nValueRet, std::vector< CScript > validatorVector) const;
 
     /**
      * populate vCoins with vector of available COutputs, and populates vTokenCoins in fWithTokens is set to true.
@@ -923,9 +923,9 @@ public:
                         const CAmount& nMinimumSumAmount = MAX_MONEY, const uint64_t& nMaximumCount = 0,
                         const int& nMinDepth = 0, const int& nMaxDepth = 9999999) const;
 
-    void AvailableCoinsForStaking(std::vector<COutput>& vCoins) const;
+    void AvailableCoinsForStaking(std::vector<COutput>& vCoins, std::vector< CScript > validatorVector) const;
     uint64_t GetStakeWeight() const;
-    bool HaveAvailableCoinsForStaking() const;
+    bool HaveAvailableCoinsForStaking(std::vector< CScript > validatorVector) const;
 
     /**
      * Return list of available coins and locked coins grouped by non-change output address.
@@ -1079,7 +1079,7 @@ public:
     bool CreateTransaction(const std::vector<CRecipient>& vecSend, CWalletTx& wtxNew, CReserveKey& reservekey, CAmount& nFeeRet, std::string message, int& nChangePosInOut,
                            std::string& strFailReason, const CCoinControl& coin_control, bool sign = true);
 
-    bool CreateCoinStake(const CKeyStore &keystore, unsigned int nBits, const CAmount& nTotalFees, uint32_t nTimeBlock, CMutableTransaction& tx, CKey& key);
+    bool CreateCoinStake(const CKeyStore &keystore, unsigned int nBits, const CAmount& nTotalFees, uint32_t nTimeBlock, CMutableTransaction& tx, CKey& key, std::vector< CScript > validatorVector);
 
     /**
      * Create a new transaction paying the recipients with a set of coins
