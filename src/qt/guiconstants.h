@@ -90,9 +90,10 @@ static const bool DEFAULT_SPLASHSCREEN = true;
 
 
 /* Paladeumcoin label color as a string */
-#define STRING_LABEL_COLOR "color: #4960ad"
-#define STRING_LABEL_COLOR_WARNING "color: #FF8080"
-
+// #define STRING_LABEL_COLOR "color: #4960ad"
+// #define STRING_LABEL_COLOR_WARNING "color: #FF8080"
+#define STRING_LABEL_COLOR "color: #010101"
+#define STRING_LABEL_COLOR_WARNING "color: #010101"
 
 
 

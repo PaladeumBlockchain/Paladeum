@@ -369,6 +369,17 @@ OverviewPage::OverviewPage(const PlatformStyle *platformStyle, QWidget *parent) 
     /** Update the labels colors */
     ui->tokenBalanceLabel->setStyleSheet(STRING_LABEL_COLOR);
     ui->paladeumBalancesLabel->setStyleSheet(STRING_LABEL_COLOR);
+    ui->labelBalance->setStyleSheet(STRING_LABEL_COLOR);
+    ui->labelUnconfirmed->setStyleSheet(STRING_LABEL_COLOR);
+    ui->labelImmature->setStyleSheet(STRING_LABEL_COLOR);
+    ui->labelOffline->setStyleSheet(STRING_LABEL_COLOR);
+    ui->labelStake->setStyleSheet(STRING_LABEL_COLOR);
+    ui->labelWatchAvailable->setStyleSheet(STRING_LABEL_COLOR);
+    ui->labelWatchPending->setStyleSheet(STRING_LABEL_COLOR);
+    ui->labelWatchImmature->setStyleSheet(STRING_LABEL_COLOR);
+    ui->labelTotal->setStyleSheet(STRING_LABEL_COLOR);
+    ui->labelWatchTotal->setStyleSheet(STRING_LABEL_COLOR);
+
     ui->labelStakeText->setStyleSheet(STRING_LABEL_COLOR);
     ui->labelOfflineText->setStyleSheet(STRING_LABEL_COLOR);
     ui->labelBalanceText->setStyleSheet(STRING_LABEL_COLOR);
@@ -397,8 +408,12 @@ OverviewPage::OverviewPage(const PlatformStyle *platformStyle, QWidget *parent) 
     ui->labelWatchPending->setFont(GUIUtil::getSubLabelFont());
     ui->labelWatchImmature->setFont(GUIUtil::getSubLabelFont());
     ui->labelTotalText->setFont(GUIUtil::getSubLabelFont());
-    ui->labelTotal->setFont(GUIUtil::getTopLabelFontBolded());
-    ui->labelWatchTotal->setFont(GUIUtil::getTopLabelFontBolded());
+    // ui->labelTotal->setFont(GUIUtil::getTopLabelFontBolded());
+    // ui->labelWatchTotal->setFont(GUIUtil::getTopLabelFontBolded());
+
+    ui->labelTotal->setFont(GUIUtil::getSubLabelFont());
+    ui->labelWatchTotal->setFont(GUIUtil::getSubLabelFont());
+
     ui->labelStakeText->setFont(GUIUtil::getSubLabelFont());
     ui->labelOfflineText->setFont(GUIUtil::getSubLabelFont());
     ui->labelStake->setFont(GUIUtil::getSubLabelFont());

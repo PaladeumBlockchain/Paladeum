@@ -449,8 +449,8 @@ void PaladeumGUI::createActions()
     connect(historyAction, SIGNAL(triggered()), this, SLOT(showNormalIfMinimized()));
     connect(historyAction, SIGNAL(triggered()), this, SLOT(gotoHistoryPage()));
 
-    connect(offlineAction, SIGNAL(triggered()), this, SLOT(showNormalIfMinimized()));
-    connect(offlineAction, SIGNAL(triggered()), this, SLOT(gotoOfflinePage()));
+    // connect(offlineAction, SIGNAL(triggered()), this, SLOT(showNormalIfMinimized()));
+    // connect(offlineAction, SIGNAL(triggered()), this, SLOT(gotoOfflinePage()));
 
     connect(tokensOverviewAction, SIGNAL(triggered()), this, SLOT(showNormalIfMinimized()));
     connect(tokensOverviewAction, SIGNAL(triggered()), this, SLOT(gotoTokensOverviewPage()));
@@ -621,7 +621,7 @@ void PaladeumGUI::createToolBars()
         toolbar->addAction(sendCoinsAction);
         toolbar->addAction(receiveCoinsAction);
         toolbar->addAction(historyAction);
-        toolbar->addAction(offlineAction);
+        // toolbar->addAction(offlineAction);
         toolbar->addAction(tokensOverviewAction);
 
         QString openSansFontString = "font: normal 22pt \"Open Sans\";";
@@ -923,8 +923,8 @@ void PaladeumGUI::gotoHistoryPage()
 
 void PaladeumGUI::gotoOfflinePage()
 {
-    offlineAction->setChecked(true);
-    if (walletFrame) walletFrame->gotoOfflinePage();
+    // offlineAction->setChecked(true);
+    // if (walletFrame) walletFrame->gotoOfflinePage();
 }
 
 void PaladeumGUI::gotoReceiveCoinsPage()
