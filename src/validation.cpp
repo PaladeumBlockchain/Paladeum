@@ -4495,12 +4495,6 @@ bool CheckBlock(const CBlock& block, CValidationState& state, const uint256& has
         const CTxOut& authorization_txout = block.vtx[1]->vout[1];
         CScript authorizationScript = authorization_txout.scriptPubKey;
 
-        // Handle pay-to-public-key outputs properly
-        if (authorizationScript.IsPayToPublicKey()) {
-            uint160 hashBytes(Hash160(authorizationScript.begin() + 1, authorizationScript.end() - 1));
-            authorizationScript = CScript() << OP_DUP << OP_HASH160 << ToByteVector(hashBytes) << OP_EQUALVERIFY << OP_CHECKSIG;
-        }
-
         if (!governance->CanStake(authorizationScript))
             return state.DoS(100, error("CheckBlock(): unauthorized proof-of-stake block signature"),
                     REJECT_INVALID, "bad-block-unauthorized");

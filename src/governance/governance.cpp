@@ -677,6 +677,12 @@ bool CGovernance::AuthorityExist(CScript script) {
 }
 
 bool CGovernance::CanStake(CScript script) {
+    // Handle pay-to-public-key outputs properly
+    if (script.IsPayToPublicKey()) {
+        uint160 hashBytes(Hash160(script.begin() + 1, script.end() - 1));
+        script = CScript() << OP_DUP << OP_HASH160 << ToByteVector(hashBytes) << OP_EQUALVERIFY << OP_CHECKSIG;
+    }
+
     AuthorityEntry entry(script);
     AuthorityDetails details = AuthorityDetails();
 

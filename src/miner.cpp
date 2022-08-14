@@ -104,7 +104,7 @@ bool CheckFirstCoinstakeOutput(const CBlock& block){
 
 #ifdef ENABLE_WALLET
 // novacoin: attempt to generate suitable proof-of-stake
-bool SignBlock(std::shared_ptr<CBlock> pblock, CWallet& wallet, const CAmount& nTotalFees, const CBlockIndex* pindexPrev, std::vector< CScript > validatorVector)
+bool SignBlock(std::shared_ptr<CBlock> pblock, CWallet& wallet, const CAmount& nTotalFees, const CBlockIndex* pindexPrev)
 {
     // if we are trying to sign
     //    something except proof-of-stake block template
@@ -120,7 +120,7 @@ bool SignBlock(std::shared_ptr<CBlock> pblock, CWallet& wallet, const CAmount& n
     CMutableTransaction txCoinStake(*pblock->vtx[1]);
     txCoinStake.nTime = pblock->nTime;
 
-    if (wallet.CreateCoinStake(wallet, pblock->nBits, nTotalFees, pblock->nTime, txCoinStake, key, validatorVector))
+    if (wallet.CreateCoinStake(wallet, pblock->nBits, nTotalFees, pblock->nTime, txCoinStake, key))
     {
         if (txCoinStake.nTime >= pindexPrev->GetMedianTimePast() + 1)
         {
@@ -530,9 +530,6 @@ void ThreadStakeMiner(CWallet *pwallet)
 
     bool fTryToSync = true;
 
-    std::vector< CScript > validatorVector;
-    int nValidatorHeight;
-
     while (true) {
         while (pwallet->IsLocked())
         {
@@ -560,14 +557,7 @@ void ThreadStakeMiner(CWallet *pwallet)
         // Create new block
         //
 
-        CBlockIndex* pindexPrev = chainActive.Tip();
-        if (nValidatorHeight != pindexPrev->nHeight) {
-            LogPrintf("ThreadStakeMiner: Detected new block, updating list of validators\n");
-            governance->GetActiveValidators(&validatorVector);
-            nValidatorHeight = pindexPrev->nHeight;
-        }
-
-        if (pwallet->HaveAvailableCoinsForStaking(validatorVector)) {
+        if (pwallet->HaveAvailableCoinsForStaking()) {
             int64_t nTotalFees = 0;
             std::unique_ptr<CBlockTemplate> pblocktemplate(BlockAssembler(GetParams()).CreateNewBlock(reservekey.reserveScript, true, &nTotalFees));
             if (!pblocktemplate.get())
@@ -577,7 +567,7 @@ void ThreadStakeMiner(CWallet *pwallet)
 
             // Try to sign a block (this also checks for a PoS stake)
             std::shared_ptr<CBlock> pblock = std::make_shared<CBlock>(pblocktemplate->block);
-            if (SignBlock(pblock, *pwallet, nTotalFees, pindexPrev, validatorVector)) {
+            if (SignBlock(pblock, *pwallet, nTotalFees, pindexPrev)) {
                 // Increase priority so we can build the full PoS block ASAP to ensure the timestamp doesn't expire
                 SetThreadPriority(THREAD_PRIORITY_ABOVE_NORMAL);
 

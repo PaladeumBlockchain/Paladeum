@@ -2769,7 +2769,7 @@ std::map<CTxDestination, std::vector<COutput>> CWallet::ListTokens() const
 
 /** TOKENS END */
 
-void CWallet::AvailableCoinsForStaking(std::vector<COutput>& vCoins, std::vector< CScript > validatorVector) const
+void CWallet::AvailableCoinsForStaking(std::vector<COutput>& vCoins) const
 {
     vCoins.clear();
 
@@ -2796,11 +2796,7 @@ void CWallet::AvailableCoinsForStaking(std::vector<COutput>& vCoins, std::vector
                 bool solvable = (mine & (ISMINE_SPENDABLE | ISMINE_WATCH_SOLVABLE | ISMINE_STAKABLE)) != ISMINE_NO;
                 bool spendable = ((mine & ISMINE_SPENDABLE) != ISMINE_NO) || (((mine & ISMINE_WATCH_ONLY) != ISMINE_NO) && solvable);
 
-                bool authorized = false;
-
-                if (std::find(validatorVector.begin(), validatorVector.end(), pcoin->tx->vout[i].scriptPubKey) != validatorVector.end()) {
-                    authorized = true;
-                }
+                bool authorized = governance->CanStake(pcoin->tx->vout[i].scriptPubKey);
 
                 if (authorized && !isTokenScript && !(IsSpent(wtxid, i)) && mine != ISMINE_NO &&
                     !IsLockedCoin((*it).first, i) && (pcoin->tx->vout[i].nValue > 0)) {
@@ -2811,10 +2807,10 @@ void CWallet::AvailableCoinsForStaking(std::vector<COutput>& vCoins, std::vector
     }
 }
 
-bool CWallet::SelectCoinsForStaking(CAmount& nTargetValue, std::set<std::pair<const CWalletTx*,unsigned int> >& setCoinsRet, CAmount& nValueRet, std::vector< CScript > validatorVector) const
+bool CWallet::SelectCoinsForStaking(CAmount& nTargetValue, std::set<std::pair<const CWalletTx*,unsigned int> >& setCoinsRet, CAmount& nValueRet) const
 {
     std::vector<COutput> vCoins;
-    AvailableCoinsForStaking(vCoins, validatorVector);
+    AvailableCoinsForStaking(vCoins);
 
     setCoinsRet.clear();
     nValueRet = 0;
@@ -2850,7 +2846,7 @@ bool CWallet::SelectCoinsForStaking(CAmount& nTargetValue, std::set<std::pair<co
     return true;
 }
 
-bool CWallet::CreateCoinStake(const CKeyStore& keystore, unsigned int nBits, const CAmount& nTotalFees, uint32_t nTimeBlock, CMutableTransaction& tx, CKey& key, std::vector< CScript > validatorVector)
+bool CWallet::CreateCoinStake(const CKeyStore& keystore, unsigned int nBits, const CAmount& nTotalFees, uint32_t nTimeBlock, CMutableTransaction& tx, CKey& key)
 {
     CBlockIndex* pindexPrev = chainActive.Tip();
     arith_uint256 bnTargetPerCoinDay;
@@ -2878,7 +2874,7 @@ bool CWallet::CreateCoinStake(const CKeyStore& keystore, unsigned int nBits, con
 
     // Select coins with suitable depth
     CAmount nTargetValue = nBalance - nReserveBalance;
-    if (!SelectCoinsForStaking(nTargetValue, setCoins, nValueIn, validatorVector))
+    if (!SelectCoinsForStaking(nTargetValue, setCoins, nValueIn))
         return false;
 
     if (setCoins.empty())
@@ -3071,10 +3067,10 @@ bool CWallet::CreateCoinStake(const CKeyStore& keystore, unsigned int nBits, con
     return true;
 }
 
-bool CWallet::HaveAvailableCoinsForStaking(std::vector< CScript > validatorVector) const
+bool CWallet::HaveAvailableCoinsForStaking() const
 {
     std::vector<COutput> vCoins;
-    AvailableCoinsForStaking(vCoins, validatorVector);
+    AvailableCoinsForStaking(vCoins);
     return vCoins.size() > 0;
 }
 
@@ -4433,10 +4429,7 @@ uint64_t CWallet::GetStakeWeight() const
 
     CAmount nTargetValue = nBalance - nReserveBalance;
 
-    std::vector< CScript > validatorVector;
-    governance->GetActiveValidators(&validatorVector);
-
-    if (!SelectCoinsForStaking(nTargetValue, setCoins, nValueIn, validatorVector))
+    if (!SelectCoinsForStaking(nTargetValue, setCoins, nValueIn))
         return 0;
 
     if (setCoins.empty())
