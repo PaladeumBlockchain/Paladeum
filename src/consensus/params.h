@@ -74,6 +74,7 @@ struct Params {
     int nStakeTimestampMask;
     bool nSegwitEnabled;
     bool nCSVEnabled;
+    int nLastPOWBlock;
 
     int offlineStakingFork;
 };

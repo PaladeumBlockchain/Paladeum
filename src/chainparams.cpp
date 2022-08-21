@@ -164,6 +164,7 @@ public:
         consensus.defaultAssumeValid = uint256S("0xe8b61dd5d266cf5e610520daf9dfa57eb9eafd389a17a0adc81b6d1974eb7540"); // Block 1186833
 
         // Proof-of-Stake
+        consensus.nLastPOWBlock = std::numeric_limits<int>::max();
         consensus.nTxMessages = std::numeric_limits<int>::max();
         consensus.nStakeTimestampMask = 0xf; // 15
 
@@ -274,6 +275,7 @@ public:
         consensus.defaultAssumeValid = uint256S("0xd69d49840bf9ec171f17db647c147653922e70e9441ede37b945205aa3a8e5ae");
 
         // Proof-of-Stake
+        consensus.nLastPOWBlock = std::numeric_limits<int>::max();
         consensus.nTxMessages = 10;
         consensus.nStakeTimestampMask = 0xf; // 15
 
@@ -393,6 +395,7 @@ public:
         consensus.defaultAssumeValid = uint256S("0x9d7805d5ce13abc52658fe089aa01ea4d6be2594b8d97f65c912030059a6e6b9");
 
         // Proof-of-Stake
+        consensus.nLastPOWBlock = std::numeric_limits<int>::max();
         consensus.nTxMessages = 10;
         consensus.nStakeTimestampMask = 0xf; // 15
 
