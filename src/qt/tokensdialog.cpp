@@ -759,8 +759,7 @@ void TokensDialog::on_buttonMinimizeFee_clicked()
 
 void TokensDialog::setMinimumFee()
 {
-    // ToDo: pass spend height here
-    ui->customFee->setValue(GetStaticFee(true, 0));
+    ui->customFee->setValue(GetRequiredFee(1000));
 }
 
 void TokensDialog::updateFeeSectionControls()

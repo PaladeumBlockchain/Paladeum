@@ -584,15 +584,11 @@ bool Consensus::CheckTxInputs(const CTransaction& tx, CValidationState& state, c
     }
 
     CAmount nValueIn = 0;
-    bool nTokenTransaction = false;
 
     for (unsigned int i = 0; i < tx.vin.size(); ++i) {
         const COutPoint &prevout = tx.vin[i].prevout;
         const Coin& coin = inputs.AccessCoin(prevout);
         assert(!coin.IsSpent());
-
-        if (coin.IsToken())
-            nTokenTransaction = true;
 
         // If prev is coinbase, check that it's matured
         if (coin.IsCoinBase() && nSpendHeight - coin.nHeight < COINBASE_MATURITY) {
@@ -632,12 +628,6 @@ bool Consensus::CheckTxInputs(const CTransaction& tx, CValidationState& state, c
         if (!MoneyRange(txfee_aux)) {
             return state.DoS(100, false, REJECT_INVALID, "bad-txns-fee-out-of-range");
         }
-
-        // Enforce transaction fees for every block
-        const CAmount minfee = GetStaticFee(nTokenTransaction, nSpendHeight);
-        if (txfee_aux < minfee)
-            return state.DoS(100, false, REJECT_INVALID, "bad-txns-fee-not-enough", false,
-                strprintf("txfee (%s) < minfee (%s)", FormatMoney(txfee_aux), FormatMoney(minfee)));
     }
 
     txfee = txfee_aux;

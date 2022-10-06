@@ -9,7 +9,6 @@
 
 #include <stdlib.h>
 #include <stdint.h>
-#include <amount.h>
 
 /** The maximum allowed size for a serialized block, in bytes (only for buffer size limits) */
 static const unsigned int MAX_BLOCK_SERIALIZED_SIZE = 6000000;
@@ -38,7 +37,6 @@ UNUSED_VAR static bool fTokensIsActive = false;
 
 unsigned int GetMaxBlockWeight();
 unsigned int GetMaxBlockSerializedSize();
-CAmount GetStaticFee(bool nTokenTransaction, int nSpendHeight);
 
 /** Flags for nSequence and nLockTime locks */
 enum {
