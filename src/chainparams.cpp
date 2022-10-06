@@ -272,7 +272,7 @@ public:
         consensus.nMinimumChainWork = uint256S("0x");
 
         // By default assume that the signatures in ancestors of this block are valid.
-        consensus.defaultAssumeValid = uint256S("0xd69d49840bf9ec171f17db647c147653922e70e9441ede37b945205aa3a8e5ae");
+        consensus.defaultAssumeValid = uint256S("0x29d575a69da4298782bd3487ba5597e70843aeb67ba845f13ea8e3e2a671320e");
 
         // Proof-of-Stake
         consensus.nLastPOWBlock = std::numeric_limits<int>::max();
@@ -282,20 +282,20 @@ public:
         // Fork to enable offline staking and remove the block limiter
         consensus.offlineStakingFork = 10;
 
-        pchMessageStart[0] = 0xab;
-        pchMessageStart[1] = 0xbb;
-        pchMessageStart[2] = 0xba;
-        pchMessageStart[3] = 0xaa;
+        pchMessageStart[0] = 0xbb;
+        pchMessageStart[1] = 0xab;
+        pchMessageStart[2] = 0xaa;
+        pchMessageStart[3] = 0xba;
         nDefaultPort = 16465;
         nPruneAfterHeight = 1000;
 
-        const char* pszTimestamp = "Webb Images Earendel, Farthest Known Star | Aug 9, 2022 Sci-News";
+        const char* pszTimestamp = "Newly-Discovered Cataclysmic Variable Has Extremely Short Orbit | Oct 6, 2022 Sci-News";
 
-        genesis = CreateGenesisBlock(pszTimestamp, 1660202992, 433, 0x1f3fffff, 1, 1 * COIN);
+        genesis = CreateGenesisBlock(pszTimestamp, 1665084955, 1362, 0x1f3fffff, 1, 1 * COIN);
         consensus.hashGenesisBlock = genesis.GetIndexHash();
 
-        assert(consensus.hashGenesisBlock == uint256S("0xd69d49840bf9ec171f17db647c147653922e70e9441ede37b945205aa3a8e5ae"));
-        assert(genesis.hashMerkleRoot == uint256S("0xa1bf0039f67fdf42925339a5265cb93fce4f2528ec84a38ec0ae404a17eb3829"));
+        assert(consensus.hashGenesisBlock == uint256S("0x29d575a69da4298782bd3487ba5597e70843aeb67ba845f13ea8e3e2a671320e"));
+        assert(genesis.hashMerkleRoot == uint256S("0xebc3610fc8f95a58b26c621e73ca9e694ac28725b467a319dbcf88c7f7e5bfdc"));
 
         vFixedSeeds.clear();
         vSeeds.clear();
