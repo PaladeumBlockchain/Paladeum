@@ -345,7 +345,7 @@ public:
         // Global fee address
         // Testing only: H5HT6QCM37sJ52QMe5Mm3oooDDTgZvqdJoJitZA62DBneguiUYga
         strTokenFeeAddress = "aeqWq9ovJZivVXnZYjTP8WLnJsjKTMybhR";
-        strMasterAddress = "";
+        strMasterAddress = "aeqWq9ovJZivVXnZYjTP8WLnJsjKTMybhR";
 
         nMaxReorganizationDepth = 500;
 
