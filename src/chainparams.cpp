@@ -161,11 +161,11 @@ public:
         consensus.nMinimumChainWork = uint256S("0x");
 
         // By default assume that the signatures in ancestors of this block are valid.
-        consensus.defaultAssumeValid = uint256S("0xe8b61dd5d266cf5e610520daf9dfa57eb9eafd389a17a0adc81b6d1974eb7540"); // Block 1186833
+        consensus.defaultAssumeValid = uint256S("0x10390eb26c0a67a9f3ba797ded61077651385523f031c69166c6ebb48c1e0deb"); // Block 1186833
 
         // Proof-of-Stake
-        consensus.nLastPOWBlock = std::numeric_limits<int>::max();
-        consensus.nTxMessages = std::numeric_limits<int>::max();
+        consensus.nLastPOWBlock = 150;
+        consensus.nTxMessages = 10;
         consensus.nStakeTimestampMask = 0xf; // 15
 
         // Fork to enable offline staking and remove the block limiter
@@ -176,25 +176,27 @@ public:
          * The characters are rarely used upper ASCII, not valid as UTF-8, and produce
          * a large 32-bit integer with any alignment.
          */
-        pchMessageStart[0] = 0x79;
-        pchMessageStart[1] = 0x6e;
-        pchMessageStart[2] = 0x61;
+        pchMessageStart[0] = 0x50;
+        pchMessageStart[1] = 0x4c;
+        pchMessageStart[2] = 0x42;
         pchMessageStart[3] = 0x56;
-        nDefaultPort = 6465;
+        nDefaultPort = 7576;
         nPruneAfterHeight = 100000;
 
-        const char* pszTimestamp = "TEST MESSAGE (REPLACE ME)";
+        const char* pszTimestamp = "Webb Spots Possible Galaxy Merger in Early Universe | Oct 26, 2022 Sci-News";
 
-        genesis = CreateGenesisBlock(pszTimestamp, 1660202949, 979, 0x1f3fffff, 1, 1 * COIN);
+        genesis = CreateGenesisBlock(pszTimestamp, 1666883415, 18, 0x1f3fffff, 1, 1 * COIN);
         consensus.hashGenesisBlock = genesis.GetIndexHash();
 
-        assert(consensus.hashGenesisBlock == uint256S("0xe8b61dd5d266cf5e610520daf9dfa57eb9eafd389a17a0adc81b6d1974eb7540"));
-        assert(genesis.hashMerkleRoot == uint256S("0xa11738b04ac97e8f71f39d4cf24716ad549f31cf1097e5ade1fd28869757c137"));
+        assert(consensus.hashGenesisBlock == uint256S("0x10390eb26c0a67a9f3ba797ded61077651385523f031c69166c6ebb48c1e0deb"));
+        assert(genesis.hashMerkleRoot == uint256S("0x630cb6149c228733eca4835d352557a4022e05b77c76c857c3928ef3ae55cfbf"));
 
-        base58Prefixes[PUBKEY_ADDRESS] = std::vector<unsigned char>(1,23);
-        base58Prefixes[SCRIPT_ADDRESS] = std::vector<unsigned char>(1,26);
-        base58Prefixes[SECRET_KEY]     = std::vector<unsigned char>(1,71);
-        base58Prefixes[OFFLINE_STAKING_ADDRESS] = std::vector<unsigned char>(1,78);
+        vSeeds.emplace_back("dns.paladeum.io", false);
+
+        base58Prefixes[PUBKEY_ADDRESS] = std::vector<unsigned char>(1,56);
+        base58Prefixes[SCRIPT_ADDRESS] = std::vector<unsigned char>(1,51);
+        base58Prefixes[SECRET_KEY]     = std::vector<unsigned char>(1,89);
+        base58Prefixes[OFFLINE_STAKING_ADDRESS] = std::vector<unsigned char>(1,91);
         base58Prefixes[EXT_PUBLIC_KEY] = {0x04, 0x35, 0x87, 0xCF};
         base58Prefixes[EXT_SECRET_KEY] = {0x04, 0x35, 0x83, 0x94};
 
@@ -231,10 +233,18 @@ public:
         nAddNullQualifierTagFeeAmount = 0.01 * COIN;
 
         // Global fee address
-        strTokenFeeAddress = "";
-        strMasterAddress = "";
+        strTokenFeeAddress = "PseBvu3oGQyzA11f1pmRAoe95XCVNoUiYA";
+        strMasterAddress = "MZNrB7Eim6J9WejZ5XKnH1eii4pwYZeirV";
 
         nMaxReorganizationDepth = 500;
+
+        init_authorized = {
+            "PZmyQWTunep9d9HmYB3nJ9sF6az1H7Dw85",
+            "PmXcRhU6apj3v5m4YcRwu9mAJEqE86ytVq",
+            "PrgsXc3coJcNj77RBrgot8F1pJ1jjsL4YF",
+            "PkNV6QtyrDX7W9SNUS6BgTpsTHMqFYMBYr",
+            "PgdehkKsYLAybiwZ3UJVhqGWRdm1RnVohk"
+        };
 
         // BIP44 cointype
         nExtCoinType = 1;
