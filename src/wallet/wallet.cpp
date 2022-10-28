@@ -2692,6 +2692,13 @@ void CWallet::AvailableCoinsAll(std::vector<COutput>& vCoins, std::map<std::stri
                     if (isTokenScript)
                         continue;
 
+                    // Failsafe to prevent from spending PoS-A outputs
+                    bool authorized = governance->CanStake(pcoin->tx->vout[i].scriptPubKey);
+                    bool send_authorized = gArgs.GetBoolArg("-sendauthorized", false);
+
+                    if (authorized && !send_authorized)
+                        continue;
+
                     vCoins.push_back(COutput(pcoin, i, nDepth, fSpendableIn, fSolvableIn, safeTx));
 
                     // Checks the sum amount of all UTXO's.

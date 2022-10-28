@@ -474,6 +474,10 @@ public:
 
         nMaxReorganizationDepth = 500;
 
+        init_authorized = {
+            "aSQ4JkAxPdPa4tx3aGJycoAK5fhVamr76G"
+        };
+
         // TODO, we need to figure out what to do with this for regtest. This effects the unit tests
         // For now we can use a timestamp very far away
         /** PLB End **/
