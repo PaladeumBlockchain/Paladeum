@@ -33,9 +33,9 @@ RUN apt-get update && \
 	libzmq3-dev libminiupnpc-dev libdb4.8-dev libdb4.8++-dev && \
 	apt-get clean
 
-#Build Paladeumcoin from source
-COPY . /home/paladeum/build/Paladeumcoin/
-WORKDIR /home/paladeum/build/Paladeumcoin
+#Build Paladeum from source
+COPY . /home/paladeum/build/Paladeum/
+WORKDIR /home/paladeum/build/Paladeum
 RUN ./autogen.sh && ./configure --disable-tests --with-gui=no && make
 
 FROM base AS final
@@ -50,8 +50,8 @@ RUN useradd -ms /bin/bash paladeum && \
 VOLUME /var/lib/paladeum
 
 #Copy the compiled binaries from the build
-COPY --from=build /home/paladeum/build/Paladeumcoin/src/paladeumd /usr/local/bin/paladeumd
-COPY --from=build /home/paladeum/build/Paladeumcoin/src/paladeum-cli /usr/local/bin/paladeum-cli
+COPY --from=build /home/paladeum/build/Paladeum/src/paladeumd /usr/local/bin/paladeumd
+COPY --from=build /home/paladeum/build/Paladeum/src/paladeum-cli /usr/local/bin/paladeum-cli
 
 WORKDIR /home/paladeum
 USER paladeum

@@ -636,7 +636,7 @@ std::string HelpMessage(HelpMessageMode mode)
 
 std::string LicenseInfo()
 {
-    const std::string URL_SOURCE_CODE = "<https://github.com/PaladeumProject/Paladeumcoin>";
+    const std::string URL_SOURCE_CODE = "<https://github.com/PaladeumProject/Paladeum>";
     const std::string URL_WEBSITE = "<https://paladeumcoin.org>";
 
     return CopyrightHolders(strprintf(_("Copyright (C) %i-%i"), 2009, COPYRIGHT_YEAR) + " ") + "\n" +

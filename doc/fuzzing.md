@@ -1,4 +1,4 @@
-Fuzz-testing Paladeumcoin
+Fuzz-testing Paladeum
 ==========================
 
 A special test harness `test_paladeum_fuzzy` is provided to provide an easy

@@ -7,7 +7,7 @@ and performance improvements, as well as updated translations.
 
 Please report bugs using the issue tracker at GitHub:
 
-  <https://github.com/PaladeumProject/Paladeumcoin/issues>
+  <https://github.com/PaladeumProject/Paladeum/issues>
 
 To receive security and update notifications, please subscribe to:
 

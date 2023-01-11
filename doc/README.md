@@ -1,15 +1,15 @@
-Paladeumcoin Core
+Paladeum Core
 ==============
 
 Setup
 ---------------------
-Paladeumcoin Core is the original Paladeumcoin client and it builds the backbone of the network. It downloads and, by default, stores the entire history of Paladeumcoin transactions; depending on the speed of your computer and network connection, the synchronization process is typically complete in under an hour.
+Paladeum Core is the original Paladeum client and it builds the backbone of the network. It downloads and, by default, stores the entire history of Paladeum transactions; depending on the speed of your computer and network connection, the synchronization process is typically complete in under an hour.
 
-To download compiled binaries of the Paladeumcoin Core and wallet, visit the [GitHub release page](https://github.com/PaladeumProject/Paladeumcoin/releases).
+To download compiled binaries of the Paladeum Core and wallet, visit the [GitHub release page](https://github.com/PaladeumProject/Paladeum/releases).
 
 Running
 ---------------------
-The following are some helpful notes on how to run Paladeumcoin on your native platform.
+The following are some helpful notes on how to run Paladeum on your native platform.
 
 ### Linux
 
@@ -17,7 +17,7 @@ The following are some helpful notes on how to run Paladeumcoin on your native p
 
 2) Install distribution-specific dependencies listed below.
 
-3) Run the GUI wallet or only the Paladeumcoin core deamon
+3) Run the GUI wallet or only the Paladeum core deamon
 
    a. GUI wallet:
 
@@ -99,54 +99,54 @@ To resolve, you will need to copy libboost_system.dylib to libboost_system-mt.dy
 
 ### Need Help?
 
-- See the documentation at the [Paladeumcoin Wiki](https://paladeum.wiki/wiki/Paladeumcoin_Wiki)
+- See the documentation at the [Paladeum Wiki](https://paladeum.wiki/wiki/Paladeum_Wiki)
 for help and more information.
-- Ask for help on [Discord](https://discord.gg/DUkcBst), [Telegram](https://t.me/PaladeumcoinDev) or [Reddit](https://www.reddit.com/r/Paladeumcoin/).
+- Ask for help on [Discord](https://discord.gg/DUkcBst), [Telegram](https://t.me/PaladeumDev) or [Reddit](https://www.reddit.com/r/Paladeum/).
 
 Building from source
 ---------------------
-The following are developer notes on how to build the Paladeumcoin core software on your native platform. They are not complete guides, but include notes on the necessary libraries, compile flags, etc.
+The following are developer notes on how to build the Paladeum core software on your native platform. They are not complete guides, but include notes on the necessary libraries, compile flags, etc.
 
-- [Dependencies](https://github.com/PaladeumProject/Paladeumcoin/tree/master/doc/dependencies.md)
-- [OS X Build Notes](https://github.com/PaladeumProject/Paladeumcoin/tree/master/doc/build-osx.md)
-- [Unix Build Notes](https://github.com/PaladeumProject/Paladeumcoin/tree/master/doc/build-unix.md)
-- [Windows Build Notes](https://github.com/PaladeumProject/Paladeumcoin/tree/master/doc/build-windows.md)
-- [OpenBSD Build Notes](https://github.com/PaladeumProject/Paladeumcoin/tree/master/doc/build-openbsd.md)
-- [Gitian Building Guide](https://github.com/PaladeumProject/Paladeumcoin/tree/master/doc/gitian-building.md)
+- [Dependencies](https://github.com/PaladeumProject/Paladeum/tree/master/doc/dependencies.md)
+- [OS X Build Notes](https://github.com/PaladeumProject/Paladeum/tree/master/doc/build-osx.md)
+- [Unix Build Notes](https://github.com/PaladeumProject/Paladeum/tree/master/doc/build-unix.md)
+- [Windows Build Notes](https://github.com/PaladeumProject/Paladeum/tree/master/doc/build-windows.md)
+- [OpenBSD Build Notes](https://github.com/PaladeumProject/Paladeum/tree/master/doc/build-openbsd.md)
+- [Gitian Building Guide](https://github.com/PaladeumProject/Paladeum/tree/master/doc/gitian-building.md)
 
 Development
 ---------------------
-Paladeumcoin repo's [root README](https://github.com/PaladeumProject/Paladeumcoin/blob/master/README.md) contains relevant information on the development process and automated testing.
+Paladeum repo's [root README](https://github.com/PaladeumProject/Paladeum/blob/master/README.md) contains relevant information on the development process and automated testing.
 
-- [Developer Notes](https://github.com/PaladeumProject/Paladeumcoin/blob/master/doc/developer-notes.md)
-- [Release Notes](https://github.com/PaladeumProject/Paladeumcoin/blob/master/doc/release-notes.md)
-- [Release Process](https://github.com/PaladeumProject/Paladeumcoin/blob/master/doc/release-process.md)
+- [Developer Notes](https://github.com/PaladeumProject/Paladeum/blob/master/doc/developer-notes.md)
+- [Release Notes](https://github.com/PaladeumProject/Paladeum/blob/master/doc/release-notes.md)
+- [Release Process](https://github.com/PaladeumProject/Paladeum/blob/master/doc/release-process.md)
 - [Source Code Documentation (External Link)](https://dev.visucore.com/paladeum/doxygen/) -- 2018-05-11 -- Broken link
-- [Translation Process](https://github.com/PaladeumProject/Paladeumcoin/blob/master/doc/translation_process.md)
-- [Translation Strings Policy](https://github.com/PaladeumProject/Paladeumcoin/blob/master/doc/translation_strings_policy.md)
-- [Travis CI](https://github.com/PaladeumProject/Paladeumcoin/blob/master/doc/travis-ci.md)
-- [Unauthenticated REST Interface](https://github.com/PaladeumProject/Paladeumcoin/blob/master/doc/REST-interface.md)
-- [Shared Libraries](https://github.com/PaladeumProject/Paladeumcoin/blob/master/doc/shared-libraries.md)
-- [BIPS](https://github.com/PaladeumProject/Paladeumcoin/blob/master/doc/bips.md)
-- [Dnsseed Policy](https://github.com/PaladeumProject/Paladeumcoin/blob/master/doc/dnsseed-policy.md)
-- [Benchmarking](https://github.com/PaladeumProject/Paladeumcoin/blob/master/doc/benchmarking.md)
+- [Translation Process](https://github.com/PaladeumProject/Paladeum/blob/master/doc/translation_process.md)
+- [Translation Strings Policy](https://github.com/PaladeumProject/Paladeum/blob/master/doc/translation_strings_policy.md)
+- [Travis CI](https://github.com/PaladeumProject/Paladeum/blob/master/doc/travis-ci.md)
+- [Unauthenticated REST Interface](https://github.com/PaladeumProject/Paladeum/blob/master/doc/REST-interface.md)
+- [Shared Libraries](https://github.com/PaladeumProject/Paladeum/blob/master/doc/shared-libraries.md)
+- [BIPS](https://github.com/PaladeumProject/Paladeum/blob/master/doc/bips.md)
+- [Dnsseed Policy](https://github.com/PaladeumProject/Paladeum/blob/master/doc/dnsseed-policy.md)
+- [Benchmarking](https://github.com/PaladeumProject/Paladeum/blob/master/doc/benchmarking.md)
 
 ### Resources
-- Discuss on chat [Discord](https://discord.gg/jn6uhur), [Telegram](https://t.me/PaladeumcoinDev) or [Reddit](https://www.reddit.com/r/Paladeumcoin/).
-- Find out more on the [Paladeumcoin Wiki](https://paladeum.wiki/wiki/Paladeumcoin_Wiki)
-- Visit the project home [Paladeumcoin.org](https://paladeumcoin.org)
+- Discuss on chat [Discord](https://discord.gg/jn6uhur), [Telegram](https://t.me/PaladeumDev) or [Reddit](https://www.reddit.com/r/Paladeum/).
+- Find out more on the [Paladeum Wiki](https://paladeum.wiki/wiki/Paladeum_Wiki)
+- Visit the project home [Paladeum.org](https://paladeumcoin.org)
 
 ### Miscellaneous
-- [Tokens Attribution](https://github.com/PaladeumProject/Paladeumcoin/blob/master/doc/tokens-attribution.md)
-- [Files](https://github.com/PaladeumProject/Paladeumcoin/blob/master/doc/files.md)
-- [Fuzz-testing](https://github.com/PaladeumProject/Paladeumcoin/blob/master/doc/fuzzing.md)
-- [Reduce Traffic](https://github.com/PaladeumProject/Paladeumcoin/blob/master/doc/reduce-traffic.md)
-- [Tor Support](https://github.com/PaladeumProject/Paladeumcoin/blob/master/doc/tor.md)
-- [Init Scripts (systemd/upstart/openrc)](https://github.com/PaladeumProject/Paladeumcoin/blob/master/doc/init.md)
-- [ZMQ](https://github.com/PaladeumProject/Paladeumcoin/blob/master/doc/zmq.md)
+- [Tokens Attribution](https://github.com/PaladeumProject/Paladeum/blob/master/doc/tokens-attribution.md)
+- [Files](https://github.com/PaladeumProject/Paladeum/blob/master/doc/files.md)
+- [Fuzz-testing](https://github.com/PaladeumProject/Paladeum/blob/master/doc/fuzzing.md)
+- [Reduce Traffic](https://github.com/PaladeumProject/Paladeum/blob/master/doc/reduce-traffic.md)
+- [Tor Support](https://github.com/PaladeumProject/Paladeum/blob/master/doc/tor.md)
+- [Init Scripts (systemd/upstart/openrc)](https://github.com/PaladeumProject/Paladeum/blob/master/doc/init.md)
+- [ZMQ](https://github.com/PaladeumProject/Paladeum/blob/master/doc/zmq.md)
 
 License
 ---------------------
-Distributed under the [MIT software license](https://github.com/PaladeumProject/Paladeumcoin/blob/master/COPYING).
+Distributed under the [MIT software license](https://github.com/PaladeumProject/Paladeum/blob/master/COPYING).
 This product includes software developed by the OpenSSL Project for use in the [OpenSSL Toolkit](https://www.openssl.org/). This product includes
 cryptographic software written by Eric Young ([eay@cryptsoft.com](mailto:eay@cryptsoft.com)), and UPnP software written by Thomas Bernard.

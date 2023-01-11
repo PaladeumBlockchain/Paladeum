@@ -1,15 +1,15 @@
 Translations
 ============
 
-The Paladeumcoin project has been designed to support multiple localisations. This makes adding new phrases, and completely new languages easily achievable. For managing all application translations, Paladeumcoin makes use of the Transifex online translation management tool.
+The Paladeum project has been designed to support multiple localisations. This makes adding new phrases, and completely new languages easily achievable. For managing all application translations, Paladeum makes use of the Transifex online translation management tool.
 
 ### Helping to translate (using Transifex)
 Currently updating strings in Transifex requires a manual upload of the updated src/qt/locale/paladeum_en.ts.
 This can easily be automated in the future.
 
-Multiple language support is critical in assisting Paladeumcoins global adoption, and growth. One of Paladeumcoins greatest strengths is cross-border money transfers, any help making that easier is greatly appreciated.
+Multiple language support is critical in assisting Paladeums global adoption, and growth. One of Paladeums greatest strengths is cross-border money transfers, any help making that easier is greatly appreciated.
 
-See the [Transifex Paladeum project](https://www.transifex.com/paladeumcoin) to assist in translations. You can also join the #translations in [Paladeumcoin Discord](https://discord.gg/jn6uhur).
+See the [Transifex Paladeum project](https://www.transifex.com/paladeumcoin) to assist in translations. You can also join the #translations in [Paladeum Discord](https://discord.gg/jn6uhur).
 
 ### Writing code with translations
 We use automated scripts to help extract translations in both Qt, and non-Qt source files. It is rarely necessary to manually edit the files in `src/qt/locale/`. The translation source files must adhere to the following format:
@@ -104,6 +104,6 @@ To create a new language template, you will need to edit the languages manifest 
 This process can be automated by a [script](https://github.com/fdoving/paladeumcoin-maintainer-tools/blob/master/update-translations.py) in [paladeumcoin-maintainer-tools](https://github.com/fdoving/paladeumcoin-maintainer-tools/).
 
 ### Questions and general assistance
-The Paladeumcoin translation maintainers include *fdov and pocal*. You can find them, and others, in #translations in [Paladeumcoin Discord](https://discord.gg/jn6uhur).
+The Paladeum translation maintainers include *fdov and pocal*. You can find them, and others, in #translations in [Paladeum Discord](https://discord.gg/jn6uhur).
 
 Announcements will be posten in Discord and on the transifex.com [announcements page](https://www.transifex.com/paladeumcoin/qt-translation/announcements/).

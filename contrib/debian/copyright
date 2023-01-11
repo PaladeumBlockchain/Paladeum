@@ -1,6 +1,6 @@
 Format: http://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
-Upstream-Name: Paladeumcoin
-Source: https://github.com/PaladeumProject/Paladeumcoin
+Upstream-Name: Paladeum
+Source: https://github.com/PaladeumProject/Paladeum
 
 Files: *
 Copyright: 2009-2017, Bitcoin Core Developers

@@ -1,4 +1,4 @@
-Build instructions for Paladeumcoin 
+Build instructions for Paladeum 
 =================================
 
 This will install most of the dependencies from ubuntu.
@@ -89,12 +89,12 @@ protobuf-compiler
 
 Directory structure
 ------------------
-Paladeumcoin sources in `$HOME/src`
+Paladeum sources in `$HOME/src`
 
 Berkeley DB will be installed to `$HOME/src/db4`
 
 
-Paladeumcoin
+Paladeum
 ------------------
 
 Start in $HOME
@@ -105,11 +105,11 @@ Make the directory for sources and go into it.
 
 `cd src`
 
-__Download Paladeumcoin source.__
+__Download Paladeum source.__
 
-`git clone https://github.com/PaladeumProject/Paladeumcoin`
+`git clone https://github.com/PaladeumProject/Paladeum`
 
-`cd Paladeumcoin`
+`cd Paladeum`
 
 `git checkout develop` # this checks out the develop branch.
 

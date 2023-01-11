@@ -14,7 +14,7 @@
  * for both paladeumd and paladeum-qt, to make it harder for attackers to
  * target servers or GUI users specifically.
  */
-const std::string CLIENT_NAME("Paladeumcoin");
+const std::string CLIENT_NAME("Paladeum");
 
 /**
  * Client version number

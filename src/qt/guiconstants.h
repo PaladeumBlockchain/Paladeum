@@ -44,17 +44,17 @@ static const bool DEFAULT_SPLASHSCREEN = true;
 /** LIGHT MODE */
 /* Background color, very light gray */
 #define COLOR_BACKGROUND_LIGHT QColor("#fbfbfe")
-/* Paladeumcoin dark orange */
+/* Paladeum dark orange */
 #define COLOR_DARK_ORANGE QColor("#f05239")
-/* Paladeumcoin light orange */
+/* Paladeum light orange */
 #define COLOR_LIGHT_ORANGE QColor("#f79433")
-/* Paladeumcoin dark blue */
+/* Paladeum dark blue */
 #define COLOR_DARK_BLUE QColor("#384192")
-/* Paladeumcoin light blue */
+/* Paladeum light blue */
 #define COLOR_LIGHT_BLUE QColor("#5874cf")
-/* Paladeumcoin token text */
+/* Paladeum token text */
 #define COLOR_TOKEN_TEXT QColor(255, 255, 255)
-/* Paladeumcoin shadow color - light mode */
+/* Paladeum shadow color - light mode */
 #define COLOR_SHADOW_LIGHT QColor("#e1e6f3")
 /* Toolbar not selected text color */
 #define COLOR_TOOLBAR_NOT_SELECTED_TEXT QColor("#a5b7f3")
@@ -67,19 +67,19 @@ static const bool DEFAULT_SPLASHSCREEN = true;
 /** DARK MODE */
 /* Widget background color, dark mode */
 #define COLOR_WIDGET_BACKGROUND_DARK QColor("#1c2535")
-/* Paladeumcoin shadow color - dark mode */
+/* Paladeum shadow color - dark mode */
 #define COLOR_SHADOW_DARK QColor("#0c1b3d")
-/* Paladeumcoin Light blue - dark mode - dark mode */
+/* Paladeum Light blue - dark mode - dark mode */
 #define COLOR_LIGHT_BLUE_DARK QColor("#1e2636")
-/* Paladeumcoin Dark blue - dark mode - dark mode */
+/* Paladeum Dark blue - dark mode - dark mode */
 #define COLOR_DARK_BLUE_DARK QColor("#0b1018")
 /* Pricing widget background color */
 #define COLOR_PRICING_WIDGET QColor("#161e2d")
-/* Paladeumcoin dark mode administrator background color */
+/* Paladeum dark mode administrator background color */
 #define COLOR_ADMIN_CARD_DARK COLOR_BLACK
-/* Paladeumcoin dark mode regular token background color */
+/* Paladeum dark mode regular token background color */
 #define COLOR_REGULAR_CARD_DARK_BLUE_DARK_MODE QColor("#06132a")
-/* Paladeumcoin dark mode regular token background color */
+/* Paladeum dark mode regular token background color */
 #define COLOR_REGULAR_CARD_LIGHT_BLUE_DARK_MODE QColor("#0e1b3b")
 /* Toolbar not selected text color */
 #define COLOR_TOOLBAR_NOT_SELECTED_TEXT_DARK_MODE QColor("#6c80c5")
@@ -89,7 +89,7 @@ static const bool DEFAULT_SPLASHSCREEN = true;
 #define COLOR_SENDENTRIES_BACKGROUND_DARK QColor("#1c2535")
 
 
-/* Paladeumcoin label color as a string */
+/* Paladeum label color as a string */
 // #define STRING_LABEL_COLOR "color: #4960ad"
 // #define STRING_LABEL_COLOR_WARNING "color: #FF8080"
 #define STRING_LABEL_COLOR "color: #010101"

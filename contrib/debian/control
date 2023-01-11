@@ -27,8 +27,8 @@ Build-Depends: debhelper,
  libzmq3-dev
 Standards-Version: 3.9.2
 Homepage: https://paladeumcoin.org/
-Vcs-Git: git://github.com/PaladeumProject/Paladeumcoin.git
-Vcs-Browser: https://github.com/PaladeumProject/Paladeumcoin
+Vcs-Git: git://github.com/PaladeumProject/Paladeum.git
+Vcs-Browser: https://github.com/PaladeumProject/Paladeum
 
 Package: paladeumd
 Architecture: any
