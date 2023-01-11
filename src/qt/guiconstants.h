@@ -121,7 +121,7 @@ static const int MAX_URI_LENGTH = 255;
 #define QAPP_APP_NAME_TESTNET "Paladeum-Qt-testnet"
 
 /* Default third party browser urls */
-#define DEFAULT_THIRD_PARTY_BROWSERS "https://api.paladeumcoin.org/tx/%s|https://paladeum.cryptoscope.io/tx/?txid=%s|https://blockbook.paladeumcoin.org/tx/%s|https://explorer.mangofarmtokens.com/tx/%s|https://www.tokensexplorer.com/tx/%s|https://explorer.paladeumland.org/tx/%s"
+#define DEFAULT_THIRD_PARTY_BROWSERS "https://api.paladeum.io/tx/%s|https://paladeum.cryptoscope.io/tx/?txid=%s|https://blockbook.paladeum.io/tx/%s|https://explorer.mangofarmtokens.com/tx/%s|https://www.tokensexplorer.com/tx/%s|https://explorer.paladeumland.org/tx/%s"
 
 /* Default IPFS viewer */
 #define DEFAULT_IPFS_VIEWER "https://ipfs.io/ipfs/%s"

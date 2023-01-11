@@ -20,9 +20,9 @@
 
 **Post Release :**
 
-  1. Update paladeumcoin.org with correct popup version
+  1. Update paladeum.io with correct popup version
   
-  2. Update paladeumcoin.org with correct release download urls for each platform (Windows, Linux, Mac)
+  2. Update paladeum.io with correct release download urls for each platform (Windows, Linux, Mac)
 
 **Build Process**
 

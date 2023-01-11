@@ -134,7 +134,7 @@ Paladeum repo's [root README](https://github.com/PaladeumProject/Paladeum/blob/m
 ### Resources
 - Discuss on chat [Discord](https://discord.gg/jn6uhur), [Telegram](https://t.me/PaladeumDev) or [Reddit](https://www.reddit.com/r/Paladeum/).
 - Find out more on the [Paladeum Wiki](https://paladeum.wiki/wiki/Paladeum_Wiki)
-- Visit the project home [Paladeum.org](https://paladeumcoin.org)
+- Visit the project home [Paladeum.org](https://paladeum.io)
 
 ### Miscellaneous
 - [Tokens Attribution](https://github.com/PaladeumProject/Paladeum/blob/master/doc/tokens-attribution.md)

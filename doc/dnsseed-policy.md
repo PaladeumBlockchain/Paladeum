@@ -44,7 +44,7 @@ related to the DNS seed operation.
 If these expectations cannot be satisfied the operator should
 discontinue providing services and contact the active Paladeum
 Core development team by sending an email to:
-[feedback@paladeumcoin.org](mailto:feedback@paladeumcoin.org).
+[feedback@paladeum.io](mailto:feedback@paladeum.io).
 
 Behavior outside of these expectations may be reasonable in some
 situations but should be discussed in public in advance.
