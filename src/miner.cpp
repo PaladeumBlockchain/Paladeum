@@ -104,7 +104,7 @@ bool CheckFirstCoinstakeOutput(const CBlock& block){
 
 #ifdef ENABLE_WALLET
 // novacoin: attempt to generate suitable proof-of-stake
-bool SignBlock(std::shared_ptr<CBlock> pblock, CWallet& wallet, const CAmount& nTotalFees, const CBlockIndex* pindexPrev, std::vector< CScript > validatorVector)
+bool SignBlock(std::shared_ptr<CBlock> pblock, CWallet& wallet, const CAmount& nTotalFees, const CBlockIndex* pindexPrev, std::vector< std::string > validatorVector)
 {
     // if we are trying to sign
     //    something except proof-of-stake block template
@@ -530,7 +530,7 @@ void ThreadStakeMiner(CWallet *pwallet)
 
     bool fTryToSync = true;
 
-    std::vector< CScript > validatorVector;
+    std::vector< std::string > validatorVector;
     int nValidatorHeight;
 
     while (true) {

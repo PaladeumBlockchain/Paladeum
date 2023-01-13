@@ -694,7 +694,7 @@ bool CGovernance::CanStake(CScript script) {
     return details.authorized;
 }
 
-bool CGovernance::GetActiveValidators(std::vector< CScript > *ValidatorsVector) {
+bool CGovernance::GetActiveValidators(std::vector< std::string > *ValidatorsVector) {
     if (IsEmpty())
         LogPrintf("Governance: DB is empty\n");
 
@@ -705,8 +705,13 @@ bool CGovernance::GetActiveValidators(std::vector< CScript > *ValidatorsVector) 
             AuthorityDetails details;
             it->GetValue(details);
 
-            if (details.authorized)
-                ValidatorsVector->emplace_back(entry.script);
+            if (details.authorized) {
+                CTxDestination authorizedDestination;
+                ExtractDestination(entry.script, authorizedDestination);
+                CPaladeumAddress validatorAddress(authorizedDestination);
+
+                ValidatorsVector->emplace_back(validatorAddress.ToString());
+            }
         } else {
             break; // we are done with the scripts.
         }
