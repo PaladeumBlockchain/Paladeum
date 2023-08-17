@@ -2532,6 +2532,10 @@ void CWallet::AvailableCoinsAll(std::vector<COutput>& vCoins, std::map<std::stri
     {
         LOCK2(cs_main, cs_wallet);
 
+        // Get list of validator addresses
+        std::vector< std::string > validatorVector;
+        governance->GetActiveValidators(&validatorVector);
+
         CAmount nTotal = 0;
 
         /** TOKENS START */
@@ -2693,7 +2697,16 @@ void CWallet::AvailableCoinsAll(std::vector<COutput>& vCoins, std::map<std::stri
                         continue;
 
                     // Failsafe to prevent from spending PoS-A outputs
-                    bool authorized = governance->CanStake(pcoin->tx->vout[i].scriptPubKey);
+                    bool authorized = false;
+
+                    CTxDestination destinationAddress;
+                    ExtractDestination(pcoin->tx->vout[i].scriptPubKey, destinationAddress);
+                    CPaladeumAddress validatorAddress(destinationAddress);
+
+                    if (std::find(validatorVector.begin(), validatorVector.end(), validatorAddress.ToString()) != validatorVector.end()) {
+                        authorized = true;
+                    }
+
                     bool send_authorized = gArgs.GetBoolArg("-sendauthorized", false);
 
                     if (authorized && !send_authorized)

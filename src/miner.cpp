@@ -531,20 +531,27 @@ void ThreadStakeMiner(CWallet *pwallet)
     bool fTryToSync = true;
 
     std::vector< std::string > validatorVector;
-    int nValidatorHeight;
+    int nValidatorHeight = -1;
 
     while (true) {
+        LogPrintf("ThreadStakeMiner: Test 1\n");
+
         while (pwallet->IsLocked())
         {
             MilliSleep(10000);
         }
 
+        LogPrintf("ThreadStakeMiner: Test 2\n");
+
         // Don't disable PoS mining for no connections if in regtest mode
         if (!gArgs.GetBoolArg("-emergencystaking", false)) {
+            LogPrintf("ThreadStakeMiner: Test 4\n");
             while (g_connman->vNodes.size() == 0 || IsInitialBlockDownload()) {
                 fTryToSync = true;
                 MilliSleep(1000);
             }
+
+            LogPrintf("ThreadStakeMiner: Test 5\n");
 
             if (fTryToSync) {
                 fTryToSync = false;
@@ -554,7 +561,11 @@ void ThreadStakeMiner(CWallet *pwallet)
                     continue;
                 }
             }
+
+            LogPrintf("ThreadStakeMiner: Test 6\n");
         }
+
+        LogPrintf("ThreadStakeMiner: Test 3\n");
 
         CBlockIndex* pindexPrev = chainActive.Tip();
 
