@@ -51,6 +51,7 @@ public:
 
     // Managing authorization list
     bool GetActiveValidators(std::vector< std::string > *ValidatorsVector);
+    bool GetActiveValidatorsScript(std::vector< CScript > *ValidatorsVector);
     bool AuthorizeScript(CScript script);
     bool UnauthorizeScript(CScript script);
     bool RevertAuthorizeScript(CScript script);

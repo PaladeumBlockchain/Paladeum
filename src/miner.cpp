@@ -104,7 +104,7 @@ bool CheckFirstCoinstakeOutput(const CBlock& block){
 
 #ifdef ENABLE_WALLET
 // novacoin: attempt to generate suitable proof-of-stake
-bool SignBlock(std::shared_ptr<CBlock> pblock, CWallet& wallet, const CAmount& nTotalFees, const CBlockIndex* pindexPrev, std::vector< std::string > validatorVector)
+bool SignBlock(std::shared_ptr<CBlock> pblock, CWallet& wallet, const CAmount& nTotalFees, const CBlockIndex* pindexPrev, std::vector< CScript > validatorVector)
 {
     // if we are trying to sign
     //    something except proof-of-stake block template
@@ -530,28 +530,21 @@ void ThreadStakeMiner(CWallet *pwallet)
 
     bool fTryToSync = true;
 
-    std::vector< std::string > validatorVector;
+    std::vector< CScript > validatorVector;
     int nValidatorHeight = -1;
 
     while (true) {
-        LogPrintf("ThreadStakeMiner: Test 1\n");
-
         while (pwallet->IsLocked())
         {
             MilliSleep(10000);
         }
 
-        LogPrintf("ThreadStakeMiner: Test 2\n");
-
         // Don't disable PoS mining for no connections if in regtest mode
         if (!gArgs.GetBoolArg("-emergencystaking", false)) {
-            LogPrintf("ThreadStakeMiner: Test 4\n");
             while (g_connman->vNodes.size() == 0 || IsInitialBlockDownload()) {
                 fTryToSync = true;
                 MilliSleep(1000);
             }
-
-            LogPrintf("ThreadStakeMiner: Test 5\n");
 
             if (fTryToSync) {
                 fTryToSync = false;
@@ -561,17 +554,13 @@ void ThreadStakeMiner(CWallet *pwallet)
                     continue;
                 }
             }
-
-            LogPrintf("ThreadStakeMiner: Test 6\n");
         }
-
-        LogPrintf("ThreadStakeMiner: Test 3\n");
 
         CBlockIndex* pindexPrev = chainActive.Tip();
 
         if (nValidatorHeight != pindexPrev->nHeight) {
             LogPrintf("ThreadStakeMiner: Detected new block, updating list of validators\n");
-            governance->GetActiveValidators(&validatorVector);
+            governance->GetActiveValidatorsScript(&validatorVector);
             nValidatorHeight = pindexPrev->nHeight;
         }
 

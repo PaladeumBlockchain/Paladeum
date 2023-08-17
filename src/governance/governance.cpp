@@ -719,3 +719,26 @@ bool CGovernance::GetActiveValidators(std::vector< std::string > *ValidatorsVect
 
     return true;
 }
+
+
+bool CGovernance::GetActiveValidatorsScript(std::vector< CScript > *ValidatorsVector) {
+    if (IsEmpty())
+        LogPrintf("Governance: DB is empty\n");
+
+    std::unique_ptr<CDBIterator> it(NewIterator());
+    for (it->Seek(AuthorityEntry(DUMMY_SCRIPT)); it->Valid(); it->Next()) {
+        AuthorityEntry entry;
+        if (it->GetKey(entry) && entry.key == DB_AUTORIZATION) {
+            AuthorityDetails details;
+            it->GetValue(details);
+
+            if (details.authorized) {
+                ValidatorsVector->emplace_back(entry.script);
+            }
+        } else {
+            break; // we are done with the scripts.
+        }
+    }
+
+    return true;
+}
