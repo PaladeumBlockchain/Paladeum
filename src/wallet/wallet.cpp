@@ -4225,14 +4225,6 @@ bool CWallet::CreateTransactionAll(const std::vector<CRecipient>& vecSend, CWall
                     txNew.vin.push_back(CTxIn(coin.outpoint,CScript(),
                                               nSequence));
 
-                    // If the input is a CLTV lock-by-blocktime then update the txNew.nLockTime
-                    CScriptNum nLockTime(0);
-                    if (IsTimeLock(*this, coin.txout.scriptPubKey, nLockTime))
-                    {
-                        if (nLockTime.getint64() > LOCKTIME_THRESHOLD)
-                            txNew.nLockTime = chainActive.Tip()->GetMedianTimePast();
-                    }
-
                     // Mark fSpendsOfflineStaking true if transactions spend offline staking UTXO 
                     if (coin.txout.scriptPubKey.IsOfflineStaking())
                         wtxNew.fSpendsOfflineStaking = true;
