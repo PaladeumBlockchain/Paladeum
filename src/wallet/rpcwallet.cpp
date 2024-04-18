@@ -1858,8 +1858,8 @@ void ListTransactions(CWallet* const pwallet, const CWalletTx& wtx, const std::s
                     WalletTxToJSON(wtx, entry);
                 entry.push_back(Pair("abandoned", wtx.isAbandoned()));
 
-                if (data.nTokenLockTime > 0) {
-                    entry.pushKV("locktime", (int64_t)data.nTokenLockTime);
+                if (data.nTimeLock > 0) {
+                    entry.pushKV("locktime", (int64_t)data.nTimeLock);
                 }
 
                 retTokens.push_back(entry);
