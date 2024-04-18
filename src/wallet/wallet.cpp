@@ -1759,7 +1759,9 @@ void CWalletTx::GetAmounts(std::list<COutputEntry>& listReceived,
         }
 
         if (!txout.scriptPubKey.IsTokenScript()) {
-            COutputEntry output = {address, txout.nValue, (int) i};
+            uint32_t timeLock = txout.GetLockTime();
+
+            COutputEntry output = {timeLock, address, txout.nValue, (int) i};
 
             // If we are debited by the transaction, add the output as a "sent" entry
             if (nDebit > 0)
@@ -4222,6 +4224,14 @@ bool CWallet::CreateTransactionAll(const std::vector<CRecipient>& vecSend, CWall
                 for (const auto& coin : setCoins) {
                     txNew.vin.push_back(CTxIn(coin.outpoint,CScript(),
                                               nSequence));
+
+                    // If the input is a CLTV lock-by-blocktime then update the txNew.nLockTime
+                    CScriptNum nLockTime(0);
+                    if (IsTimeLock(*this, coin.txout.scriptPubKey, nLockTime))
+                    {
+                        if (nLockTime.getint64() > LOCKTIME_THRESHOLD)
+                            txNew.nLockTime = chainActive.Tip()->GetMedianTimePast();
+                    }
 
                     // Mark fSpendsOfflineStaking true if transactions spend offline staking UTXO 
                     if (coin.txout.scriptPubKey.IsOfflineStaking())
