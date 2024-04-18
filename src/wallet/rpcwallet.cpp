@@ -1824,6 +1824,11 @@ void ListTransactions(CWallet* const pwallet, const CWalletTx& wtx, const std::s
                 entry.push_back(Pair("vout", r.vout));
                 if (fLong)
                     WalletTxToJSON(wtx, entry);
+
+                if (r.nLockTime > 0) {
+                    entry.pushKV("locktime", (int64_t)r.nLockTime);
+                }
+
                 ret.push_back(entry);
             }
         }
