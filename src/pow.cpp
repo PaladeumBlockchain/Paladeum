@@ -55,7 +55,7 @@ unsigned int CalculateNextTargetRequired(const CBlockIndex* pindexLast, int64_t 
 {
     bool fProofOfStake = pindexLast->IsProofOfStake();
 
-    if (fProofOfStake && params.fDiffNoRetargeting)
+    if (params.fDiffNoRetargeting)
         return pindexLast->nBits;
 
     int64_t nActualSpacing = pindexLast->GetBlockTime() - nFirstBlockTime;
