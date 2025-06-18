@@ -168,6 +168,8 @@ public:
         consensus.nTxMessages = 10;
         consensus.nStakeTimestampMask = 0xf; // 15
 
+        consensus.nGovernanceFixHeight = 577090;
+
         // Fork to enable offline staking and remove the block limiter
         consensus.offlineStakingFork = std::numeric_limits<int>::max();
 
@@ -289,6 +291,8 @@ public:
         consensus.nTxMessages = 10;
         consensus.nStakeTimestampMask = 0xf; // 15
 
+        consensus.nGovernanceFixHeight = 1;
+
         // Fork to enable offline staking and remove the block limiter
         consensus.offlineStakingFork = 10;
 
@@ -408,6 +412,8 @@ public:
         consensus.nLastPOWBlock = std::numeric_limits<int>::max();
         consensus.nTxMessages = 10;
         consensus.nStakeTimestampMask = 0xf; // 15
+
+        consensus.nGovernanceFixHeight = 1;
 
         // Fork to enable offline staking and remove the block limiter
         consensus.offlineStakingFork = 0;

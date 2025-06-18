@@ -75,6 +75,7 @@ struct Params {
     bool nSegwitEnabled;
     bool nCSVEnabled;
     int nLastPOWBlock;
+    int nGovernanceFixHeight;
 
     int offlineStakingFork;
 };

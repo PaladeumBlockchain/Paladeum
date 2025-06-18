@@ -603,9 +603,10 @@ bool Consensus::CheckTxInputs(const CTransaction& tx, CValidationState& state, c
                 REJECT_INVALID, "bad-txns-premature-spend-of-coinstake",
                 strprintf("tried to spend coinstake at depth %d, %d, %d", nSpendHeight, coin.nHeight, nSpendHeight - coin.nHeight));
         }
-
-        if (!governance->CanSend(coin.out.scriptPubKey))
-            return state.DoS(100, false, REJECT_INVALID, "bad-txns-address-frozen");
+        
+        if (nSpendHeight >= GetParams().GetConsensus().nGovernanceFixHeight)
+            if (!governance->CanSend(coin.out.scriptPubKey))
+                return state.DoS(100, false, REJECT_INVALID, "bad-txns-address-frozen");
 
         // Check for negative or overflow input values
         nValueIn += coin.out.nValue;
