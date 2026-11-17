@@ -71,6 +71,7 @@ static const CRPCConvertParam vRPCConvertParams[] =
     { "listtokens", 2, "count" },
     { "listtokens", 3, "start" },
     { "setmocktime", 0, "timestamp" },
+    { "repaircoins", 0, "checkonly" },
     { "generate", 0, "nblocks" },
     { "generate", 1, "maxtries" },
     { "setgenerate", 0, "generate" },
@@ -82,10 +83,11 @@ static const CRPCConvertParam vRPCConvertParams[] =
     { "sendtoaddress", 1, "amount" },
     { "sendtoaddress", 2, "timelock" },
     { "sendtoaddress", 6, "subtractfeefromamount" },
-    { "sendtoaddress", 7 , "conf_target" },
+    { "sendtoaddress", 7, "replaceable" },
+    { "sendtoaddress", 8, "conf_target" },
     { "sendfromaddress", 2, "amount" },
     { "sendfromaddress", 3, "timelock" },
-    { "sendfromaddress", 5, "subtractfeefromamount" },
+    { "sendfromaddress", 6, "subtractfeefromamount" },
     { "sendfromaddress", 7 , "conf_target" },
     { "settxfee", 0, "amount" },
     { "getreceivedbyaddress", 1, "minconf" },
@@ -114,6 +116,9 @@ static const CRPCConvertParam vRPCConvertParams[] =
     { "listaccounts", 0, "minconf" },
     { "listaccounts", 1, "include_watchonly" },
     { "walletpassphrase", 1, "timeout" },
+    { "walletpassphrase", 2, "stakingonly" },
+    { "importmnemonic", 3, "rescan" },
+    { "importmnemonic", 4, "validate" },
     { "getblocktemplate", 0, "template_request" },
     { "listsinceblock", 1, "target_confirmations" },
     { "listsinceblock", 2, "include_watchonly" },
@@ -121,7 +126,13 @@ static const CRPCConvertParam vRPCConvertParams[] =
     { "sendmany", 1, "amounts" },
     { "sendmany", 3, "minconf" },
     { "sendmany", 5, "subtractfeefrom" },
-    { "sendmany", 6 , "conf_target" },
+    { "sendmany", 6, "replaceable" },
+    { "sendmany", 7, "conf_target" },
+    { "purgeorphanstakes", 0, "minage" },
+    { "mnemonictokeys", 2, "count" },
+    { "mnemonictokeys", 4, "start" },
+    { "mnemonictokeys", 5, "validate" },
+    { "mnemonicfindaddress", 3, "validate" },
     { "addmultisigaddress", 0, "nrequired" },
     { "addmultisigaddress", 1, "keys" },
     { "createmultisig", 0, "nrequired" },
@@ -152,6 +163,13 @@ static const CRPCConvertParam vRPCConvertParams[] =
     { "sendrawtransaction", 1, "allowhighfees" },
     { "testmempoolaccept", 0, "rawtxs" },
     { "testmempoolaccept", 1, "allowhighfees" },
+    { "scantxoutset", 1, "scanobjects" },
+    { "getblockstats", 0, "hash_or_height" },
+    { "getblockstats", 1, "stats" },
+    { "getnodeaddresses", 0, "count" },
+    { "signrawtransactionwithkey", 1, "privkeys" },
+    { "signrawtransactionwithkey", 2, "prevtxs" },
+    { "signrawtransactionwithwallet", 1, "prevtxs" },
     { "combinerawtransaction", 0, "txs" },
     { "fundrawtransaction", 1, "options" },
     { "gettxout", 1, "n" },
@@ -269,6 +287,30 @@ UniValue ParseNonRFCJSONValue(const std::string& strVal)
     return jVal[0];
 }
 
+/**
+ * Arguments that are JSON when they look like a JSON object or array, and a plain string
+ * otherwise: the address index calls take one address, or {"addresses": [...], ...}.
+ */
+static const CRPCConvertParam vRPCConvertIfJson[] =
+{
+    { "getaddressbalance", 0, "addresses" },
+    { "getaddressdeltas", 0, "addresses" },
+    { "getaddressmempool", 0, "addresses" },
+    { "getaddresstxids", 0, "addresses" },
+    { "getaddressutxos", 0, "addresses" },
+};
+
+static bool convertIfJson(const std::string& method, int idx, const std::string& name, const std::string& value)
+{
+    for (const CRPCConvertParam& param : vRPCConvertIfJson) {
+        if (param.methodName == method && ((idx >= 0 && param.paramIdx == idx) || (idx < 0 && param.paramName == name))) {
+            const size_t first = value.find_first_not_of(" \t\r\n");
+            return first != std::string::npos && (value[first] == '{' || value[first] == '[');
+        }
+    }
+    return false;
+}
+
 UniValue RPCConvertValues(const std::string &strMethod, const std::vector<std::string> &strParams)
 {
     UniValue params(UniValue::VARR);
@@ -276,7 +318,7 @@ UniValue RPCConvertValues(const std::string &strMethod, const std::vector<std::s
     for (unsigned int idx = 0; idx < strParams.size(); idx++) {
         const std::string& strVal = strParams[idx];
 
-        if (!rpcCvtTable.convert(strMethod, idx)) {
+        if (!rpcCvtTable.convert(strMethod, idx) && !convertIfJson(strMethod, idx, std::string(), strVal)) {
             // insert string value directly
             params.push_back(strVal);
         } else {
@@ -301,7 +343,7 @@ UniValue RPCConvertNamedValues(const std::string &strMethod, const std::vector<s
         std::string name = s.substr(0, pos);
         std::string value = s.substr(pos+1);
 
-        if (!rpcCvtTable.convert(strMethod, name)) {
+        if (!rpcCvtTable.convert(strMethod, name) && !convertIfJson(strMethod, -1, name, value)) {
             // insert string value directly
             params.pushKV(name, value);
         } else {

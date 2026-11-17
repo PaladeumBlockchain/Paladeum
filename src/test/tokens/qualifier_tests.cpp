@@ -10,7 +10,9 @@
 #include <base58.h>
 #include <chainparams.h>
 
-BOOST_FIXTURE_TEST_SUITE(qualifier_tests, BasicTestingSetup)
+// (TestingSetup: the burn amounts of the tokens are governance values, GetBurnAmount() reads them
+// from the governance state)
+BOOST_FIXTURE_TEST_SUITE(qualifier_tests, TestingSetup)
 
     BOOST_AUTO_TEST_CASE(qualifier_from_transaction_test)
     {
@@ -72,7 +74,7 @@ BOOST_FIXTURE_TEST_SUITE(qualifier_tests, BasicTestingSetup)
 
         // Create the new Qualifier Script
         CScript newQualifierScript = GetScriptForDestination(DecodeDestination(GetParams().GlobalFeeAddress()));
-        CNewToken qualifier_token("#QUALIFIER_NAME", 5 * COIN, 0, 0, 0, "");
+        CNewToken qualifier_token("#QUALIFIER_NAME", 5 * COIN, 0, 0, 0, "", 0, "", 0);
         qualifier_token.ConstructTransaction(newQualifierScript);
         CTxOut tokenOut(0, newQualifierScript);
         mutableTransaction.vout.push_back(tokenOut);
@@ -94,7 +96,7 @@ BOOST_FIXTURE_TEST_SUITE(qualifier_tests, BasicTestingSetup)
         mutableTransaction.vout.push_back(burnOut);
 
         // Add the parent transaction for sub qualifier tx
-        CTokenTransfer parentTransfer("#QUALIFIER_NAME", OWNER_TOKEN_AMOUNT);
+        CTokenTransfer parentTransfer("#QUALIFIER_NAME", OWNER_TOKEN_AMOUNT, 0);
         CScript parentScript = GetScriptForDestination(DecodeDestination(GetParams().GlobalFeeAddress()));
         parentTransfer.ConstructTransaction(parentScript);
         CTxOut parentOut(0, parentScript);
@@ -102,7 +104,7 @@ BOOST_FIXTURE_TEST_SUITE(qualifier_tests, BasicTestingSetup)
 
         // Create the new Qualifier Script
         CScript newQualifierScript = GetScriptForDestination(DecodeDestination(GetParams().GlobalFeeAddress()));
-        CNewToken qualifier_token("#QUALIFIER_NAME/#SUB1", 5 * COIN, 0, 0, 0, "");
+        CNewToken qualifier_token("#QUALIFIER_NAME/#SUB1", 5 * COIN, 0, 0, 0, "", 0, "", 0);
         qualifier_token.ConstructTransaction(newQualifierScript);
         CTxOut tokenOut(0, newQualifierScript);
         mutableTransaction.vout.push_back(tokenOut);

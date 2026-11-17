@@ -86,7 +86,7 @@ BOOST_FIXTURE_TEST_SUITE(accounting_tests, WalletTestingSetup)
 
         wtx.mapValue["comment"] = "y";
         {
-            CMutableTransaction tx(wtx);
+            CMutableTransaction tx(*wtx.tx);
             --tx.nLockTime;  // Just to change the hash :)
             wtx.SetTx(MakeTransactionRef(std::move(tx)));
         }
@@ -96,7 +96,7 @@ BOOST_FIXTURE_TEST_SUITE(accounting_tests, WalletTestingSetup)
 
         wtx.mapValue["comment"] = "x";
         {
-            CMutableTransaction tx(wtx);
+            CMutableTransaction tx(*wtx.tx);
             --tx.nLockTime;  // Just to change the hash :)
             wtx.SetTx(MakeTransactionRef(std::move(tx)));
         }

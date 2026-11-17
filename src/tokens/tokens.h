@@ -446,6 +446,13 @@ std::string GetUniqueTokenName(const std::string& parent, const std::string& tag
 //! Given a type, and an token name, return if that name is valid based on the type
 bool IsTypeCheckNameValid(const KnownTokenType type, const std::string& name, std::string& error);
 
+/** Whether tokens can be sent to this address. They cannot go to an offline staking address: its
+ *  script takes no token data, and consensus refuses a transaction with such an output
+ *  (bad-txns-bad-token-script). */
+bool CanHoldTokens(const std::string& address);
+
+bool IsTokenUnitsValid(const CAmount& units);
+
 //! These types of token tx, have specific metadata at certain indexes in the transaction.
 //! These functions pull data from the scripts at those indexes
 bool TokenFromTransaction(const CTransaction& tx, CNewToken& token, std::string& strAddress);
@@ -548,6 +555,8 @@ std::string EncodeIPFS(std::string decoded);
 
 bool GetAllMyTokenBalances(std::map<std::string, std::vector<COutput> >& outputs, std::map<std::string, CAmount>& amounts, const int confirmations = 0, const std::string& prefix = "");
 bool GetAllMyLockedTokenBalances(std::map<std::string, std::vector<COutput> >& outputs, std::map<std::string, CAmount>& amounts, const std::string& prefix = "");
+bool GetAllMyTokenBalancesWallet(CWallet* pwallet, std::map<std::string, std::vector<COutput> >& outputs, std::map<std::string, CAmount>& amounts, const std::string& prefix = "", const int confirmations = 0);
+bool GetAllMyLockedTokenBalancesWallet(CWallet* pwallet, std::map<std::string, std::vector<COutput> >& outputs, std::map<std::string, CAmount>& amounts, const std::string& prefix = "");
 bool GetMyTokenBalance(const std::string& name, CAmount& balance, const int& confirmations);
 
 //! Creates new token issuance transaction

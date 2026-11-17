@@ -105,21 +105,25 @@ void RunTest(const TestVector &test)
         key.Encode(data);
         pubkey.Encode(data);
 
+        // The vectors in the encoding of the selected network (tprv/tpub on the main network)
+        const std::string prv = ExtKeyWithNetworkPrefix(derive.prv, CChainParams::EXT_SECRET_KEY);
+        const std::string pub = ExtKeyWithNetworkPrefix(derive.pub, CChainParams::EXT_PUBLIC_KEY);
+
         // Test private key
         CPaladeumExtKey b58key;
         b58key.SetKey(key);
-        BOOST_CHECK(b58key.ToString() == derive.prv);
+        BOOST_CHECK_EQUAL(b58key.ToString(), prv);
 
-        CPaladeumExtKey b58keyDecodeCheck(derive.prv);
+        CPaladeumExtKey b58keyDecodeCheck(prv);
         CExtKey checkKey = b58keyDecodeCheck.GetKey();
         assert(checkKey == key); //ensure a base58 decoded key also matches
 
         // Test public key
         CPaladeumExtPubKey b58pubkey;
         b58pubkey.SetKey(pubkey);
-        BOOST_CHECK(b58pubkey.ToString() == derive.pub);
+        BOOST_CHECK_EQUAL(b58pubkey.ToString(), pub);
 
-        CPaladeumExtPubKey b58PubkeyDecodeCheck(derive.pub);
+        CPaladeumExtPubKey b58PubkeyDecodeCheck(pub);
         CExtPubKey checkPubKey = b58PubkeyDecodeCheck.GetKey();
         assert(checkPubKey == pubkey); //ensure a base58 decoded pubkey also matches
 
@@ -160,6 +164,9 @@ BOOST_FIXTURE_TEST_SUITE(bip32_tests, BasicTestingSetup)
     BOOST_AUTO_TEST_CASE(bip32_test_1)
     {
         BOOST_TEST_MESSAGE("Running BIP32 Test 1");
+        // The main network has the version bytes of the Bitcoin test network: tprv/tpub
+        BOOST_CHECK_EQUAL(ExtKeyWithNetworkPrefix(test1.vDerive[0].prv, CChainParams::EXT_SECRET_KEY).substr(0, 4), "tprv");
+        BOOST_CHECK_EQUAL(ExtKeyWithNetworkPrefix(test1.vDerive[0].pub, CChainParams::EXT_PUBLIC_KEY).substr(0, 4), "tpub");
         RunTest(test1);
     }
 

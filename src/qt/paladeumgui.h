@@ -34,6 +34,8 @@ class WalletFrame;
 class WalletModel;
 class HelpMessageDialog;
 class ModalOverlay;
+class Sidebar;
+class WalletController;
 
 QT_BEGIN_NAMESPACE
 class QAction;
@@ -56,6 +58,11 @@ public:
     static const std::string DEFAULT_UIPLATFORM;
 
     explicit PaladeumGUI(const PlatformStyle *platformStyle, const NetworkStyle *networkStyle, QWidget *parent = 0);
+    /** The actions of the former menus for the cards of the settings page:
+        wallet management (0) or information (1) */
+    QList<QAction*> settingsActions(int group) const;
+    /** The actions that create, open and close wallets, for the cards of the settings page */
+    QList<QAction*> walletActions() const;
     ~PaladeumGUI();
 
     /** Set the client model.
@@ -70,7 +77,10 @@ public:
     */
     bool addWallet(const QString& name, WalletModel *walletModel);
     bool setCurrentWallet(const QString& name);
+    void removeWallet(const QString& name);
     void removeAllWallets();
+    /** The wallets of the window: they are added, removed and chosen through the controller */
+    void setWalletController(WalletController *controller);
 #endif // ENABLE_WALLET
     bool enableWallet;
 
@@ -125,16 +135,48 @@ private:
     QAction *aboutQtAction;
     QAction *openRPCConsoleAction;
     QAction *openWalletRepairAction;
+    QAction *getMyWordsAction;
     QAction *openAction;
     QAction *showHelpMessageAction;
+    QAction *createWalletAction;
+    QAction *openWalletAction;
+    QAction *restoreWalletAction;
+    QAction *closeWalletAction;
+    /** The wallets of the wallet folder that are not open (File menu and the wallet menu) */
+    QMenu *openWalletMenu;
+    WalletController *walletController;
+    /** The title of the window without the name of the wallet */
+    QString baseWindowTitle;
 
     /** TOKENS START */
-    QAction *tokensOverviewAction;
-    QAction *getMyWordsAction;
-    QNetworkAccessManager* networkManager;
-    QNetworkRequest* request;
+    QAction *transferTokenAction;
+    QAction *createTokenAction;
+    QAction *manageTokenAction;
+    QAction *restrictedTokenAction;
+    QAction *explorerAction;
+    QAction *addressBookAction;
+    QAction *signPageAction;
+    QAction *settingsPageAction;
     QWidget *footerWidget;
     QPushButton *stakingButton;
+    Sidebar *sidebar;
+    bool bootstrapActive;
+    /** (time in ms, value) samples of the fast sync, for the time that is left */
+    QList<QPair<qint64, double> > bootstrapSamples;
+    bool bootstrapSamplesAreBlocks;
+    bool pastBlocksAsked;
+    bool pastBlocksWereFetching;
+    /** The staking of the last 24 hours, for the side bar (kept while the wallet is busy) */
+    QString stakeStatsLine;
+    QString stakeStatsTip;
+    /** Start of the measured span of the past block download, for the time that is left */
+    qint64 pastBlocksSeenAt;
+    quint64 pastBlocksSeenBytes;
+    /** "about 12 min left" for the fast sync: value now, and its end */
+    QString bootstrapTimeLeft(bool blocks, double value, double end);
+    QString bootstrapLastState;
+    /** The sync line of the side bar; the block bootstrap has it while it runs */
+    void setSideSync(const QString& status, const QString& remaining, double progress, bool showProgress, const QString& toolTip);
     /** TOKENS END */
 
     QSystemTrayIcon *trayIcon;
@@ -149,7 +191,8 @@ private:
     int spinnerFrame;
 
     uint64_t nWeight;
-    bool nStaking;
+    /** The chain tip is behind: the synchronization overlay may be opened */
+    bool fSyncing;
 
     const PlatformStyle *platformStyle;
 
@@ -232,12 +275,23 @@ public Q_SLOTS:
 
 private Q_SLOTS:
 #ifdef ENABLE_WALLET
+    /** The menu of the wallet at the top of the side bar */
+    void showWalletMenu();
+    void createWalletClicked();
+    void openWalletClicked();
+    void restoreWalletClicked();
+    void closeWalletClicked();
+    /** The wallets, the wallet shown or the work of the controller changed */
+    void walletsChanged();
+    void fillOpenWalletMenu();
+#endif
+
+#ifdef ENABLE_WALLET
     /** Switch to overview (home) page */
     void gotoOverviewPage();
     /** Switch to history (transactions) page */
     void gotoHistoryPage();
     /** Switch to offline staking page */
-    void gotoOfflinePage();
     /** Switch to receive coins page */
     void gotoReceiveCoinsPage();
     /** Switch to send coins page */
@@ -252,8 +306,24 @@ private Q_SLOTS:
 
     /** TOKENS START */
     /** Switch to tokens page */
-    void gotoTokensOverviewPage();
+    void gotoTokensPage();
+    void gotoCreateTokensPage();
+    void gotoManageTokensPage();
+    void gotoRestrictedTokensPage();
     /** TOKENS END */
+    /** Switch to the explorer page and look up a transaction id, address or block */
+    void gotoExplorerPage(QString query = "");
+    /** Switch to the address book page: receiving addresses, or the sending ones */
+    void gotoAddressBookPage();
+    void gotoSendingAddressesPage();
+    /** Switch to the settings page */
+    void gotoSettingsPage();
+    /** A page of the wallet view is shown (also after going back or forward): mark it in the side bar */
+    void pageShown(int page);
+    /** Show the state of the block bootstrap in the side bar and in the sync overlay */
+    void updateBootstrap();
+    void skipBootstrap();
+    void chooseBootstrapFolder();
 
 #endif // ENABLE_WALLET
     /** Show configuration dialog */
@@ -279,6 +349,8 @@ private Q_SLOTS:
     void toggleHidden();
 
     void updateStakingIcon();
+    /** Show the warnings of the node in the side bar */
+    void updateAlerts(const QString &warnings);
 
     /** called by a timer to check if fRequestShutdown has been set **/
     void detectShutdown();

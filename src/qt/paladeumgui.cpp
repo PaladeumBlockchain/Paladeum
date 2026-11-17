@@ -9,6 +9,10 @@
 
 #include "paladeumgui.h"
 
+#include "pastblocks.h"
+#include "snapshot.h"
+#include "bootstrap.h"
+
 #include "paladeumunits.h"
 #include "clientmodel.h"
 #include "guiconstants.h"
@@ -25,9 +29,14 @@
 
 #ifdef ENABLE_WALLET
 #include "walletframe.h"
+#include "sidebar.h"
+#include "askpassphrasedialog.h"
+#include "walletcontroller.h"
+#include "walletdialogs.h"
 #include "walletmodel.h"
 #include "mnemonicdialog.h"
 #include "wallet/wallet.h"
+#include "walletview.h"
 #endif // ENABLE_WALLET
 
 #ifdef Q_OS_MAC
@@ -39,12 +48,11 @@
 #include "ui_interface.h"
 #include "util.h"
 #include "core_io.h"
-#include "darkstyle.h"
+#include "wallet/wallet.h"
 
 #include <iostream>
 
 #include <QDebug>
-#include <QtNetwork/QNetworkAccessManager>
 #include <QtNetwork/QNetworkReply>
 #include <QGraphicsDropShadowEffect>
 #include <QToolButton>
@@ -52,6 +60,8 @@
 #include <QPainter>
 #include <QWidgetAction>
 #include <QAction>
+#include <QActionGroup>
+#include <QFileDialog>
 #include <QApplication>
 #include <QDateTime>
 #include <QDragEnterEvent>
@@ -59,6 +69,7 @@
 #include <QMenuBar>
 #include <QMessageBox>
 #include <QMimeData>
+#include <QPointer>
 #include <QProgressDialog>
 #include <QScreen>
 #include <QSettings>
@@ -148,19 +159,31 @@ PaladeumGUI::PaladeumGUI(const PlatformStyle *_platformStyle, const NetworkStyle
     openWalletRepairAction(0),
     openAction(0),
     showHelpMessageAction(0),
-    tokensOverviewAction(0),
+    createWalletAction(0),
+    openWalletAction(0),
+    restoreWalletAction(0),
+    closeWalletAction(0),
+    openWalletMenu(0),
+    walletController(0),
+    transferTokenAction(0),
+    createTokenAction(0),
+    manageTokenAction(0),
+    restrictedTokenAction(0),
+    explorerAction(0),
     footerWidget(0),
     stakingButton(0),
-    networkManager(0),
-    request(0),
+    sidebar(0),
     trayIcon(0),
     trayIconMenu(0),
     notificator(0),
     rpcConsole(0),
     helpMessageDialog(0),
     modalOverlay(0),
+    bootstrapActive(false),
     prevBlocks(0),
     spinnerFrame(0),
+    nWeight(0),
+    fSyncing(false),
     platformStyle(_platformStyle)
 
 {
@@ -181,6 +204,7 @@ PaladeumGUI::PaladeumGUI(const PlatformStyle *_platformStyle, const NetworkStyle
         windowTitle += tr("Node");
     }
     windowTitle += " " + networkStyle->getTitleAddText();
+    baseWindowTitle = windowTitle;
 #ifndef Q_OS_MAC
     QApplication::setWindowIcon(networkStyle->getTrayAndWindowIcon());
     setWindowIcon(networkStyle->getTrayAndWindowIcon());
@@ -212,19 +236,11 @@ PaladeumGUI::PaladeumGUI(const PlatformStyle *_platformStyle, const NetworkStyle
         setCentralWidget(rpcConsole);
     }
 
-    /** TOKENS START */
-    networkManager = new QNetworkAccessManager();
-    request = new QNetworkRequest();
-    /** TOKENS END */
-
     // Accept D&D of URIs
     setAcceptDrops(true);
 
     loadFonts();
 
-#if !defined(Q_OS_MAC)
-    this->setFont(QFont("Open Sans"));
-#endif
 
     footerWidget = new QWidget();
 
@@ -246,6 +262,9 @@ PaladeumGUI::PaladeumGUI(const PlatformStyle *_platformStyle, const NetworkStyle
 
     // Disable size grip because it looks ugly and nobody needs it
     statusBar()->setSizeGripEnabled(false);
+    // With a wallet the side bar shows the status; the widgets of the status bar stay alive
+    if (walletFrame)
+        statusBar()->hide();
 
     // Status bar notification icons
     QFrame *frameBlocks = new QFrame();
@@ -266,7 +285,6 @@ PaladeumGUI::PaladeumGUI(const PlatformStyle *_platformStyle, const NetworkStyle
     connect(timerStakingIcon, SIGNAL(timeout()), this, SLOT(updateStakingIcon()));
     timerStakingIcon->start(30 * 1000);
     updateStakingIcon();
-    this->nStaking = gArgs.GetBoolArg("-staking", false);
 
     if(enableWallet)
     {
@@ -287,26 +305,14 @@ PaladeumGUI::PaladeumGUI(const PlatformStyle *_platformStyle, const NetworkStyle
     // Progress bar and label for blocks download
     progressBarLabel = new QLabel();
     progressBarLabel->setVisible(false);
-    progressBarLabel->setStyleSheet(QString(".QLabel { color : %1; }").arg(platformStyle->TextColor().name()));
     progressBar = new GUIUtil::ProgressBar();
     progressBar->setAlignment(Qt::AlignCenter);
     progressBar->setVisible(false);
-
-    // Override style sheet for progress bar for styles that have a segmented progress bar,
-    // as they make the text unreadable (workaround for issue #1071)
-    // See https://qt-project.org/doc/qt-4.8/gallery.html
-    QString curStyle = QApplication::style()->metaObject()->className();
-    if(curStyle == "QWindowsStyle" || curStyle == "QWindowsXPStyle")
-    {
-        progressBar->setStyleSheet("QProgressBar { color: #ffffff; background-color: #e8e8e8; border: 1px solid grey; border-radius: 7px; padding: 1px; text-align: center; } QProgressBar::chunk { background: QLinearGradient(x1: 0, y1: 0, x2: 1, y2: 0, stop: 0 #1c57b3, stop: 1 #154287); border-radius: 5px; margin: 0px; }");
-    }
 
     statusBar()->addWidget(progressBarLabel);
     statusBar()->addWidget(progressBar);
     statusBar()->addPermanentWidget(frameBlocks);
 
-    if(darkModeEnabled)
-        statusBar()->setStyleSheet(QString(".QStatusBar{background-color: %1; border-top: 1px solid %2;}").arg(platformStyle->TopWidgetBackGroundColor().name(), platformStyle->TextColor().name()));
 
     // Install event filter to be able to catch status tip events (QEvent::StatusTip)
     this->installEventFilter(this);
@@ -321,6 +327,16 @@ PaladeumGUI::PaladeumGUI(const PlatformStyle *_platformStyle, const NetworkStyle
     connect(labelStakingIcon, SIGNAL(clicked(QPoint)), this, SLOT(toggleStakingActive()));
 
     modalOverlay = new ModalOverlay(this->centralWidget());
+    connect(modalOverlay, SIGNAL(bootstrapSkipRequested()), this, SLOT(skipBootstrap()));
+    connect(modalOverlay, SIGNAL(bootstrapFolderRequested()), this, SLOT(chooseBootstrapFolder()));
+    QTimer *bootstrapTimer = new QTimer(this);
+    connect(bootstrapTimer, SIGNAL(timeout()), this, SLOT(updateBootstrap()));
+    bootstrapTimer->start(1000);
+    bootstrapSamplesAreBlocks = false;
+    pastBlocksAsked = false;
+    pastBlocksWereFetching = false;
+    pastBlocksSeenAt = 0;
+    pastBlocksSeenBytes = 0;
 #ifdef ENABLE_WALLET
     if(enableWallet) {
         connect(walletFrame, SIGNAL(requestedSyncWarningInfo()), this, SLOT(showModalOverlay()));
@@ -349,28 +365,14 @@ PaladeumGUI::~PaladeumGUI()
 
 void PaladeumGUI::loadFonts()
 {
-    QFontDatabase::addApplicationFont(":/fonts/opensans-bold");
-    QFontDatabase::addApplicationFont(":/fonts/opensans-bolditalic");
-    QFontDatabase::addApplicationFont(":/fonts/opensans-extrabold");
-    QFontDatabase::addApplicationFont(":/fonts/opensans-extrabolditalic");
-    QFontDatabase::addApplicationFont(":/fonts/opensans-italic");
-    QFontDatabase::addApplicationFont(":/fonts/opensans-light");
-    QFontDatabase::addApplicationFont(":/fonts/opensans-lightitalic");
-    QFontDatabase::addApplicationFont(":/fonts/opensans-regular");
-    QFontDatabase::addApplicationFont(":/fonts/opensans-semibold");
-    QFontDatabase::addApplicationFont(":/fonts/opensans-semibolditalic");
+    // The fonts are registered once for the application, see GUIUtil::loadAppFonts()
 }
 
 
 void PaladeumGUI::createActions()
 {
-    QFont font = QFont();
-    font.setPixelSize(22);
-    font.setLetterSpacing(QFont::SpacingType::AbsoluteSpacing, -0.43);
-#if !defined(Q_OS_MAC)
-    font.setFamily("Open Sans");
-#endif
-    font.setWeight(QFont::Weight::ExtraLight);
+    // size and weight of the page tabs come from the style sheet
+    QFont font = GUIUtil::appFont(14, QFont::DemiBold);
 
     QActionGroup *tabGroup = new QActionGroup(this);
 
@@ -423,17 +425,79 @@ void PaladeumGUI::createActions()
     // tabGroup->addAction(offlineAction);
 
     /** TOKENS START */
-    tokensOverviewAction = new QAction(platformStyle->SingleColorIconOnOff(":/icons/token_overview", ":/icons/token_overview"), tr("&Tokens"), this);
-    tokensOverviewAction->setStatusTip(tr("Tokens overview"));
-    tokensOverviewAction->setToolTip(tokensOverviewAction->statusTip());
-    tokensOverviewAction->setCheckable(true);
-    // tokensOverviewAction->setShortcut(QKeySequence(Qt::ALT + Qt::Key_6));
-    tokensOverviewAction->setShortcut(QKeySequence(Qt::ALT + Qt::Key_5));
-    tokensOverviewAction->setFont(font);
-    tabGroup->addAction(tokensOverviewAction);
+    transferTokenAction = new QAction(platformStyle->SingleColorIconOnOff(":/icons/token_transfer", ":/icons/token_transfer"), tr("T&okens"), this);
+    transferTokenAction->setStatusTip(tr("Transfer tokens to PLB addresses"));
+    transferTokenAction->setToolTip(transferTokenAction->statusTip());
+    transferTokenAction->setCheckable(true);
+    transferTokenAction->setShortcut(QKeySequence(Qt::ALT + Qt::Key_5));
+    transferTokenAction->setFont(font);
+    tabGroup->addAction(transferTokenAction);
+
+    createTokenAction = new QAction(platformStyle->SingleColorIconOnOff(":/icons/token_create", ":/icons/token_create"), tr("&Create Tokens"), this);
+    createTokenAction->setStatusTip(tr("Create new main/sub/unique tokens"));
+    createTokenAction->setToolTip(createTokenAction->statusTip());
+    createTokenAction->setCheckable(true);
+    createTokenAction->setShortcut(QKeySequence(Qt::ALT + Qt::Key_6));
+    createTokenAction->setFont(font);
+    tabGroup->addAction(createTokenAction);
+
+    manageTokenAction = new QAction(platformStyle->SingleColorIconOnOff(":/icons/token_manage", ":/icons/token_manage"), tr("&Manage Tokens"), this);
+    manageTokenAction->setStatusTip(tr("Manage tokens you are the administrator of"));
+    manageTokenAction->setToolTip(manageTokenAction->statusTip());
+    manageTokenAction->setCheckable(true);
+    manageTokenAction->setShortcut(QKeySequence(Qt::ALT + Qt::Key_7));
+    manageTokenAction->setFont(font);
+    tabGroup->addAction(manageTokenAction);
+
+    restrictedTokenAction = new QAction(platformStyle->SingleColorIconOnOff(":/icons/restricted_token", ":/icons/restricted_token"), tr("&Restricted Tokens"), this);
+    restrictedTokenAction->setStatusTip(tr("Qualifiers, tags of addresses and frozen addresses of restricted tokens"));
+    restrictedTokenAction->setToolTip(restrictedTokenAction->statusTip());
+    restrictedTokenAction->setCheckable(true);
+    restrictedTokenAction->setShortcut(QKeySequence(Qt::ALT + Qt::Key_8));
+    restrictedTokenAction->setFont(font);
+    tabGroup->addAction(restrictedTokenAction);
+
     /** TOKENS END */
 
+    explorerAction = new QAction(tr("&Explorer"), this);
+    explorerAction->setStatusTip(tr("Look up transactions, addresses and blocks on this node"));
+    explorerAction->setToolTip(explorerAction->statusTip());
+    explorerAction->setCheckable(true);
+    explorerAction->setShortcut(QKeySequence(Qt::ALT + Qt::Key_8));
+    explorerAction->setFont(font);
+    tabGroup->addAction(explorerAction);
+
+    // Pages for what the menus of the window offered
+    addressBookAction = new QAction(tr("&Address book"), this);
+    addressBookAction->setStatusTip(tr("Show the receiving and the sending addresses and their labels"));
+    addressBookAction->setToolTip(addressBookAction->statusTip());
+    addressBookAction->setCheckable(true);
+    addressBookAction->setShortcut(QKeySequence(Qt::ALT + Qt::Key_9));
+    addressBookAction->setFont(font);
+    tabGroup->addAction(addressBookAction);
+
+    signPageAction = new QAction(tr("Si&gn message"), this);
+    signPageAction->setStatusTip(tr("Sign messages with your addresses and verify signed messages"));
+    signPageAction->setToolTip(signPageAction->statusTip());
+    signPageAction->setCheckable(true);
+    signPageAction->setFont(font);
+    tabGroup->addAction(signPageAction);
+
+    settingsPageAction = new QAction(tr("Se&ttings"), this);
+    settingsPageAction->setStatusTip(tr("Options, wallet management and information"));
+    settingsPageAction->setToolTip(settingsPageAction->statusTip());
+    settingsPageAction->setCheckable(true);
+    settingsPageAction->setShortcut(QKeySequence(Qt::ALT + Qt::Key_0));
+    settingsPageAction->setFont(font);
+    tabGroup->addAction(settingsPageAction);
+
 #ifdef ENABLE_WALLET
+    connect(addressBookAction, SIGNAL(triggered()), this, SLOT(showNormalIfMinimized()));
+    connect(addressBookAction, SIGNAL(triggered()), this, SLOT(gotoAddressBookPage()));
+    connect(signPageAction, SIGNAL(triggered()), this, SLOT(showNormalIfMinimized()));
+    connect(signPageAction, SIGNAL(triggered()), this, SLOT(gotoSignMessageTab()));
+    connect(settingsPageAction, SIGNAL(triggered()), this, SLOT(showNormalIfMinimized()));
+    connect(settingsPageAction, SIGNAL(triggered()), this, SLOT(gotoSettingsPage()));
     // These showNormalIfMinimized are needed because Send Coins and Receive Coins
     // can be triggered from the tray menu, and need to show the GUI to be useful.
     connect(overviewAction, SIGNAL(triggered()), this, SLOT(showNormalIfMinimized()));
@@ -448,12 +512,18 @@ void PaladeumGUI::createActions()
     connect(receiveCoinsMenuAction, SIGNAL(triggered()), this, SLOT(gotoReceiveCoinsPage()));
     connect(historyAction, SIGNAL(triggered()), this, SLOT(showNormalIfMinimized()));
     connect(historyAction, SIGNAL(triggered()), this, SLOT(gotoHistoryPage()));
-
-    // connect(offlineAction, SIGNAL(triggered()), this, SLOT(showNormalIfMinimized()));
-    // connect(offlineAction, SIGNAL(triggered()), this, SLOT(gotoOfflinePage()));
-
-    connect(tokensOverviewAction, SIGNAL(triggered()), this, SLOT(showNormalIfMinimized()));
-    connect(tokensOverviewAction, SIGNAL(triggered()), this, SLOT(gotoTokensOverviewPage()));
+    connect(transferTokenAction, SIGNAL(triggered()), this, SLOT(showNormalIfMinimized()));
+    connect(transferTokenAction, SIGNAL(triggered()), this, SLOT(gotoTokensPage()));
+    connect(createTokenAction, SIGNAL(triggered()), this, SLOT(showNormalIfMinimized()));
+    connect(createTokenAction, SIGNAL(triggered()), this, SLOT(gotoCreateTokensPage()));
+    connect(manageTokenAction, SIGNAL(triggered()), this, SLOT(showNormalIfMinimized()));
+    connect(manageTokenAction, SIGNAL(triggered()), this, SLOT(gotoManageTokensPage()));
+    connect(restrictedTokenAction, SIGNAL(triggered()), this, SLOT(showNormalIfMinimized()));
+    connect(restrictedTokenAction, SIGNAL(triggered()), this, SLOT(gotoRestrictedTokensPage()));
+    connect(explorerAction, SIGNAL(triggered()), this, SLOT(showNormalIfMinimized()));
+    connect(explorerAction, SIGNAL(triggered()), this, SLOT(gotoExplorerPage()));
+    // TODO add messaging actions to go to messaging page when clicked
+    // TODO add voting actions to go to voting page when clicked
 #endif // ENABLE_WALLET
 
     quitAction = new QAction(platformStyle->TextColorIcon(":/icons/quit"), tr("E&xit"), this);
@@ -482,8 +552,8 @@ void PaladeumGUI::createActions()
     changePassphraseAction = new QAction(platformStyle->TextColorIcon(":/icons/key"), tr("&Change Passphrase..."), this);
     changePassphraseAction->setStatusTip(tr("Change the passphrase used for wallet encryption"));
 
-    getMyWordsAction = new QAction(platformStyle->TextColorIcon(":/icons/key"), tr("&Get my words..."), this);
-    getMyWordsAction->setStatusTip(tr("Show the recoverywords for this wallet"));
+    getMyWordsAction = new QAction(platformStyle->TextColorIcon(":/icons/key"), tr("Show &recovery words..."), this);
+    getMyWordsAction->setStatusTip(tr("Show the 12 recovery words of this wallet"));
 
     signMessageAction = new QAction(platformStyle->TextColorIcon(":/icons/edit"), tr("Sign &message..."), this);
     signMessageAction->setStatusTip(tr("Sign messages with your Paladeum addresses to prove you own them"));
@@ -505,6 +575,18 @@ void PaladeumGUI::createActions()
 
     openAction = new QAction(platformStyle->TextColorIcon(":/icons/open"), tr("Open &URI..."), this);
     openAction->setStatusTip(tr("Open a paladeum: URI or payment request"));
+
+    createWalletAction = new QAction(tr("&Create Wallet..."), this);
+    createWalletAction->setStatusTip(tr("Create a new wallet next to the open ones"));
+    openWalletAction = new QAction(tr("&Open Wallet..."), this);
+    openWalletAction->setStatusTip(tr("Open another wallet of the wallet folder, or restore one from a backup file"));
+    restoreWalletAction = new QAction(tr("&Restore Wallet..."), this);
+    restoreWalletAction->setStatusTip(tr("Restore a backup file as a wallet of its own"));
+    closeWalletAction = new QAction(tr("C&lose Wallet"), this);
+    closeWalletAction->setStatusTip(tr("Close the wallet that is shown; its file stays in the wallet folder"));
+    openWalletMenu = new QMenu(tr("Open Wallet"), this);
+    for (QAction *action : {createWalletAction, openWalletAction, restoreWalletAction, closeWalletAction})
+        action->setEnabled(false);
 
     showHelpMessageAction = new QAction(platformStyle->TextColorIcon(":/icons/info"), tr("&Command-line options"), this);
     showHelpMessageAction->setMenuRole(QAction::NoRole);
@@ -530,11 +612,18 @@ void PaladeumGUI::createActions()
         connect(backupWalletAction, SIGNAL(triggered()), walletFrame, SLOT(backupWallet()));
         connect(changePassphraseAction, SIGNAL(triggered()), walletFrame, SLOT(changePassphrase()));
         connect(getMyWordsAction, SIGNAL(triggered()), walletFrame, SLOT(getMyWords()));
+        connect(signMessageAction, SIGNAL(triggered()), this, SLOT(showNormalIfMinimized()));
         connect(signMessageAction, SIGNAL(triggered()), this, SLOT(gotoSignMessageTab()));
+        connect(verifyMessageAction, SIGNAL(triggered()), this, SLOT(showNormalIfMinimized()));
         connect(verifyMessageAction, SIGNAL(triggered()), this, SLOT(gotoVerifyMessageTab()));
-        connect(usedSendingAddressesAction, SIGNAL(triggered()), walletFrame, SLOT(usedSendingAddresses()));
-        connect(usedReceivingAddressesAction, SIGNAL(triggered()), walletFrame, SLOT(usedReceivingAddresses()));
+        connect(usedSendingAddressesAction, SIGNAL(triggered()), this, SLOT(gotoSendingAddressesPage()));
+        connect(usedReceivingAddressesAction, SIGNAL(triggered()), this, SLOT(gotoAddressBookPage()));
         connect(openAction, SIGNAL(triggered()), this, SLOT(openClicked()));
+        connect(createWalletAction, SIGNAL(triggered()), this, SLOT(createWalletClicked()));
+        connect(openWalletAction, SIGNAL(triggered()), this, SLOT(openWalletClicked()));
+        connect(restoreWalletAction, SIGNAL(triggered()), this, SLOT(restoreWalletClicked()));
+        connect(closeWalletAction, SIGNAL(triggered()), this, SLOT(closeWalletClicked()));
+        connect(openWalletMenu, SIGNAL(aboutToShow()), this, SLOT(fillOpenWalletMenu()));
     }
 #endif // ENABLE_WALLET
 
@@ -556,6 +645,10 @@ void PaladeumGUI::createMenuBar()
     QMenu *file = appMenuBar->addMenu(tr("&File"));
     if(walletFrame)
     {
+        file->addAction(createWalletAction);
+        file->addMenu(openWalletMenu);
+        file->addAction(closeWalletAction);
+        file->addSeparator();
         file->addAction(openAction);
         file->addAction(signMessageAction);
         file->addAction(verifyMessageAction);
@@ -587,101 +680,89 @@ void PaladeumGUI::createMenuBar()
     help->addSeparator();
     help->addAction(aboutAction);
     help->addAction(aboutQtAction);
+
+#ifndef Q_OS_MAC
+    // The wallet window has no menu bar: the side bar has the pages, and the settings page has
+    // what else the menus offered. The actions stay on the window so that their shortcuts work.
+    // (macOS keeps its menu bar at the top of the screen; a window without a wallet keeps it too.)
+    if (walletFrame) {
+        appMenuBar->hide();
+        for (QMenu *menu : {file, settings, help})
+            addActions(menu->actions());
+    }
+#endif
+}
+
+QList<QAction*> PaladeumGUI::walletActions() const
+{
+    return {createWalletAction, openWalletAction, closeWalletAction};
+}
+
+QList<QAction*> PaladeumGUI::settingsActions(int group) const
+{
+    if (group == 0)
+        return {encryptWalletAction, changePassphraseAction, backupWalletAction, getMyWordsAction};
+    return {openRPCConsoleAction, openWalletRepairAction, showHelpMessageAction, aboutAction, aboutQtAction, openAction, quitAction};
 }
 
 void PaladeumGUI::createToolBars()
 {
     if(walletFrame)
     {
-        /** TOKENS START */
-        QToolBar *toolbar = addToolBar(tr("Tabs toolbar"));
-        // toolbar->setStyleSheet(
-        //         "QToolBar{background-color: #2b58ad; border: 0px;}"
-        //         "QToolButton{color: #ffffff; font-size: 14pt; border: 0px; border-bottom: 3px solid white;}"
-        //         "QToolButton:checked{background-color: #f3f3f3; border: 0px; border-bottom: 3px solid #116961;}"
-        //         "QToolButton:checked:hover{background-color: #f3f3f3; border: 0px; border-bottom: 3px solid #116961;}"
-        //         "QToolButton:hover{background-color: #f3f3f3; border: 0px; border-bottom: 3px solid #f3f3f3;}");
+        // The pages are chosen in a side bar; it also shows what the status bar used to show
+        sidebar = new Sidebar(this);
+        sidebar->addPage(overviewAction, "overview");
+        sidebar->addPage(sendCoinsAction, "send");
+        sidebar->addPage(receiveCoinsAction, "receive");
+        sidebar->addPage(historyAction, "history");
+        sidebar->addPage(transferTokenAction, "tokens");
+        sidebar->addPage(explorerAction, "explorer");
+        // below a line: what used to be in the menus
+        sidebar->addSeparator();
+        sidebar->addPage(createTokenAction, "create");
+        sidebar->addPage(manageTokenAction, "manage");
+        sidebar->addPage(restrictedTokenAction, "shield");
+        sidebar->addPage(addressBookAction, "addressbook");
+        sidebar->addPage(signPageAction, "sign");
+        sidebar->addPage(settingsPageAction, "settings");
 
-        toolbar->setStyleSheet(
-                    "QToolBar{background-color: #2b58ad; border: 0px;}"
-                    "QToolButton{color: #ffffff; font-size: 14pt; border: 0px;}"
-                    "QToolButton:checked{background-color: #214384;}");
-
-        QLabel* label = new QLabel();
-        QPixmap logo_pixmap(":/icons/paladeum_white");
-        label->setPixmap(logo_pixmap.scaled(QSize(35,35), Qt::KeepAspectRatio, Qt::SmoothTransformation));
-        label->setContentsMargins(10, 3, 5, 3);
-        label->setStyleSheet(".QLabel{background-color: transparent;}");
-
-        toolbar->setContextMenuPolicy(Qt::PreventContextMenu);
-        toolbar->setMovable(false);
-        toolbar->setToolButtonStyle(Qt::ToolButtonTextBesideIcon);
-        toolbar->addWidget(label);
-        toolbar->addAction(overviewAction);
-        toolbar->addAction(sendCoinsAction);
-        toolbar->addAction(receiveCoinsAction);
-        toolbar->addAction(historyAction);
-        // toolbar->addAction(offlineAction);
-        toolbar->addAction(tokensOverviewAction);
-
-        QString openSansFontString = "font: normal 22pt \"Open Sans\";";
-        QString normalString = "font: normal 22pt \"Arial\";";
-        QString stringToUse = "";
-
-#if !defined(Q_OS_MAC)
-        stringToUse = openSansFontString;
-#else
-        stringToUse = normalString;
-#endif
-
-        /** TOKENS START */
-        toolbar->setIconSize(QSize(40, 40));
-
-        QLayout* lay = toolbar->layout();
-        for(int i = 0; i < lay->count(); ++i)
-            lay->itemAt(i)->setAlignment(Qt::AlignLeft);
+        // The actions carry the Alt+number shortcuts of the pages
+        addAction(overviewAction);
+        addAction(sendCoinsAction);
+        addAction(receiveCoinsAction);
+        addAction(historyAction);
+        addAction(transferTokenAction);
+        addAction(createTokenAction);
+        addAction(manageTokenAction);
+        addAction(restrictedTokenAction);
+        addAction(explorerAction);
+        addAction(addressBookAction);
+        addAction(signPageAction);
+        addAction(settingsPageAction);
 
         overviewAction->setChecked(true);
 
-        QString mainWalletWidgetStyle = QString(".QWidget{background-color: %1}").arg(platformStyle->MainBackGroundColor().name());
-        QWidget* mainWalletWidget = new QWidget();
-        mainWalletWidget->setStyleSheet(mainWalletWidgetStyle);
+        connect(sidebar, SIGNAL(walletClicked()), this, SLOT(showWalletMenu()));
+        connect(sidebar, SIGNAL(stakingToggled()), this, SLOT(toggleStakingActive()));
+        connect(sidebar, SIGNAL(networkClicked()), this, SLOT(toggleNetworkActive()));
+        connect(sidebar, SIGNAL(syncClicked()), this, SLOT(showModalOverlay()));
 
-        // Set the headers widget options
-        footerWidget->setContentsMargins(0,0,0,0);
-        footerWidget->setStyleSheet(QString(".QWidget {background-color: #ffffff;}"));
-        footerWidget->setFixedHeight(50);
-
-        stakingButton = new QPushButton(this);
-        connect(stakingButton, SIGNAL(clicked()), this, SLOT(toggleStakingActive()));
-        stakingButton->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+        // The former footer with the staking button is kept, hidden, for code that still updates it
+        footerWidget->setObjectName("footerWidget");
+        footerWidget->setParent(this);
+        footerWidget->setVisible(false);
+        stakingButton = new QPushButton(footerWidget);
         stakingButton->setText(tr("Start Staking"));
 
-        QHBoxLayout* footerLayout = new QHBoxLayout(footerWidget);
-        footerLayout->addWidget(stakingButton);
-
-        QString widgetBackgroundSytleSheet = QString(".QWidget{background-color: %1}").arg(platformStyle->TopWidgetBackGroundColor().name());
-
-        // Create the layout for widget to the right of the tool bar
-        QVBoxLayout* mainFrameLayout = new QVBoxLayout(mainWalletWidget);
-#ifdef ENABLE_WALLET
-        mainFrameLayout->addWidget(walletFrame);
-#endif
-        mainFrameLayout->addWidget(footerWidget);
-        mainFrameLayout->setDirection(QBoxLayout::TopToBottom);
-        mainFrameLayout->setContentsMargins(QMargins());
-
-        QVBoxLayout* layout = new QVBoxLayout();
-        layout->addWidget(mainWalletWidget);
+        QWidget* mainWalletWidget = new QWidget();
+        mainWalletWidget->setObjectName("mainWalletWidget");
+        mainWalletWidget->setAttribute(Qt::WA_StyledBackground, true);
+        QHBoxLayout* layout = new QHBoxLayout(mainWalletWidget);
         layout->setSpacing(0);
         layout->setContentsMargins(QMargins());
-        layout->setDirection(QBoxLayout::LeftToRight);
-        QWidget* containerWidget = new QWidget();
-        containerWidget->setLayout(layout);
-        setCentralWidget(containerWidget);
-
-        connect(quitAction, SIGNAL(triggered()), qApp, SLOT(quit()));
-        /** TOKENS END */
+        layout->addWidget(sidebar);
+        layout->addWidget(walletFrame, 1);
+        setCentralWidget(mainWalletWidget);
     }
 }
 
@@ -705,6 +786,10 @@ void PaladeumGUI::setClientModel(ClientModel *_clientModel)
 
         // Receive and report messages from client model
         connect(_clientModel, SIGNAL(message(QString,QString,unsigned int)), this, SLOT(message(QString,QString,unsigned int)));
+
+        // Warnings of the node go to the bottom of the side bar
+        connect(_clientModel, SIGNAL(alertsChanged(QString)), this, SLOT(updateAlerts(QString)));
+        updateAlerts(_clientModel->getStatusBarWarnings());
 
         // Show progress dialog
         connect(_clientModel, SIGNAL(showProgress(QString,int)), this, SLOT(showProgress(QString,int)));
@@ -760,7 +845,19 @@ bool PaladeumGUI::setCurrentWallet(const QString& name)
 {
     if(!walletFrame)
         return false;
-    return walletFrame->setCurrentWallet(name);
+    const bool ok = walletFrame->setCurrentWallet(name);
+    walletsChanged();
+    updateStakingIcon();
+    return ok;
+}
+
+void PaladeumGUI::removeWallet(const QString& name)
+{
+    if(!walletFrame)
+        return;
+    walletFrame->removeWallet(name);
+    if (walletFrame->walletCount() == 0)
+        setWalletActionsEnabled(false);
 }
 
 void PaladeumGUI::removeAllWallets()
@@ -769,6 +866,168 @@ void PaladeumGUI::removeAllWallets()
         return;
     setWalletActionsEnabled(false);
     walletFrame->removeAllWallets();
+}
+
+void PaladeumGUI::setWalletController(WalletController *controller)
+{
+    walletController = controller;
+    if (!controller)
+        return;
+    controller->setParentWindow(this);
+    rpcConsole->setWalletController(controller);
+    connect(controller, &WalletController::walletAdded, this, [this](WalletModel *model) {
+        addWallet(QString::fromStdString(model->getWallet()->GetName()), model);
+    });
+    connect(controller, &WalletController::walletRemoved, this, [this](WalletModel *model) {
+        removeWallet(QString::fromStdString(model->getWallet()->GetName()));
+    });
+    connect(controller, &WalletController::currentChanged, this, [this](WalletModel *model) {
+        if (model)
+            setCurrentWallet(QString::fromStdString(model->getWallet()->GetName()));
+    });
+    connect(controller, &WalletController::walletsChanged, this, &PaladeumGUI::walletsChanged);
+    connect(controller, &WalletController::message, this, [this](const QString &title, const QString &text, unsigned int style) {
+        message(title, text, style);
+    });
+    connect(controller, &WalletController::encryptionWanted, this, [this](WalletModel *model) {
+        // the passphrase of a new wallet: the dialog that encrypts every wallet
+        AskPassphraseDialog dialog(AskPassphraseDialog::Encrypt, this);
+        dialog.setModel(model);
+        dialog.exec();
+    });
+    connect(controller, &WalletController::backupWanted, this, [this](WalletModel *model) {
+        BackupPromptDialog *dialog = new BackupPromptDialog(model, this);
+        dialog->setAttribute(Qt::WA_DeleteOnClose);
+        dialog->setWindowModality(Qt::ApplicationModal);
+        dialog->show();
+    });
+    walletsChanged();
+}
+
+void PaladeumGUI::walletsChanged()
+{
+    if (!walletController)
+        return;
+    WalletModel *current = walletController->current();
+    const int count = walletController->models().size();
+    const bool busy = walletController->isBusy();
+    createWalletAction->setEnabled(!busy);
+    openWalletAction->setEnabled(!busy);
+    restoreWalletAction->setEnabled(!busy);
+    openWalletMenu->setEnabled(!busy);
+    const bool closable = current && !WalletController::isFirstWallet(current);
+    closeWalletAction->setEnabled(!busy && closable);
+    closeWalletAction->setToolTip(closable ? closeWalletAction->statusTip()
+                                           : tr("The first wallet of the node stays open. The others can be closed."));
+    if (current) {
+        const QString name = walletController->displayName(current);
+        if (sidebar)
+            sidebar->setWalletName(name, count);
+        // with several wallets the title says which one is shown
+        setWindowTitle(count > 1 ? baseWindowTitle + QString::fromUtf8(" · ") + name : baseWindowTitle);
+    }
+}
+
+void PaladeumGUI::fillOpenWalletMenu()
+{
+    openWalletMenu->clear();
+    if (!walletController)
+        return;
+    const QStringList closed = walletController->closedWallets();
+    for (const QString &name : closed) {
+        QAction *action = openWalletMenu->addAction(WalletController::displayName(name));
+        action->setToolTip(WalletController::walletPath(name));
+        connect(action, &QAction::triggered, this, [this, name] {
+            if (walletController)
+                walletController->openWallet(name);
+        });
+    }
+    if (closed.isEmpty()) {
+        QAction *none = openWalletMenu->addAction(tr("Every wallet of the wallet folder is open"));
+        none->setEnabled(false);
+    }
+    openWalletMenu->addSeparator();
+    openWalletMenu->addAction(restoreWalletAction);
+}
+
+void PaladeumGUI::showWalletMenu()
+{
+    if (!walletController || !sidebar)
+        return;
+    QMenu menu(this);
+    const QList<WalletModel*> models = walletController->models();
+    if (models.size() > 1) {
+        QActionGroup *group = new QActionGroup(&menu);
+        for (WalletModel *model : models) {
+            QAction *action = menu.addAction(walletController->displayName(model));
+            action->setCheckable(true);
+            action->setChecked(model == walletController->current());
+            action->setEnabled(!walletController->isBusy());
+            group->addAction(action);
+            QPointer<WalletModel> guard(model);
+            connect(action, &QAction::triggered, this, [this, guard] {
+                if (guard && walletController)
+                    walletController->setCurrent(guard);
+            });
+        }
+        menu.addSeparator();
+    }
+    menu.addAction(createWalletAction);
+    menu.addMenu(openWalletMenu);
+    menu.addAction(closeWalletAction);
+    menu.setMinimumWidth(sidebar->walletMenuWidth());
+    menu.exec(sidebar->walletMenuPosition());
+}
+
+void PaladeumGUI::createWalletClicked()
+{
+    if (!walletController || walletController->isBusy())
+        return;
+    CreateWalletDialog dialog(this);
+    if (dialog.exec() == QDialog::Accepted)
+        walletController->createWallet(dialog.walletName(), dialog.encrypt());
+}
+
+void PaladeumGUI::openWalletClicked()
+{
+    if (!walletController || walletController->isBusy())
+        return;
+    OpenWalletDialog dialog(walletController->closedWallets(), this);
+    if (dialog.exec() != QDialog::Accepted)
+        return;
+    if (dialog.restoreRequested())
+        restoreWalletClicked();
+    else if (!dialog.chosenWallet().isNull())
+        walletController->openWallet(dialog.chosenWallet());
+}
+
+void PaladeumGUI::restoreWalletClicked()
+{
+    if (!walletController || walletController->isBusy())
+        return;
+    RestoreWalletDialog dialog(this);
+    if (dialog.exec() == QDialog::Accepted)
+        walletController->restoreWallet(dialog.walletName(), dialog.backupFile());
+}
+
+void PaladeumGUI::closeWalletClicked()
+{
+    if (!walletController || walletController->isBusy())
+        return;
+    WalletModel *model = walletController->current();
+    if (!model || WalletController::isFirstWallet(model))
+        return;
+    const QString name = walletController->displayName(model);
+    // (the file stays: closing is undone with Open Wallet, so it is the default answer)
+    QMessageBox box(QMessageBox::Question, tr("Close wallet"),
+        "<qt>" + tr("Close %1?").arg(name.toHtmlEscaped()) + "<br><br>" +
+        tr("Its coins and tokens stay in its file. Staking and notifications of this wallet stop until it is opened again with Open Wallet.") + "</qt>",
+        QMessageBox::Cancel, this);
+    QPushButton *closeButton = box.addButton(tr("Close wallet"), QMessageBox::AcceptRole);
+    box.setDefaultButton(closeButton);
+    box.exec();
+    if (box.clickedButton() == closeButton)
+        walletController->closeWallet(model);
 }
 #endif // ENABLE_WALLET
 
@@ -791,8 +1050,15 @@ void PaladeumGUI::setWalletActionsEnabled(bool enabled)
     openAction->setEnabled(enabled);
 
     /** TOKENS START */
-    tokensOverviewAction->setEnabled(false);
+    transferTokenAction->setEnabled(false);
+    createTokenAction->setEnabled(false);
+    manageTokenAction->setEnabled(false);
+    restrictedTokenAction->setEnabled(false);
     /** TOKENS END */
+    explorerAction->setEnabled(enabled);
+    addressBookAction->setEnabled(enabled);
+    signPageAction->setEnabled(enabled);
+    settingsPageAction->setEnabled(enabled);
 }
 
 void PaladeumGUI::createTrayIcon(const NetworkStyle *networkStyle)
@@ -860,6 +1126,15 @@ void PaladeumGUI::optionsClicked()
     if(!clientModel || !clientModel->getOptionsModel())
         return;
 
+#ifdef ENABLE_WALLET
+    // with a wallet the options are a page of the window
+    if (walletFrame) {
+        showNormalIfMinimized();
+        gotoSettingsPage();
+        return;
+    }
+#endif
+
     OptionsDialog dlg(this, enableWallet);
     dlg.setModel(clientModel->getOptionsModel());
     dlg.exec();
@@ -921,12 +1196,6 @@ void PaladeumGUI::gotoHistoryPage()
     if (walletFrame) walletFrame->gotoHistoryPage();
 }
 
-void PaladeumGUI::gotoOfflinePage()
-{
-    // offlineAction->setChecked(true);
-    // if (walletFrame) walletFrame->gotoOfflinePage();
-}
-
 void PaladeumGUI::gotoReceiveCoinsPage()
 {
     receiveCoinsAction->setChecked(true);
@@ -941,21 +1210,88 @@ void PaladeumGUI::gotoSendCoinsPage(QString addr)
 
 void PaladeumGUI::gotoSignMessageTab(QString addr)
 {
+    signPageAction->setChecked(true);
     if (walletFrame) walletFrame->gotoSignMessageTab(addr);
 }
 
 void PaladeumGUI::gotoVerifyMessageTab(QString addr)
 {
+    signPageAction->setChecked(true);
     if (walletFrame) walletFrame->gotoVerifyMessageTab(addr);
 }
 
-/** TOKENS START */
-void PaladeumGUI::gotoTokensOverviewPage()
+void PaladeumGUI::gotoAddressBookPage()
 {
-    tokensOverviewAction->setChecked(true);
-    if (walletFrame) walletFrame->gotoTokensOverviewPage();
+    addressBookAction->setChecked(true);
+    if (walletFrame) walletFrame->usedReceivingAddresses();
+}
+
+void PaladeumGUI::gotoSendingAddressesPage()
+{
+    addressBookAction->setChecked(true);
+    if (walletFrame) walletFrame->usedSendingAddresses();
+}
+
+void PaladeumGUI::gotoSettingsPage()
+{
+    settingsPageAction->setChecked(true);
+    if (walletFrame) walletFrame->gotoSettingsPage();
+}
+
+/** TOKENS START */
+void PaladeumGUI::gotoTokensPage()
+{
+    transferTokenAction->setChecked(true);
+    if (walletFrame) walletFrame->gotoTokensPage();
 };
+
+void PaladeumGUI::gotoCreateTokensPage()
+{
+    createTokenAction->setChecked(true);
+    if (walletFrame) walletFrame->gotoCreateTokensPage();
+};
+
+void PaladeumGUI::gotoManageTokensPage()
+{
+    manageTokenAction->setChecked(true);
+    if (walletFrame) walletFrame->gotoManageTokensPage();
+};
+
+void PaladeumGUI::gotoRestrictedTokensPage()
+{
+    restrictedTokenAction->setChecked(true);
+    if (walletFrame) walletFrame->gotoRestrictedTokensPage();
+};
+
+void PaladeumGUI::gotoExplorerPage(QString query)
+{
+    explorerAction->setChecked(true);
+    if (walletFrame) walletFrame->gotoExplorerPage(query);
+}
 /** TOKENS END */
+
+void PaladeumGUI::pageShown(int page)
+{
+    QAction *action = nullptr;
+    switch (page) {
+    case WalletView::PAGE_OVERVIEW: action = overviewAction; break;
+    case WalletView::PAGE_SEND: action = sendCoinsAction; break;
+    case WalletView::PAGE_RECEIVE: action = receiveCoinsAction; break;
+    case WalletView::PAGE_TRANSACTIONS: action = historyAction; break;
+    case WalletView::PAGE_TOKENS: action = transferTokenAction; break;
+    case WalletView::PAGE_CREATE_TOKENS: action = createTokenAction; break;
+    case WalletView::PAGE_MANAGE_TOKENS: action = manageTokenAction; break;
+    case WalletView::PAGE_RESTRICTED_TOKENS: action = restrictedTokenAction; break;
+    case WalletView::PAGE_EXPLORER: action = explorerAction; break;
+    case WalletView::PAGE_ADDRESS_BOOK: action = addressBookAction; break;
+    case WalletView::PAGE_SIGN: action = signPageAction; break;
+    case WalletView::PAGE_SETTINGS: action = settingsPageAction; break;
+    default: break;
+    }
+    // checking does not trigger the action: no page switch follows
+    if (action && !action->isChecked())
+        action->setChecked(true);
+}
 #endif // ENABLE_WALLET
 
 void PaladeumGUI::updateNetworkState()
@@ -983,6 +1319,17 @@ void PaladeumGUI::updateNetworkState()
     // Don't word-wrap this (fixed-width) tooltip
     tooltip = QString("<nobr>") + tooltip + QString("</nobr>");
     connectionsControl->setToolTip(tooltip);
+    if (sidebar) {
+        QString network = QString::fromStdString(GetParams().NetworkIDString());
+        if (network == "main")
+            network = tr("Mainnet");
+        else if (network == "test")
+            network = tr("Testnet");
+        else if (network == "regtest")
+            network = tr("Regtest");
+        sidebar->setNetworkState(clientModel->getNetworkActive() ? tr("Peers %1 · %2").arg(count).arg(network)
+                                                                 : tr("Network off · %1").arg(network), tooltip);
+    }
 
     connectionsControl->setPixmap(platformStyle->SingleColorIcon(icon).pixmap(STATUSBAR_ICONSIZE,STATUSBAR_ICONSIZE));
 }
@@ -997,13 +1344,193 @@ void PaladeumGUI::setNetworkActive(bool networkActive)
     updateNetworkState();
 }
 
+void PaladeumGUI::updateAlerts(const QString &warnings)
+{
+    if (!sidebar)
+        return;
+    // the notice of a pre-release build is not an alarm; anything else is shown in a warning color
+    const char *prerelease = "This is a pre-release test build - use at your own risk - do not use for mining or merchant applications";
+    const bool notice = warnings == QCoreApplication::translate("paladeum-core", prerelease) || warnings == QString(prerelease);
+    sidebar->setNotice(notice ? tr("Pre-release test build. Use at your own risk.") : warnings, warnings, !notice);
+}
+
 void PaladeumGUI::updateHeadersSyncProgressLabel()
 {
     int64_t headersTipTime = clientModel->getHeaderTipTime();
     int headersTipHeight = clientModel->getHeaderTipHeight();
     int estHeadersLeft = (GetTime() - headersTipTime) / GetParams().GetConsensus().nTargetSpacing;
     if (estHeadersLeft > HEADER_HEIGHT_DELTA_SYNC)
+    {
         progressBarLabel->setText(tr("Syncing Headers (%1%)...").arg(QString::number(100.0 / (headersTipHeight+estHeadersLeft)*headersTipHeight, 'f', 1)));
+        if (sidebar)
+            setSideSync(tr("Syncing headers"), QString::number(100.0 / (headersTipHeight+estHeadersLeft)*headersTipHeight, 'f', 1) + "%",
+                                  1.0 / (headersTipHeight+estHeadersLeft)*headersTipHeight, true, progressBarLabel->text());
+    }
+}
+
+void PaladeumGUI::setSideSync(const QString& status, const QString& remaining, double progress, bool showProgress, const QString& toolTip)
+{
+    if (sidebar && !bootstrapActive && !pastBlocksWereFetching)
+        sidebar->setSyncState(status, remaining, progress, showProgress, toolTip);
+}
+
+static QString megabytes(quint64 bytes)
+{
+    return bytes >= 1000000000ULL ? QString("%1 GB").arg(bytes / 1e9, 0, 'f', 1) : QString("%1 MB").arg(bytes / 1000000);
+}
+
+void PaladeumGUI::updateBootstrap()
+{
+    // A wallet that started from a chain state snapshot and needs the past blocks (it was
+    // restored from a file, say): ask once whether to download them.
+    if (!WalletRescanPending())
+        pastBlocksAsked = false; // a key that is imported later is asked about again
+    if (!pastBlocksAsked && walletFrame && clientModel && WalletRescanPending() && PastBlocks::missing() && isVisible() && !QApplication::activeModalWidget()) {
+        pastBlocksAsked = true;
+        PastBlocks::offer(this, tr("Showing the earlier transactions of this wallet"));
+    }
+    {
+        const bool fetching = GetPastBlocksInfo().fetching;
+        // (set before the message boxes below: this runs again while one of them is open)
+        const bool ended = pastBlocksWereFetching && !fetching;
+        pastBlocksWereFetching = fetching;
+        if (fetching && !bootstrapActive && sidebar) {
+            // the download has the sync line of the side bar while it runs
+            const PastBlocksInfo past = GetPastBlocksInfo();
+            const qint64 now = QDateTime::currentMSecsSinceEpoch();
+            if (pastBlocksSeenAt == 0 || past.bytesDone < pastBlocksSeenBytes) {
+                pastBlocksSeenAt = now;
+                pastBlocksSeenBytes = past.bytesDone;
+            }
+            const bool finding = past.bytesTotal > 0 && past.bytesDone >= past.bytesTotal && WalletRescanPending() && past.blocksStored > past.snapshotHeight;
+            const bool stored = finding || PastBlocks::storing(past.bytesDone);
+            QString left;
+            if (!stored && now - pastBlocksSeenAt > 5000 && past.bytesDone > pastBlocksSeenBytes)
+                left = PastBlocks::timeLeft(qint64(double(now - pastBlocksSeenAt) / 1000 * (past.bytesTotal - past.bytesDone) / (past.bytesDone - pastBlocksSeenBytes)));
+            const QString status = finding ? tr("Finding earlier transactions") : stored ? tr("Storing past blocks") : tr("Downloading past blocks");
+            const QString blocks = QString("%1 / %2").arg(GUIUtil::withThousands(QString::number(past.blocksStored)), GUIUtil::withThousands(QString::number(past.snapshotHeight)));
+            const QString right = stored && !finding ? tr("Block %1").arg(GUIUtil::withThousands(QString::number(past.blocksStored))) : QString("%1 / %2").arg(megabytes(past.bytesDone), megabytes(past.bytesTotal));
+            QString tip = tr("Downloading the blocks from before the snapshot: %1 of %2").arg(megabytes(past.bytesDone), megabytes(past.bytesTotal));
+            tip += "\n" + tr("Stored blocks: %1").arg(blocks);
+            if (!left.isEmpty())
+                tip += " · " + left;
+            tip += "\n" + tr("You can keep using the wallet while this runs.");
+            sidebar->setSyncState(status, right, past.bytesTotal ? double(past.bytesDone) / past.bytesTotal : 0, true, tip);
+        } else if (ended) {
+            // over: the ordinary sync line comes back
+            pastBlocksSeenAt = 0;
+            if (clientModel && !bootstrapActive)
+                setNumBlocks(clientModel->getNumBlocks(), clientModel->getLastBlockDate(), clientModel->getVerificationProgress(nullptr), false);
+        }
+        if (ended) {
+            const PastBlocksInfo past = GetPastBlocksInfo();
+            if (!past.missing)
+                message(tr("Past blocks"), tr("The past blocks are downloaded."), CClientUIInterface::MSG_INFORMATION | CClientUIInterface::MODAL);
+            else if (!past.error.empty() && past.error != "cancelled")
+                message(tr("Past blocks"), tr("The download of the past blocks stopped: %1").arg(QString::fromStdString(past.error)), CClientUIInterface::MSG_WARNING | CClientUIInterface::MODAL);
+        }
+    }
+    const BootstrapInfo info = GetBootstrapInfo();
+    if (!info.configured && bootstrapLastState.isEmpty())
+        return; // nothing is shown when the bootstrap is not set up
+    const QString state = QString::fromStdString(info.state);
+    const bool active = info.active;
+    const QString explanation = tr("The blocks are fetched from a server as archives and then validated one by one, exactly like blocks from other nodes. The server does not have to be trusted.");
+    if (active) {
+        QString status, right, line;
+        double progress = 0;
+        const int height = clientModel ? clientModel->getNumBlocks() : info.startHeight;
+        if (info.chunks == 0) {
+            status = tr("Fast sync: getting ready");
+            line = status;
+        } else if (info.chunksDownloaded < info.chunks && info.chunksDownloaded - info.chunksImported < 2) {
+            // (with two archives waiting for their import the download pauses: the validation is shown then)
+            status = tr("Fast sync: archive %1/%2").arg(info.chunksDownloaded + 1).arg(info.chunks);
+            right = QString("%1 / %2").arg(megabytes(info.bytesDownloaded), megabytes(info.bytesTotal));
+            line = tr("Fast sync: fetching block archive %1/%2 · %3 / %4").arg(info.chunksDownloaded + 1).arg(info.chunks)
+                       .arg(megabytes(info.bytesDownloaded), megabytes(info.bytesTotal));
+            progress = info.bytesTotal ? double(info.bytesDownloaded) / info.bytesTotal : 0;
+            const QString left = bootstrapTimeLeft(false, info.bytesDownloaded, info.bytesTotal);
+            if (!left.isEmpty())
+                line += " · " + left;
+        } else {
+            status = tr("Validating blocks");
+            right = QString("%1 / %2").arg(GUIUtil::withThousands(QString::number(height)), GUIUtil::withThousands(QString::number(info.targetHeight)));
+            line = tr("Validating blocks %1 / %2").arg(GUIUtil::withThousands(QString::number(height)), GUIUtil::withThousands(QString::number(info.targetHeight)));
+            progress = info.targetHeight ? double(height) / info.targetHeight : 0;
+            const QString left = bootstrapTimeLeft(true, height, info.targetHeight);
+            if (!left.isEmpty()) {
+                line += " · " + left;
+                status += " · " + left;
+            }
+        }
+        const QString detail = info.chunks == 0 ? explanation
+            : explanation + "\n" + tr("Fetched %1 of %2 archives (%3 / %4), validated up to block %5 of %6.")
+                  .arg(info.chunksDownloaded).arg(info.chunks).arg(megabytes(info.bytesDownloaded), megabytes(info.bytesTotal))
+                  .arg(GUIUtil::withThousands(QString::number(height)), GUIUtil::withThousands(QString::number(info.targetHeight)));
+        if (sidebar)
+            sidebar->setSyncState(status, right, progress, true, line + "\n" + explanation);
+        if (modalOverlay)
+            modalOverlay->setBootstrapState(true, line, detail);
+    } else if (state != bootstrapLastState || bootstrapActive) {
+        // over: say how it ended, and let the ordinary sync line come back
+        QString status, detail;
+        if (state == "failed") {
+            status = tr("Fast sync was not possible: the blocks come from other nodes");
+            detail = QString::fromStdString(info.message);
+        } else if (state == "skipped") {
+            status = tr("Fast sync skipped: the blocks come from other nodes");
+        } else if (state == "done") {
+            status = tr("Fast sync finished: the remaining blocks come from other nodes");
+        }
+        if (modalOverlay)
+            modalOverlay->setBootstrapState(false, status, detail);
+        bootstrapActive = false;
+        if (clientModel)
+            setNumBlocks(clientModel->getNumBlocks(), clientModel->getLastBlockDate(), clientModel->getVerificationProgress(nullptr), false);
+    }
+    bootstrapActive = active;
+    bootstrapLastState = state;
+}
+
+QString PaladeumGUI::bootstrapTimeLeft(bool blocks, double value, double end)
+{
+    // the rate of the last minutes: early blocks validate much faster than recent ones
+    const qint64 now = QDateTime::currentMSecsSinceEpoch();
+    if (blocks != bootstrapSamplesAreBlocks) {
+        bootstrapSamples.clear();
+        bootstrapSamplesAreBlocks = blocks;
+    }
+    if (bootstrapSamples.isEmpty() || now - bootstrapSamples.last().first >= 5000)
+        bootstrapSamples.append(qMakePair(now, value));
+    while (bootstrapSamples.size() > 2 && now - bootstrapSamples.first().first > 180000)
+        bootstrapSamples.removeFirst();
+    const qint64 span = now - bootstrapSamples.first().first;
+    const double advanced = value - bootstrapSamples.first().second;
+    if (span < 20000 || advanced <= 0 || value >= end)
+        return QString();
+    return PastBlocks::timeLeft(qint64(span / 1000.0 * (end - value) / advanced));
+}
+
+void PaladeumGUI::skipBootstrap()
+{
+    SkipBootstrap();
+    updateBootstrap();
+}
+
+void PaladeumGUI::chooseBootstrapFolder()
+{
+    const QString folder = QFileDialog::getExistingDirectory(this, tr("Folder with block archives (manifest.json and the blocks-... files)"));
+    if (folder.isEmpty())
+        return;
+    std::string error;
+    if (!StartBootstrapFromFolder(folder.toStdString(), error)) {
+        QMessageBox::warning(this, tr("Block archives"), error == "a bootstrap is running already"
+            ? tr("A fast sync is running. Skip it first, then choose the folder.")
+            : tr("This folder has no manifest.json. Choose the folder that holds manifest.json and the blocks-... files."));
+        return;
+    }
+    updateBootstrap();
 }
 
 void PaladeumGUI::setNumBlocks(int count, const QDateTime& blockDate, double nVerificationProgress, bool header)
@@ -1024,6 +1551,7 @@ void PaladeumGUI::setNumBlocks(int count, const QDateTime& blockDate, double nVe
 
     // Acquire current block source
     enum BlockSource blockSource = clientModel->getBlockSource();
+    QString sideStatus = tr("Syncing");
     switch (blockSource) {
         case BLOCK_SOURCE_NETWORK:
             if (header) {
@@ -1039,15 +1567,18 @@ void PaladeumGUI::setNumBlocks(int count, const QDateTime& blockDate, double nVe
             } else {
                 progressBarLabel->setText(tr("Processing blocks on disk..."));
             }
+            sideStatus = tr("Importing blocks");
             break;
         case BLOCK_SOURCE_REINDEX:
             progressBarLabel->setText(tr("Reindexing blocks on disk..."));
+            sideStatus = tr("Reindexing");
             break;
         case BLOCK_SOURCE_NONE:
             if (header) {
                 return;
             }
             progressBarLabel->setText(tr("Connecting to peers..."));
+            sideStatus = tr("Connecting");
             break;
     }
 
@@ -1074,10 +1605,14 @@ void PaladeumGUI::setNumBlocks(int count, const QDateTime& blockDate, double nVe
 
         progressBarLabel->setVisible(false);
         progressBar->setVisible(false);
+        fSyncing = false;
+        if (sidebar)
+            setSideSync(tr("Synced"), tr("Block %1").arg(count), 1.0, false, QString("<nobr>") + tooltip + QString("</nobr>"));
     }
     else
     {
         QString timeBehindText = GUIUtil::formatNiceTimeOffset(secs);
+        fSyncing = true;
 
         progressBarLabel->setVisible(true);
         progressBar->setFormat(tr("%1 behind").arg(timeBehindText));
@@ -1107,6 +1642,12 @@ void PaladeumGUI::setNumBlocks(int count, const QDateTime& blockDate, double nVe
         tooltip += tr("Last received block was generated %1 ago.").arg(timeBehindText);
         tooltip += QString("<br>");
         tooltip += tr("Transactions after this will not yet be visible.");
+        if (sidebar) {
+            // the side bar is narrow: years only when the chain is more than a year behind
+            const qint64 year = 31556952;
+            const QString sideBehind = secs >= year ? QObject::tr("%n year(s)", "", secs / year) : timeBehindText;
+            setSideSync(sideStatus, tr("%1 left").arg(sideBehind), nVerificationProgress, true, QString("<nobr>") + tooltip + QString("</nobr>"));
+        }
     }
 
     // Don't word-wrap this (fixed-width) tooltip
@@ -1230,7 +1771,14 @@ void PaladeumGUI::showEvent(QShowEvent *event)
 void PaladeumGUI::incomingTransaction(const QString& date, int unit, const CAmount& amount, const QString& type, const QString& address, const QString& label, const QString& tokenName)
 {
     // On new transaction, make an info balloon
-    QString msg = tr("Date: %1\n").arg(date);
+    QString msg;
+    // with several wallets: which one it is
+    if (walletController && walletController->models().size() > 1) {
+        WalletView *view = qobject_cast<WalletView*>(sender());
+        if (view && view->getWalletModel())
+            msg += tr("Wallet: %1\n").arg(walletController->displayName(view->getWalletModel()));
+    }
+    msg += tr("Date: %1\n").arg(date);
     if (tokenName == "PLB")
         msg += tr("Amount: %1\n").arg(PaladeumUnits::formatWithUnit(unit, amount, true));
     else
@@ -1250,11 +1798,19 @@ void PaladeumGUI::checkTokens()
 {
     // Check that status of tokens and activate the tokens icon if it is active
     if(AreTokensDeployed()) {
-        tokensOverviewAction->setDisabled(false);
-        tokensOverviewAction->setToolTip(tr("Tokens overview"));
+        transferTokenAction->setDisabled(false);
+        transferTokenAction->setToolTip(tr("Transfer tokens to PLB addresses"));
+        createTokenAction->setDisabled(false);
+        createTokenAction->setToolTip(tr("Create new main/sub/unique tokens"));
+        manageTokenAction->setDisabled(false);
+        restrictedTokenAction->setDisabled(false);
     } else {
-        tokensOverviewAction->setDisabled(true);
-        tokensOverviewAction->setToolTip(tr("Tokens not yet active"));
+        transferTokenAction->setDisabled(true);
+        transferTokenAction->setToolTip(tr("Tokens not yet active"));
+        createTokenAction->setDisabled(true);
+        createTokenAction->setToolTip(tr("Tokens not yet active"));
+        manageTokenAction->setDisabled(true);
+        restrictedTokenAction->setDisabled(true);
     }
 }
 #endif // ENABLE_WALLET
@@ -1326,6 +1882,8 @@ void PaladeumGUI::setEncryptionStatus(int status)
     switch(status)
     {
     case WalletModel::Unencrypted:
+        if (sidebar)
+            sidebar->setWalletState(QString(), QString());
         labelWalletEncryptionIcon->hide();
         encryptWalletAction->setChecked(false);
         changePassphraseAction->setEnabled(false);
@@ -1335,14 +1893,29 @@ void PaladeumGUI::setEncryptionStatus(int status)
         labelWalletEncryptionIcon->show();
         labelWalletEncryptionIcon->setPixmap(platformStyle->SingleColorIcon(":/icons/lock_open").pixmap(STATUSBAR_ICONSIZE,STATUSBAR_ICONSIZE));
         labelWalletEncryptionIcon->setToolTip(tr("Wallet is <b>encrypted</b> and currently <b>unlocked</b>"));
+        if (sidebar)
+            sidebar->setWalletState(tr("Wallet unlocked"), labelWalletEncryptionIcon->toolTip());
         encryptWalletAction->setChecked(true);
         changePassphraseAction->setEnabled(true);
         encryptWalletAction->setEnabled(false); // TODO: decrypt currently not supported
+        break;
+    case WalletModel::UnlockedForStaking:
+        labelWalletEncryptionIcon->show();
+        labelWalletEncryptionIcon->setPixmap(platformStyle->SingleColorIcon(":/icons/lock_open").pixmap(STATUSBAR_ICONSIZE,STATUSBAR_ICONSIZE));
+        labelWalletEncryptionIcon->setToolTip(tr("Wallet is <b>encrypted</b> and currently <b>unlocked for staking only</b>"));
+        if (sidebar)
+            // (two words: the line under the wallet name is short; the tool tip has the sentence)
+            sidebar->setWalletState(tr("Staking only"), labelWalletEncryptionIcon->toolTip());
+        encryptWalletAction->setChecked(true);
+        changePassphraseAction->setEnabled(true);
+        encryptWalletAction->setEnabled(false);
         break;
     case WalletModel::Locked:
         labelWalletEncryptionIcon->show();
         labelWalletEncryptionIcon->setPixmap(platformStyle->SingleColorIcon(":/icons/lock_closed").pixmap(STATUSBAR_ICONSIZE,STATUSBAR_ICONSIZE));
         labelWalletEncryptionIcon->setToolTip(tr("Wallet is <b>encrypted</b> and currently <b>locked</b>"));
+        if (sidebar)
+            sidebar->setWalletState(tr("Wallet locked"), labelWalletEncryptionIcon->toolTip());
         encryptWalletAction->setChecked(true);
         changePassphraseAction->setEnabled(true);
         encryptWalletAction->setEnabled(false); // TODO: decrypt currently not supported
@@ -1383,11 +1956,35 @@ void PaladeumGUI::toggleHidden()
 
 void PaladeumGUI::updateStakingIcon()
 {
+    // Every wallet stakes on its own (a thread per wallet); the side bar shows and switches the
+    // staking of the wallet that is shown, and names the others that stake.
+    WalletModel *current = walletFrame ? walletFrame->currentWalletModel() : nullptr;
+    CWallet *wallet = current ? current->getWallet() : nullptr;
     if (walletFrame) {
         nWeight = walletFrame->updateWeight();
     }
+    // A wallet that was locked from elsewhere (walletlock, or the time of walletpassphrase ran out)
+    // stakes no more, and its switch says so. (Only wallets that the window shows: during the start
+    // there is none to ask yet, and staking that -staking=1 switched on is not taken back early.)
+    QStringList othersStaking;
+    if (walletController) {
+        for (WalletModel *model : walletController->models()) {
+            CWallet *other = model->getWallet();
+            if (other->IsStaking() && model->getEncryptionStatus() == WalletModel::Locked)
+                other->StopStake();
+            if (model != current && other->IsStaking())
+                othersStaking << walletController->displayName(model);
+        }
+    }
+    const bool staking = wallet && wallet->IsStaking();
+    QString othersLine, othersTip;
+    if (!othersStaking.isEmpty()) {
+        othersLine = tr("%n other wallet(s) staking", "", othersStaking.size());
+        othersTip = tr("Also staking: %1").arg(othersStaking.join(", ").toHtmlEscaped());
+    }
 
-    if (this->nStaking && nWeight) {
+    QString detail;
+    if (staking && nWeight) {
         uint64_t nWeight = this->nWeight;
         uint64_t nNetworkWeight = 1.1429 * GetPoSKernelPS();
         unsigned nEstimateTime = 1.0455 * 64 * nNetworkWeight / nWeight;
@@ -1405,20 +2002,69 @@ void PaladeumGUI::updateStakingIcon()
 
         nWeight /= COIN;
         nNetworkWeight /= COIN;
+
         labelStakingIcon->setPixmap(platformStyle->SingleColorIcon(":/icons/staking_on").pixmap(STATUSBAR_ICONSIZE, STATUSBAR_ICONSIZE));
         labelStakingIcon->setToolTip(tr("Staking.<br>Your weight is %1<br>Network weight is %2<br>Expected time to earn reward is %3").arg(nWeight).arg(nNetworkWeight).arg(text));
-
-        stakingButton->setText(tr("Stop Staking"));
+        if (stakingButton)
+            stakingButton->setText(tr("Stop Staking"));
+        detail = tr("On · a reward about every %1").arg(text);
+        // the last 24 hours of this wallet, when it can be asked without waiting
+        {
+            TRY_LOCK(cs_main, lockMain);
+            if (lockMain) {
+                TRY_LOCK(wallet->cs_wallet, lockWallet);
+                if (lockWallet) {
+                    const CWallet::StakeStats stats = wallet->GetStakeStats(GetTime() - 24 * 60 * 60);
+                    stakeStatsLine.clear();
+                    if (stats.nStakes > 0 || stats.nOrphaned > 0) {
+                        // (a short amount: the line is narrow)
+                        QString amount = QString::number(double(stats.nReward) / COIN, 'f', 3);
+                        while (amount.endsWith('0'))
+                            amount.chop(1);
+                        if (amount.endsWith('.'))
+                            amount.chop(1);
+                        stakeStatsLine = tr("24 h: %n reward(s)", "", stats.nStakes) + " · " + amount + " PLB";
+                        if (stats.nOrphaned > 0)
+                            stakeStatsLine += " · " + tr("%n lost", "", stats.nOrphaned);
+                        stakeStatsTip = tr("In the last 24 hours this wallet made %1 blocks that are in the chain and earned %2. %3 of its blocks lost against a block of another staker that arrived first; those earn nothing.")
+                                            .arg(stats.nStakes).arg(PaladeumUnits::formatWithUnit(PaladeumUnits::PLB, stats.nReward, false, PaladeumUnits::separatorAlways)).arg(stats.nOrphaned);
+                    }
+                }
+            }
+        }
+        if (!stakeStatsLine.isEmpty()) {
+            detail += "\n" + stakeStatsLine;
+            labelStakingIcon->setToolTip(labelStakingIcon->toolTip() + "<br><br>" + stakeStatsTip);
+        }
     } else {
+        stakeStatsLine.clear();
         labelStakingIcon->setPixmap(platformStyle->SingleColorIcon(":/icons/staking_off").pixmap(STATUSBAR_ICONSIZE, STATUSBAR_ICONSIZE));
+        const QString state = staking ? tr("On") : tr("Off");
         if (IsInitialBlockDownload()) {
             labelStakingIcon->setToolTip(tr("Not staking because wallet is syncing"));
+            detail = staking ? tr("On · waiting for the synchronization to finish") : tr("Off · staking is possible once synchronized");
+        } else if (walletFrame && !walletFrame->isWalletUnlocked()) {
+            labelStakingIcon->setToolTip(tr("Not staking because wallet is locked"));
+            detail = tr("%1 · the wallet is locked").arg(state);
         } else if (!nWeight) {
             labelStakingIcon->setToolTip(tr("Not staking because you don't have mature coins"));
+            detail = tr("%1 · no mature coins").arg(state);
         } else {
             labelStakingIcon->setToolTip(tr("Not staking"));
+            detail = state;
         }
-        stakingButton->setText(tr("Start Staking"));
+        if (stakingButton)
+            stakingButton->setText(tr("Start Staking"));
+    }
+    if (!othersLine.isEmpty()) {
+        detail += "\n" + othersLine;
+        labelStakingIcon->setToolTip(labelStakingIcon->toolTip() + "<br><br>" + othersTip);
+    }
+    if (sidebar) {
+        QString tip = labelStakingIcon->toolTip();
+        if (walletController && walletController->models().size() > 1 && current)
+            tip = tr("The switch is for %1: every wallet stakes on its own.").arg(walletController->displayName(current).toHtmlEscaped()) + "<br><br>" + tip;
+        sidebar->setStaking(staking, detail, tip);
     }
 }
 
@@ -1465,7 +2111,7 @@ void PaladeumGUI::setTrayIconVisible(bool fHideTrayIcon)
 
 void PaladeumGUI::showModalOverlay()
 {
-    if (modalOverlay && (progressBar->isVisible() || modalOverlay->isLayerVisible()))
+    if (modalOverlay && (fSyncing || progressBar->isVisible() || modalOverlay->isLayerVisible()))
         modalOverlay->toggleVisibility();
 }
 
@@ -1524,23 +2170,21 @@ void PaladeumGUI::toggleNetworkActive()
 
 void PaladeumGUI::toggleStakingActive()
 {
-    this->nStaking = !this->nStaking;
-
-    if (this->nStaking) {
-        walletFrame->unlockWallet();
-        if (walletFrame->isWalletUnlocked()) {
-            for (CWallet* pwallet : vpwallets) {
-                pwallet->StartStake();
-            }
-
-            updateStakingIcon();
-        }
+    // the staking of the wallet that is shown; the others keep theirs
+    WalletModel *current = walletFrame ? walletFrame->currentWalletModel() : nullptr;
+    if (!current)
+        return;
+    CWallet *wallet = current->getWallet();
+    if (!wallet->IsStaking()) {
+        walletFrame->unlockWalletForStaking();
+        // (the passphrase dialog was cancelled: staking is not started)
+        if (walletFrame->isWalletUnlocked())
+            wallet->StartStake();
     } else {
-        for (CWallet* pwallet : vpwallets) {
-            pwallet->StopStake();
-        }
-        updateStakingIcon();
+        wallet->StopStake();
+        walletFrame->lockWalletAfterStaking();
     }
+    updateStakingIcon();
 }
 
 /** Get restart command-line parameters and request restart */

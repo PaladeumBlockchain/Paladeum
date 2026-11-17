@@ -232,7 +232,9 @@ BOOST_FIXTURE_TEST_SUITE(versionbits_tests, TestingSetup)
                     .Mine(2050, TestTime(10010), 0x200).TestStarted().TestStateSinceHeight(2000) // 50 old blocks
                     .Mine(2950, TestTime(10020), 0x100).TestStarted().TestStateSinceHeight(2000) // 900 new blocks
                     .Mine(2999, TestTime(19999), 0x200).TestStarted().TestStateSinceHeight(2000) // 49 old blocks
-                    .Mine(3000, TestTime(29999), 0x200).TestLockedIn().TestStateSinceHeight(3000) // 1 old block (so 900 out of the past 1000)
+                    // (Paladeum compares the time of the block itself, not the median of the past
+                    // blocks as Bitcoin does: the last block of the period must be before the timeout)
+                    .Mine(3000, TestTime(19999), 0x200).TestLockedIn().TestStateSinceHeight(3000) // 1 old block (so 900 out of the past 1000)
                     .Mine(3999, TestTime(30001), 0).TestLockedIn().TestStateSinceHeight(3000)
                     .Mine(4000, TestTime(30002), 0).TestActive().TestStateSinceHeight(4000)
                     .Mine(14333, TestTime(30003), 0).TestActive().TestStateSinceHeight(4000)
@@ -284,7 +286,16 @@ BOOST_FIXTURE_TEST_SUITE(versionbits_tests, TestingSetup)
         // Check that ComputeBlockVersion will set the appropriate bit correctly
         // on mainnet.
         const auto chainParams = CreateChainParams(CBaseChainParams::MAIN);
-        const Consensus::Params &mainnetParams = chainParams->GetConsensus();
+
+        // Paladeum sets VERSIONBITS_TOP_BITS_TOKENS (0x30000000) in the version of every block:
+        // bit 28 is always set, so a deployment on bit 28 would be signalled by every block. The
+        // TESTDUMMY deployment of the main network has bit 28; the test uses a copy of the main
+        // network parameters in which TESTDUMMY has bit 27.
+        BOOST_CHECK_EQUAL(chainParams->GetConsensus().vDeployments[Consensus::DEPLOYMENT_TESTDUMMY].bit, 28);
+        BOOST_CHECK_EQUAL(ComputeBlockVersion(nullptr, chainParams->GetConsensus()) & (1 << 28), 1 << 28);
+        Consensus::Params mainnetParams = chainParams->GetConsensus();
+        mainnetParams.vDeployments[Consensus::DEPLOYMENT_TESTDUMMY].bit = 27;
+        versionbitscache.Clear();
 
         // Use the TESTDUMMY deployment for testing purposes.
         int64_t bit = mainnetParams.vDeployments[Consensus::DEPLOYMENT_TESTDUMMY].bit;
@@ -312,16 +323,20 @@ BOOST_FIXTURE_TEST_SUITE(versionbits_tests, TestingSetup)
         {
             lastBlock = firstChain.Mine(2016 + i, nTime, VERSIONBITS_LAST_OLD_BLOCK_VERSION).Tip();
             // This works because VERSIONBITS_LAST_OLD_BLOCK_VERSION happens
-            // to be 4, and the bit we're testing happens to be bit 28.
+            // to be 4, and the bit we're testing is bit 27.
             BOOST_CHECK_EQUAL(ComputeBlockVersion(lastBlock, mainnetParams) & (1 << bit), 0);
         }
-        // Now mine 5 more blocks at the start time -- MTP should not have passed yet, so
-        // CBV should still not yet set the bit.
+        // Now mine 5 more blocks at the start time. Paladeum compares the time of the
+        // last block of a period (Bitcoin: the median time, which these five blocks would
+        // not move): the bit is not set within the period, and is set when the period ends.
         nTime = nStartTime;
         for (int i = 2012; i <= 2016; i++)
         {
             lastBlock = firstChain.Mine(2016 + i, nTime, VERSIONBITS_LAST_OLD_BLOCK_VERSION).Tip();
-            BOOST_CHECK_EQUAL(ComputeBlockVersion(lastBlock, mainnetParams) & (1 << bit), 0);
+            if (i < 2016)
+                BOOST_CHECK_EQUAL(ComputeBlockVersion(lastBlock, mainnetParams) & (1 << bit), 0);
+            else
+                BOOST_CHECK((ComputeBlockVersion(lastBlock, mainnetParams) & (1 << bit)) != 0);
         }
 
         // Advance to the next period and transition to STARTED,

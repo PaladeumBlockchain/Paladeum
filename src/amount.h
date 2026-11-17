@@ -19,16 +19,20 @@ typedef int64_t CAmount;
 static const CAmount COIN = 100000000;
 static const CAmount CENT = 1000000;
 
-/** No amount larger than this (in satoshi) is valid.
+/** No amount of PLB (in satoshi) larger than this is valid.
  *
- * Note that this constant is *not* the total money supply, which in Paladeum
- * currently happens to be less than 21,000,000,000 PLB for various reasons, but
- * rather a sanity check. As this sanity check is used by consensus-critical
- * validation code, the exact value of the MAX_MONEY constant is consensus
- * critical; in unusual circumstances like a(nother) overflow bug that allowed
- * for the creation of coins out of thin air modification could lead to a fork.
+ * Note that this constant is *not* the total money supply, which is about one
+ * billion PLB and grows by ten with every block, but rather a sanity check. It
+ * was the largest 64 bit number, which made the range checks pointless: sums
+ * could overflow before a check saw them. As this sanity check is used by
+ * consensus-critical validation code, the exact value of the MAX_MONEY
+ * constant is consensus critical.
  * */
-static const CAmount MAX_MONEY = std::numeric_limits<int64_t>::max();
+static const CAmount MAX_MONEY = 25000000000 * COIN;
+/** No token amount larger than this is valid (the largest 64 bit number, as before:
+ *  tokens had no smaller limit). */
+static const CAmount MAX_MONEY_TOKENS = std::numeric_limits<int64_t>::max();
+
 inline bool MoneyRange(const CAmount& nValue) { return (nValue >= 0 && nValue <= MAX_MONEY); }
 
 #endif //  PLB_AMOUNT_H

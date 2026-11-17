@@ -6,9 +6,11 @@
 #ifndef PLB_TEST_TEST_PLB_H
 #define PLB_TEST_TEST_PLB_H
 
+#include "chainparams.h"
 #include "chainparamsbase.h"
 #include "fs.h"
 #include "key.h"
+#include "primitives/block.h"
 #include "pubkey.h"
 #include "random.h"
 #include "scheduler.h"
@@ -158,6 +160,23 @@ struct TestMemPoolEntryHelper
     }
 };
 
-CBlock getBlock13b8a();
+// Test data that is built in the Paladeum formats (a transaction has nTime, the block
+// hash is blake2b), in place of the serialized Bitcoin blocks and transactions of the
+// original tests. The same in every run.
+
+/** A key whose secret is 32 times the byte n (1..255). */
+CKey TestKey(unsigned char n);
+/** A transaction with one input and one output of 1 coin. */
+CMutableTransaction TestTx(const COutPoint& prevout, const CScript& scriptSig, const CScript& scriptPubKey);
+/** A block of a coinbase and the given transactions, with its merkle root (no valid proof of work). */
+CBlock TestBlock(const std::vector<CMutableTransaction>& txs);
+/** A block of 9 transactions: the coinbase, and for n = 2..9 a payment to the address of TestKey(n). */
+CBlock TestBlock9();
+
+/** An extended key in base58 (4 version bytes, the key, a checksum) with its version bytes replaced
+ *  by those of the selected network for the type: the BIP32 and BIP39 reference vectors are given
+ *  with the version bytes of the Bitcoin main network (xpub/xprv), a key of the Paladeum main
+ *  network starts with tpub/tprv. Empty if the string is not an extended key. */
+std::string ExtKeyWithNetworkPrefix(const std::string& strBase58, CChainParams::Base58Type type);
 
 #endif

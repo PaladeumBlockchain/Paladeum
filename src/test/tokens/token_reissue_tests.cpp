@@ -29,14 +29,14 @@ BOOST_FIXTURE_TEST_SUITE(token_reissue_tests, BasicTestingSetup)
         // Create tokens cache
         CTokensCache cache;
 
-        CNewToken token1("PLBTOKEN", CAmount(100 * COIN), 8, 1, 0, "");
+        CNewToken token1("PLBTOKEN", CAmount(100 * COIN), 8, 1, 0, "", 0, "", 0);
 
         // Add an token to a valid paladeum address
         uint256 hash = uint256();
         BOOST_CHECK_MESSAGE(cache.AddNewToken(token1, GetParams().GlobalFeeAddress(), 0, hash), "Failed to add new token");
 
         // Create a reissuance of the token
-        CReissueToken reissue1("PLBTOKEN", CAmount(1 * COIN), 8, 1, DecodeTokenData("QmacSRmrkVmvJfbCpmU6pK72furJ8E8fbKHindrLxmYMQo"));
+        CReissueToken reissue1("PLBTOKEN", CAmount(1 * COIN), 8, 1, DecodeTokenData("QmacSRmrkVmvJfbCpmU6pK72furJ8E8fbKHindrLxmYMQo"), 0, "", 0);
         COutPoint out(uint256S("BF50CB9A63BE0019171456252989A459A7D0A5F494735278290079D22AB704A4"), 1);
 
         // Add an reissuance of the token to the cache
@@ -89,14 +89,14 @@ BOOST_FIXTURE_TEST_SUITE(token_reissue_tests, BasicTestingSetup)
         // Create tokens cache
         CTokensCache cache;
 
-        CNewToken token1("PLBTOKEN", CAmount(100 * COIN), 8, 1, 0, "");
+        CNewToken token1("PLBTOKEN", CAmount(100 * COIN), 8, 1, 0, "", 0, "", 0);
 
         // Add an token to a valid paladeum address
         uint256 hash = uint256();
         BOOST_CHECK_MESSAGE(cache.AddNewToken(token1, GetParams().GlobalFeeAddress(), 0, hash), "Failed to add new token");
 
         // Create a reissuance of the token
-        CReissueToken reissue1("PLBTOKEN", CAmount(1 * COIN), 8, 1, DecodeTokenData("9c2c8e121a0139ba39bffd3ca97267bca9d4c0c1e84ac0c34a883c28e7a912ca"));
+        CReissueToken reissue1("PLBTOKEN", CAmount(1 * COIN), 8, 1, DecodeTokenData("9c2c8e121a0139ba39bffd3ca97267bca9d4c0c1e84ac0c34a883c28e7a912ca"), 0, "", 0);
         COutPoint out(uint256S("BF50CB9A63BE0019171456252989A459A7D0A5F494735278290079D22AB704A4"), 1);
 
         // Add an reissuance of the token to the cache
@@ -148,58 +148,60 @@ BOOST_FIXTURE_TEST_SUITE(token_reissue_tests, BasicTestingSetup)
         // Create tokens cache
         CTokensCache cache;
 
-        CNewToken token1("PLBTOKEN", CAmount(100 * COIN), 8, 1, 0, "");
+        CNewToken token1("PLBTOKEN", CAmount(100 * COIN), 8, 1, 0, "", 0, "", 0);
 
         // Add an token to a valid paladeum address
         BOOST_CHECK_MESSAGE(cache.AddNewToken(token1, GetParams().GlobalFeeAddress(), 0, uint256()), "Failed to add new token");
 
         // Create a reissuance of the token that is valid
-        CReissueToken reissue1("PLBTOKEN", CAmount(1 * COIN), 8, 1, DecodeTokenData("QmacSRmrkVmvJfbCpmU6pK72furJ8E8fbKHindrLxmYMQo"));
+        CReissueToken reissue1("PLBTOKEN", CAmount(1 * COIN), 8, 1, DecodeTokenData("QmacSRmrkVmvJfbCpmU6pK72furJ8E8fbKHindrLxmYMQo"), 0, "", 0);
 
         std::string error;
         BOOST_CHECK_MESSAGE(ContextualCheckReissueToken(&cache, reissue1, error), "Reissue should have been valid");
 
         // Create a reissuance of the token that is not valid
-        CReissueToken reissue2("NOTEXIST", CAmount(1 * COIN), 8, 1, DecodeTokenData("QmacSRmrkVmvJfbCpmU6pK72furJ8E8fbKHindrLxmYMQo"));
+        CReissueToken reissue2("NOTEXIST", CAmount(1 * COIN), 8, 1, DecodeTokenData("QmacSRmrkVmvJfbCpmU6pK72furJ8E8fbKHindrLxmYMQo"), 0, "", 0);
 
         BOOST_CHECK_MESSAGE(!ContextualCheckReissueToken(&cache, reissue2, error), "Reissue shouldn't of been valid");
 
         // Create a reissuance of the token that is not valid (unit is smaller than current token)
-        CReissueToken reissue3("PLBTOKEN", CAmount(1 * COIN), 7, 1, DecodeTokenData("QmacSRmrkVmvJfbCpmU6pK72furJ8E8fbKHindrLxmYMQo"));
+        CReissueToken reissue3("PLBTOKEN", CAmount(1 * COIN), 7, 1, DecodeTokenData("QmacSRmrkVmvJfbCpmU6pK72furJ8E8fbKHindrLxmYMQo"), 0, "", 0);
 
         BOOST_CHECK_MESSAGE(!ContextualCheckReissueToken(&cache, reissue3, error), "Reissue shouldn't of been valid because of units");
 
         // Create a reissuance of the token that is not valid (unit is not changed)
-        CReissueToken reissue4("PLBTOKEN", CAmount(1 * COIN), -1, 1, DecodeTokenData("QmacSRmrkVmvJfbCpmU6pK72furJ8E8fbKHindrLxmYMQo"));
+        CReissueToken reissue4("PLBTOKEN", CAmount(1 * COIN), -1, 1, DecodeTokenData("QmacSRmrkVmvJfbCpmU6pK72furJ8E8fbKHindrLxmYMQo"), 0, "", 0);
 
         BOOST_CHECK_MESSAGE(ContextualCheckReissueToken(&cache, reissue4, error), "Reissue4 wasn't valid");
 
         // Create a new token object with units of 0
-        CNewToken token2("PLBTOKEN2", CAmount(100 * COIN), 0, 1, 0, "");
+        CNewToken token2("PLBTOKEN2", CAmount(100 * COIN), 0, 1, 0, "", 0, "", 0);
 
         // Add new token2 to a valid paladeum address
         BOOST_CHECK_MESSAGE(cache.AddNewToken(token2, GetParams().GlobalFeeAddress(), 0, uint256()), "Failed to add new token");
 
         // Create a reissuance of the token that is valid unit go from 0 -> 1 and change the ipfs hash
-        CReissueToken reissue5("PLBTOKEN2", CAmount(1 * COIN), 1, 1, DecodeTokenData("QmacSRmrkVmvJfbCpmU6pK72furJ8E8fbKHindrLxmYMQo"));
+        CReissueToken reissue5("PLBTOKEN2", CAmount(1 * COIN), 1, 1, DecodeTokenData("QmacSRmrkVmvJfbCpmU6pK72furJ8E8fbKHindrLxmYMQo"), 0, "", 0);
 
         BOOST_CHECK_MESSAGE(ContextualCheckReissueToken(&cache, reissue5, error), "Reissue5 wasn't valid");
 
         // Create a reissuance of the token that is valid unit go from 1 -> 1 and change the ipfs hash
-        CReissueToken reissue6("PLBTOKEN2", CAmount(1 * COIN), 1, 1, DecodeTokenData("QmacSRmrkVmvJfbCpmU6pK72furJ8E8fbKHindrLxmYMQo"));
+        CReissueToken reissue6("PLBTOKEN2", CAmount(1 * COIN), 1, 1, DecodeTokenData("QmacSRmrkVmvJfbCpmU6pK72furJ8E8fbKHindrLxmYMQo"), 0, "", 0);
 
         BOOST_CHECK_MESSAGE(ContextualCheckReissueToken(&cache, reissue6, error), "Reissue6 wasn't valid");
 
         // Create a new token3 object
-        CNewToken token3("DATAHASH", CAmount(100 * COIN), 8, 1, 0, "");
+        CNewToken token3("DATAHASH", CAmount(100 * COIN), 8, 1, 0, "", 0, "", 0);
 
         // Add new token3 to a valid paladeum address
         BOOST_CHECK_MESSAGE(cache.AddNewToken(token3, GetParams().GlobalFeeAddress(), 0, uint256()), "Failed to add new token");
 
-        // Create a reissuance of the token that is valid txid but messaging isn't active in unit tests
-        CReissueToken reissue7("DATAHASH", CAmount(1 * COIN), 8, 1, DecodeTokenData("9c2c8e121a0139ba39bffd3ca97267bca9d4c0c1e84ac0c34a883c28e7a912ca"));
+        // Create a reissuance of the token with a txid hash: messaging is always active on Paladeum
+        // (AreMessagesDeployed()), so a txid is allowed in place of an ipfs hash
+        CReissueToken reissue7("DATAHASH", CAmount(1 * COIN), 8, 1, DecodeTokenData("9c2c8e121a0139ba39bffd3ca97267bca9d4c0c1e84ac0c34a883c28e7a912ca"), 0, "", 0);
 
-        BOOST_CHECK_MESSAGE(!ContextualCheckReissueToken(&cache, reissue7, error), "Reissue should have been not valid because messaging isn't active yet, and txid aren't allowed until messaging is active");
+        BOOST_CHECK(AreMessagesDeployed());
+        BOOST_CHECK_MESSAGE(ContextualCheckReissueToken(&cache, reissue7, error), "Reissue with a txid hash should have been valid: " + error);
     }
 
 

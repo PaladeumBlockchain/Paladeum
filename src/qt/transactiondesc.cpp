@@ -20,6 +20,7 @@
 #include "wallet/wallet.h"
 
 #include <stdint.h>
+#include <QDateTime>
 #include <string>
 
 QString TransactionDesc::FormatTxStatus(const CWalletTx& wtx)
@@ -67,7 +68,7 @@ QString TransactionDesc::toHTML(CWallet *wallet, CWalletTx &wtx, TransactionReco
 
     strHTML += "<b>" + tr("Status") + ":</b> " + FormatTxStatus(wtx);
     strHTML += "<br>";
-    strHTML += "<b>" + tr("Date") + ":</b> " + (nTime ? GUIUtil::dateTimeStr(nTime) : "") + "<br>";
+    strHTML += "<b>" + tr("Date") + ":</b> " + (nTime ? GUIUtil::monoHtml(GUIUtil::isoDateTime(QDateTime::fromTime_t((qint32)nTime), true)) : "") + "<br>";
 
     if (!wtx.tx->nMessage.empty())
         strHTML += "<b>" + tr("Transaction message") + ":</b> " + GUIUtil::HtmlEscape(wtx.tx->nMessage) + "<br>";
@@ -96,7 +97,7 @@ QString TransactionDesc::toHTML(CWallet *wallet, CWalletTx &wtx, TransactionReco
                 {
                     strHTML += "<b>" + tr("From") + ":</b> " + tr("unknown") + "<br>";
                     strHTML += "<b>" + tr("To") + ":</b> ";
-                    strHTML += GUIUtil::HtmlEscape(rec->address);
+                    strHTML += GUIUtil::monoHtml(GUIUtil::HtmlEscape(rec->address));
                     QString addressOwned = (wallet->IsMineDest(address) == ISMINE_SPENDABLE) ? tr("own address") : tr("watch-only");
                     if (!wallet->mapAddressBook[address].name.empty())
                         strHTML += " (" + addressOwned + ", " + tr("label") + ": " + GUIUtil::HtmlEscape(wallet->mapAddressBook[address].name) + ")";
@@ -119,7 +120,7 @@ QString TransactionDesc::toHTML(CWallet *wallet, CWalletTx &wtx, TransactionReco
         CTxDestination dest = DecodeDestination(strAddress);
         if (wallet->mapAddressBook.count(dest) && !wallet->mapAddressBook[dest].name.empty())
             strHTML += GUIUtil::HtmlEscape(wallet->mapAddressBook[dest].name) + " ";
-        strHTML += GUIUtil::HtmlEscape(strAddress) + "<br>";
+        strHTML += GUIUtil::monoHtml(GUIUtil::HtmlEscape(strAddress)) + "<br>";
     }
 
     //
@@ -187,7 +188,7 @@ QString TransactionDesc::toHTML(CWallet *wallet, CWalletTx &wtx, TransactionReco
                         strHTML += "<b>" + tr("To") + ":</b> ";
                         if (wallet->mapAddressBook.count(address) && !wallet->mapAddressBook[address].name.empty())
                             strHTML += GUIUtil::HtmlEscape(wallet->mapAddressBook[address].name) + " ";
-                        strHTML += GUIUtil::HtmlEscape(EncodeDestination(address));
+                        strHTML += GUIUtil::monoHtml(GUIUtil::HtmlEscape(EncodeDestination(address)));
                         if(toSelf == ISMINE_SPENDABLE)
                             strHTML += " (own address)";
                         else if(toSelf & ISMINE_WATCH_ONLY)
@@ -238,7 +239,7 @@ QString TransactionDesc::toHTML(CWallet *wallet, CWalletTx &wtx, TransactionReco
     if (wtx.mapValue.count("comment") && !wtx.mapValue["comment"].empty())
         strHTML += "<br><b>" + tr("Comment") + ":</b><br>" + GUIUtil::HtmlEscape(wtx.mapValue["comment"], true) + "<br>";
 
-    strHTML += "<b>" + tr("Transaction ID") + ":</b> " + rec->getTxID() + "<br>";
+    strHTML += "<b>" + tr("Transaction ID") + ":</b> " + GUIUtil::monoHtml(rec->getTxID()) + "<br>";
     strHTML += "<b>" + tr("Transaction total size") + ":</b> " + QString::number(wtx.tx->GetTotalSize()) + " bytes<br>";
     strHTML += "<b>" + tr("Output index") + ":</b> " + QString::number(rec->getOutputIndex()) + "<br>";
 
@@ -308,7 +309,7 @@ QString TransactionDesc::toTokenHTML(CWallet *wallet, CWalletTx &wtx, Transactio
     // Status
     strHTML += "<b>" + tr("Status") + ":</b> " + FormatTxStatus(wtx);
     strHTML += "<br>";
-    strHTML += "<b>" + tr("Date") + ":</b> " + (nTime ? GUIUtil::dateTimeStr(nTime) : "") + "<br>";
+    strHTML += "<b>" + tr("Date") + ":</b> " + (nTime ? GUIUtil::monoHtml(GUIUtil::isoDateTime(QDateTime::fromTime_t((qint32)nTime), true)) : "") + "<br>";
 
     if (!wtx.tx->nMessage.empty())
         strHTML += "<b>" + tr("Transaction message") + ":</b> " + GUIUtil::HtmlEscape(wtx.tx->nMessage) + "<br>";
@@ -333,7 +334,7 @@ QString TransactionDesc::toTokenHTML(CWallet *wallet, CWalletTx &wtx, Transactio
                 {
                     strHTML += "<b>" + tr("From") + ":</b> " + tr("unknown") + "<br>";
                     strHTML += "<b>" + tr("To") + ":</b> ";
-                    strHTML += GUIUtil::HtmlEscape(rec->address);
+                    strHTML += GUIUtil::monoHtml(GUIUtil::HtmlEscape(rec->address));
                     QString addressOwned = (wallet->IsMineDest(address) == ISMINE_SPENDABLE) ? tr("own address") : tr("watch-only");
                     if (!wallet->mapAddressBook[address].name.empty())
                         strHTML += " (" + addressOwned + ", " + tr("label") + ": " + GUIUtil::HtmlEscape(wallet->mapAddressBook[address].name) + ")";
@@ -356,7 +357,7 @@ QString TransactionDesc::toTokenHTML(CWallet *wallet, CWalletTx &wtx, Transactio
         CTxDestination dest = DecodeDestination(strAddress);
         if (wallet->mapAddressBook.count(dest) && !wallet->mapAddressBook[dest].name.empty())
             strHTML += GUIUtil::HtmlEscape(wallet->mapAddressBook[dest].name) + " ";
-        strHTML += GUIUtil::HtmlEscape(strAddress) + "<br>";
+        strHTML += GUIUtil::monoHtml(GUIUtil::HtmlEscape(strAddress)) + "<br>";
     }
 
     //
@@ -382,7 +383,7 @@ QString TransactionDesc::toTokenHTML(CWallet *wallet, CWalletTx &wtx, Transactio
     if (wtx.mapValue.count("comment") && !wtx.mapValue["comment"].empty())
         strHTML += "<br><b>" + tr("Comment") + ":</b><br>" + GUIUtil::HtmlEscape(wtx.mapValue["comment"], true) + "<br>";
 
-    strHTML += "<b>" + tr("Transaction ID") + ":</b> " + rec->getTxID() + "<br>";
+    strHTML += "<b>" + tr("Transaction ID") + ":</b> " + GUIUtil::monoHtml(rec->getTxID()) + "<br>";
     strHTML += "<b>" + tr("Transaction total size") + ":</b> " + QString::number(wtx.tx->GetTotalSize()) + " bytes<br>";
     strHTML += "<b>" + tr("Output index") + ":</b> " + QString::number(rec->getOutputIndex()) + "<br>";
 
@@ -472,7 +473,7 @@ void TransactionDesc::CreateDebugString(QString& strHTML, CWallet *wallet, CWall
                 {
                     if (wallet->mapAddressBook.count(address) && !wallet->mapAddressBook[address].name.empty())
                         strHTML += GUIUtil::HtmlEscape(wallet->mapAddressBook[address].name) + " ";
-                    strHTML += QString::fromStdString(EncodeDestination(address));
+                    strHTML += GUIUtil::monoHtml(QString::fromStdString(EncodeDestination(address)));
                 }
                 strHTML = strHTML + " " + tr("Amount") + "=" + PaladeumUnits::formatHtmlWithUnit(unit, vout.nValue);
                 strHTML = strHTML + " IsMine=" + (wallet->IsMine(vout) & ISMINE_SPENDABLE ? tr("true") : tr("false")) + "</li>";

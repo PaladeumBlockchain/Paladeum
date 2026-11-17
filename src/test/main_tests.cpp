@@ -9,60 +9,53 @@
 
 #include "test/test_paladeum.h"
 
+#include <limits>
+
 #include <boost/signals2/signal.hpp>
 #include <boost/test/unit_test.hpp>
 
 BOOST_FIXTURE_TEST_SUITE(main_tests, TestingSetup)
 
-    static void TestBlockSubsidyHalvings(const Consensus::Params &consensusParams)
+    // Paladeum: block 1 carries the premine (1,000,000,000 coins), every other block 10 coins;
+    // there is no halving.
+    static void TestBlockSubsidy(const Consensus::Params& consensusParams)
     {
-        int maxHalvings = 64;
-        CAmount nInitialSubsidy = 5000 * COIN;
-
-        CAmount nPreviousSubsidy = nInitialSubsidy * 2; // for height == 0
-        BOOST_CHECK_EQUAL(nPreviousSubsidy, nInitialSubsidy * 2);
-        for (int nHalvings = 0; nHalvings < maxHalvings; nHalvings++)
-        {
-            int nHeight = nHalvings * consensusParams.nSubsidyHalvingInterval;
-            CAmount nSubsidy = GetBlockSubsidy(nHeight, consensusParams);
-            BOOST_CHECK(nSubsidy <= nInitialSubsidy);
-            BOOST_CHECK_EQUAL(nSubsidy, nPreviousSubsidy / 2);
-            nPreviousSubsidy = nSubsidy;
-        }
-        BOOST_CHECK_EQUAL(GetBlockSubsidy(maxHalvings * consensusParams.nSubsidyHalvingInterval, consensusParams), 0);
-    }
-
-    static void TestBlockSubsidyHalvings(int nSubsidyHalvingInterval)
-    {
-        Consensus::Params consensusParams;
-        consensusParams.nSubsidyHalvingInterval = nSubsidyHalvingInterval;
-        TestBlockSubsidyHalvings(consensusParams);
+        BOOST_CHECK_EQUAL(GetBlockSubsidy(1, consensusParams), 1000000000 * COIN);
+        for (int nHeight : {2, 3, 150, 151, 152, 1000, 525960, 716779, 10000000, std::numeric_limits<int>::max()})
+            BOOST_CHECK_EQUAL(GetBlockSubsidy(nHeight, consensusParams), 10 * COIN);
     }
 
     BOOST_AUTO_TEST_CASE(block_subsidy_test)
     {
         BOOST_TEST_MESSAGE("Running Block Subsidy Test");
 
-        const auto chainParams = CreateChainParams(CBaseChainParams::MAIN);
-        TestBlockSubsidyHalvings(chainParams->GetConsensus()); // As in main
-        TestBlockSubsidyHalvings(240); // As in regtest
-        TestBlockSubsidyHalvings(1000); // Just another interval
+        for (const std::string& chain : {CBaseChainParams::MAIN, CBaseChainParams::TESTNET, CBaseChainParams::REGTEST}) {
+            const auto chainParams = CreateChainParams(chain);
+            TestBlockSubsidy(chainParams->GetConsensus());
+        }
     }
 
     BOOST_AUTO_TEST_CASE(subsidy_limit_test)
     {
         BOOST_TEST_MESSAGE("Running Subsidy Limit Test");
 
+        // every coin of the first 2,000,000 blocks, block by block
         const auto chainParams = CreateChainParams(CBaseChainParams::MAIN);
+        const Consensus::Params& params = chainParams->GetConsensus();
         CAmount nSum = 0;
-        for (int nHeight = 0; nHeight < 14000000; nHeight += 1000)
+        const int nBlocks = 2000000;
+        for (int nHeight = 1; nHeight <= nBlocks; nHeight++)
         {
-            CAmount nSubsidy = GetBlockSubsidy(nHeight, chainParams->GetConsensus());
-            BOOST_CHECK(nSubsidy <= 5000 * COIN);
-            nSum += nSubsidy * 1000;
-            BOOST_CHECK(MoneyRange(nSum));
+            nSum += GetBlockSubsidy(nHeight, params);
+            BOOST_REQUIRE(MoneyRange(nSum));
         }
-        BOOST_CHECK_EQUAL(nSum, (int64_t)2078125000000000000ULL);
+        BOOST_CHECK_EQUAL(nSum, 1000000000 * COIN + (CAmount)(nBlocks - 1) * 10 * COIN);
+
+        // The supply grows by 10 coins a block without an end. At the last height a block can
+        // have (INT_MAX) it is still below MAX_MONEY, so every sum of coins stays in range.
+        const CAmount nLast = 1000000000 * COIN + (CAmount)(std::numeric_limits<int>::max() - 1) * 10 * COIN;
+        BOOST_CHECK(MoneyRange(nLast));
+        BOOST_CHECK(nLast < MAX_MONEY);
     }
 
     bool ReturnFalse()

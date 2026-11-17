@@ -13,13 +13,77 @@
 #include <base58.h>
 #include <consensus/validation.h>
 #include <consensus/tx_verify.h>
+#include <key.h>
 #include <validation.h>
-#ifdef ENABLE_WALLET
-#include <wallet/db.h>
-#include <wallet/wallet.h>
-#endif
 
 BOOST_FIXTURE_TEST_SUITE(token_tx_tests, BasicTestingSetup)
+
+    // SEC-02: output amounts that wrap around INT64_MAX must not be able to
+    // match the input amount (this used to mint tokens).
+    BOOST_AUTO_TEST_CASE(token_tx_overflow_test)
+    {
+        BOOST_TEST_MESSAGE("Running Token TX Overflow Test");
+
+        SelectParams(CBaseChainParams::MAIN);
+        CScript dest = GetScriptForDestination(DecodeDestination(GetParams().TokenFeeAddress()));
+
+        auto transfer_script = [&](CAmount amount) {
+            CTokenTransfer transfer("PLBTOKEN", amount, 0);
+            CScript script = dest;
+            transfer.ConstructTransaction(script);
+            return script;
+        };
+
+        CCoinsView view;
+        CCoinsViewCache coins(&view);
+
+        // One input holding 1000 tokens
+        CTxOut in_out(0, transfer_script(1000));
+        COutPoint outpoint(uint256S("BF50CB9A63BE0019171456252989A459A7D0A5F494735278290079D22AB704A3"), 1);
+        coins.AddCoin(outpoint, Coin(in_out, 10, 0, 0, 0), true);
+
+        auto check = [&](const std::vector<CAmount>& outputs, std::string& reason) {
+            CMutableTransaction mtx;
+            CTxIn in;
+            in.prevout = outpoint;
+            mtx.vin.emplace_back(in);
+            for (CAmount amount : outputs)
+                mtx.vout.emplace_back(CTxOut(0, transfer_script(amount)));
+            CTransaction tx(mtx);
+            CValidationState state;
+            std::vector<std::pair<std::string, uint256>> vReissueTokens;
+            bool ok = Consensus::CheckTxTokens(tx, state, coins, 100000, 100, nullptr, false, vReissueTokens, true);
+            reason = state.GetRejectReason();
+            return ok;
+        };
+
+        std::string reason;
+        // Control: splitting 1000 into 400 + 600 is fine
+        BOOST_CHECK_MESSAGE(check({400, 600}, reason), "valid split rejected: " + reason);
+
+        // INT64_MAX + INT64_MAX + 1002 wraps to 1000. On Paladeum MAX_MONEY_TOKENS is INT64_MAX,
+        // so each amount on its own is in range and the check of the sum refuses it.
+        const CAmount max = std::numeric_limits<CAmount>::max();
+        BOOST_CHECK_EQUAL(MAX_MONEY_TOKENS, max);
+        BOOST_CHECK(!check({max, max, 1002}, reason));
+        BOOST_CHECK_EQUAL(reason, "bad-txns-token-outputs-sum-out-of-range");
+
+        // Amounts within MAX_MONEY_TOKENS whose sum overflows the limit
+        BOOST_CHECK(!check({MAX_MONEY_TOKENS, MAX_MONEY_TOKENS}, reason));
+        BOOST_CHECK_EQUAL(reason, "bad-txns-token-outputs-sum-out-of-range");
+    }
+
+    BOOST_AUTO_TEST_CASE(token_units_check_test)
+    {
+        BOOST_CHECK(CheckAmountWithUnits(1 * COIN, 0));
+        BOOST_CHECK(!CheckAmountWithUnits(COIN + 1, 0));
+        BOOST_CHECK(CheckAmountWithUnits(COIN + 10, 7));
+        BOOST_CHECK(!CheckAmountWithUnits(COIN + 1, 7));
+        BOOST_CHECK(CheckAmountWithUnits(1, 8));
+        // Out-of-range units used to divide by zero
+        BOOST_CHECK(!CheckAmountWithUnits(COIN, 9));
+        BOOST_CHECK(!CheckAmountWithUnits(COIN, -1));
+    }
 
     BOOST_AUTO_TEST_CASE(token_tx_valid_test)
     {
@@ -28,8 +92,8 @@ BOOST_FIXTURE_TEST_SUITE(token_tx_tests, BasicTestingSetup)
         SelectParams(CBaseChainParams::MAIN);
 
         // Create the token scriptPubKey
-        CTokenTransfer token("PLBTEST", 1000);
-        CScript scriptPubKey = GetScriptForDestination(DecodeDestination(GetParams().GlobalFeeAddress()));
+        CTokenTransfer token("PLBTOKEN", 1000, 0);
+        CScript scriptPubKey = GetScriptForDestination(DecodeDestination(GetParams().TokenFeeAddress()));
         token.ConstructTransaction(scriptPubKey);
 
         CCoinsView view;
@@ -47,7 +111,7 @@ BOOST_FIXTURE_TEST_SUITE(token_tx_tests, BasicTestingSetup)
 
         // Add the coin to the cache
         COutPoint outpoint(hash, 1);
-        coins.AddCoin(outpoint, Coin(txOut, 10, 0), true);
+        coins.AddCoin(outpoint, Coin(txOut, 10, 0, 0, 0), true);
 
         // Create transaction and input for the outpoint of the coin we just created
         CMutableTransaction mutTx;
@@ -66,7 +130,7 @@ BOOST_FIXTURE_TEST_SUITE(token_tx_tests, BasicTestingSetup)
         // The outputs are assigning a destination to 1000 Tokens
         // This test should pass because all tokens are assigned a destination
         std::vector<std::pair<std::string, uint256>> vReissueTokens;
-        BOOST_CHECK_MESSAGE(Consensus::CheckTxTokens(tx, state, coins, nullptr, false, vReissueTokens, true), "CheckTxTokens Failed");
+        BOOST_CHECK_MESSAGE(Consensus::CheckTxTokens(tx, state, coins, 100000, 100, nullptr, false, vReissueTokens, true), "CheckTxTokens failed: " + state.GetRejectReason());
     }
 
     BOOST_AUTO_TEST_CASE(token_tx_not_valid_test)
@@ -76,8 +140,8 @@ BOOST_FIXTURE_TEST_SUITE(token_tx_tests, BasicTestingSetup)
         SelectParams(CBaseChainParams::MAIN);
 
         // Create the token scriptPubKey
-        CTokenTransfer token("PLBTEST", 1000);
-        CScript scriptPubKey = GetScriptForDestination(DecodeDestination(GetParams().GlobalFeeAddress()));
+        CTokenTransfer token("PLBTOKEN", 1000, 0);
+        CScript scriptPubKey = GetScriptForDestination(DecodeDestination(GetParams().TokenFeeAddress()));
         token.ConstructTransaction(scriptPubKey);
 
         CCoinsView view;
@@ -94,7 +158,7 @@ BOOST_FIXTURE_TEST_SUITE(token_tx_tests, BasicTestingSetup)
 
         // Add the coin to the cache
         COutPoint outpoint(hash, 1);
-        coins.AddCoin(outpoint, Coin(txOut, 10, 0), true);
+        coins.AddCoin(outpoint, Coin(txOut, 10, 0, 0, 0), true);
 
         // Create transaction and input for the outpoint of the coin we just created
         CMutableTransaction mutTx;
@@ -104,8 +168,8 @@ BOOST_FIXTURE_TEST_SUITE(token_tx_tests, BasicTestingSetup)
 
         // Create CTxOut that will only send 100 of the token
         // This should fail because 900 PLB doesn't have a destination
-        CTokenTransfer tokenTransfer("PLBTEST", 100);
-        CScript scriptLess = GetScriptForDestination(DecodeDestination(GetParams().GlobalFeeAddress()));
+        CTokenTransfer tokenTransfer("PLBTOKEN", 100, 0);
+        CScript scriptLess = GetScriptForDestination(DecodeDestination(GetParams().TokenFeeAddress()));
         tokenTransfer.ConstructTransaction(scriptLess);
 
         CTxOut txOut2;
@@ -123,7 +187,7 @@ BOOST_FIXTURE_TEST_SUITE(token_tx_tests, BasicTestingSetup)
         // The outputs are assigning a destination to only 100 Tokens
         // This should fail because 900 Tokens aren't being assigned a destination (Trying to burn 900 Tokens)
         std::vector<std::pair<std::string, uint256>> vReissueTokens;
-        BOOST_CHECK_MESSAGE(!Consensus::CheckTxTokens(tx, state, coins, nullptr, false, vReissueTokens, true), "CheckTxTokens should have failed");
+        BOOST_CHECK_MESSAGE(!Consensus::CheckTxTokens(tx, state, coins, 100000, 100, nullptr, false, vReissueTokens, true), "CheckTxTokens should have failed");
     }
 
     BOOST_AUTO_TEST_CASE(token_tx_valid_multiple_outs_test)
@@ -133,8 +197,8 @@ BOOST_FIXTURE_TEST_SUITE(token_tx_tests, BasicTestingSetup)
         SelectParams(CBaseChainParams::MAIN);
 
         // Create the token scriptPubKey
-        CTokenTransfer token("PLBTEST", 1000);
-        CScript scriptPubKey = GetScriptForDestination(DecodeDestination(GetParams().GlobalFeeAddress()));
+        CTokenTransfer token("PLBTOKEN", 1000, 0);
+        CScript scriptPubKey = GetScriptForDestination(DecodeDestination(GetParams().TokenFeeAddress()));
         token.ConstructTransaction(scriptPubKey);
 
         CCoinsView view;
@@ -151,7 +215,7 @@ BOOST_FIXTURE_TEST_SUITE(token_tx_tests, BasicTestingSetup)
 
         // Add the coin to the cache
         COutPoint outpoint(hash, 1);
-        coins.AddCoin(outpoint, Coin(txOut, 10, 0), true);
+        coins.AddCoin(outpoint, Coin(txOut, 10, 0, 0, 0), true);
 
         // Create transaction and input for the outpoint of the coin we just created
         CMutableTransaction mutTx;
@@ -162,8 +226,8 @@ BOOST_FIXTURE_TEST_SUITE(token_tx_tests, BasicTestingSetup)
         // Create CTxOut that will only send 100 of the token 10 times total = 1000
         for (int i = 0; i < 10; i++)
         {
-            CTokenTransfer token2("PLBTEST", 100);
-            CScript scriptPubKey2 = GetScriptForDestination(DecodeDestination(GetParams().GlobalFeeAddress()));
+            CTokenTransfer token2("PLBTOKEN", 100, 0);
+            CScript scriptPubKey2 = GetScriptForDestination(DecodeDestination(GetParams().TokenFeeAddress()));
             token2.ConstructTransaction(scriptPubKey2);
 
             CTxOut txOut2;
@@ -184,7 +248,7 @@ BOOST_FIXTURE_TEST_SUITE(token_tx_tests, BasicTestingSetup)
         // The outputs are assigned 100 Tokens to 10 destinations (10 * 100) = 1000
         // This test should pass all tokens that are being spent are assigned to a destination
         std::vector<std::pair<std::string, uint256>> vReissueTokens;
-        BOOST_CHECK_MESSAGE(Consensus::CheckTxTokens(tx, state, coins, nullptr, false, vReissueTokens, true), "CheckTxTokens failed");
+        BOOST_CHECK_MESSAGE(Consensus::CheckTxTokens(tx, state, coins, 100000, 100, nullptr, false, vReissueTokens, true), "CheckTxTokens failed: " + state.GetRejectReason());
     }
 
     BOOST_AUTO_TEST_CASE(token_tx_multiple_outs_invalid_test)
@@ -194,8 +258,8 @@ BOOST_FIXTURE_TEST_SUITE(token_tx_tests, BasicTestingSetup)
         SelectParams(CBaseChainParams::MAIN);
 
         // Create the token scriptPubKey
-        CTokenTransfer token("PLBTEST", 1000);
-        CScript scriptPubKey = GetScriptForDestination(DecodeDestination(GetParams().GlobalFeeAddress()));
+        CTokenTransfer token("PLBTOKEN", 1000, 0);
+        CScript scriptPubKey = GetScriptForDestination(DecodeDestination(GetParams().TokenFeeAddress()));
         token.ConstructTransaction(scriptPubKey);
 
         CCoinsView view;
@@ -212,7 +276,7 @@ BOOST_FIXTURE_TEST_SUITE(token_tx_tests, BasicTestingSetup)
 
         // Add the coin to the cache
         COutPoint outpoint(hash, 1);
-        coins.AddCoin(outpoint, Coin(txOut, 10, 0), true);
+        coins.AddCoin(outpoint, Coin(txOut, 10, 0, 0, 0), true);
 
         // Create transaction and input for the outpoint of the coin we just created
         CMutableTransaction mutTx;
@@ -223,8 +287,8 @@ BOOST_FIXTURE_TEST_SUITE(token_tx_tests, BasicTestingSetup)
         // Create CTxOut that will only send 100 of the token 12 times, total = 1200
         for (int i = 0; i < 12; i++)
         {
-            CTokenTransfer token2("PLBTEST", 100);
-            CScript scriptPubKey2 = GetScriptForDestination(DecodeDestination(GetParams().GlobalFeeAddress()));
+            CTokenTransfer token2("PLBTOKEN", 100, 0);
+            CScript scriptPubKey2 = GetScriptForDestination(DecodeDestination(GetParams().TokenFeeAddress()));
             token2.ConstructTransaction(scriptPubKey2);
 
             CTxOut txOut2;
@@ -245,7 +309,7 @@ BOOST_FIXTURE_TEST_SUITE(token_tx_tests, BasicTestingSetup)
         // The outputs are assigning 100 Tokens to 12 destinations (12 * 100 = 1200)
         // This test should fail because the Outputs are greater than the inputs
         std::vector<std::pair<std::string, uint256>> vReissueTokens;
-        BOOST_CHECK_MESSAGE(!Consensus::CheckTxTokens(tx, state, coins, nullptr, false, vReissueTokens, true), "CheckTxTokens passed when it should have failed");
+        BOOST_CHECK_MESSAGE(!Consensus::CheckTxTokens(tx, state, coins, 100000, 100, nullptr, false, vReissueTokens, true), "CheckTxTokens passed when it should have failed");
     }
 
     BOOST_AUTO_TEST_CASE(token_tx_multiple_tokens_test)
@@ -255,16 +319,16 @@ BOOST_FIXTURE_TEST_SUITE(token_tx_tests, BasicTestingSetup)
         SelectParams(CBaseChainParams::MAIN);
 
         // Create the token scriptPubKeys
-        CTokenTransfer token("PLBTEST", 1000);
-        CScript scriptPubKey = GetScriptForDestination(DecodeDestination(GetParams().GlobalFeeAddress()));
+        CTokenTransfer token("PLBTOKEN", 1000, 0);
+        CScript scriptPubKey = GetScriptForDestination(DecodeDestination(GetParams().TokenFeeAddress()));
         token.ConstructTransaction(scriptPubKey);
 
-        CTokenTransfer token2("PLBTESTTEST", 1000);
-        CScript scriptPubKey2 = GetScriptForDestination(DecodeDestination(GetParams().GlobalFeeAddress()));
+        CTokenTransfer token2("PLBTEST", 1000, 0);
+        CScript scriptPubKey2 = GetScriptForDestination(DecodeDestination(GetParams().TokenFeeAddress()));
         token2.ConstructTransaction(scriptPubKey2);
 
-        CTokenTransfer token3("PLBTESTTESTTEST", 1000);
-        CScript scriptPubKey3 = GetScriptForDestination(DecodeDestination(GetParams().GlobalFeeAddress()));
+        CTokenTransfer token3("PLBTESTTEST", 1000, 0);
+        CScript scriptPubKey3 = GetScriptForDestination(DecodeDestination(GetParams().TokenFeeAddress()));
         token3.ConstructTransaction(scriptPubKey3);
 
         CCoinsView view;
@@ -291,13 +355,13 @@ BOOST_FIXTURE_TEST_SUITE(token_tx_tests, BasicTestingSetup)
 
         // Add the coins to the cache
         COutPoint outpoint(hash, 1);
-        coins.AddCoin(outpoint, Coin(txOut, 10, 0), true);
+        coins.AddCoin(outpoint, Coin(txOut, 10, 0, 0, 0), true);
 
         COutPoint outpoint2(hash2, 1);
-        coins.AddCoin(outpoint2, Coin(txOut2, 10, 0), true);
+        coins.AddCoin(outpoint2, Coin(txOut2, 10, 0, 0, 0), true);
 
         COutPoint outpoint3(hash3, 1);
-        coins.AddCoin(outpoint3, Coin(txOut3, 10, 0), true);
+        coins.AddCoin(outpoint3, Coin(txOut3, 10, 0, 0, 0), true);
 
         Coin coinTemp;
         BOOST_CHECK_MESSAGE(coins.GetCoin(outpoint, coinTemp), "Failed to get coin 1");
@@ -320,8 +384,8 @@ BOOST_FIXTURE_TEST_SUITE(token_tx_tests, BasicTestingSetup)
         for (int i = 0; i < 10; i++)
         {
             // Add the first token
-            CTokenTransfer outToken("PLBTEST", 100);
-            CScript outScript = GetScriptForDestination(DecodeDestination(GetParams().GlobalFeeAddress()));
+            CTokenTransfer outToken("PLBTOKEN", 100, 0);
+            CScript outScript = GetScriptForDestination(DecodeDestination(GetParams().TokenFeeAddress()));
             outToken.ConstructTransaction(outScript);
 
             CTxOut txOutNew;
@@ -331,8 +395,8 @@ BOOST_FIXTURE_TEST_SUITE(token_tx_tests, BasicTestingSetup)
             mutTx.vout.emplace_back(txOutNew);
 
             // Add the second token
-            CTokenTransfer outToken2("PLBTESTTEST", 100);
-            CScript outScript2 = GetScriptForDestination(DecodeDestination(GetParams().GlobalFeeAddress()));
+            CTokenTransfer outToken2("PLBTEST", 100, 0);
+            CScript outScript2 = GetScriptForDestination(DecodeDestination(GetParams().TokenFeeAddress()));
             outToken2.ConstructTransaction(outScript2);
 
             CTxOut txOutNew2;
@@ -342,8 +406,8 @@ BOOST_FIXTURE_TEST_SUITE(token_tx_tests, BasicTestingSetup)
             mutTx.vout.emplace_back(txOutNew2);
 
             // Add the third token
-            CTokenTransfer outToken3("PLBTESTTESTTEST", 100);
-            CScript outScript3 = GetScriptForDestination(DecodeDestination(GetParams().GlobalFeeAddress()));
+            CTokenTransfer outToken3("PLBTESTTEST", 100, 0);
+            CScript outScript3 = GetScriptForDestination(DecodeDestination(GetParams().TokenFeeAddress()));
             outToken3.ConstructTransaction(outScript3);
 
             CTxOut txOutNew3;
@@ -365,7 +429,7 @@ BOOST_FIXTURE_TEST_SUITE(token_tx_tests, BasicTestingSetup)
         // The outputs are spending 100 Tokens to 10 destinations (10 * 100 = 1000) (of each PLB, PLBTEST, PLBTESTTEST)
         // This test should pass because for each token that is spent. It is assigned a destination
         std::vector<std::pair<std::string, uint256>> vReissueTokens;
-        BOOST_CHECK_MESSAGE(Consensus::CheckTxTokens(tx, state, coins, nullptr, false, vReissueTokens, true), state.GetDebugMessage());
+        BOOST_CHECK_MESSAGE(Consensus::CheckTxTokens(tx, state, coins, 100000, 100, nullptr, false, vReissueTokens, true), "CheckTxTokens failed: " + state.GetRejectReason());
 
 
         // Try it not but only spend 900 of each token instead of 1000
@@ -375,8 +439,8 @@ BOOST_FIXTURE_TEST_SUITE(token_tx_tests, BasicTestingSetup)
         for (int i = 0; i < 9; i++)
         {
             // Add the first token
-            CTokenTransfer outToken("PLBTEST", 100);
-            CScript outScript = GetScriptForDestination(DecodeDestination(GetParams().GlobalFeeAddress()));
+            CTokenTransfer outToken("PLBTOKEN", 100, 0);
+            CScript outScript = GetScriptForDestination(DecodeDestination(GetParams().TokenFeeAddress()));
             outToken.ConstructTransaction(outScript);
 
             CTxOut txOutNew;
@@ -386,8 +450,8 @@ BOOST_FIXTURE_TEST_SUITE(token_tx_tests, BasicTestingSetup)
             mutTx2.vout.emplace_back(txOutNew);
 
             // Add the second token
-            CTokenTransfer outToken2("PLBTESTTEST", 100);
-            CScript outScript2 = GetScriptForDestination(DecodeDestination(GetParams().GlobalFeeAddress()));
+            CTokenTransfer outToken2("PLBTEST", 100, 0);
+            CScript outScript2 = GetScriptForDestination(DecodeDestination(GetParams().TokenFeeAddress()));
             outToken2.ConstructTransaction(outScript2);
 
             CTxOut txOutNew2;
@@ -397,8 +461,8 @@ BOOST_FIXTURE_TEST_SUITE(token_tx_tests, BasicTestingSetup)
             mutTx2.vout.emplace_back(txOutNew2);
 
             // Add the third token
-            CTokenTransfer outToken3("PLBTESTTESTTEST", 100);
-            CScript outScript3 = GetScriptForDestination(DecodeDestination(GetParams().GlobalFeeAddress()));
+            CTokenTransfer outToken3("PLBTESTTEST", 100, 0);
+            CScript outScript3 = GetScriptForDestination(DecodeDestination(GetParams().TokenFeeAddress()));
             outToken3.ConstructTransaction(outScript3);
 
             CTxOut txOutNew3;
@@ -418,7 +482,7 @@ BOOST_FIXTURE_TEST_SUITE(token_tx_tests, BasicTestingSetup)
         // Check the transaction that contains inputs that are spending 1000 Tokens for 3 different tokens
         // While only outputs only contain 900 Tokens being sent to a destination
         // This should fail because 100 of each Token isn't being sent to a destination (Trying to burn 100 Tokens each)
-        BOOST_CHECK_MESSAGE(!Consensus::CheckTxTokens(tx2, state, coins, nullptr, false, vReissueTokens, true), "CheckTxTokens should have failed");
+        BOOST_CHECK_MESSAGE(!Consensus::CheckTxTokens(tx2, state, coins, 100000, 100, nullptr, false, vReissueTokens, true), "CheckTxTokens should have failed");
     }
 
     BOOST_AUTO_TEST_CASE(token_tx_issue_units_test)
@@ -429,76 +493,69 @@ BOOST_FIXTURE_TEST_SUITE(token_tx_tests, BasicTestingSetup)
         CTokensCache cache;
 
         // Amount = 1.00000000
-        CNewToken token("TOKEN", CAmount(100000000), 8, false, false, "");
+        CNewToken token("TOKEN", CAmount(100000000), 8, false, false, "", 0, "", 0);
 
         BOOST_CHECK_MESSAGE(CheckNewToken(token, error), "Test1: " + error);
 
         // Amount = 1.00000000
-        token = CNewToken("TOKEN", CAmount(100000000), 0, false, false, "");
+        token = CNewToken("TOKEN", CAmount(100000000), 0, false, false, "", 0, "", 0);
         BOOST_CHECK_MESSAGE(CheckNewToken(token, error), "Test2: " + error);
 
         // Amount = 0.10000000
-        token = CNewToken("TOKEN", CAmount(10000000), 8, false, false, "");
+        token = CNewToken("TOKEN", CAmount(10000000), 8, false, false, "", 0, "", 0);
         BOOST_CHECK_MESSAGE(CheckNewToken(token, error), "Test3: " + error);
 
         // Amount = 0.10000000
-        token = CNewToken("TOKEN", CAmount(10000000), 2, false, false, "");
+        token = CNewToken("TOKEN", CAmount(10000000), 2, false, false, "", 0, "", 0);
         BOOST_CHECK_MESSAGE(CheckNewToken(token, error), "Test4: " + error);
 
         // Amount = 0.10000000
-        token = CNewToken("TOKEN", CAmount(10000000), 0, false, false, "");
+        token = CNewToken("TOKEN", CAmount(10000000), 0, false, false, "", 0, "", 0);
         BOOST_CHECK_MESSAGE(!CheckNewToken(token, error), "Test5: " + error);
 
         // Amount = 0.01000000
-        token = CNewToken("TOKEN", CAmount(1000000), 0, false, false, "");
+        token = CNewToken("TOKEN", CAmount(1000000), 0, false, false, "", 0, "", 0);
         BOOST_CHECK_MESSAGE(!CheckNewToken(token, error), "Test6: " + error);
 
         // Amount = 0.01000000
-        token = CNewToken("TOKEN", CAmount(1000000), 1, false, false, "");
+        token = CNewToken("TOKEN", CAmount(1000000), 1, false, false, "", 0, "", 0);
         BOOST_CHECK_MESSAGE(!CheckNewToken(token, error), "Test7: " + error);
 
         // Amount = 0.01000000
-        token = CNewToken("TOKEN", CAmount(1000000), 2, false, false, "");
+        token = CNewToken("TOKEN", CAmount(1000000), 2, false, false, "", 0, "", 0);
         BOOST_CHECK_MESSAGE(CheckNewToken(token, error), "Test8: " + error);
 
         // Amount = 0.00000001
-        token = CNewToken("TOKEN", CAmount(1), 8, false, false, "");
+        token = CNewToken("TOKEN", CAmount(1), 8, false, false, "", 0, "", 0);
         BOOST_CHECK_MESSAGE(CheckNewToken(token, error), "Test9: " + error);
 
         // Amount = 0.00000010
-        token = CNewToken("TOKEN", CAmount(10), 7, false, false, "");
+        token = CNewToken("TOKEN", CAmount(10), 7, false, false, "", 0, "", 0);
         BOOST_CHECK_MESSAGE(CheckNewToken(token, error), "Test10: " + error);
 
         // Amount = 0.00000001
-        token = CNewToken("TOKEN", CAmount(1), 7, false, false, "");
+        token = CNewToken("TOKEN", CAmount(1), 7, false, false, "", 0, "", 0);
         BOOST_CHECK_MESSAGE(!CheckNewToken(token, error), "Test11: " + error);
 
         // Amount = 0.00000100
-        token = CNewToken("TOKEN", CAmount(100), 6, false, false, "");
+        token = CNewToken("TOKEN", CAmount(100), 6, false, false, "", 0, "", 0);
         BOOST_CHECK_MESSAGE(CheckNewToken(token, error), "Test12: " + error);
 
         // Amount = 0.00000100
-        token = CNewToken("TOKEN", CAmount(100), 5, false, false, "");
+        token = CNewToken("TOKEN", CAmount(100), 5, false, false, "", 0, "", 0);
         BOOST_CHECK_MESSAGE(!CheckNewToken(token, error), "Test13: " + error);
     }
 
-#ifdef ENABLE_WALLET
+    // A coinbase must not carry token outputs. Paladeum refuses them always: there is no switch
+    // to turn the check off, as Raven had (SetEnforcedCoinbase) before the rule was activated.
     BOOST_AUTO_TEST_CASE(token_tx_enforce_coinbase_test)
     {
         BOOST_TEST_MESSAGE("Running Token TX Enforce Coinbase Test");
 
         SelectParams(CBaseChainParams::MAIN);
 
-        // Build wallet
-        bitdb.MakeMock();
-        std::unique_ptr<CWalletDBWrapper> dbw(new CWalletDBWrapper(&bitdb, "wallet_test.dat"));
-        CWallet wallet(std::move(dbw));
-        bool firstRun;
-        wallet.LoadWallet(firstRun);
-
-        // Build coinbasescript
-        std::shared_ptr<CReserveScript> coinbaseScript;
-        wallet.GetScriptForMining(coinbaseScript);
+        CKey key;
+        key.MakeNewKey(true);
 
         // Create coinbase transaction.
         CMutableTransaction coinbaseTx;
@@ -509,12 +566,20 @@ BOOST_FIXTURE_TEST_SUITE(token_tx_tests, BasicTestingSetup)
         coinbaseTx.vout.resize(2);
 
         // Add in the initial coinbase data
-        coinbaseTx.vout[0].scriptPubKey = coinbaseScript->reserveScript;
+        coinbaseTx.vout[0].scriptPubKey = GetScriptForDestination(key.GetPubKey().GetID());
         coinbaseTx.vout[0].nValue = GetBlockSubsidy(100, GetParams().GetConsensus());
         coinbaseTx.vin[0].scriptSig = CScript() << 100 << OP_0;
 
+        // Without a token output the coinbase is fine
+        {
+            CMutableTransaction plain(coinbaseTx);
+            plain.vout.resize(1);
+            CValidationState state;
+            BOOST_CHECK(CheckTransaction(CTransaction(plain), state, true));
+        }
+
         // Create a transfer token
-        CTokenTransfer transferToken("COINBASE_TEST", 100);
+        CTokenTransfer transferToken("COINBASE_TEST", 100, 0);
         CScript scriptPubKey = GetScriptForDestination(DecodeDestination(GetParams().GlobalFeeAddress()));
         transferToken.ConstructTransaction(scriptPubKey);
 
@@ -526,23 +591,10 @@ BOOST_FIXTURE_TEST_SUITE(token_tx_tests, BasicTestingSetup)
         CTransaction tx(coinbaseTx);
         CValidationState state;
 
-        // Setting the coinbase check to true
-        // This check should now fail on the CheckTransaction call
-        SetEnforcedCoinbase(true);
+        // This check must fail on the CheckTransaction call
         bool fCheck = CheckTransaction(tx, state, true);
         BOOST_CHECK(!fCheck);
-        BOOST_CHECK(state.GetRejectReason() == "bad-txns-coinbase-contains-token-txes");
-
-        // Setting the coinbase check to false
-        // This check should now pass the CheckTransaction call
-        SetEnforcedCoinbase(false);
-        fCheck = CheckTransaction(tx, state, true);
-        BOOST_CHECK(fCheck);
-
-        // Remove wallet used for testing
-        bitdb.Flush(true);
-        bitdb.Reset();
+        BOOST_CHECK_EQUAL(state.GetRejectReason(), "bad-txns-coinbase-contains-token-txes");
     }
-#endif
 
 BOOST_AUTO_TEST_SUITE_END()

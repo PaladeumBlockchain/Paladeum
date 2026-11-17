@@ -17,7 +17,8 @@ JSON_TEST_FILES = \
   test/data/base58_keys_invalid.json \
   test/data/tx_invalid.json \
   test/data/tx_valid.json \
-  test/data/sighash.json
+  test/data/sighash.json \
+  test/data/bip39_vectors.json
 
 RAW_TEST_FILES =
 
@@ -46,6 +47,7 @@ PLB_TESTS =\
   test/base58_tests.cpp \
   test/base64_tests.cpp \
   test/bip32_tests.cpp \
+  test/bip39_tests.cpp \
   test/blockencodings_tests.cpp \
   test/bloom_tests.cpp \
   test/bswap_tests.cpp \
@@ -56,6 +58,7 @@ PLB_TESTS =\
   test/cuckoocache_tests.cpp \
   test/DoS_tests.cpp \
   test/getarg_tests.cpp \
+  test/governance_tests.cpp \
   test/hash_tests.cpp \
   test/key_tests.cpp \
   test/limitedmap_tests.cpp \
@@ -66,10 +69,13 @@ PLB_TESTS =\
   test/merkleblock_tests.cpp \
   test/miner_tests.cpp \
   test/multisig_tests.cpp \
+  test/offlinestake_tests.cpp \
+  test/txmessage_tests.cpp \
   test/net_tests.cpp \
   test/netbase_tests.cpp \
   test/pmt_tests.cpp \
   test/policyestimator_tests.cpp \
+  test/pos_tests.cpp \
   test/pow_tests.cpp \
   test/prevector_tests.cpp \
   test/raii_event_tests.cpp \
@@ -107,7 +113,8 @@ PLB_TESTS += \
   wallet/test/wallet_test_fixture.h \
   wallet/test/accounting_tests.cpp \
   wallet/test/wallet_tests.cpp \
-  wallet/test/crypto_tests.cpp
+  wallet/test/crypto_tests.cpp \
+  wallet/test/mnemonic_tests.cpp
 endif
 
 test_test_paladeum_SOURCES = $(PLB_TESTS) $(JSON_TEST_FILES) $(RAW_TEST_FILES)

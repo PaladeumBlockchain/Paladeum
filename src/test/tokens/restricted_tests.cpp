@@ -10,7 +10,9 @@
 #include <base58.h>
 #include <chainparams.h>
 
-BOOST_FIXTURE_TEST_SUITE(restricted_tests, BasicTestingSetup)
+// (TestingSetup: the burn amounts of the tokens are governance values, GetBurnAmount() reads them
+// from the governance state)
+BOOST_FIXTURE_TEST_SUITE(restricted_tests, TestingSetup)
 
     BOOST_AUTO_TEST_CASE(restricted_from_transaction_test)
     {
@@ -72,7 +74,7 @@ BOOST_FIXTURE_TEST_SUITE(restricted_tests, BasicTestingSetup)
         CTxOut burnOut(GetBurnAmount(KnownTokenType::RESTRICTED), burnScript);
 
         // Add the parent transaction for sub qualifier tx
-        CTokenTransfer parentTransfer("RESTRICTED_NAME!", OWNER_TOKEN_AMOUNT);
+        CTokenTransfer parentTransfer("RESTRICTED_NAME!", OWNER_TOKEN_AMOUNT, 0);
         CScript parentScript = GetScriptForDestination(DecodeDestination(GetParams().GlobalFeeAddress()));
         parentTransfer.ConstructTransaction(parentScript);
         CTxOut parentOut(0, parentScript);
@@ -85,7 +87,7 @@ BOOST_FIXTURE_TEST_SUITE(restricted_tests, BasicTestingSetup)
 
         // Create the new restricted Script
         CScript newRestrictedScript = GetScriptForDestination(DecodeDestination(GetParams().GlobalFeeAddress()));
-        CNewToken restricted_token("$RESTRICTED_NAME", 5 * COIN, 0, 0, 0, "");
+        CNewToken restricted_token("$RESTRICTED_NAME", 5 * COIN, 0, 0, 0, "", 0, "", 0);
         restricted_token.ConstructTransaction(newRestrictedScript);
         CTxOut tokenOut(0, newRestrictedScript);
 

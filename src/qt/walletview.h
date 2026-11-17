@@ -7,12 +7,15 @@
 #define PLB_QT_WALLETVIEW_H
 
 #include "amount.h"
+#include "wallet/coincontrol.h"
 
 #include <QStackedWidget>
 
 class PaladeumGUI;
 class ClientModel;
 class OverviewPage;
+class OptionsDialog;
+class SignHubPage;
 class PlatformStyle;
 class ReceiveCoinsDialog;
 class SendCoinsDialog;
@@ -22,13 +25,24 @@ class WalletModel;
 class AddressBookPage;
 class TokensDialog;
 class CreateTokenDialog;
+class TokensPage;
+class ExplorerPage;
 class ReissueTokenDialog;
 class RestrictedTokensDialog;
 class OfflinePage;
+class NavigationHistory;
+class NodeStatus;
+class PageActivity;
+struct PageLocation;
 
 QT_BEGIN_NAMESPACE
+class QAction;
+class QBoxLayout;
+class QButtonGroup;
+class QLabel;
 class QModelIndex;
 class QProgressDialog;
+class QTimer;
 QT_END_NAMESPACE
 
 /*
@@ -45,6 +59,12 @@ public:
     explicit WalletView(const PlatformStyle *platformStyle, QWidget *parent);
     ~WalletView();
 
+    /** The pages, in the order of the side bar */
+    enum Page {
+        PAGE_OVERVIEW, PAGE_SEND, PAGE_RECEIVE, PAGE_TRANSACTIONS, PAGE_TOKENS, PAGE_CREATE_TOKENS,
+        PAGE_MANAGE_TOKENS, PAGE_RESTRICTED_TOKENS, PAGE_EXPLORER, PAGE_ADDRESS_BOOK, PAGE_SIGN, PAGE_SETTINGS, PAGE_COUNT
+    };
+
     void setPaladeumGUI(PaladeumGUI *gui);
     /** Set the client model.
         The client model represents the part of the core that communicates with the P2P network, and is wallet-agnostic.
@@ -60,9 +80,33 @@ public:
 
     void showOutOfSyncWarning(bool fShow);
 
+    WalletModel *getWalletModel() const { return walletModel; }
+    /** The page shown (Page), and showing a page as the side bar does: another wallet follows the window */
+    int currentPage() const;
+    void showPage(int page);
+    /** This wallet is the one shown: the send forms use its coin selection. deactivate(): it no longer is. */
+    void activate();
+    void deactivate();
+    /** Re-emit the HD status signal */
+    void updateHDStatus();
+
+protected:
+    bool eventFilter(QObject *object, QEvent *event) override;
+    void showEvent(QShowEvent *event) override;
+
 private:
     ClientModel *clientModel;
     WalletModel *walletModel;
+
+    /** Back and forward through what was shown; the state of the node and what each page is doing */
+    NavigationHistory *history;
+    NodeStatus *nodeStatus;
+    PageActivity *activities[PAGE_COUNT];
+    QWidget *shells[PAGE_COUNT];
+    QString titles[PAGE_COUNT];
+    /** Where the view is is written down once the event that moved it is over */
+    QTimer *recordTimer;
+    QAction *refreshAction;
 
     OverviewPage *overviewPage;
     QWidget *transactionsPage;
@@ -72,12 +116,20 @@ private:
     SendCoinsDialog *sendCoinsPage;
     AddressBookPage *usedSendingAddressesPage;
     AddressBookPage *usedReceivingAddressesPage;
-    OfflinePage *offlinePage;
 
     TransactionView *transactionView;
 
     QProgressDialog *progressDialog;
     const PlatformStyle *platformStyle;
+    /** The coins and tokens chosen by hand on the send forms of this wallet (the forms read the
+     *  selection of the wallet that is shown, see activate()) */
+    CCoinControl coinControl;
+    CCoinControl tokenControl;
+    /** The token tab of the send page is set up when it is shown the first time */
+    bool firstTokenSendVisit = true;
+    /** The card of the settings page that names this wallet and its file */
+    QLabel *walletInfoLabel = nullptr;
+    QLabel *walletPathLabel = nullptr;
 
 
     /** TOKENS START */
@@ -86,6 +138,54 @@ private:
     ReissueTokenDialog *manageTokensPage;
     RestrictedTokensDialog *restrictedTokensPage;
     /** TOKENS END */
+    ExplorerPage *explorerPage;
+    TokensPage *tokenCardsPage;
+    /** PLB and token forms of the send page */
+    QStackedWidget *sendStack;
+    QButtonGroup *sendTabs;
+
+    // each page sits in a shell that carries the page header
+    QWidget *overviewShell;
+    QWidget *receiveShell;
+    QWidget *sendShell;
+    QWidget *tokensShell;
+    QWidget *createTokensShell;
+    QWidget *manageTokensShell;
+    QWidget *restrictedTokensShell;
+    QWidget *explorerShell;
+    QWidget *addressBookShell;
+    QWidget *signShell;
+    QWidget *settingsShell;
+
+    /** Address book page: receiving and sending addresses */
+    QBoxLayout *addressColumns;
+    /** Sign page: prove an address, check a signature, multisig */
+    SignHubPage *signPage;
+    /** Settings page */
+    OptionsDialog *settingsPage;
+    QLabel *versionLabel;
+
+    /** A row of tab buttons as the send page has them */
+    QWidget *makeTabs(const QStringList &names, QButtonGroup **group, QWidget *parent);
+
+    /** Put a page below a header with back and forward, its title, its status and, optionally, a context widget on the right */
+    QWidget *addPage(int id, QWidget *page, const QString &title, QWidget *context = nullptr);
+    /** The page of a shell, -1 for none */
+    int pageOf(QWidget *shell) const;
+    PageLocation currentLocation() const;
+    QString describeLocation(const PageLocation &location) const;
+    /** The lists of the create and manage pages are read when the page is shown */
+    void readTokenLists(int page);
+    /** The name and file of the wallet on the settings page */
+    void updateWalletInfo();
+
+private Q_SLOTS:
+    void scheduleRecord();
+    void recordLocation();
+    void restoreLocation(const PageLocation &location);
+    void currentPageChanged(int index);
+    /** F5: read the shown page again */
+    void refreshCurrentPage();
 
 public Q_SLOTS:
     /** Switch to overview (home) page */
@@ -97,7 +197,6 @@ public Q_SLOTS:
     /** Switch to send coins page */
     void gotoSendCoinsPage(QString addr = "");
     /** Switch to offline staking page */
-    void gotoOfflinePage();
 
     /** Show Sign/Verify Message dialog and switch to sign message tab */
     void gotoSignMessageTab(QString addr = "");
@@ -117,6 +216,12 @@ public Q_SLOTS:
     void changePassphrase();
     /** Ask for passphrase to unlock wallet temporarily */
     void unlockWallet();
+    /** Ask for the passphrase to start staking; by default the keys are then open for staking only */
+    void unlockWalletForStaking();
+    /** Lock a wallet that was unlocked for staking only */
+    void lockWalletAfterStaking();
+    /** Add the keys of another wallet from its recovery words */
+    void restoreFromMnemonic();
     /** Check if wallet is unlocked */
     bool isWalletUnlocked();
 
@@ -143,13 +248,22 @@ public Q_SLOTS:
     /** TOKENS START */
     /** Switch to tokens page */
 
-    void gotoTokensOverviewPage();
     void gotoTokensPage();
     void gotoCreateTokensPage();
     void gotoManageTokensPage();
     void gotoRestrictedTokensPage();
 
     /** TOKENS END */
+    /** Show the PLB (0) or the token (1) form of the send page */
+    void showSendTab(int tab);
+    void showTokenSendTab();
+    void sendToken(const QString &name);
+    /** Switch to the explorer page; look the query up when one is given */
+    void gotoExplorerPage(QString query = "");
+    /** Switch to the settings page */
+    void gotoSettingsPage();
+    /** Receiving (0) or sending (1) addresses of the address book page */
+    void showAddressTab(int tab);
 
 Q_SIGNALS:
     /** Signal that we want to show the main window */
@@ -166,6 +280,12 @@ Q_SIGNALS:
     void outOfSyncWarningClicked();
     /** Show the tokens GUI */
     void checkTokens();
+    /** The send page is to be shown */
+    void sendPageRequested();
+    /** Look up a transaction id, address or block in the explorer */
+    void explorerRequested(const QString &query);
+    /** A page is shown (also when going back or forward): the side bar marks it */
+    void pageShown(int page);
 };
 
 #endif // PLB_QT_WALLETVIEW_H

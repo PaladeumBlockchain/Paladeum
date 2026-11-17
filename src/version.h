@@ -10,7 +10,7 @@
  * network protocol versioning
  */
 
-static const int PROTOCOL_VERSION = 70028;
+static const int PROTOCOL_VERSION = 70029;
 
 //! initial proto version, to be increased after version/verack negotiation
 static const int INIT_PROTO_VERSION = 209;
@@ -57,5 +57,9 @@ static const int TOKENDATA_VERSION_UPDATED = 70020;
 //! In this version messaging and restricted tokens was introduced
 static const int MESSAGING_RESTRICTED_TOKENS_VERSION = 70026;
 
+//! Peers below this version are not kept once the chain has reached the old peer cutoff height
+//! of the network (see CChainParams::OldPeerCutoffHeight, never by default). 70029 is the first
+//! version of Paladeum Core 2.0; 0.1.7 announces 70028.
+static const int OLD_PEER_CUTOFF_VERSION = 70029;
 
 #endif // PLB_VERSION_H

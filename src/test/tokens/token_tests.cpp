@@ -47,10 +47,12 @@ BOOST_FIXTURE_TEST_SUITE(token_tests, BasicTestingSetup)
         BOOST_CHECK(!IsTokenNameValid("A._BC", type));
         BOOST_CHECK(!IsTokenNameValid("AB_.C", type));
 
-        //- Versions of PLBCOIN NOT allowed
-        BOOST_CHECK(!IsTokenNameValid("PLB", type));
+        //- Protected names NOT allowed (see PLB_NAMES in tokens/tokens.cpp)
         BOOST_CHECK(!IsTokenNameValid("PLB", type));
         BOOST_CHECK(!IsTokenNameValid("PLBCOIN", type));
+        //- Names that AokChain protects (ALPHACOIN, ALPHACHAIN) are ordinary names here
+        BOOST_CHECK(IsTokenNameValid("ALPHACOIN", type));
+        BOOST_CHECK(IsTokenNameValid("ALPHACHAIN", type));
 
         //- Versions of PLBCOIN ALLOWED
         BOOST_CHECK(IsTokenNameValid("PLB.COIN", type));
@@ -227,8 +229,8 @@ BOOST_FIXTURE_TEST_SUITE(token_tests, BasicTestingSetup)
         SelectParams(CBaseChainParams::MAIN);
 
         // Create the token scriptPubKey
-        CTokenTransfer token("PLB", 1000);
-        CScript scriptPubKey = GetScriptForDestination(DecodeDestination(GetParams().GlobalFeeAddress()));
+        CTokenTransfer token("PLB", 1000, 0);
+        CScript scriptPubKey = GetScriptForDestination(DecodeDestination(GetParams().TokenFeeAddress()));
         token.ConstructTransaction(scriptPubKey);
 
         CTxOut txOut;
@@ -236,7 +238,7 @@ BOOST_FIXTURE_TEST_SUITE(token_tests, BasicTestingSetup)
         txOut.scriptPubKey = scriptPubKey;
 
 
-        Coin coin(txOut, 0, 0);
+        Coin coin(txOut, 0, false, false, 0);
 
         BOOST_CHECK_MESSAGE(coin.IsToken(), "Transfer Token Coin isn't as token");
     }
@@ -248,15 +250,15 @@ BOOST_FIXTURE_TEST_SUITE(token_tests, BasicTestingSetup)
         SelectParams(CBaseChainParams::MAIN);
 
         // Create the token scriptPubKey
-        CNewToken token("PLB", 1000, 8, 1, 0, "");
-        CScript scriptPubKey = GetScriptForDestination(DecodeDestination(GetParams().GlobalFeeAddress()));
+        CNewToken token("PLB", 1000, 8, 1, 0, "", 0, "", 0);
+        CScript scriptPubKey = GetScriptForDestination(DecodeDestination(GetParams().TokenFeeAddress()));
         token.ConstructTransaction(scriptPubKey);
 
         CTxOut txOut;
         txOut.nValue = 0;
         txOut.scriptPubKey = scriptPubKey;
 
-        Coin coin(txOut, 0, 0);
+        Coin coin(txOut, 0, false, false, 0);
 
         BOOST_CHECK_MESSAGE(coin.IsToken(), "New Token Coin isn't as token");
     }
@@ -281,11 +283,14 @@ BOOST_FIXTURE_TEST_SUITE(token_tests, BasicTestingSetup)
     {
         BOOST_TEST_MESSAGE("Running Token To String test");
 
+        // One line per field, as for the other fields: the royalties fields of a Paladeum token
+        // come between reissuable and has_ipfs
         std::string success_print = "Printing an token\n"
                                     "name : TOKEN\n"
                                     "amount : 1000\n"
                                     "units : 4\n"
                                     "reissuable : 1\n"
+                                    "has_royalties : 0\n"
                                     "has_ipfs : 1\n"
                                     "ipfs_hash : QmTqu3Lk3gmTsQVtjU7rYYM37EAW4xNmbuEAp2Mjr4AV7E";
 
@@ -294,10 +299,10 @@ BOOST_FIXTURE_TEST_SUITE(token_tests, BasicTestingSetup)
         SelectParams(CBaseChainParams::MAIN);
 
         // Create the token scriptPubKey
-        CNewToken token("TOKEN", 1000, 4, 1, 1, "QmTqu3Lk3gmTsQVtjU7rYYM37EAW4xNmbuEAp2Mjr4AV7E");
+        CNewToken token("TOKEN", 1000, 4, 1, 1, "QmTqu3Lk3gmTsQVtjU7rYYM37EAW4xNmbuEAp2Mjr4AV7E", 0, "", 0);
         std::string strToken = token.ToString();
 
-        BOOST_CHECK_MESSAGE(strToken == success_print, "Token to string failed check");
+        BOOST_CHECK_EQUAL(strToken, success_print);
     }
 
     BOOST_AUTO_TEST_CASE(dwg_version_test)
@@ -489,7 +494,7 @@ BOOST_FIXTURE_TEST_SUITE(token_tests, BasicTestingSetup)
 
         // Check all units
         for (int i = MIN_UNIT; i <= MAX_UNIT; i++) {
-            CNewToken token_unit("VALID", 1000 * COIN, i, 0, 0, "");
+            CNewToken token_unit("VALID", 1000 * COIN, i, 0, 0, "", 0, "", 0);
             BOOST_CHECK_MESSAGE(CheckNewToken(token_unit, error), "CheckNewToken: Test Unit " + std::to_string(i) + " Failed - " + error);
         }
 
@@ -498,20 +503,20 @@ BOOST_FIXTURE_TEST_SUITE(token_tests, BasicTestingSetup)
         BOOST_CHECK_MESSAGE(CheckNewToken(token1, error), "CheckNewToken: Test 1 Failed - " + error);
 
         // Check message channel
-        CNewToken message_channel("VALID~MSG_CHANNEL", 1 * COIN, MIN_UNIT, 0, 0, "");
+        CNewToken message_channel("VALID~MSG_CHANNEL", 1 * COIN, MIN_UNIT, 0, 0, "", 0, "", 0);
         BOOST_CHECK_MESSAGE(CheckNewToken(message_channel, error), "CheckNewToken: Message Channel Test Failed - " + error);
 
         // Check qualifier
-        CNewToken qualifier("#QUALIFIER", 1 * COIN, MIN_UNIT, 0, 0, "");
+        CNewToken qualifier("#QUALIFIER", 1 * COIN, MIN_UNIT, 0, 0, "", 0, "", 0);
         BOOST_CHECK_MESSAGE(CheckNewToken(message_channel, error), "CheckNewToken: Qualifier Test Failed - " + error);
 
         // Check sub_qualifier
-        CNewToken sub_qualifier("#QUALIFIER/#SUB", 1 * COIN, MIN_UNIT, 0, 0, "");
+        CNewToken sub_qualifier("#QUALIFIER/#SUB", 1 * COIN, MIN_UNIT, 0, 0, "", 0, "", 0);
         BOOST_CHECK_MESSAGE(CheckNewToken(sub_qualifier, error), "CheckNewToken: Sub Qualifier Test Failed - " + error);
 
         // Check restricted
-        CNewToken restricted_min_money("$RESTRICTED", 1 * COIN, MIN_UNIT, 0, 0, "");
-        CNewToken restricted_max_money("$RESTRICTED", MAX_MONEY, MAX_UNIT, 0, 0, "");
+        CNewToken restricted_min_money("$RESTRICTED", 1 * COIN, MIN_UNIT, 0, 0, "", 0, "", 0);
+        CNewToken restricted_max_money("$RESTRICTED", MAX_MONEY, MAX_UNIT, 0, 0, "", 0, "", 0);
         BOOST_CHECK_MESSAGE(CheckNewToken(restricted_min_money, error), "CheckNewToken: Restricted Min Money Test Failed - " + error);
         BOOST_CHECK_MESSAGE(CheckNewToken(restricted_max_money, error), "CheckNewToken: Restricted Max Money Test Failed - " + error);
     }
@@ -525,17 +530,22 @@ BOOST_FIXTURE_TEST_SUITE(token_tests, BasicTestingSetup)
         /// Generic Amount Tests ///
         {
             CNewToken invalid_amount_less_zero("INVALID", -1);
-            CNewToken invalid_amount_over_max("INVALID", MAX_MONEY + 1);
+            CNewToken invalid_amount_zero("INVALID", 0);
 
             BOOST_CHECK_MESSAGE(!CheckNewToken(invalid_amount_less_zero, error), "CheckNewToken: Invalid Amount Test 1 should fail");
-            BOOST_CHECK_MESSAGE(!CheckNewToken(invalid_amount_over_max, error), "CheckNewToken: Invalid Amount Test 2 should fail");
+            BOOST_CHECK_MESSAGE(!CheckNewToken(invalid_amount_zero, error), "CheckNewToken: Invalid Amount Test 2 should fail");
+
+            // A Paladeum token amount is limited by MAX_MONEY_TOKENS, the largest CAmount, and not by
+            // MAX_MONEY: no amount is over the limit, and more than MAX_MONEY is valid
+            CNewToken amount_over_max_money("VALID", MAX_MONEY + 1, MAX_UNIT, 0, 0, "", 0, "", 0);
+            BOOST_CHECK_MESSAGE(CheckNewToken(amount_over_max_money, error), "CheckNewToken: Amount Over MAX_MONEY Test failed - " + error);
         }
 
         /// Generic Units Tests ///
         {
             // Check with invalid units (-1, an 9)
-            CNewToken invalid_unit_1("INVALID", 1000 * COIN, -1, 0, 0, "");
-            CNewToken invalid_unit_2("INVALID", 1000 * COIN, 9, 0, 0, "");
+            CNewToken invalid_unit_1("INVALID", 1000 * COIN, -1, 0, 0, "", 0, "", 0);
+            CNewToken invalid_unit_2("INVALID", 1000 * COIN, 9, 0, 0, "", 0, "", 0);
             BOOST_CHECK_MESSAGE(!CheckNewToken(invalid_unit_1, error), "CheckNewToken: Invalid Unit Test 1 should fail");
             BOOST_CHECK_MESSAGE(!CheckNewToken(invalid_unit_2, error), "CheckNewToken: Invalid Unit Test 2 should fail");
         }
@@ -543,8 +553,8 @@ BOOST_FIXTURE_TEST_SUITE(token_tests, BasicTestingSetup)
         /// Generic Reissuable Flag Tests ///
         {
             // Check with invalid reissue flag
-            CNewToken invalid_ressiue_1("INVALID", 1000 * COIN, MAX_UNIT, -1, 0, "");
-            CNewToken invalid_ressiue_2("INVALID", 1000 * COIN, MAX_UNIT, 2, 0, "");
+            CNewToken invalid_ressiue_1("INVALID", 1000 * COIN, MAX_UNIT, -1, 0, "", 0, "", 0);
+            CNewToken invalid_ressiue_2("INVALID", 1000 * COIN, MAX_UNIT, 2, 0, "", 0, "", 0);
             BOOST_CHECK_MESSAGE(!CheckNewToken(invalid_ressiue_1, error), "CheckNewToken: Invalid Reissue Test 1 should fail");
             BOOST_CHECK_MESSAGE(!CheckNewToken(invalid_ressiue_2, error), "CheckNewToken: Invalid Reissue Test 2 should fail");
         }
@@ -552,8 +562,8 @@ BOOST_FIXTURE_TEST_SUITE(token_tests, BasicTestingSetup)
         /// Generic IPFS Flag Tests ///
         {
             // Check with invalid ipfs flag
-            CNewToken invalid_ipfsflag_1("INVALID", 1000 * COIN, MAX_UNIT, 0, -1, "");
-            CNewToken invalid_ipfsflag_2("INVALID", 1000 * COIN, MAX_UNIT, 0, 2, "");
+            CNewToken invalid_ipfsflag_1("INVALID", 1000 * COIN, MAX_UNIT, 0, -1, "", 0, "", 0);
+            CNewToken invalid_ipfsflag_2("INVALID", 1000 * COIN, MAX_UNIT, 0, 2, "", 0, "", 0);
             BOOST_CHECK_MESSAGE(!CheckNewToken(invalid_ipfsflag_1, error), "CheckNewToken: Invalid Ipfs Flag Test 1 should fail");
             BOOST_CHECK_MESSAGE(!CheckNewToken(invalid_ipfsflag_2, error), "CheckNewToken: Invalid Ipfs Flag Test 2 should fail");
         }
@@ -561,60 +571,60 @@ BOOST_FIXTURE_TEST_SUITE(token_tests, BasicTestingSetup)
         /// Message Channel Tests ///
         {
             // Check that units must be zero for message channels
-            CNewToken invalid_channel_units("INVALID~CHANNEL", 1 * COIN, MAX_UNIT, 0, 0, "");
+            CNewToken invalid_channel_units("INVALID~CHANNEL", 1 * COIN, MAX_UNIT, 0, 0, "", 0, "", 0);
             BOOST_CHECK_MESSAGE(!CheckNewToken(invalid_channel_units, error), "CheckNewToken: Invalid Channel Units Test should fail");
 
             // Check that the amount can't be bigger than 1 * COIN
-            CNewToken invalid_channel_amount("INVALID~CHANNEL", 2 * COIN, MIN_UNIT, 0, 0, "");
+            CNewToken invalid_channel_amount("INVALID~CHANNEL", 2 * COIN, MIN_UNIT, 0, 0, "", 0, "", 0);
             BOOST_CHECK_MESSAGE(!CheckNewToken(invalid_channel_amount, error), "CheckNewToken: Invalid Channel Amount Test should fail");
 
             // Check that reissue flag must be 0
-            CNewToken invalid_channel_resissue_flag("INVALID~CHANNEL", 1 * COIN, MIN_UNIT, 1, 0, "");
+            CNewToken invalid_channel_resissue_flag("INVALID~CHANNEL", 1 * COIN, MIN_UNIT, 1, 0, "", 0, "", 0);
             BOOST_CHECK_MESSAGE(!CheckNewToken(invalid_channel_resissue_flag, error), "CheckNewToken: Invalid Channel Reissue Flag Test should fail");
         }
 
         /// Unique Tests ///
         {
             // Check that units must be zero for message channels
-            CNewToken invalid_unique_units("TEST#INVALID_UNIQUE", 1 * COIN, MAX_UNIT, 0, 0, "");
+            CNewToken invalid_unique_units("TEST#INVALID_UNIQUE", 1 * COIN, MAX_UNIT, 0, 0, "", 0, "", 0);
             BOOST_CHECK_MESSAGE(!CheckNewToken(invalid_unique_units, error), "CheckNewToken: Invalid Unique Units Test should fail");
 
             // Check that the amount can't be bigger than 1 * COIN
-            CNewToken invalid_unique_amount("TEST#INVALID_UNIQUE", 2 * COIN, MIN_UNIT, 0, 0, "");
+            CNewToken invalid_unique_amount("TEST#INVALID_UNIQUE", 2 * COIN, MIN_UNIT, 0, 0, "", 0, "", 0);
             BOOST_CHECK_MESSAGE(!CheckNewToken(invalid_unique_amount, error), "CheckNewToken: Invalid Unique Amount Test should fail");
 
             // Check that reissue flag must be 0
-            CNewToken invalid_unique_resissue_flag("TEST#INVALID_UNIQUE", 1 * COIN, MIN_UNIT, 1, 0, "");
+            CNewToken invalid_unique_resissue_flag("TEST#INVALID_UNIQUE", 1 * COIN, MIN_UNIT, 1, 0, "", 0, "", 0);
             BOOST_CHECK_MESSAGE(!CheckNewToken(invalid_unique_resissue_flag, error), "CheckNewToken: Invalid Unique Reissue Flag Test should fail");
         }
 
         /// Qualifier Tests ///
         {
             // Check that units must be zero for message channels
-            CNewToken invalid_qualifier_units("#INVALID_QUALIFIER", 1 * COIN, MAX_UNIT, 0, 0, "");
+            CNewToken invalid_qualifier_units("#INVALID_QUALIFIER", 1 * COIN, MAX_UNIT, 0, 0, "", 0, "", 0);
             BOOST_CHECK_MESSAGE(!CheckNewToken(invalid_qualifier_units, error), "CheckNewToken: Invalid Qualifier Units Test should fail");
 
             // Check that the amount can't be bigger than 1 * COIN
-            CNewToken invalid_qualifier_amount("#INVALID_QUALIFIER", 11 * COIN, MIN_UNIT, 0, 0, "");
+            CNewToken invalid_qualifier_amount("#INVALID_QUALIFIER", 11 * COIN, MIN_UNIT, 0, 0, "", 0, "", 0);
             BOOST_CHECK_MESSAGE(!CheckNewToken(invalid_qualifier_amount, error), "CheckNewToken: Invalid Qualifier Amount Test should fail");
 
             // Check that reissue flag must be 0
-            CNewToken invalid_qualifier_resissue_flag("#INVALID_QUALIFIER", 1 * COIN, MIN_UNIT, 1, 0, "");
+            CNewToken invalid_qualifier_resissue_flag("#INVALID_QUALIFIER", 1 * COIN, MIN_UNIT, 1, 0, "", 0, "", 0);
             BOOST_CHECK_MESSAGE(!CheckNewToken(invalid_qualifier_resissue_flag, error), "CheckNewToken: Invalid Qualifier Reissue Flag Test should fail");
         }
 
         /// Sub Qualifier Tests ///
         {
             // Check that units must be zero for message channels
-            CNewToken invalid__subqualifier_units("#INVALID/#SUBQUALIFIER", 1 * COIN, MAX_UNIT, 0, 0, "");
+            CNewToken invalid__subqualifier_units("#INVALID/#SUBQUALIFIER", 1 * COIN, MAX_UNIT, 0, 0, "", 0, "", 0);
             BOOST_CHECK_MESSAGE(!CheckNewToken(invalid__subqualifier_units, error), "CheckNewToken: Invalid Sub Qualifier Units Test should fail");
 
             // Check that the amount can't be bigger than 1 * COIN
-            CNewToken invalid_subqualifier_amount("#INVALID/#SUBQUALIFIER", 11 * COIN, MIN_UNIT, 0, 0, "");
+            CNewToken invalid_subqualifier_amount("#INVALID/#SUBQUALIFIER", 11 * COIN, MIN_UNIT, 0, 0, "", 0, "", 0);
             BOOST_CHECK_MESSAGE(!CheckNewToken(invalid_subqualifier_amount, error), "CheckNewToken: Invalid Sub Qualifier Amount Test should fail");
 
             // Check that reissue flag must be 0
-            CNewToken invalid_subqualifier_resissue_flag("#INVALID/#SUBQUALIFIER", 1 * COIN, MIN_UNIT, 1, 0, "");
+            CNewToken invalid_subqualifier_resissue_flag("#INVALID/#SUBQUALIFIER", 1 * COIN, MIN_UNIT, 1, 0, "", 0, "", 0);
             BOOST_CHECK_MESSAGE(!CheckNewToken(invalid_subqualifier_resissue_flag, error), "CheckNewToken: Invalid Sub Qualifier Reissue Flag Test should fail");
         }
     }
@@ -627,18 +637,21 @@ BOOST_FIXTURE_TEST_SUITE(token_tests, BasicTestingSetup)
 
         /// Generic Amount Tests ///
         {
-            CReissueToken valid_amount_1("VALID", 1 * COIN, -1, 1, "");
-            CReissueToken valid_amount_2("INVALID", MAX_MONEY - 1, -1, 1, "");
+            CReissueToken valid_amount_1("VALID", 1 * COIN, -1, 1, "", 0, "", 0);
+            CReissueToken valid_amount_2("INVALID", MAX_MONEY - 1, -1, 1, "", 0, "", 0);
+            // (token amounts are limited by MAX_MONEY_TOKENS, not by MAX_MONEY)
+            CReissueToken valid_amount_3("VALID", MAX_MONEY + 1, -1, 1, "", 0, "", 0);
 
             BOOST_CHECK_MESSAGE(CheckReissueToken(valid_amount_1, error), "CheckReissueToken: Valid Amount Test 1 failed - " + error);
             BOOST_CHECK_MESSAGE(CheckReissueToken(valid_amount_2, error), "CheckReissueToken: Valid Amount Test 2 failed - " + error);
+            BOOST_CHECK_MESSAGE(CheckReissueToken(valid_amount_3, error), "CheckReissueToken: Valid Amount Test 3 failed - " + error);
         }
 
         /// Generic Units Tests ///
         {
             // Check all units (-1 -> 8)
             for (int i = -1; i <= MAX_UNIT; i++) {
-                CReissueToken reissue_unit("VALID", 1000 * COIN, i, 0, "");
+                CReissueToken reissue_unit("VALID", 1000 * COIN, i, 0, "", 0, "", 0);
                 BOOST_CHECK_MESSAGE(CheckReissueToken(reissue_unit, error), "CheckReissueToken: Test Unit " + std::to_string(i) + " Failed - " + error);
             }
         }
@@ -646,8 +659,8 @@ BOOST_FIXTURE_TEST_SUITE(token_tests, BasicTestingSetup)
         /// Generic Reissuable Flag Tests ///
         {
             // Check with invalid reissue flag
-            CReissueToken valid_ressiue_1("VALID", 1000 * COIN, MAX_UNIT, 1, "");
-            CReissueToken valid_ressiue_2("VALID", 1000 * COIN, MAX_UNIT, 0, "");
+            CReissueToken valid_ressiue_1("VALID", 1000 * COIN, MAX_UNIT, 1, "", 0, "", 0);
+            CReissueToken valid_ressiue_2("VALID", 1000 * COIN, MAX_UNIT, 0, "", 0, "", 0);
             BOOST_CHECK_MESSAGE(CheckReissueToken(valid_ressiue_1, error), "CheckReissueToken: Valid Reissue Test 1 failed - " + error);
             BOOST_CHECK_MESSAGE(CheckReissueToken(valid_ressiue_2, error), "CheckReissueToken: Valid Reissue Test 2 failed - " + error);
         }
@@ -661,8 +674,9 @@ BOOST_FIXTURE_TEST_SUITE(token_tests, BasicTestingSetup)
 
         /// Generic Amount Tests ///
         {
-            CReissueToken invalid_amount_less_zero("INVALID", -1, -1, 1, "");
-            CReissueToken invalid_amount_over_max("INVALID", MAX_MONEY, -1, 1, "");
+            CReissueToken invalid_amount_less_zero("INVALID", -1, -1, 1, "", 0, "", 0);
+            // (the limit of a reissue is MAX_MONEY_TOKENS, which is not allowed itself)
+            CReissueToken invalid_amount_over_max("INVALID", MAX_MONEY_TOKENS, -1, 1, "", 0, "", 0);
 
             BOOST_CHECK_MESSAGE(!CheckReissueToken(invalid_amount_less_zero, error), "CheckReissueToken: Invalid Amount Test 1 should fail");
             BOOST_CHECK_MESSAGE(!CheckReissueToken(invalid_amount_over_max, error), "CheckReissueToken: Invalid Amount Test 2 should fail");
@@ -671,8 +685,8 @@ BOOST_FIXTURE_TEST_SUITE(token_tests, BasicTestingSetup)
         /// Generic Units Tests ///
         {
             // Check with invalid units (-1, an 9)
-            CReissueToken invalid_unit_1("INVALID", 1000 * COIN, -2, 0, "");
-            CReissueToken invalid_unit_2("INVALID", 1000 * COIN, 9, 0, "");
+            CReissueToken invalid_unit_1("INVALID", 1000 * COIN, -2, 0, "", 0, "", 0);
+            CReissueToken invalid_unit_2("INVALID", 1000 * COIN, 9, 0, "", 0, "", 0);
             BOOST_CHECK_MESSAGE(!CheckReissueToken(invalid_unit_1, error), "CheckReissueToken: Invalid Unit Test 1 should fail");
             BOOST_CHECK_MESSAGE(!CheckReissueToken(invalid_unit_2, error), "CheckReissueToken: Invalid Unit Test 2 should fail");
         }
@@ -680,14 +694,15 @@ BOOST_FIXTURE_TEST_SUITE(token_tests, BasicTestingSetup)
         /// Generic Reissuable Flag Tests ///
         {
             // Check with invalid reissue flag
-            CReissueToken invalid_ressiue_1("INVALID", 1000 * COIN, MAX_UNIT, -1, "");
-            CReissueToken invalid_ressiue_2("INVALID", 1000 * COIN, MAX_UNIT, 2, "");
+            CReissueToken invalid_ressiue_1("INVALID", 1000 * COIN, MAX_UNIT, -1, "", 0, "", 0);
+            CReissueToken invalid_ressiue_2("INVALID", 1000 * COIN, MAX_UNIT, 2, "", 0, "", 0);
             BOOST_CHECK_MESSAGE(!CheckReissueToken(invalid_ressiue_1, error), "CheckReissueToken: Invalid Reissue Test 1 should fail");
             BOOST_CHECK_MESSAGE(!CheckReissueToken(invalid_ressiue_2, error), "CheckReissueToken: Invalid Reissue Test 2 should fail");
         }
     }
 
-    BOOST_AUTO_TEST_CASE(tag_address_burn_check)
+    // (TestingSetup: the burn amount is a governance value, GetBurnAmount() reads the governance state)
+    BOOST_FIXTURE_TEST_CASE(tag_address_burn_check, TestingSetup)
     {
         BOOST_TEST_MESSAGE("Tag Address Burn Check");
 
@@ -730,5 +745,25 @@ BOOST_FIXTURE_TEST_SUITE(token_tests, BasicTestingSetup)
         BOOST_CHECK_MESSAGE(!txWithDoubleFee.CheckAddingTagBurnFee(1), "CheckAddingTagBurnFee: Test 3 Didn't fail with double burn fee");
     }
 
+    // The addresses of the chain parameters are addresses of their network: the token fees are
+    // paid to the token fee address (CheckIssueBurnTx compares the address of the burn output with
+    // it), governance commands come from the master address, and the first validators stake.
+    BOOST_AUTO_TEST_CASE(chain_addresses_test)
+    {
+        BOOST_TEST_MESSAGE("Running Chain Addresses Test");
+
+        for (const std::string& network : {CBaseChainParams::MAIN, CBaseChainParams::TESTNET, CBaseChainParams::REGTEST}) {
+            SelectParams(network);
+            BOOST_CHECK_MESSAGE(IsValidDestination(DecodeDestination(GetParams().TokenFeeAddress())),
+                                network + ": token fee address " + GetParams().TokenFeeAddress() + " is not an address of the network");
+            if (!GetParams().GovernanceMasterAddress().empty())
+                BOOST_CHECK_MESSAGE(IsValidDestination(DecodeDestination(GetParams().GovernanceMasterAddress())),
+                                    network + ": governance master address " + GetParams().GovernanceMasterAddress() + " is not an address of the network");
+            for (const std::string& address : GetParams().GetInitAuthorized())
+                BOOST_CHECK_MESSAGE(IsValidDestination(DecodeDestination(address)),
+                                    network + ": validator address " + address + " is not an address of the network");
+        }
+        SelectParams(CBaseChainParams::MAIN);
+    }
 
 BOOST_AUTO_TEST_SUITE_END()

@@ -8,6 +8,7 @@
 
 #include <QFrame>
 #include <QMap>
+#include <QSet>
 
 class PaladeumGUI;
 class ClientModel;
@@ -37,10 +38,16 @@ public:
 
     void setClientModel(ClientModel *clientModel);
 
+    /** A view for a loaded wallet, under the wallet's name */
     bool addWallet(const QString& name, WalletModel *walletModel);
+    /** Show this wallet: the new view shows the page that the window showed */
     bool setCurrentWallet(const QString& name);
+    /** Take the view of a wallet away (and delete it). Show another wallet first. */
     bool removeWallet(const QString &name);
     void removeAllWallets();
+    /** The model of the wallet that is shown, nullptr before there is one */
+    WalletModel *currentWalletModel();
+    int walletCount() const { return mapWalletViews.size(); }
 
     bool handlePaymentRequest(const SendCoinsRecipient& recipient);
 
@@ -52,15 +59,23 @@ Q_SIGNALS:
 
 private:
     QStackedWidget *walletStack;
+    QFrame *encryptBanner;
+    /** wallets whose warning about the missing passphrase was closed (until the next start) */
+    QSet<QString> bannerDismissed;
     PaladeumGUI *gui;
     ClientModel *clientModel;
     QMap<QString, WalletView*> mapWalletViews;
 
-    bool bOutOfSync;
+    bool bOutOfSync = false;
 
     const PlatformStyle *platformStyle;
 
     WalletView *currentWalletView();
+
+private Q_SLOTS:
+    /** The state of a wallet changed: the window shows it if it is the wallet that is shown */
+    void viewEncryptionStatusChanged(int status);
+    void viewHDStatusChanged(int hdEnabled);
 
 public Q_SLOTS:
     /** Switch to overview (home) page */
@@ -68,7 +83,6 @@ public Q_SLOTS:
     /** Switch to history (transactions) page */
     void gotoHistoryPage();
     /** Switch to offline staking page */
-    void gotoOfflinePage();
     /** Switch to receive coins page */
     void gotoReceiveCoinsPage();
     /** Switch to send coins page */
@@ -87,11 +101,17 @@ public Q_SLOTS:
     void changePassphrase();
     /** Ask for passphrase to unlock wallet temporarily */
     void unlockWallet();
+    void unlockWalletForStaking();
+    /** Show the warning above the pages while the wallet has no passphrase */
+    void updateEncryptBanner(int status);
+    void lockWalletAfterStaking();
     /** Check if wallet is unlocked */
     bool isWalletUnlocked();
     
     /** Show the 12-words **/
     void getMyWords();
+    /** A wallet is shown (not yet during the start) */
+    bool hasWallet() const;
 
     unsigned long long updateWeight();
 
@@ -105,12 +125,15 @@ public Q_SLOTS:
     /** TOKENS START */
 
     /** Switch to tokens page */
-    void gotoTokensOverviewPage();
     void gotoTokensPage();
     void gotoCreateTokensPage();
     void gotoManageTokensPage();
     void gotoRestrictedTokensPage();
     /** TOKENS END */
+    /** Switch to the explorer page */
+    void gotoExplorerPage(QString query = "");
+    /** Switch to the settings page */
+    void gotoSettingsPage();
 };
 
 #endif // PLB_QT_WALLETFRAME_H

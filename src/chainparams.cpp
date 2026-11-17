@@ -86,6 +86,21 @@ void CChainParams::UpdateVersionBitsParameters(Consensus::DeploymentPos d, int64
     consensus.vDeployments[d].nTimeout = nTimeout;
 }
 
+void CChainParams::UpdateLastPOWBlock(int nHeight)
+{
+    consensus.nLastPOWBlock = nHeight;
+}
+
+void CChainParams::UpdateFutureDriftHeight(int nHeight)
+{
+    consensus.nFutureDriftHeight = nHeight;
+}
+
+void CChainParams::UpdateMasterAddress(const std::string& address)
+{
+    strMasterAddress = address;
+}
+
 void CChainParams::TurnOffSegwit() {
 	consensus.nSegwitEnabled = false;
 }
@@ -111,11 +126,11 @@ bool CChainParams::BIP34() {
 }
 
 bool CChainParams::BIP65() {
-	return consensus.nBIP34Enabled;
+	return consensus.nBIP65Enabled;
 }
 
 bool CChainParams::BIP66() {
-	return consensus.nBIP34Enabled;
+	return consensus.nBIP66Enabled;
 }
 
 bool CChainParams::CSVEnabled() const{
@@ -172,6 +187,12 @@ public:
 
         // Fork to enable offline staking and remove the block limiter
         consensus.offlineStakingFork = std::numeric_limits<int>::max();
+
+        // Soft forks that are not scheduled (INT_MAX): the time of a proof-of-stake block in
+        // multiples of nStakeTimestampMask + 1, and a smaller allowance for times in the future.
+        consensus.nStakeTimestampMaskHeight = std::numeric_limits<int>::max();
+        consensus.nFutureDriftHeight = std::numeric_limits<int>::max();
+        consensus.nFutureDriftSeconds = 60;
 
         /**
          * The message start string is designed to be unlikely to occur in normal data.
@@ -293,6 +314,12 @@ public:
 
         consensus.nGovernanceFixHeight = 1;
 
+        // Soft forks that are not scheduled (INT_MAX): the time of a proof-of-stake block in
+        // multiples of nStakeTimestampMask + 1, and a smaller allowance for times in the future.
+        consensus.nStakeTimestampMaskHeight = std::numeric_limits<int>::max();
+        consensus.nFutureDriftHeight = std::numeric_limits<int>::max();
+        consensus.nFutureDriftSeconds = 60;
+
         // Fork to enable offline staking and remove the block limiter
         consensus.offlineStakingFork = 10;
 
@@ -412,6 +439,9 @@ public:
         consensus.nLastPOWBlock = std::numeric_limits<int>::max();
         consensus.nTxMessages = 10;
         consensus.nStakeTimestampMask = 0xf; // 15
+        consensus.nStakeTimestampMaskHeight = 0;
+        consensus.nFutureDriftHeight = std::numeric_limits<int>::max(); // (-futuredriftheight)
+        consensus.nFutureDriftSeconds = 60;
 
         consensus.nGovernanceFixHeight = 1;
 
@@ -520,6 +550,31 @@ void SelectParams(const std::string& network, bool fForceBlockNetwork)
 void UpdateVersionBitsParameters(Consensus::DeploymentPos d, int64_t nStartTime, int64_t nTimeout)
 {
     globalChainParams->UpdateVersionBitsParameters(d, nStartTime, nTimeout);
+}
+
+void UpdateLastPOWBlock(int nHeight)
+{
+    globalChainParams->UpdateLastPOWBlock(nHeight);
+}
+
+void UpdateFutureDriftHeight(int nHeight)
+{
+    globalChainParams->UpdateFutureDriftHeight(nHeight);
+}
+
+void UpdateMasterAddress(const std::string& address)
+{
+    globalChainParams->UpdateMasterAddress(address);
+}
+
+void UpdateSnapshotParams(const CChainParams::SnapshotParams& params)
+{
+    globalChainParams->SetSnapshot(params);
+}
+
+void UpdateOldPeerCutoffHeight(int nHeight)
+{
+    globalChainParams->SetOldPeerCutoffHeight(nHeight);
 }
 
 void TurnOffSegwit(){
