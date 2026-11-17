@@ -6,24 +6,29 @@
 
 """Test restricted token related RPC commands."""
 
+from decimal import Decimal
 import math
 from test_framework.test_framework import PaladeumTestFramework
 from test_framework.util import assert_equal
 
+# Paladeum pays every token fee to one address, the token fee address of the regtest
+# network (strTokenFeeAddress of CRegTestParams), with the amounts of CRegTestParams.
+TOKEN_FEE_ADDRESS = 'aWcYoTSeLQsdEaWmijA12pUYae5D2jSd93'
+
 BURN_ADDRESSES = {
-    'issue_restricted': 'n1issueRestrictedXXXXXXXXXXXXZVT9V',
-    'reissue_restricted': 'n1ReissueTokenXXXXXXXXXXXXXXWG9NLd',
-    'issue_qualifier': 'n1issueQuaLifierXXXXXXXXXXXXUysLTj',
-    'issue_subqualifier': 'n1issueSubQuaLifierXXXXXXXXXYffPLh',
-    'tag_address': 'n1addTagBurnXXXXXXXXXXXXXXXXX5oLMH',
+    'issue_restricted': TOKEN_FEE_ADDRESS,
+    'reissue_restricted': TOKEN_FEE_ADDRESS,
+    'issue_qualifier': TOKEN_FEE_ADDRESS,
+    'issue_subqualifier': TOKEN_FEE_ADDRESS,
+    'tag_address': TOKEN_FEE_ADDRESS,
 }
 
 BURN_AMOUNTS = {
-    'issue_restricted': 1500,
-    'reissue_restricted': 100,
-    'issue_qualifier': 1000,
-    'issue_subqualifier': 100,
-    'tag_address': 0.1,
+    'issue_restricted': 10,
+    'reissue_restricted': 2,
+    'issue_qualifier': 20,
+    'issue_subqualifier': 3,
+    'tag_address': 0.01,
 }
 
 FEE_AMOUNT = 0.01
@@ -263,8 +268,9 @@ class RawRestrictedTokensTest(PaladeumTestFramework):
         self.num_nodes = 2
         self.extra_args = [['-tokenindex'], ['-tokenindex']]
 
-    def activate_restricted_tokens(self):
-        self.log.info("Generating PLB and activating restricted tokens...")
+    def generate_coins(self):
+        # Restricted tokens are always active in Paladeum: there is no deployment to wait for.
+        self.log.info("Generating PLB...")
         n0 = self.nodes[0]
         n0.generate(432)
         self.sync_all()
@@ -272,7 +278,14 @@ class RawRestrictedTokensTest(PaladeumTestFramework):
         n0.sendtoaddress(n1.getnewaddress(), 2500)
         n0.generate(1)
         self.sync_all()
-        assert_equal("active", n0.getblockchaininfo()['bip9_softforks']['messaging_restricted']['status'])
+        # the costs in effect are the ones of the test
+        cost = n0.issuanceinfo()["cost"]
+        assert_equal(n0.issuanceinfo()["address"], TOKEN_FEE_ADDRESS)
+        assert_equal(cost["restricted"], BURN_AMOUNTS['issue_restricted'])
+        assert_equal(cost["reissue"], BURN_AMOUNTS['reissue_restricted'])
+        assert_equal(cost["qualifier"], BURN_AMOUNTS['issue_qualifier'])
+        assert_equal(cost["sub_qualifier"], BURN_AMOUNTS['issue_subqualifier'])
+        assert_equal(cost["null_qualifier"], Decimal(str(BURN_AMOUNTS['tag_address'])))
 
     def issue_restricted_test(self):
         self.log.info("Testing raw issue_restricted...")
@@ -553,7 +566,7 @@ class RawRestrictedTokensTest(PaladeumTestFramework):
         assert_equal(1, n0.listtokenbalancesbyaddress(owner_change_address)[f"{base_token_name}!"])
 
     def run_test(self):
-        self.activate_restricted_tokens()
+        self.generate_coins()
 
         self.issue_restricted_test()
         self.reissue_restricted_test()

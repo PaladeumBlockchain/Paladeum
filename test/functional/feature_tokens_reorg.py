@@ -15,8 +15,10 @@ class TokenReorgTest(PaladeumTestFramework):
         self.num_nodes = 2
 
 
-    def activate_tokens(self):
-        self.log.info("Generating PLB and activating tokens...")
+    def generate_coins(self):
+        # Tokens, messaging and restricted tokens are always active in Paladeum: there is no
+        # deployment to wait for.
+        self.log.info("Generating PLB for both nodes...")
         n0, n1 = self.nodes[0], self.nodes[1]
 
         n0.generate(1)
@@ -25,8 +27,6 @@ class TokenReorgTest(PaladeumTestFramework):
         self.sync_all()
         n1.generate(216)
         self.sync_all()
-        assert_equal("active", n0.getblockchaininfo()['bip9_softforks']['tokens']['status'])
-        assert_equal("active", n0.getblockchaininfo()['bip9_softforks']['messaging_restricted']['status'])
 
 
     def issue_reorg_test(self):
@@ -146,7 +146,7 @@ class TokenReorgTest(PaladeumTestFramework):
         assert_equal(True, node_0_hash == node_0_hash_invalidated)
 
     def run_test(self):
-        self.activate_tokens()
+        self.generate_coins()
         self.issue_reorg_test()
         self.reorg_chain_state_test()
 

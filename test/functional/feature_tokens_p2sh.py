@@ -18,15 +18,15 @@ class TokenTest(PaladeumTestFramework):
         self.num_nodes = 3
         self.extra_args = [['-tokenindex'], ['-tokenindex'], ['-tokenindex']]
 
-    def activate_p2sh_tokens(self):
-        self.log.info("Generating PLB for node[0] and activating tokens...")
+    def generate_coins(self):
+        # Tokens at P2SH addresses are always allowed in Paladeum: there is no deployment to wait for.
+        self.log.info("Generating PLB for node[0]...")
         n0 = self.nodes[0]
 
         n0.generate(1)
         self.sync_all()
         n0.generate(431)
         self.sync_all()
-        assert_equal("active", n0.getblockchaininfo()['bip9_softforks']['p2sh_tokens']['status'])
 
     def p2sh_issue_token_test(self):
         self.log.info("Running p2sh_issue_token_test")
@@ -401,7 +401,8 @@ class TokenTest(PaladeumTestFramework):
 
 
         self.log.info("Calling transfer() to a P2PKH address...")
-        transfer_txid = n0.transfer(token_name, 50, first_address, "", 0, "", multisig_address)
+        # (token_name, qty, to_address, timelock, message, token_message, expire_time, change_address, token_change_address)
+        transfer_txid = n0.transfer(token_name, 50, first_address, 0, "", "", 0, "", multisig_address)
 
         self.log.info("Waiting for one confirmations after P2SH transfer...")
         n0.generate(1)
@@ -517,7 +518,7 @@ class TokenTest(PaladeumTestFramework):
 
         # Change the signature by changing a single hex character at index 25
         signature_list = list(token_signature_hex)
-        if signature_list[mutate_location] is '0':
+        if signature_list[mutate_location] == '0':
             signature_list[mutate_location] = '1'
         else:
             signature_list[mutate_location] = '0'
@@ -530,7 +531,7 @@ class TokenTest(PaladeumTestFramework):
 
 
     def run_test(self):
-        self.activate_p2sh_tokens()
+        self.generate_coins()
         self.p2sh_issue_token_test()
         self.p2sh_1of2_single_node_token_transfer_test()
         self.p2sh_2of3_multi_nodes_paladeum_send_test()

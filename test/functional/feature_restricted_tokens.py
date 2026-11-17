@@ -6,8 +6,10 @@
 
 """Test restricted token related RPC commands."""
 
+from datetime import datetime, timezone
+
 from test_framework.test_framework import PaladeumTestFramework
-from test_framework.util import assert_equal, assert_raises_rpc_error, assert_does_not_contain_key, assert_does_not_contain, assert_contains_key, assert_happening, assert_contains
+from test_framework.util import assert_equal, assert_raises_rpc_error, assert_does_not_contain_key, assert_does_not_contain, assert_contains_key, assert_contains
 
 # noinspection PyAttributeOutsideInit
 class RestrictedTokensTest(PaladeumTestFramework):
@@ -16,8 +18,18 @@ class RestrictedTokensTest(PaladeumTestFramework):
         self.num_nodes = 2
         self.extra_args = [['-tokenindex'], ['-tokenindex']]
 
-    def activate_restricted_tokens(self):
-        self.log.info("Generating PLB and activating restricted tokens...")
+    def assert_recent_block_time(self, date_str, within_secs=120):
+        """date_str (UTC, as '2019-11-07 17:50:06') is within within_secs of the time of the tip.
+        A block of Paladeum is at least a second later than the one before it, so after hundreds
+        of quickly mined blocks the chain is ahead of the clock: compare with the chain."""
+        then = datetime.strptime(date_str, '%Y-%m-%d %H:%M:%S').replace(tzinfo=timezone.utc).timestamp()
+        tip_time = self.nodes[0].getblock(self.nodes[0].getbestblockhash())['time']
+        if abs(tip_time - then) > within_secs:
+            raise AssertionError("%s is more than %s seconds from the time of the tip (%s)" % (date_str, within_secs, tip_time))
+
+    def generate_coins(self):
+        # Restricted tokens are always active in Paladeum: there is no deployment to wait for.
+        self.log.info("Generating PLB...")
         n0 = self.nodes[0]
         n0.generate(432)
         self.sync_all()
@@ -25,7 +37,6 @@ class RestrictedTokensTest(PaladeumTestFramework):
         n0.sendtoaddress(n1.getnewaddress(), 2500)
         n0.generate(1)
         self.sync_all()
-        assert_equal("active", n0.getblockchaininfo()['bip9_softforks']['messaging_restricted']['status'])
 
     def issuerestrictedtoken(self):
         self.log.info("Testing issuerestrictedtoken() with required params...")
@@ -44,7 +55,7 @@ class RestrictedTokensTest(PaladeumTestFramework):
         assert_raises_rpc_error(None, "Arguments:", n0.issuerestrictedtoken, token_name, qty, verifier)
 
         # valid params
-        assert_raises_rpc_error(None, "Invalid token name", n0.issuerestrictedtoken, "$!N\/AL!D", qty, verifier, to_address)
+        assert_raises_rpc_error(None, "Invalid token name", n0.issuerestrictedtoken, r"$!N\/AL!D", qty, verifier, to_address)
         assert_raises_rpc_error(None, "Verifier string can not be empty", n0.issuerestrictedtoken, token_name, qty, "", to_address)
         assert_raises_rpc_error(None, "bad-txns-null-verifier-failed-syntax-check", n0.issuerestrictedtoken, token_name, qty, "false && true", to_address)
         assert_raises_rpc_error(None, "bad-txns-null-verifier-contains-non-issued-qualifier", n0.issuerestrictedtoken, token_name, qty, "#NONEXIZTENT", to_address)
@@ -142,7 +153,7 @@ class RestrictedTokensTest(PaladeumTestFramework):
         n0.generate(1)
 
         # valid params
-        assert_raises_rpc_error(None, "Invalid token name", n0.reissuerestrictedtoken, "$!N\/AL!D", qty, to_address)
+        assert_raises_rpc_error(None, "Invalid token name", n0.reissuerestrictedtoken, r"$!N\/AL!D", qty, to_address)
         assert_raises_rpc_error(None, "Wallet doesn't have token", n0.reissuerestrictedtoken, foreign_token_name, qty, to_address)
         assert_raises_rpc_error(None, "Invalid Paladeum address", n0.reissuerestrictedtoken, token_name, qty, "garbageaddress")
         assert_raises_rpc_error(None, "Invalid Paladeum address", n0.reissuerestrictedtoken, token_name, qty, to_address, change_verifier, verifier, "garbagechangeaddress")
@@ -170,8 +181,8 @@ class RestrictedTokensTest(PaladeumTestFramework):
 
         token_name = "#IQA"
 
-        assert_raises_rpc_error(None, "Invalid token name", n0.issuequalifiertoken, "#!N\/AL!D")
-        assert_raises_rpc_error(None, "Invalid token name", n0.issuequalifiertoken, "N\/AL!D")
+        assert_raises_rpc_error(None, "Invalid token name", n0.issuequalifiertoken, r"#!N\/AL!D")
+        assert_raises_rpc_error(None, "Invalid token name", n0.issuequalifiertoken, r"N\/AL!D")
 
         # issue
         txid = n0.issuequalifiertoken(token_name)
@@ -236,10 +247,12 @@ class RestrictedTokensTest(PaladeumTestFramework):
         assert_raises_rpc_error(None, "Only use this rpc call to send Qualifier tokens", n0.transferqualifier, nonqualifier_token_name, 1, n1_address)
         assert_raises_rpc_error(None, "Invalid Paladeum address", n0.transferqualifier, token_name, 1, "garbageaddress")
         assert_raises_rpc_error(None, "Invalid Paladeum address", n0.transferqualifier, token_name, 1, n1_address, "garbagechangeaddress")
-        assert_raises_rpc_error(None, "Invalid IPFS hash", n0.transferqualifier, token_name, 1, n1_address, n0_change_address, "garbagemessage")
+        # (qualifier_name, qty, to_address, change_address, message, token_message, expire_time):
+        # the message of the transaction comes before the IPFS hash of the token message
+        assert_raises_rpc_error(None, "Invalid IPFS hash", n0.transferqualifier, token_name, 1, n1_address, n0_change_address, "", "garbagemessage")
 
         # transfer
-        txid = n0.transferqualifier(token_name, 1, n1_address, n0_change_address, message)
+        txid = n0.transferqualifier(token_name, 1, n1_address, n0_change_address, "", message)
         n0.generate(1)
         self.sync_all()
 
@@ -248,6 +261,9 @@ class RestrictedTokensTest(PaladeumTestFramework):
         assert_does_not_contain_key(token_name, n0.listmytokens())
         assert_equal(1, n1.listmytokens(token_name, True)[token_name]['balance'])
 
+    # Arguments of transfer: token_name, qty, to_address, timelock, message, token_message,
+    # expire_time, change_address, token_change_address; transferfromaddress has from_address
+    # after token_name, and paladeum_change_address in place of change_address.
     def tagging(self):
         self.log.info("Testing tagging...")
         n0 = self.nodes[0]
@@ -290,7 +306,7 @@ class RestrictedTokensTest(PaladeumTestFramework):
         assert_equal(issue_address, t1['Address'])
         assert_equal(tag, t1['Tag Name'])
         assert_contains_key('Assigned', t1)
-        assert_happening(t1['Assigned'])
+        self.assert_recent_block_time(t1['Assigned'])
 
         assert_raises_rpc_error(-8, "bad-txns-null-verifier-address-failed-verification", n0.transfer, token_name, 100, address)
 
@@ -300,7 +316,7 @@ class RestrictedTokensTest(PaladeumTestFramework):
         n0.addtagtoaddress(tag, paladeum_change_address)
         n0.addtagtoaddress(tag, token_change_address)
         n0.generate(1)
-        assert_raises_rpc_error(-8, "bad-txns-null-verifier-address-failed-verification", n0.transfer, token_name, 100, address, "", 0, paladeum_change_address, token_change_address)
+        assert_raises_rpc_error(-8, "bad-txns-null-verifier-address-failed-verification", n0.transfer, token_name, 100, address, 0, "", "", 0, paladeum_change_address, token_change_address)
         n0.removetagfromaddress(tag, paladeum_change_address)
         n0.removetagfromaddress(tag, token_change_address)
         n0.generate(1)
@@ -327,17 +343,17 @@ class RestrictedTokensTest(PaladeumTestFramework):
         for t in tagged:
             assert_equal(tag, t['Tag Name'])
             if 'Assigned' in t:
-                assert_happening(t['Assigned'])
+                self.assert_recent_block_time(t['Assigned'])
             else:
-                assert_happening(t['Removed'])
+                self.assert_recent_block_time(t['Removed'])
 
         # special case: make sure transfer fails if the token change address isn't verified (even if the paladeum change address is)
         paladeum_change_address = n0.getnewaddress()
         token_change_address = n0.getnewaddress()
-        assert_raises_rpc_error(-20, "bad-txns-null-verifier-address-failed-verification", n0.transfer, token_name, 100, address, "", 0, paladeum_change_address, token_change_address)
+        assert_raises_rpc_error(-20, "bad-txns-null-verifier-address-failed-verification", n0.transfer, token_name, 100, address, 0, "", "", 0, paladeum_change_address, token_change_address)
         n0.addtagtoaddress(tag, paladeum_change_address)
         n0.generate(1)
-        assert_raises_rpc_error(-20, "bad-txns-null-verifier-address-failed-verification", n0.transfer, token_name, 100, address, "", 0, paladeum_change_address, token_change_address)
+        assert_raises_rpc_error(-20, "bad-txns-null-verifier-address-failed-verification", n0.transfer, token_name, 100, address, 0, "", "", 0, paladeum_change_address, token_change_address)
         n0.removetagfromaddress(tag, paladeum_change_address)
         n0.generate(1)
 
@@ -351,7 +367,7 @@ class RestrictedTokensTest(PaladeumTestFramework):
         token_change_address = n0.getnewaddress()
         n0.addtagtoaddress(tag, token_change_address)
         n0.generate(1)
-        txid = n0.transfer(token_name, 1, issue_address, "", 0, "", token_change_address)
+        txid = n0.transfer(token_name, 1, issue_address, 0, "", "", 0, "", token_change_address)
         n0.generate(1)
         assert_equal(64, len(txid[0]))
         assert (n0.listtokenbalancesbyaddress(token_change_address)[token_name] > 0)
@@ -379,9 +395,9 @@ class RestrictedTokensTest(PaladeumTestFramework):
         for t in tagged:
             assert_equal(tag, t['Tag Name'])
             if issue_address == t['Address']:
-                assert_happening(t['Assigned'])
+                self.assert_recent_block_time(t['Assigned'])
             if address == t['Address']:
-                assert_happening(t['Removed'])
+                self.assert_recent_block_time(t['Removed'])
 
         assert_raises_rpc_error(-8, "bad-txns-null-verifier-address-failed-verification", n0.transfer, token_name, 100, address)
 
@@ -405,7 +421,7 @@ class RestrictedTokensTest(PaladeumTestFramework):
 
         # squirrel some away
         change_address = n0.getnewaddress()
-        n0.transferfromaddress(token_name, address, 1000, safe_address, "", "", "", change_address)
+        n0.transferfromaddress(token_name, address, 1000, safe_address, 0, "", "", 0, "", change_address)
         n0.generate(1)
         address = change_address
 
@@ -422,7 +438,7 @@ class RestrictedTokensTest(PaladeumTestFramework):
         assert_equal(0, len(viewmyrestrictedaddresses()))
 
         change_address = n0.getnewaddress()
-        n0.transferfromaddress(token_name, address, 1000, n1.getnewaddress(), "", "", "", change_address)
+        n0.transferfromaddress(token_name, address, 1000, n1.getnewaddress(), 0, "", "", 0, "", change_address)
         n0.generate(1)
         self.sync_all()
         assert_equal(9000, n0.listtokenbalancesbyaddress(change_address)[token_name])
@@ -447,7 +463,7 @@ class RestrictedTokensTest(PaladeumTestFramework):
         r = restrictions[0]
         assert_equal(address, r['Address'])
         assert_equal(token_name, r['Token Name'])
-        assert_happening(r['Restricted'])
+        self.assert_recent_block_time(r['Restricted'])
 
         assert_raises_rpc_error(-8, "No token outpoints are selected from the given address", n0.transferfromaddress, token_name, address, 1000, n1.getnewaddress())
 
@@ -470,10 +486,10 @@ class RestrictedTokensTest(PaladeumTestFramework):
         r = restrictions[0]
         assert_equal(address, r['Address'])
         assert_equal(token_name, r['Token Name'])
-        assert_happening(r['Derestricted'])
+        self.assert_recent_block_time(r['Derestricted'])
 
         change_address = n0.getnewaddress()
-        n0.transferfromaddress(token_name, address, 1000, n1.getnewaddress(), "", "", "", change_address)
+        n0.transferfromaddress(token_name, address, 1000, n1.getnewaddress(), 0, "", "", 0, "", change_address)
         n0.generate(1)
         self.sync_all()
         assert_equal(8000, n0.listtokenbalancesbyaddress(change_address)[token_name])
@@ -501,7 +517,7 @@ class RestrictedTokensTest(PaladeumTestFramework):
         assert not n0.checkglobalrestriction(token_name)
         assert_equal(10000, n0.listtokenbalancesbyaddress(address)[token_name])
         change_address = n0.getnewaddress()
-        n0.transferfromaddress(token_name, address, 1000, n1.getnewaddress(), "", "", "", change_address)
+        n0.transferfromaddress(token_name, address, 1000, n1.getnewaddress(), 0, "", "", 0, "", change_address)
         n0.generate(1)
         self.sync_all()
         assert_equal(9000, n0.listtokenbalancesbyaddress(change_address)[token_name])
@@ -531,7 +547,7 @@ class RestrictedTokensTest(PaladeumTestFramework):
         assert not n0.checkglobalrestriction(token_name)
         assert_equal(9000, n0.listtokenbalancesbyaddress(address)[token_name])
         change_address = n0.getnewaddress()
-        n0.transferfromaddress(token_name, address, 1000, n1.getnewaddress(), "", "", "", change_address)
+        n0.transferfromaddress(token_name, address, 1000, n1.getnewaddress(), 0, "", "", 0, "", change_address)
         n0.generate(1)
         self.sync_all()
         assert_equal(8000, n0.listtokenbalancesbyaddress(change_address)[token_name])
@@ -573,7 +589,7 @@ class RestrictedTokensTest(PaladeumTestFramework):
             assert_raises_rpc_error(-8, "contains-non-issued-qualifier", n0.isvalidverifierstring, s)
 
     def run_test(self):
-        self.activate_restricted_tokens()
+        self.generate_coins()
 
         self.issuerestrictedtoken()
         self.issuerestrictedtoken_full()

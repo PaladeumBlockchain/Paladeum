@@ -7,7 +7,7 @@
 """Testing rewards use cases"""
 
 from test_framework.test_framework import PaladeumTestFramework
-from test_framework.util import assert_equal, assert_raises_rpc_error, assert_contains, Decimal
+from test_framework.util import assert_equal, assert_raises_rpc_error, assert_contains, Decimal, generate_with_clock
 
 # noinspection PyAttributeOutsideInit
 class RewardsTest(PaladeumTestFramework):
@@ -17,15 +17,23 @@ class RewardsTest(PaladeumTestFramework):
         self.extra_args = [["-tokenindex", "-debug=rewards"], ["-tokenindex", "-minrewardheight=15"], ["-tokenindex"],
                            ["-tokenindex"]]
 
-    def activate_tokens(self):
-        self.log.info("Generating PLB for node[0] and activating tokens...")
+    def generate(self, node, count):
+        """Mine count blocks on node. The test mines thousands of blocks in a minute: the clocks of
+        the nodes follow the chain, or its blocks get too far ahead of them (see generate_with_clock)."""
+        return generate_with_clock(self.nodes, node, count)
+
+    # Arguments of distributereward: token_name, snapshot_height, distribution_token_name,
+    # gross_distribution_amount, message (of the transactions), exception_addresses, change_address.
+
+    def generate_coins(self):
+        # Tokens are always active in Paladeum: there is no deployment to wait for.
+        self.log.info("Generating PLB for node[0]...")
         n0, n1, n2 = self.nodes[0], self.nodes[1], self.nodes[2]
 
-        n0.generate(1)
+        self.generate(n0, 1)
         self.sync_all()
-        n0.generate(431)
+        self.generate(n0, 431)
         self.sync_all()
-        assert_equal("active", n0.getblockchaininfo()["bip9_softforks"]["tokens"]["status"])
 
     # Basic functionality test - PLB reward
     # - create the main owner address
@@ -51,12 +59,12 @@ class RewardsTest(PaladeumTestFramework):
 
         self.log.info("Providing funding")
         self.nodes[0].sendtoaddress(owner_addr0, 1000)
-        n0.generate(10)
+        self.generate(n0, 10)
         self.sync_all()
 
         self.log.info("Issuing STOCK1 token")
         n0.issue(token_name="STOCK1", qty=10000, to_address=owner_addr0, change_address="", units=4, reissuable=True, has_ipfs=False)
-        n0.generate(10)
+        self.generate(n0, 10)
         self.sync_all()
 
         self.log.info("Checking listtokenbalancesbyaddress()...")
@@ -64,7 +72,7 @@ class RewardsTest(PaladeumTestFramework):
 
         self.log.info("Transferring all tokens to a single address for tracking")
         n0.transfer(token_name="STOCK1", qty=10000, to_address=dist_addr0)
-        n0.generate(10)
+        self.generate(n0, 10)
         self.sync_all()
         assert_equal(n0.listtokenbalancesbyaddress(dist_addr0)["STOCK1"], 10000)
 
@@ -81,7 +89,7 @@ class RewardsTest(PaladeumTestFramework):
         n0.transfer(token_name="STOCK1", qty=400, to_address=shareholder_addr2, message="", expire_time=0, change_address="", token_change_address=dist_addr0)
         n0.transfer(token_name="STOCK1", qty=500, to_address=shareholder_addr3, message="", expire_time=0, change_address="", token_change_address=dist_addr0)
         n0.transfer(token_name="STOCK1", qty=600, to_address=shareholder_addr4, message="", expire_time=0, change_address="", token_change_address=dist_addr0)
-        n0.generate(10)
+        self.generate(n0, 10)
         self.sync_all()
 
         self.log.info("Verifying share distribution")
@@ -97,12 +105,12 @@ class RewardsTest(PaladeumTestFramework):
         assert_equal(n0.listtokenbalancesbyaddress(dist_addr0)["STOCK1"], 8000)
 
         self.log.info("Mining blocks")
-        n0.generate(200)
+        self.generate(n0, 200)
         self.sync_all()
 
         self.log.info("Providing additional funding")
         self.nodes[0].sendtoaddress(owner_addr0, 2000)
-        n0.generate(100)
+        self.generate(n0, 100)
         self.sync_all()
 
         self.log.info("Retrieving chain height")
@@ -111,7 +119,7 @@ class RewardsTest(PaladeumTestFramework):
         self.log.info("Requesting snapshot of STOCK1 ownership in 100 blocks")
         n0.requestsnapshot(token_name="STOCK1", block_height=tgt_block_height)
 
-        n0.generate(61)
+        self.generate(n0, 61)
 
         self.log.info("Retrieving snapshot request")
         snap_shot_req = n0.getsnapshotrequest(token_name="STOCK1", block_height=tgt_block_height)
@@ -119,7 +127,7 @@ class RewardsTest(PaladeumTestFramework):
         assert_equal(snap_shot_req["block_height"], tgt_block_height)
 
         self.log.info("Skipping forward to allow snapshot to process")
-        n0.generate(100)
+        self.generate(n0, 100)
         self.sync_all()
 
         self.log.info("Retrieving snapshot for ownership validation")
@@ -168,7 +176,7 @@ class RewardsTest(PaladeumTestFramework):
         # n0.transfer(token_name="STOCK1", qty=100, to_address=shareholder_addr2, message="", expire_time=0, change_address="", token_change_address=dist_addr0)
         # n0.transfer(token_name="STOCK1", qty=100, to_address=shareholder_addr3, message="", expire_time=0, change_address="", token_change_address=dist_addr0)
         # n0.transfer(token_name="STOCK1", qty=100, to_address=shareholder_addr4, message="", expire_time=0, change_address="", token_change_address=dist_addr0)
-        # n0.generate(100)
+        # self.generate(n0, 100)
         # self.sync_all()
 
         # self.log.info("Verifying share distribution after snapshot")
@@ -181,7 +189,7 @@ class RewardsTest(PaladeumTestFramework):
         self.log.info("Initiating reward payout")
         n0.distributereward(token_name="STOCK1", snapshot_height=tgt_block_height, distribution_token_name="PLB",
                             gross_distribution_amount=2000, exception_addresses=dist_addr0)
-        n0.generate(10)
+        self.generate(n0, 10)
         self.sync_all()
 
         #  Inexplicably, order matters here. We need to verify the amount
@@ -218,12 +226,12 @@ class RewardsTest(PaladeumTestFramework):
 
         self.log.info("Providing funding")
         self.nodes[0].sendtoaddress(owner_addr0, 1000)
-        n0.generate(10)
+        self.generate(n0, 10)
         self.sync_all()
 
         self.log.info("Issuing STOCK2 token")
         n0.issue(token_name="STOCK2", qty=10000, to_address=owner_addr0, change_address="", units=4, reissuable=True, has_ipfs=False)
-        n0.generate(10)
+        self.generate(n0, 10)
         self.sync_all()
 
         self.log.info("Creating shareholder addresses")
@@ -239,7 +247,7 @@ class RewardsTest(PaladeumTestFramework):
         n0.transfer(token_name="STOCK2", qty=400, to_address=shareholder_addr2, message="", expire_time=0, change_address="", token_change_address=dist_addr0)
         n0.transfer(token_name="STOCK2", qty=500, to_address=shareholder_addr3, message="", expire_time=0, change_address="", token_change_address=dist_addr0)
         n0.transfer(token_name="STOCK2", qty=600, to_address=shareholder_addr4, message="", expire_time=0, change_address="", token_change_address=dist_addr0)
-        n0.generate(10)
+        self.generate(n0, 10)
         self.sync_all()
 
         self.log.info("Verifying share distribution")
@@ -250,12 +258,12 @@ class RewardsTest(PaladeumTestFramework):
         assert_equal(n2.listtokenbalancesbyaddress(shareholder_addr4)["STOCK2"], 600)
 
         self.log.info("Mining blocks")
-        n0.generate(200)
+        self.generate(n0, 200)
         self.sync_all()
 
         self.log.info("Issuing PAYOUT1 token")
         n0.issue(token_name="PAYOUT1", qty=10000, to_address=owner_addr0, change_address="", units=8, reissuable=True, has_ipfs=False)
-        n0.generate(10)
+        self.generate(n0, 10)
         self.sync_all()
 
         self.log.info("Retrieving chain height")
@@ -265,7 +273,7 @@ class RewardsTest(PaladeumTestFramework):
         n0.requestsnapshot(token_name="STOCK2", block_height=tgt_block_height)
 
         # Mine 60 blocks to make sure the -minrewardsheight is met
-        n0.generate(61)
+        self.generate(n0, 61)
 
         self.log.info("Retrieving snapshot request")
         snap_shot_req = n0.getsnapshotrequest(token_name="STOCK2", block_height=tgt_block_height)
@@ -273,7 +281,7 @@ class RewardsTest(PaladeumTestFramework):
         assert_equal(snap_shot_req["block_height"], tgt_block_height)
 
         self.log.info("Skipping forward to allow snapshot to process")
-        n0.generate(100)
+        self.generate(n0, 100)
         self.sync_all()
 
         self.log.info("Retrieving snapshot for ownership validation")
@@ -316,7 +324,7 @@ class RewardsTest(PaladeumTestFramework):
         # n0.transfer(token_name="STOCK2", qty=100, to_address=shareholder_addr2, message="", expire_time=0, change_address="", token_change_address=dist_addr0)
         # n0.transfer(token_name="STOCK2", qty=100, to_address=shareholder_addr3, message="", expire_time=0, change_address="", token_change_address=dist_addr0)
         # n0.transfer(token_name="STOCK2", qty=100, to_address=shareholder_addr4, message="", expire_time=0, change_address="", token_change_address=dist_addr0)
-        # n0.generate(100)
+        # self.generate(n0, 100)
         # self.sync_all() 
         # self.log.info("Verifying share distribution after snapshot")
         # assert_equal(n2.listtokenbalancesbyaddress(shareholder_addr0)["STOCK2"], 300)
@@ -328,7 +336,7 @@ class RewardsTest(PaladeumTestFramework):
         self.log.info("Initiating reward payout")
         n0.distributereward(token_name="STOCK2", snapshot_height=tgt_block_height, distribution_token_name="PAYOUT1",
                             gross_distribution_amount=2000, exception_addresses=dist_addr0)
-        n0.generate(10)
+        self.generate(n0, 10)
         self.sync_all()
 
         #  Inexplicably, order matters here. We need to verify the amount
@@ -350,24 +358,24 @@ class RewardsTest(PaladeumTestFramework):
 
         self.log.info("Providing funding")
         self.nodes[0].sendtoaddress(owner_addr0, 1000)
-        n0.generate(10)
+        self.generate(n0, 10)
         self.sync_all()
 
         self.log.info("Issuing STOCK3 token")
         n0.issue(token_name="STOCK3", qty=10000, to_address=owner_addr0, change_address="", units=4, reissuable=True, has_ipfs=False)
-        n0.generate(10)
+        self.generate(n0, 10)
         self.sync_all()
 
         self.log.info("Retrieving chain height")
         tgt_block_height = n0.getblockchaininfo()["blocks"] + 100
 
         self.log.info("Skipping forward so that we're beyond the expected snapshot height")
-        n0.generate(161)
+        self.generate(n0, 161)
         self.sync_all()
 
         self.log.info("Initiating failing reward payout")
         assert_raises_rpc_error(-32600, "Snapshot request not found",
-                                n0.distributereward, "STOCK3", tgt_block_height, "PLB", 2000, owner_addr0)
+                                n0.distributereward, "STOCK3", tgt_block_height, "PLB", 2000, "", owner_addr0)
 
     # Attempts a payout for an invalid ownership token
     def payout_with_invalid_ownership_token(self):
@@ -379,19 +387,19 @@ class RewardsTest(PaladeumTestFramework):
 
         self.log.info("Providing funding")
         self.nodes[0].sendtoaddress(owner_addr0, 1000)
-        n0.generate(10)
+        self.generate(n0, 10)
         self.sync_all()
 
         self.log.info("Retrieving chain height")
         tgt_block_height = n0.getblockchaininfo()["blocks"] + 100
 
         self.log.info("Skipping forward so that we're beyond the expected snapshot height")
-        n0.generate(161)
+        self.generate(n0, 161)
         self.sync_all()
 
         self.log.info("Initiating failing reward payout")
         assert_raises_rpc_error(-32600, "The token hasn't been created: STOCK4",
-                                n0.distributereward, "STOCK4", tgt_block_height, "PLB", 2000, owner_addr0)
+                                n0.distributereward, "STOCK4", tgt_block_height, "PLB", 2000, "", owner_addr0)
 
     # Attempts a payout for an invalid payout token
     def payout_with_invalid_payout_token(self):
@@ -403,24 +411,24 @@ class RewardsTest(PaladeumTestFramework):
 
         self.log.info("Providing funding")
         self.nodes[0].sendtoaddress(owner_addr0, 1000)
-        n0.generate(10)
+        self.generate(n0, 10)
         self.sync_all()
 
         self.log.info("Issuing STOCK5 token")
         n0.issue(token_name="STOCK5", qty=10000, to_address=owner_addr0, change_address="", units=4, reissuable=True, has_ipfs=False)
-        n0.generate(10)
+        self.generate(n0, 10)
         self.sync_all()
 
         self.log.info("Retrieving chain height")
         tgt_block_height = n0.getblockchaininfo()["blocks"] + 100
 
         self.log.info("Skipping forward so that we're beyond the expected snapshot height")
-        n0.generate(161)
+        self.generate(n0, 161)
         self.sync_all()
 
         self.log.info("Initiating failing reward payout")
         assert_raises_rpc_error(-32600, "Wallet doesn't have the ownership token(!) for the distribution token",
-                                n0.distributereward, "STOCK5", tgt_block_height, "PAYOUT2", 2000, owner_addr0)
+                                n0.distributereward, "STOCK5", tgt_block_height, "PAYOUT2", 2000, "", owner_addr0)
 
     # Attempts a payout for an invalid payout token
     def payout_before_minimum_height_is_reached(self):
@@ -432,12 +440,12 @@ class RewardsTest(PaladeumTestFramework):
 
         self.log.info("Providing funding")
         self.nodes[0].sendtoaddress(owner_addr0, 1000)
-        n0.generate(10)
+        self.generate(n0, 10)
         self.sync_all()
 
         self.log.info("Issuing STOCK6 token")
         n0.issue(token_name="STOCK6", qty=10000, to_address=owner_addr0, change_address="", units=4, reissuable=True, has_ipfs=False)
-        n0.generate(10)
+        self.generate(n0, 10)
         self.sync_all()
 
         self.log.info("Retrieving chain height")
@@ -447,14 +455,14 @@ class RewardsTest(PaladeumTestFramework):
         n0.requestsnapshot(token_name="STOCK6", block_height=tgt_block_height)
 
         self.log.info("Skipping forward so that we're 15 blocks ahead of the snapshot height")
-        n0.generate(16)
+        self.generate(n0, 16)
         self.sync_all()
 
         self.log.info(
             "Initiating failing reward payout because we are only 15 block ahead of the snapshot instead of 60")
         assert_raises_rpc_error(-32600,
                                 "For security of the rewards payout, it is recommended to wait until chain is 60 blocks ahead of the snapshot height. You can modify this by using the -minrewardsheight.",
-                                n0.distributereward, "STOCK6", tgt_block_height, "PLB", 2000, owner_addr0)
+                                n0.distributereward, "STOCK6", tgt_block_height, "PLB", 2000, "", owner_addr0)
 
     # Attempts a payout using a custom rewards height of 15, and they have low paladeum balance
     def payout_custom_height_set_with_low_funds(self):
@@ -466,21 +474,21 @@ class RewardsTest(PaladeumTestFramework):
 
         self.log.info("Providing funding")
         self.nodes[0].sendtoaddress(owner_addr0, 1000)
-        n0.generate(5)
+        self.generate(n0, 5)
         self.sync_all()
-        n1.generate(10)
+        self.generate(n1, 10)
         self.sync_all()
 
         self.log.info("Issuing STOCK7 token")
         n1.issue(token_name="STOCK7", qty=10000, to_address=owner_addr0, change_address="", units=4, reissuable=True, has_ipfs=False)
-        n1.generate(10)
+        self.generate(n1, 10)
         self.sync_all()
 
         shareholder_addr0 = n2.getnewaddress()
 
         n1.transfer(token_name="STOCK7", qty=200, to_address=shareholder_addr0, message="", expire_time=0, change_address="", token_change_address=owner_addr0)
 
-        n1.generate(10)
+        self.generate(n1, 10)
         self.sync_all()
 
         self.log.info("Retrieving chain height")
@@ -490,25 +498,29 @@ class RewardsTest(PaladeumTestFramework):
         n1.requestsnapshot(token_name="STOCK7", block_height=tgt_block_height)
 
         self.log.info("Skipping forward so that we're 30 blocks ahead of the snapshot height")
-        n1.generate(31)
+        self.generate(n1, 31)
         self.sync_all()
 
         self.log.info("Initiating reward payout should succeed because -minrewardheight=15 on node1")
-        n1.distributereward("STOCK7", tgt_block_height, "PLB", 2000, owner_addr0)
+        # more than node1 has (it has some thousand PLB from the blocks it mined and the rewards
+        # it received before)
+        reward = 1000000
+        assert n1.getbalance() < reward
+        n1.distributereward("STOCK7", tgt_block_height, "PLB", reward, "", owner_addr0)
 
-        n1.generate(2)
+        self.generate(n1, 2)
         self.sync_all()
 
-        assert_equal(n1.getdistributestatus("STOCK7", tgt_block_height, "PLB", 2000, owner_addr0)['Status'], 3)
+        assert_equal(n1.getdistributestatus("STOCK7", tgt_block_height, "PLB", reward, owner_addr0)['Status'], 3)
 
-        n0.sendtoaddress(n1.getnewaddress(), 3000)
-        n0.generate(5)
+        n0.sendtoaddress(n1.getnewaddress(), reward + 1000)
+        self.generate(n0, 5)
         self.sync_all()
 
-        n1.generate(10)
+        self.generate(n1, 10)
         self.sync_all()
 
-        assert_equal(n2.getreceivedbyaddress(shareholder_addr0, 1), 2000)
+        assert_equal(n2.getreceivedbyaddress(shareholder_addr0, 1), reward)
 
     # Attempts a payout using a custom rewards height of 15, and they have low paladeum balance
     def payout_with_insufficient_token_amount(self):
@@ -520,16 +532,16 @@ class RewardsTest(PaladeumTestFramework):
 
         self.log.info("Providing funding")
         self.nodes[0].sendtoaddress(owner_addr0, 2000)
-        n0.generate(5)
+        self.generate(n0, 5)
         self.sync_all()
-        n1.generate(10)
+        self.generate(n1, 10)
         self.sync_all()
 
         n1.issue(token_name="STOCK_7.1", qty=10000, to_address=owner_addr0, change_address="", units=4, reissuable=True, has_ipfs=False)
 
         self.log.info("Issuing LOW_TOKEN_AMOUNT token")
         n1.issue(token_name="LOW_TOKEN_AMOUNT", qty=10000, to_address=owner_addr0, change_address="", units=4, reissuable=True, has_ipfs=False)
-        n1.generate(10)
+        self.generate(n1, 10)
         self.sync_all()
 
         # Send the majority of the tokens to node0
@@ -537,7 +549,7 @@ class RewardsTest(PaladeumTestFramework):
         n1.transfer(token_name="LOW_TOKEN_AMOUNT", qty=9000, to_address=token_holder_address, message="", expire_time=0, change_address="", token_change_address=owner_addr0)
         shareholder_addr0 = n2.getnewaddress()
         n1.transfer(token_name="STOCK_7.1", qty=200, to_address=shareholder_addr0, message="", expire_time=0, change_address="", token_change_address=owner_addr0)
-        n1.generate(10)
+        self.generate(n1, 10)
         self.sync_all()
 
         self.log.info("Retrieving chain height")
@@ -547,13 +559,13 @@ class RewardsTest(PaladeumTestFramework):
         n1.requestsnapshot(token_name="STOCK_7.1", block_height=tgt_block_height)
 
         self.log.info("Skipping forward so that we're 30 blocks ahead of the snapshot height")
-        n1.generate(61)
+        self.generate(n1, 61)
         self.sync_all()
 
         self.log.info("Initiating reward payout")
-        n1.distributereward("STOCK_7.1", tgt_block_height, "LOW_TOKEN_AMOUNT", 2000, owner_addr0)
+        n1.distributereward("STOCK_7.1", tgt_block_height, "LOW_TOKEN_AMOUNT", 2000, "", owner_addr0)
 
-        n1.generate(2)
+        self.generate(n1, 2)
         self.sync_all()
 
         assert_equal(
@@ -561,10 +573,10 @@ class RewardsTest(PaladeumTestFramework):
 
         # node0 transfer back the tokens to node1, now the distribution transaction should get created successfully. when the next block is mined
         n0.transfer(token_name="LOW_TOKEN_AMOUNT", qty=9000, to_address=owner_addr0, message="", expire_time=0, change_address="")
-        n0.generate(5)
+        self.generate(n0, 5)
         self.sync_all()
 
-        n1.generate(10)
+        self.generate(n1, 10)
         self.sync_all()
 
         assert_equal(n2.listtokenbalancesbyaddress(shareholder_addr0)["LOW_TOKEN_AMOUNT"], 2000)
@@ -575,7 +587,7 @@ class RewardsTest(PaladeumTestFramework):
 
         self.log.info("Providing funding")
         self.nodes[0].sendtoaddress(n1.getnewaddress(), 1000)
-        n0.generate(5)
+        self.generate(n0, 5)
         self.sync_all()
 
         srl = n1.listsnapshotrequests()
@@ -591,13 +603,13 @@ class RewardsTest(PaladeumTestFramework):
         assert_raises_rpc_error(-8, "token does not exist", n1.requestsnapshot, token_name1, block_height1)
         n1.issue(token_name1)
         n1.issue(token_name2)
-        n1.generate(1)
+        self.generate(n1, 1)
 
         n1.requestsnapshot(token_name=token_name1, block_height=block_height1)
         n1.requestsnapshot(token_name=token_name1, block_height=block_height2)
         n1.requestsnapshot(token_name=token_name2, block_height=block_height2)
 
-        n1.generate(1)
+        self.generate(n1, 1)
         srl = n1.listsnapshotrequests()
         assert_equal(3, len(srl))
         assert_contains({'token_name': token_name1, 'block_height': block_height1}, srl)
@@ -627,12 +639,12 @@ class RewardsTest(PaladeumTestFramework):
 
         self.log.info("Providing funding")
         self.nodes[0].sendtoaddress(owner_addr0, 1000)
-        n0.generate(10)
+        self.generate(n0, 10)
         self.sync_all()
 
         self.log.info("Issuing STOCK8 token")
         n0.issue(token_name="STOCK8", qty=10000, to_address=dist_addr0, change_address="", units=0, reissuable=True, has_ipfs=False)
-        n0.generate(10)
+        self.generate(n0, 10)
         self.sync_all()
 
         self.log.info("Creating shareholder addresses")
@@ -647,7 +659,7 @@ class RewardsTest(PaladeumTestFramework):
                                message="", expire_time=0, paladeum_change_address="", token_change_address=dist_addr0)
         n0.transferfromaddress(token_name="STOCK8", from_address=dist_addr0, qty=300, to_address=shareholder_addr2,
                                message="", expire_time=0, paladeum_change_address="", token_change_address=dist_addr0)
-        n0.generate(150)
+        self.generate(n0, 150)
         self.sync_all()
 
         self.log.info("Verifying share distribution")
@@ -656,12 +668,12 @@ class RewardsTest(PaladeumTestFramework):
         assert_equal(n0.listtokenbalancesbyaddress(shareholder_addr2)["STOCK8"], 300)
 
         self.log.info("Mining blocks")
-        n0.generate(10)
+        self.generate(n0, 10)
         self.sync_all()
 
         self.log.info("Issuing PAYOUT8 token")
         n0.issue(token_name="PAYOUT8", qty=10, to_address=owner_addr0, change_address="", units=0, reissuable=True, has_ipfs=False)
-        n0.generate(10)
+        self.generate(n0, 10)
         self.sync_all()
 
         self.log.info("Retrieving chain height")
@@ -671,7 +683,7 @@ class RewardsTest(PaladeumTestFramework):
         n0.requestsnapshot(token_name="STOCK8", block_height=tgt_block_height)
 
         # Mine 10 blocks to make sure snapshot is created
-        n0.generate(10)
+        self.generate(n0, 10)
 
         self.log.info("Retrieving snapshot request")
         snap_shot_req = n0.getsnapshotrequest(token_name="STOCK8", block_height=tgt_block_height)
@@ -679,7 +691,7 @@ class RewardsTest(PaladeumTestFramework):
         assert_equal(snap_shot_req["block_height"], tgt_block_height)
 
         self.log.info("Skipping forward to allow snapshot to process")
-        n0.generate(61)
+        self.generate(n0, 61)
         self.sync_all()
 
         self.log.info("Retrieving snapshot for ownership validation")
@@ -706,7 +718,7 @@ class RewardsTest(PaladeumTestFramework):
         self.log.info("Initiating reward payout")
         n0.distributereward(token_name="STOCK8", snapshot_height=tgt_block_height, distribution_token_name="PAYOUT8",
                             gross_distribution_amount=10, exception_addresses=dist_addr0)
-        n0.generate(10)
+        self.generate(n0, 10)
         self.sync_all()
 
         #  Inexplicably, order matters here. We need to verify the amount
@@ -730,12 +742,12 @@ class RewardsTest(PaladeumTestFramework):
 
         self.log.info("Providing funding")
         self.nodes[0].sendtoaddress(owner_addr0, 1000)
-        n0.generate(10)
+        self.generate(n0, 10)
         self.sync_all()
 
         self.log.info("Issuing STOCK9 token")
         n0.issue(token_name="STOCK9", qty=10000, to_address=dist_addr0, change_address="", units=0, reissuable=True, has_ipfs=False)
-        n0.generate(10)
+        self.generate(n0, 10)
         self.sync_all()
 
         self.log.info("Creating shareholder addresses")
@@ -750,7 +762,7 @@ class RewardsTest(PaladeumTestFramework):
                                message="", expire_time=0, paladeum_change_address="", token_change_address=dist_addr0)
         n0.transferfromaddress(token_name="STOCK9", from_address=dist_addr0, qty=400, to_address=shareholder_addr2,
                                message="", expire_time=0, paladeum_change_address="", token_change_address=dist_addr0)
-        n0.generate(150)
+        self.generate(n0, 150)
         self.sync_all()
 
         self.log.info("Verifying share distribution")
@@ -759,12 +771,12 @@ class RewardsTest(PaladeumTestFramework):
         assert_equal(n0.listtokenbalancesbyaddress(shareholder_addr2)["STOCK9"], 400)
 
         self.log.info("Mining blocks")
-        n0.generate(10)
+        self.generate(n0, 10)
         self.sync_all()
 
         self.log.info("Issuing PAYOUT9 token")
         n0.issue(token_name="PAYOUT9", qty=10, to_address=owner_addr0, change_address="", units=0, reissuable=True, has_ipfs=False)
-        n0.generate(10)
+        self.generate(n0, 10)
         self.sync_all()
 
         self.log.info("Retrieving chain height")
@@ -774,7 +786,7 @@ class RewardsTest(PaladeumTestFramework):
         n0.requestsnapshot(token_name="STOCK9", block_height=tgt_block_height)
 
         # Mine 10 blocks to make sure snapshot is created
-        n0.generate(10)
+        self.generate(n0, 10)
 
         self.log.info("Retrieving snapshot request")
         snap_shot_req = n0.getsnapshotrequest(token_name="STOCK9", block_height=tgt_block_height)
@@ -782,7 +794,7 @@ class RewardsTest(PaladeumTestFramework):
         assert_equal(snap_shot_req["block_height"], tgt_block_height)
 
         self.log.info("Skipping forward to allow snapshot to process")
-        n0.generate(61)
+        self.generate(n0, 61)
         self.sync_all()
 
         self.log.info("Retrieving snapshot for ownership validation")
@@ -809,7 +821,7 @@ class RewardsTest(PaladeumTestFramework):
         self.log.info("Initiating reward payout")
         n0.distributereward(token_name="STOCK9", snapshot_height=tgt_block_height, distribution_token_name="PAYOUT9",
                             gross_distribution_amount=10, exception_addresses=dist_addr0)
-        n0.generate(10)
+        self.generate(n0, 10)
         self.sync_all()
 
         #  Inexplicably, order matters here. We need to verify the amount
@@ -833,12 +845,12 @@ class RewardsTest(PaladeumTestFramework):
 
         self.log.info("Providing funding")
         self.nodes[0].sendtoaddress(owner_addr0, 1000)
-        n0.generate(10)
+        self.generate(n0, 10)
         self.sync_all()
 
         self.log.info("Issuing STOCK10 token")
         n0.issue(token_name="STOCK10", qty=10000, to_address=dist_addr0, change_address="", units=0, reissuable=True, has_ipfs=False)
-        n0.generate(10)
+        self.generate(n0, 10)
         self.sync_all()
 
         self.log.info("Creating shareholder addresses")
@@ -853,7 +865,7 @@ class RewardsTest(PaladeumTestFramework):
                                message="", expire_time=0, paladeum_change_address="", token_change_address=dist_addr0)
         n0.transferfromaddress(token_name="STOCK10", from_address=dist_addr0, qty=500, to_address=shareholder_addr2,
                                message="", expire_time=0, paladeum_change_address="", token_change_address=dist_addr0)
-        n0.generate(150)
+        self.generate(n0, 150)
         self.sync_all()
 
         self.log.info("Verifying share distribution")
@@ -862,13 +874,13 @@ class RewardsTest(PaladeumTestFramework):
         assert_equal(n0.listtokenbalancesbyaddress(shareholder_addr2)["STOCK10"], 500)
 
         self.log.info("Mining blocks")
-        n0.generate(10)
+        self.generate(n0, 10)
         self.sync_all()
 
         self.log.info("Issuing PAYOUT10 token")
         n0.issue(token_name="PAYOUT10", qty=10, to_address=owner_addr0, change_address="", units=0, reissuable=True,
                  has_ipfs=False)
-        n0.generate(10)
+        self.generate(n0, 10)
         self.sync_all()
 
         self.log.info("Retrieving chain height")
@@ -878,7 +890,7 @@ class RewardsTest(PaladeumTestFramework):
         n0.requestsnapshot(token_name="STOCK10", block_height=tgt_block_height)
 
         # Mine 10 blocks to make sure snapshot is created
-        n0.generate(10)
+        self.generate(n0, 10)
 
         self.log.info("Retrieving snapshot request")
         snap_shot_req = n0.getsnapshotrequest(token_name="STOCK10", block_height=tgt_block_height)
@@ -886,7 +898,7 @@ class RewardsTest(PaladeumTestFramework):
         assert_equal(snap_shot_req["block_height"], tgt_block_height)
 
         self.log.info("Skipping forward to allow snapshot to process")
-        n0.generate(61)
+        self.generate(n0, 61)
         self.sync_all()
 
         self.log.info("Retrieving snapshot for ownership validation")
@@ -913,7 +925,7 @@ class RewardsTest(PaladeumTestFramework):
         self.log.info("Initiating reward payout")
         n0.distributereward(token_name="STOCK10", snapshot_height=tgt_block_height, distribution_token_name="PAYOUT10",
                             gross_distribution_amount=10, exception_addresses=dist_addr0)
-        n0.generate(10)
+        self.generate(n0, 10)
         self.sync_all()
 
         #  Inexplicably, order matters here. We need to verify the amount
@@ -937,12 +949,12 @@ class RewardsTest(PaladeumTestFramework):
 
         self.log.info("Providing funding")
         self.nodes[0].sendtoaddress(owner_addr0, 1000)
-        n0.generate(10)
+        self.generate(n0, 10)
         self.sync_all()
 
         self.log.info("Issuing STOCK11 token")
         n0.issue(token_name="STOCK11", qty=10000, to_address=dist_addr0, change_address="", units=0, reissuable=True, has_ipfs=False)
-        n0.generate(10)
+        self.generate(n0, 10)
         self.sync_all()
 
         self.log.info("Creating shareholder addresses")
@@ -961,7 +973,7 @@ class RewardsTest(PaladeumTestFramework):
         n0.transferfromaddress(token_name="STOCK11", from_address=dist_addr0, qty=1, to_address=shareholder_addr3,
                                message="", expire_time=0, paladeum_change_address="", token_change_address=dist_addr0)
 
-        n0.generate(150)
+        self.generate(n0, 150)
         self.sync_all()
 
         self.log.info("Verifying share distribution")
@@ -971,12 +983,12 @@ class RewardsTest(PaladeumTestFramework):
         assert_equal(n0.listtokenbalancesbyaddress(shareholder_addr3)["STOCK11"], 1)
 
         self.log.info("Mining blocks")
-        n0.generate(10)
+        self.generate(n0, 10)
         self.sync_all()
 
         self.log.info("Issuing PAYOUT11 token")
         n0.issue(token_name="PAYOUT11", qty=10, to_address=owner_addr0, change_address="", units=0, reissuable=True, has_ipfs=False)
-        n0.generate(10)
+        self.generate(n0, 10)
         self.sync_all()
 
         self.log.info("Retrieving chain height")
@@ -986,7 +998,7 @@ class RewardsTest(PaladeumTestFramework):
         n0.requestsnapshot(token_name="STOCK11", block_height=tgt_block_height)
 
         # Mine 10 blocks to make sure snapshot is created
-        n0.generate(10)
+        self.generate(n0, 10)
 
         self.log.info("Retrieving snapshot request")
         snap_shot_req = n0.getsnapshotrequest(token_name="STOCK11", block_height=tgt_block_height)
@@ -994,7 +1006,7 @@ class RewardsTest(PaladeumTestFramework):
         assert_equal(snap_shot_req["block_height"], tgt_block_height)
 
         self.log.info("Skipping forward to allow snapshot to process")
-        n0.generate(61)
+        self.generate(n0, 61)
         self.sync_all()
 
         self.log.info("Retrieving snapshot for ownership validation")
@@ -1024,7 +1036,7 @@ class RewardsTest(PaladeumTestFramework):
         self.log.info("Initiating reward payout")
         n0.distributereward(token_name="STOCK11", snapshot_height=tgt_block_height, distribution_token_name="PAYOUT11",
                             gross_distribution_amount=10, exception_addresses=dist_addr0)
-        n0.generate(10)
+        self.generate(n0, 10)
         self.sync_all()
 
         #  Inexplicably, order matters here. We need to verify the amount
@@ -1048,12 +1060,12 @@ class RewardsTest(PaladeumTestFramework):
 
         self.log.info("Providing funding")
         self.nodes[0].sendtoaddress(owner_addr0, 1000)
-        n0.generate(10)
+        self.generate(n0, 10)
         self.sync_all()
 
         self.log.info("Issuing STOCK12 token")
         n0.issue(token_name="STOCK12", qty=10000, to_address=dist_addr0, change_address="", units=0, reissuable=True, has_ipfs=False)
-        n0.generate(10)
+        self.generate(n0, 10)
         self.sync_all()
 
         self.log.info("Creating shareholder addresses")
@@ -1068,7 +1080,7 @@ class RewardsTest(PaladeumTestFramework):
         n0.transferfromaddress(token_name="STOCK12", from_address=dist_addr0, qty=2, to_address=shareholder_addr2, message="", expire_time=0, paladeum_change_address="", token_change_address=dist_addr0)
         n0.transferfromaddress(token_name="STOCK12", from_address=dist_addr0, qty=1, to_address=shareholder_addr3,  message="", expire_time=0, paladeum_change_address="", token_change_address=dist_addr0)
 
-        n0.generate(150)
+        self.generate(n0, 150)
         self.sync_all()
 
         self.log.info("Verifying share distribution")
@@ -1078,12 +1090,12 @@ class RewardsTest(PaladeumTestFramework):
         assert_equal(n0.listtokenbalancesbyaddress(shareholder_addr3)["STOCK12"], 1)
 
         self.log.info("Mining blocks")
-        n0.generate(10)
+        self.generate(n0, 10)
         self.sync_all()
 
         self.log.info("Issuing PAYOUT12 token")
         n0.issue(token_name="PAYOUT12", qty=10, to_address=owner_addr0, change_address="", units=1, reissuable=True, has_ipfs=False)
-        n0.generate(10)
+        self.generate(n0, 10)
         self.sync_all()
 
         self.log.info("Retrieving chain height")
@@ -1093,7 +1105,7 @@ class RewardsTest(PaladeumTestFramework):
         n0.requestsnapshot(token_name="STOCK12", block_height=tgt_block_height)
 
         # Mine 10 blocks to make sure snapshot is created
-        n0.generate(10)
+        self.generate(n0, 10)
 
         self.log.info("Retrieving snapshot request")
         snap_shot_req = n0.getsnapshotrequest(token_name="STOCK12", block_height=tgt_block_height)
@@ -1101,7 +1113,7 @@ class RewardsTest(PaladeumTestFramework):
         assert_equal(snap_shot_req["block_height"], tgt_block_height)
 
         self.log.info("Skipping forward to allow snapshot to process")
-        n0.generate(61)
+        self.generate(n0, 61)
         self.sync_all()
 
         self.log.info("Retrieving snapshot for ownership validation")
@@ -1131,7 +1143,7 @@ class RewardsTest(PaladeumTestFramework):
         self.log.info("Initiating reward payout")
         n0.distributereward(token_name="STOCK12", snapshot_height=tgt_block_height, distribution_token_name="PAYOUT12",
                             gross_distribution_amount=10, exception_addresses=dist_addr0)
-        n0.generate(10)
+        self.generate(n0, 10)
         self.sync_all()
 
         #  Inexplicably, order matters here. We need to verify the amount
@@ -1156,13 +1168,13 @@ class RewardsTest(PaladeumTestFramework):
 
         self.log.info("Providing funding")
         self.nodes[0].sendtoaddress(owner_addr0, 1000)
-        n0.generate(100)
+        self.generate(n0, 100)
         self.sync_all()
 
         self.log.info("Issuing BULK1 token")
         n0.issue(token_name="BULK1", qty=100000, to_address=owner_addr0, change_address="", units=4, reissuable=True, has_ipfs=False)
         n0.issue(token_name="TTTTTTTTTTTTTTTTTTTTTTTTTTTTT1", qty=100000, to_address=owner_addr0, change_address="", units=4, reissuable=True, has_ipfs=False)
-        n0.generate(10)
+        self.generate(n0, 10)
         self.sync_all()
 
         self.log.info("Checking listtokenbalancesbyaddress()...")
@@ -1170,7 +1182,7 @@ class RewardsTest(PaladeumTestFramework):
 
         self.log.info("Transferring all tokens to a single address for tracking")
         n0.transfer(token_name="BULK1", qty=100000, to_address=dist_addr0)
-        n0.generate(10)
+        self.generate(n0, 10)
         self.sync_all()
         assert_equal(n0.listtokenbalancesbyaddress(dist_addr0)["BULK1"], 100000)
 
@@ -1188,11 +1200,11 @@ class RewardsTest(PaladeumTestFramework):
                                    expire_time=0, paladeum_change_address="", token_change_address=dist_addr0)
             count += 1
             if count > 190:
-                n0.generate(1)
+                self.generate(n0, 1)
                 count = 0
                 self.sync_all()
 
-        n0.generate(1)
+        self.generate(n0, 1)
         self.sync_all()
 
         self.log.info("Verifying share distribution")
@@ -1202,12 +1214,12 @@ class RewardsTest(PaladeumTestFramework):
             assert_equal(n3.listtokenbalancesbyaddress(address_list[i + 2])["BULK1"], 10)
 
         self.log.info("Mining blocks")
-        n0.generate(10)
+        self.generate(n0, 10)
         self.sync_all()
 
         self.log.info("Providing additional funding")
         self.nodes[0].sendtoaddress(owner_addr0, 2000)
-        n0.generate(100)
+        self.generate(n0, 100)
         self.sync_all()
 
         self.log.info("Retrieving chain height")
@@ -1217,7 +1229,7 @@ class RewardsTest(PaladeumTestFramework):
         n0.requestsnapshot(token_name="BULK1", block_height=tgt_block_height)
 
         self.log.info("Skipping forward to allow snapshot to process")
-        n0.generate(66)
+        self.generate(n0, 66)
         self.sync_all()
 
         self.log.info("Retrieving snapshot request")
@@ -1235,9 +1247,9 @@ class RewardsTest(PaladeumTestFramework):
         self.log.info("Initiating reward payout")
         n0.distributereward(token_name="BULK1", snapshot_height=tgt_block_height,
                             distribution_token_name="TTTTTTTTTTTTTTTTTTTTTTTTTTTTT1", gross_distribution_amount=100000,
-                            exception_addresses=dist_addr0, change_address="", dry_run=False)
+                            exception_addresses=dist_addr0, change_address="")
         # print(result)
-        n0.generate(10)
+        self.generate(n0, 10)
         self.sync_all()
 
         # 10000 / 999 = 10.01001001
@@ -1248,7 +1260,7 @@ class RewardsTest(PaladeumTestFramework):
             assert_equal(n3.listtokenbalancesbyaddress(address_list[i + 2])['TTTTTTTTTTTTTTTTTTTTTTTTTTTTT1'], Decimal(str(10.0010)))
 
     def run_test(self):
-        self.activate_tokens()
+        self.generate_coins()
         self.basic_test_paladeum()
         self.basic_test_token()
         self.payout_without_snapshot()
