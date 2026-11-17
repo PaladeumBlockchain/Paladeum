@@ -1230,12 +1230,12 @@ UniValue getaddressutxos(const JSONRPCRequest& request)
     std::sort(unspentOutputs.begin(), unspentOutputs.end(), unspentOrder);
 
     int nHeight;
-    int64_t nMedianTime;
+    int64_t nTipTime; // a time lock opens when the block time passes it (not the median time past)
     uint256 tipHash;
     {
         LOCK(cs_main);
         nHeight = chainActive.Height();
-        nMedianTime = chainActive.Tip()->GetMedianTimePast();
+        nTipTime = chainActive.Tip()->GetBlockTime();
         tipHash = chainActive.Tip()->GetIndexHash();
     }
 
@@ -1291,7 +1291,7 @@ UniValue getaddressutxos(const JSONRPCRequest& request)
         }
 
         int64_t timeLock = (tokenName == "PLB") ? it->first.timeLock : nTimeLock;
-        if (timeLock < ((int64_t)timeLock < LOCKTIME_THRESHOLD ? nHeight : nMedianTime)) {
+        if (timeLock < ((int64_t)timeLock < LOCKTIME_THRESHOLD ? nHeight : nTipTime)) {
             output.pushKV("address", address);
             output.pushKV("token_name", tokenNameOut);
             output.pushKV("txid", it->first.txhash.GetHex());
@@ -1522,7 +1522,7 @@ UniValue getaddressbalance(const JSONRPCRequest& request)
                     balances[tokenName].first += it->second;
                 }
 
-                if (it->first.timeLock < ((int64_t)it->first.timeLock < LOCKTIME_THRESHOLD ? (int64_t)chainActive.Height() : (int64_t)chainActive.Tip()->GetMedianTimePast()))
+                if (it->first.timeLock < ((int64_t)it->first.timeLock < LOCKTIME_THRESHOLD ? (int64_t)chainActive.Height() : (int64_t)chainActive.Tip()->GetBlockTime()))
                 {
                     balances[tokenName].second += it->second;
                 } else {
@@ -1569,7 +1569,7 @@ UniValue getaddressbalance(const JSONRPCRequest& request)
             if (it->second > 0) {
                 received += it->second;
             }
-            if (it->first.timeLock < ((int64_t)it->first.timeLock < LOCKTIME_THRESHOLD ? (int64_t)chainActive.Height() : (int64_t)chainActive.Tip()->GetMedianTimePast())) {
+            if (it->first.timeLock < ((int64_t)it->first.timeLock < LOCKTIME_THRESHOLD ? (int64_t)chainActive.Height() : (int64_t)chainActive.Tip()->GetBlockTime())) {
                 balance += it->second;
             } else {
                 locked += it->second;
