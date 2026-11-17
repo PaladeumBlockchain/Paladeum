@@ -500,7 +500,7 @@ UniValue issue(const JSONRPCRequest& request)
 
     // Push the user to use the issue restrictd rpc call if they are trying to issue a restricted token
     if (tokenType == KnownTokenType::RESTRICTED) {
-        throw (JSONRPCError(RPC_INVALID_PARAMETER, std::string("Use the rpc call issuerestricted to issue a restricted token")));
+        throw (JSONRPCError(RPC_INVALID_PARAMETER, std::string("Use the rpc call issuerestrictedtoken to issue a restricted token")));
     }
 
     // Push the user to use the issue restrictd rpc call if they are trying to issue a restricted token
@@ -1516,7 +1516,7 @@ UniValue transfer(const JSONRPCRequest& request)
     std::string token_name = request.params[0].get_str();
 
     if (IsTokenNameAQualifier(token_name))
-        throw JSONRPCError(RPC_INVALID_PARAMETER, "Please use the rpc call transferqualifiertoken to send qualifier tokens from this wallet.");
+        throw JSONRPCError(RPC_INVALID_PARAMETER, "Please use the rpc call transferqualifier to send qualifier tokens from this wallet.");
 
     CAmount nAmount = AmountFromValue(request.params[1]);
 

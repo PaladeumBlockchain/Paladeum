@@ -773,7 +773,21 @@ UniValue getmempoolentry(const JSONRPCRequest& request)
 UniValue getblockdeltas(const JSONRPCRequest& request)
 {
     if (request.fHelp || request.params.size() != 1)
-        throw std::runtime_error("");
+        throw std::runtime_error(
+            "getblockdeltas \"blockhash\"\n"
+            "\nThe transactions of a block with the amount each input takes from and each output gives to\n"
+            "its address (for indexers).\n"
+            "\nArguments:\n"
+            "1. \"blockhash\"    (string, required) The block hash\n"
+            "\nResult:\n"
+            "{ \"hash\", \"confirmations\", \"size\", \"height\", \"version\", \"merkleroot\", \"time\", \"mediantime\",\n"
+            "  \"nonce\", \"bits\", \"difficulty\", \"chainwork\", \"previousblockhash\", \"nextblockhash\",\n"
+            "  \"deltas\": [ { \"txid\", \"index\", \"inputs\": [ { \"address\", \"satoshis\", \"index\", \"prevtxid\", \"prevout\" } ],\n"
+            "                \"outputs\": [ { \"address\", \"satoshis\", \"index\" } ] } ] }\n"
+            "\nExamples:\n"
+            + HelpExampleCli("getblockdeltas", "\"00000000000000000000000000000000000000000000000000000000000000ff\"")
+            + HelpExampleRpc("getblockdeltas", "\"00000000000000000000000000000000000000000000000000000000000000ff\"")
+        );
 
     std::string strHash = request.params[0].get_str();
     uint256 hash(uint256S(strHash));
@@ -2068,7 +2082,7 @@ UniValue repaircoins(const JSONRPCRequest& request)
             "repaircoins ( checkonly )\n"
             "\nLook for unspent outputs that have no transaction time in the chain state of this node, and give\n"
             "them the time and the coinstake mark of their transaction again.\n"
-            "Versions before 4.0 lost both when a block was disconnected in a reorganization. A wallet then\n"
+            "Paladeum 0.1.x lost both when a block was disconnected in a reorganization. A wallet then\n"
             "staked such a coin with a wrong kernel: its blocks were rejected by every node (bad-cs-proofhash)\n"
             "and the coin never staked again. Reads every unspent output; this takes a while.\n"
             "\nArguments:\n"
@@ -2536,7 +2550,7 @@ static const CRPCCommand commands[] =
     { "blockchain",         "getbestblockhash",       &getbestblockhash,       {} },
     { "blockchain",         "getblockcount",          &getblockcount,          {} },
     { "blockchain",         "getblock",               &getblock,               {"blockhash","verbosity|verbose"} },
-    { "blockchain",         "getblockdeltas",         &getblockdeltas,         {} },
+    { "blockchain",         "getblockdeltas",         &getblockdeltas,         {"blockhash"} },
     { "blockchain",         "getblockhashes",         &GetIndexHashes,         {"high","low","options"} },
     { "blockchain",         "GetIndexHashes",         &GetIndexHashes,         {"high","low","options"} },
     { "blockchain",         "getblockhash",           &getblockhash,           {"height"} },

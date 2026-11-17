@@ -1350,7 +1350,8 @@ UniValue sendmany(const JSONRPCRequest& request)
         destinations.insert(dest);
 
         CScript scriptPubKey = GetScriptForDestination(dest);
-        CAmount nAmount = AmountFromValue(sendTo[address]);
+        // (the key as given: a username is resolved to its address above)
+        CAmount nAmount = AmountFromValue(sendTo[receiver]);
         if (nAmount <= 0)
             throw JSONRPCError(RPC_TYPE_ERROR, "Invalid amount for send");
         totalAmount += nAmount;
@@ -1358,7 +1359,7 @@ UniValue sendmany(const JSONRPCRequest& request)
         bool fSubtractFeeFromAmount = false;
         for (unsigned int idx = 0; idx < subtractFeeFromAmount.size(); idx++) {
             const UniValue& addr = subtractFeeFromAmount[idx];
-            if (addr.get_str() == address)
+            if (addr.get_str() == address || addr.get_str() == receiver)
                 fSubtractFeeFromAmount = true;
         }
 
@@ -2858,7 +2859,7 @@ UniValue encryptwallet(const JSONRPCRequest& request)
     // slack space in .dat files; that is bad if the old data is
     // unencrypted private keys. So:
     StartShutdown();
-    return "wallet encrypted; Paladeum server stopping, restart to run with encrypted wallet. The keypool has been flushed and a new HD seed was generated (if you are using HD). You need to make a new backup.";
+    return "wallet encrypted; Paladeum server stopping, restart to run with encrypted wallet. A wallet with recovery words keeps its words and keys; a wallet without them gets a new HD seed and keypool. You need to make a new backup.";
 }
 
 UniValue lockunspent(const JSONRPCRequest& request)

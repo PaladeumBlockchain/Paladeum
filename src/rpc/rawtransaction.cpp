@@ -365,7 +365,7 @@ UniValue createrawtransaction(const JSONRPCRequest& request)
             "\nPaying for Token Operations:\n"
             "  Issuing and reissuing tokens and tagging addresses pay a fee in PLB, in an output to\n"
             "  the token fee address (" + GetBurnAddress(KnownTokenType::ROOT) + "). Governance sets the\n"
-            "  costs (getissuanceinfo); these are the costs now:\n"
+            "  costs (issuanceinfo); these are the costs now:\n"
             "\n"
             "    Operation              Cost in PLB\n"
             "    transfer               0\n"

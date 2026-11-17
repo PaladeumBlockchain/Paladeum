@@ -392,7 +392,7 @@ UniValue distributereward(const JSONRPCRequest& request) {
 
     if (chainActive.Height() - snapshot_height < gArgs.GetArg("-minrewardheight", MINIMUM_REWARDS_PAYOUT_HEIGHT)) {
         throw JSONRPCError(RPC_INVALID_REQUEST, std::string(
-                "For security of the rewards payout, it is recommended to wait until chain is 60 blocks ahead of the snapshot height. You can modify this by using the -minrewardsheight."));
+                "For security of the rewards payout, it is recommended to wait until chain is 60 blocks ahead of the snapshot height. You can modify this by using -minrewardheight."));
     }
 
     if (!ptokens)

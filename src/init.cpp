@@ -589,7 +589,7 @@ std::string HelpMessage(HelpMessageMode mode)
         strUsage += HelpMessageOpt("-maxblocksperstake=<n>", strprintf("Blocks with the same stake (coin and time) that are stored; further ones are stored only when a block builds on them (default: %u)", DEFAULT_MAX_BLOCKS_PER_STAKE));
         strUsage += HelpMessageOpt("-masteraddress=<address>", "Governance master address, to test governance commands with a key of the test (regtest-only)");
         strUsage += HelpMessageOpt("-futuredriftheight=<height>", "Height from which a proof-of-stake block may be at most 60 seconds ahead of the clock (regtest-only)");
-        strUsage += HelpMessageOpt("-restorecointime", "Give the coins of a disconnected block their transaction time back; 0 loses it as versions before 4.0 did (regtest-only, default: 1)");
+        strUsage += HelpMessageOpt("-restorecointime", "Give the coins of a disconnected block their transaction time back; 0 loses it as Paladeum 0.1.x did (regtest-only, default: 1)");
         strUsage += HelpMessageOpt("-snapshotparams=<height:block:utxo:tokens:governance:index[:archive]>", "The chain state snapshot that is accepted, as getstatehashes prints it, and optionally the SHA-256 of its files (regtest-only)");
         strUsage += HelpMessageOpt("-oldpeercutoffheight=<height>", "Chain height from which peers below the current protocol version are disconnected (regtest-only)");
         strUsage += HelpMessageOpt("-vbparams=deployment:start:end", "Use given start/end times for specified version bits deployment (regtest-only)");
