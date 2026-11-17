@@ -1111,11 +1111,11 @@ UniValue setgenerate(const JSONRPCRequest& request)
 
 
     bool fGenerate = true;
-    if (request.params.size() > 0)
+    if (request.params.size() > 0 && !request.params[0].isNull())
         fGenerate = request.params[0].get_bool();
 
     int nGenProcLimit = gArgs.GetArg("-genproclimit", DEFAULT_GENERATE_THREADS);
-    if (request.params.size() > 1)
+    if (request.params.size() > 1 && !request.params[1].isNull())
     {
         nGenProcLimit = request.params[1].get_int();
         if (nGenProcLimit == 0)

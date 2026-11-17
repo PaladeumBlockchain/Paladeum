@@ -800,12 +800,13 @@ UniValue GetIndexHashes(const JSONRPCRequest& request)
 {
     if (request.fHelp || request.params.size() < 2)
         throw std::runtime_error(
-            "GetIndexHashes timestamp\n"
+            "getblockhashes high low ( options )\n"
             "\nReturns array of hashes of blocks within the timestamp range provided.\n"
+            "GetIndexHashes, the name of Paladeum 0.1.x, is the same command.\n"
             "\nArguments:\n"
             "1. high         (numeric, required) The newer block timestamp\n"
             "2. low          (numeric, required) The older block timestamp\n"
-            "3. options      (string, required) A json object\n"
+            "3. options      (json object, optional)\n"
             "    {\n"
             "      \"noOrphans\":true   (boolean) will only include blocks on the main chain\n"
             "      \"logicalTimes\":true   (boolean) will include logical timestamps with hashes\n"
@@ -821,9 +822,9 @@ UniValue GetIndexHashes(const JSONRPCRequest& request)
             "  }\n"
             "]\n"
             "\nExamples:\n"
-            + HelpExampleCli("GetIndexHashes", "1231614698 1231024505")
-            + HelpExampleRpc("GetIndexHashes", "1231614698, 1231024505")
-            + HelpExampleCli("GetIndexHashes", "1231614698 1231024505 '{\"noOrphans\":false, \"logicalTimes\":true}'")
+            + HelpExampleCli("getblockhashes", "1231614698 1231024505")
+            + HelpExampleRpc("getblockhashes", "1231614698, 1231024505")
+            + HelpExampleCli("getblockhashes", "1231614698 1231024505 '{\"noOrphans\":false, \"logicalTimes\":true}'")
             );
 
     unsigned int high = request.params[0].get_int();
@@ -2536,7 +2537,8 @@ static const CRPCCommand commands[] =
     { "blockchain",         "getblockcount",          &getblockcount,          {} },
     { "blockchain",         "getblock",               &getblock,               {"blockhash","verbosity|verbose"} },
     { "blockchain",         "getblockdeltas",         &getblockdeltas,         {} },
-    { "blockchain",         "GetIndexHashes",         &GetIndexHashes,         {} },
+    { "blockchain",         "getblockhashes",         &GetIndexHashes,         {"high","low","options"} },
+    { "blockchain",         "GetIndexHashes",         &GetIndexHashes,         {"high","low","options"} },
     { "blockchain",         "getblockhash",           &getblockhash,           {"height"} },
     { "blockchain",         "getblockheader",         &getblockheader,         {"blockhash","verbose"} },
     { "blockchain",         "getchaintips",           &getchaintips,           {} },
@@ -2559,7 +2561,7 @@ static const CRPCCommand commands[] =
 
     { "blockchain",         "freezelist",             &freezelist,             {} },
     { "blockchain",         "issuanceinfo",           &issuanceinfo,           {} },
-    { "blockchain",         "checkfreeze",            &checkfreeze,            {} },
+    { "blockchain",         "checkfreeze",            &checkfreeze,            {"address"} },
 
     /* Not shown in help */
     { "hidden",             "invalidateblock",        &invalidateblock,        {"blockhash"} },

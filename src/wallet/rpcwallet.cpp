@@ -486,7 +486,7 @@ static int64_t LockTimeFromValue(const UniValue& value)
     const int64_t lockTime = value.get_int();
     if (lockTime != 0 && lockTime < MIN_SCRIPT_LOCK_TIME) {
         throw JSONRPCError(RPC_INVALID_PARAMETER, strprintf(
-            "Invalid lock_time %d: use 0 for no lock, or a block height or a time of at least %d", lockTime, MIN_SCRIPT_LOCK_TIME));
+            "Invalid timelock %d: use 0 for no lock, or a block height or a time of at least %d", lockTime, MIN_SCRIPT_LOCK_TIME));
     }
     return lockTime;
 }
@@ -549,7 +549,8 @@ UniValue sendtoaddress(const JSONRPCRequest& request)
             "\nArguments:\n"
             "1. \"address\"            (string, required) The paladeum address to send to.\n"
             "2. \"amount\"             (numeric or string, required) The amount in " + CURRENCY_UNIT + " to send. eg 0.1\n"
-            "3. \"timelock\"           (integer, optional, default=0) Timelock for transaction, could be height or timestamp\n"
+            "3. \"timelock\"           (integer, optional, default=0) Timelock for transaction, could be height or timestamp.\n"
+            "                             Values from 1 to 255 and negative values are refused.\n"
             "4. \"message\"            (string, optional, default="") Message attached to transaction. \n"
             "5. \"comment\"            (string, optional) A comment used to store what the transaction is for. \n"
             "                             This is not part of the transaction, just kept in your wallet.\n"
@@ -558,8 +559,10 @@ UniValue sendtoaddress(const JSONRPCRequest& request)
             "                             transaction, just kept in your wallet.\n"
             "7. subtractfeefromamount  (boolean, optional, default=false) The fee will be deducted from the amount being sent.\n"
             "                             The recipient will receive less paladeums than you enter in the amount field.\n"
-            "8. conf_target            (numeric, optional) Confirmation target (in blocks)\n"
-            "9. \"estimate_mode\"      (string, optional, default=UNSET) The fee estimate mode, must be one of:\n"
+            "8. replaceable            (boolean, optional) Not used: there is no replace-by-fee. It keeps the next arguments at\n"
+            "                             the positions of Paladeum 0.1.7.\n"
+            "9. conf_target            (numeric, optional) Confirmation target (in blocks)\n"
+            "10. \"estimate_mode\"     (string, optional, default=UNSET) The fee estimate mode, must be one of:\n"
             "       \"UNSET\"\n"
             "       \"ECONOMICAL\"\n"
             "       \"CONSERVATIVE\"\n"
@@ -646,14 +649,15 @@ UniValue sendfromaddress(const JSONRPCRequest& request)
 
     if (request.fHelp || request.params.size() < 3 || request.params.size() > 9)
         throw std::runtime_error(
-            "sendfromaddress \"from_address\" \"to_address\" amount ( timelock \"comment\" \"comment_to\" subtractfeefromamount replaceable conf_target \"estimate_mode\")\n"
+            "sendfromaddress \"from_address\" \"to_address\" amount ( timelock \"comment\" \"comment_to\" subtractfeefromamount conf_target \"estimate_mode\")\n"
             "\nSend an amount from a specific address to a given address. All paladeum change will get sent back to the from_address\n"
             + HelpRequiringPassphrase(pwallet) +
             "\nArguments:\n"
             "1. \"from_address\"       (string, required) The paladeum address to send from.\n"
             "2. \"to_address\"            (string, required) The paladeum address to send to.\n"
             "3. \"amount\"             (numeric or string, required) The amount in " + CURRENCY_UNIT + " to send. eg 0.1\n"
-            "4. \"timelock\"           (integer, optional, default=0) Timelock for transaction, could be height or timestamp\n"
+            "4. \"timelock\"           (integer, optional, default=0) Timelock for transaction, could be height or timestamp.\n"
+            "                             Values from 1 to 255 and negative values are refused.\n"
             "5. \"comment\"            (string, optional) A comment used to store what the transaction is for. \n"
             "                             This is not part of the transaction, just kept in your wallet.\n"
             "6. \"comment_to\"         (string, optional) A comment to store the name of the person or organization \n"
@@ -669,9 +673,9 @@ UniValue sendfromaddress(const JSONRPCRequest& request)
             "\nResult:\n"
             "\"txid\"                  (string) The transaction id.\n"
             "\nExamples:\n"
-            + HelpExampleCli("sendfromaddress", "\"1M72Sfpbz1BPpXFHz9m3CdqATR44Jvaydd\" \"1M72Sfpbz1BPpXFHz9m3CdqATR44Jvaydd\" 1000 0.1")
-            + HelpExampleCli("sendfromaddress", "\"1M72Sfpbz1BPpXFHz9m3CdqATR44Jvaydd\" \"1M72Sfpbz1BPpXFHz9m3CdqATR44Jvaydd\" 1000 0.1 \"donation\" \"seans outpost\"")
-            + HelpExampleCli("sendfromaddress", "\"1M72Sfpbz1BPpXFHz9m3CdqATR44Jvaydd\" \"1M72Sfpbz1BPpXFHz9m3CdqATR44Jvaydd\" 1000 0.1 \"\" \"\" true")
+            + HelpExampleCli("sendfromaddress", "\"1M72Sfpbz1BPpXFHz9m3CdqATR44Jvaydd\" \"1M72Sfpbz1BPpXFHz9m3CdqATR44Jvaydd\" 0.1 1000")
+            + HelpExampleCli("sendfromaddress", "\"1M72Sfpbz1BPpXFHz9m3CdqATR44Jvaydd\" \"1M72Sfpbz1BPpXFHz9m3CdqATR44Jvaydd\" 0.1 1000 \"donation\" \"seans outpost\"")
+            + HelpExampleCli("sendfromaddress", "\"1M72Sfpbz1BPpXFHz9m3CdqATR44Jvaydd\" \"1M72Sfpbz1BPpXFHz9m3CdqATR44Jvaydd\" 0.1 1000 \"\" \"\" true")
             + HelpExampleRpc("sendfromaddress", "\"1M72Sfpbz1BPpXFHz9m3CdqATR44Jvaydd\" \"1M72Sfpbz1BPpXFHz9m3CdqATR44Jvaydd\", 0.1, 1000, \"donation\", \"seans outpost\"")
         );
 
@@ -1166,7 +1170,8 @@ UniValue sendfrom(const JSONRPCRequest& request)
             "                       the spend.\n"
             "2. \"toaddress\"         (string, required) The paladeum address to send funds to.\n"
             "3. amount                (numeric or string, required) The amount in " + CURRENCY_UNIT + " (transaction fee is added on top).\n"
-            "4. \"timelock\"          (integer, optional, default=0) Timelock for transaction, could be height or timestamp\n"
+            "4. \"timelock\"          (integer, optional, default=0) Timelock for transaction, could be height or timestamp.\n"
+            "                            Values from 1 to 255 and negative values are refused.\n"
             "5. minconf               (numeric, optional, default=1) Only use funds with at least this many confirmations.\n"
             "6. \"comment\"           (string, optional) A comment used to store what the transaction is for. \n"
             "                                     This is not part of the transaction, just kept in your wallet.\n"
@@ -1254,8 +1259,10 @@ UniValue sendmany(const JSONRPCRequest& request)
             "      \"address\"          (string) Subtract fee from this address\n"
             "      ,...\n"
             "    ]\n"
-            "7. conf_target            (numeric, optional) Confirmation target (in blocks)\n"
-            "8. \"estimate_mode\"      (string, optional, default=UNSET) The fee estimate mode, must be one of:\n"
+            "7. replaceable            (boolean, optional) Not used: there is no replace-by-fee. It keeps the next arguments at\n"
+            "                             the positions of Paladeum 0.1.7.\n"
+            "8. conf_target            (numeric, optional) Confirmation target (in blocks)\n"
+            "9. \"estimate_mode\"      (string, optional, default=UNSET) The fee estimate mode, must be one of:\n"
             "       \"UNSET\"\n"
             "       \"ECONOMICAL\"\n"
             "       \"CONSERVATIVE\"\n"
@@ -1959,7 +1966,7 @@ UniValue listtransactions(const JSONRPCRequest& request)
 
     if (request.fHelp || request.params.size() > 5)
         throw std::runtime_error(
-            "listtransactions ( \"account\" count skip include_watchonly)\n"
+            "listtransactions ( \"account\" count skip include_watchonly include_offline_staking )\n"
             "\nReturns up to 'count' most recent transactions skipping the first 'from' transactions for account 'account'.\n"
             "\nArguments:\n"
             "1. \"account\"    (string, optional) DEPRECATED. The account name. Should be \"*\".\n"
@@ -2034,9 +2041,8 @@ UniValue listtransactions(const JSONRPCRequest& request)
     if(!request.params[3].isNull())
         if(request.params[3].get_bool())
             filter = filter | ISMINE_WATCH_ONLY;
-    if(request.params.size() > 4)
-        if(!request.params[4].get_bool())
-            filter &= ~ISMINE_WATCH_ONLY;
+    if (request.params.size() > 4 && !request.params[4].isNull() && !request.params[4].get_bool())
+        filter &= ~ISMINE_STAKABLE;
 
     if (nCount < 0)
         throw JSONRPCError(RPC_INVALID_PARAMETER, "Negative count");
@@ -2604,7 +2610,7 @@ UniValue walletpassphrase(const JSONRPCRequest& request)
 
     if (pwallet->IsCrypted() && (request.fHelp || request.params.size() < 2 || request.params.size() > 3)) {
         throw std::runtime_error(
-            "walletpassphrase \"passphrase\" timeout\n"
+            "walletpassphrase \"passphrase\" timeout ( stakingonly )\n"
             "\nStores the wallet decryption key in memory for 'timeout' seconds.\n"
             "This is needed prior to performing transactions related to private keys such as sending paladeums\n"
             "\nArguments:\n"
@@ -2651,7 +2657,7 @@ UniValue walletpassphrase(const JSONRPCRequest& request)
     // Every argument is checked before the wallet is opened: a call that fails must leave
     // the wallet as it was (it used to stay open, for payments and without a time limit).
     const int64_t nSleepTime = request.params[1].get_int64();
-    const bool fStakingOnly = request.params.size() > 2 && request.params[2].get_bool();
+    const bool fStakingOnly = request.params.size() > 2 && !request.params[2].isNull() && request.params[2].get_bool();
     if (nSleepTime < 0)
         throw JSONRPCError(RPC_INVALID_PARAMETER, "Timeout cannot be negative.");
 
@@ -4319,7 +4325,7 @@ static const CRPCCommand commands[] =
     { "wallet",             "listreceivedbyaccount",    &listreceivedbyaccount,    {"minconf","include_empty","include_watchonly"} },
     { "wallet",             "listreceivedbyaddress",    &listreceivedbyaddress,    {"minconf","include_empty","include_watchonly"} },
     { "wallet",             "listsinceblock",           &listsinceblock,           {"blockhash","target_confirmations","include_watchonly","include_removed"} },
-    { "wallet",             "listtransactions",         &listtransactions,         {"account","count","skip","include_watchonly"} },
+    { "wallet",             "listtransactions",         &listtransactions,         {"account","count","skip","include_watchonly","include_offline_staking"} },
     { "wallet",             "listunspent",              &listunspent,              {"minconf","maxconf","addresses","include_unsafe","query_options"} },
     { "wallet",             "listunspenttoken",         &listunspenttoken,         {"token_name", "minconf","maxconf","addresses","include_unsafe","query_options"} },
     { "wallet",             "listwallets",              &listwallets,              {} },
@@ -4333,7 +4339,7 @@ static const CRPCCommand commands[] =
     { "wallet",             "sendfrom",                 &sendfrom,                 {"fromaccount","toaddress","amount","timelock","minconf","comment","comment_to"} },
     { "wallet",             "sendmany",                 &sendmany,                 {"fromaccount","amounts","message","minconf","comment","subtractfeefrom","replaceable","conf_target","estimate_mode"} },
     { "wallet",             "sendtoaddress",            &sendtoaddress,            {"address","amount","timelock","message","comment","comment_to","subtractfeefromamount","replaceable","conf_target","estimate_mode"} },
-    { "wallet",             "sendfromaddress",          &sendfromaddress,          {"from_address","address","amount","timelock","comment","comment_to","subtractfeefromamount", "conf_target","estimate_mode"} },
+    { "wallet",             "sendfromaddress",          &sendfromaddress,          {"from_address","to_address|address","amount","timelock","comment","comment_to","subtractfeefromamount", "conf_target","estimate_mode"} },
     { "wallet",             "setaccount",               &setaccount,               {"address","account"} },
     { "wallet",             "settxfee",                 &settxfee,                 {"amount"} },
     { "wallet",             "signmessage",              &signmessage,              {"address","message"} },

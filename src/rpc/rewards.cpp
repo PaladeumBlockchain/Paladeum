@@ -211,9 +211,9 @@ UniValue listsnapshotrequests(const JSONRPCRequest& request) {
     //  Extract parameters
     std::string token_name = "";
     int block_height = 0;
-    if (request.params.size() > 0)
+    if (request.params.size() > 0 && !request.params[0].isNull())
         token_name = request.params[0].get_str();
-    if (request.params.size() > 1)
+    if (request.params.size() > 1 && !request.params[1].isNull())
         block_height = request.params[1].get_int();
 
     if (!pSnapshotRequestDb)
@@ -288,7 +288,7 @@ UniValue cancelsnapshotrequest(const JSONRPCRequest& request) {
 UniValue distributereward(const JSONRPCRequest& request) {
     if (request.fHelp || request.params.size() < 4)
         throw std::runtime_error(
-                "distributereward \"token_name\" snapshot_height \"distribution_token_name\" gross_distribution_amount ( \"message\" ) ( \"exception_addresses\" ) (\"change_address\") (\"dry_run\")\n"
+                "distributereward \"token_name\" snapshot_height \"distribution_token_name\" gross_distribution_amount ( \"message\" \"exception_addresses\" \"change_address\" )\n"
                 "\nSplits the specified amount of the distribution token to all owners of token_name that are not in the optional exclusion_addresses\n"
 
                 "\nArguments:\n"
@@ -321,8 +321,8 @@ UniValue distributereward(const JSONRPCRequest& request) {
                 "\nExamples:\n"
                 + HelpExampleCli("distributereward", "\"TRONCO\" 12345 \"PLB\" 1000")
                 + HelpExampleCli("distributereward", "\"PHATSTACKS\" 12345 \"DIVIDENDS\" 1000 \"message\" \"mwN7xC3yomYdvJuVXkVC7ymY9wNBjWNduD,n4Rf18edydDaRBh7t6gHUbuByLbWEoWUTg\"")
-                + HelpExampleRpc("distributereward", "\"TRONCO\" 34987 \"DIVIDENDS\" 100000")
-                + HelpExampleRpc("distributereward", "\"PHATSTACKS\" 34987 \"PLB\" 100000 \"message\" \"mwN7xC3yomYdvJuVXkVC7ymY9wNBjWNduD,n4Rf18edydDaRBh7t6gHUbuByLbWEoWUTg\"")
+                + HelpExampleRpc("distributereward", "\"TRONCO\", 34987, \"DIVIDENDS\", 100000")
+                + HelpExampleRpc("distributereward", "\"PHATSTACKS\", 34987, \"PLB\", 100000, \"message\", \"mwN7xC3yomYdvJuVXkVC7ymY9wNBjWNduD,n4Rf18edydDaRBh7t6gHUbuByLbWEoWUTg\"")
         );
 
     if (!fTokenIndex) {
@@ -349,17 +349,17 @@ UniValue distributereward(const JSONRPCRequest& request) {
     CAmount distribution_amount = AmountFromValue(request.params[3], (distribution_token_name == "PLB"));
     
     std::string message;
-    if (request.params.size() > 4) {
+    if (request.params.size() > 4 && !request.params[4].isNull()) {
         message = request.params[4].get_str();
     }
 
     std::string exception_addresses;
-    if (request.params.size() > 5) {
+    if (request.params.size() > 5 && !request.params[5].isNull()) {
         exception_addresses = request.params[5].get_str();
     }
 
     std::string change_address = "";
-    if (request.params.size() > 6) {
+    if (request.params.size() > 6 && !request.params[6].isNull()) {
         change_address = request.params[6].get_str();
         if (!change_address.empty() && !IsValidDestinationString(change_address))
             throw JSONRPCError(RPC_INVALID_PARAMETER, std::string("Invalid change address: Use a valid PLB address"));
@@ -455,7 +455,7 @@ UniValue getdistributestatus(const JSONRPCRequest& request) {
     std::string distribution_token_name(request.params[2].get_str());
     CAmount distribution_amount = AmountFromValue(request.params[3], (distribution_token_name == "PLB"));
     std::string exception_addresses;
-    if (request.params.size() > 4) {
+    if (request.params.size() > 4 && !request.params[4].isNull()) {
         exception_addresses = request.params[4].get_str();
 
         //LogPrint(BCLog::REWARDS, "Excluding \"%s\"\n", exception_addresses.c_str());
@@ -494,8 +494,8 @@ static const CRPCCommand commands[] =
             {   "rewards",      "getsnapshotrequest",         &getsnapshotrequest,         {"token_name", "block_height"}},
             {   "rewards",      "listsnapshotrequests",         &listsnapshotrequests,         {"token_name", "block_height"}},
             {   "rewards",      "cancelsnapshotrequest",      &cancelsnapshotrequest,      {"token_name", "block_height"}},
-            {   "rewards",      "distributereward",           &distributereward,           {"token_name", "snapshot_height", "distribution_token_name", "gross_distribution_amount", "exception_addresses", "change_address"}},
-            {   "rewards",      "getdistributestatus",        &getdistributestatus,            {"token_name", "block_height", "distribution_token_name", "gross_distribution_amount", "exception_addresses"}}
+            {   "rewards",      "distributereward",           &distributereward,           {"token_name", "snapshot_height", "distribution_token_name", "gross_distribution_amount", "message", "exception_addresses", "change_address"}},
+            {   "rewards",      "getdistributestatus",        &getdistributestatus,            {"token_name", "snapshot_height|block_height", "distribution_token_name", "gross_distribution_amount", "exception_addresses"}}
     #endif
     };
 

@@ -1029,7 +1029,7 @@ UniValue getaddressmempool(const JSONRPCRequest& request)
     }
 
     bool includeTokens = false;
-    if (request.params.size() > 1) {
+    if (request.params.size() > 1 && !request.params[1].isNull()) {
         includeTokens = request.params[1].get_bool();
     }
 
@@ -1490,7 +1490,7 @@ UniValue getaddressbalance(const JSONRPCRequest& request)
     }
 
     bool includeTokens = false;
-    if (request.params.size() > 1) {
+    if (request.params.size() > 1 && !request.params[1].isNull()) {
         includeTokens = request.params[1].get_bool();
     }
 
@@ -1621,7 +1621,7 @@ UniValue getaddresstxids(const JSONRPCRequest& request)
     }
 
     bool includeTokens = false;
-    if (request.params.size() > 1) {
+    if (request.params.size() > 1 && !request.params[1].isNull()) {
         includeTokens = request.params[1].get_bool();
     }
 

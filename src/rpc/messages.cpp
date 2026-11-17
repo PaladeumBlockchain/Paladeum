@@ -340,7 +340,7 @@ UniValue sendmessage(const JSONRPCRequest& request) {
     std::string ipfs_hash = request.params[1].get_str();
 
     int64_t expire_time = 0;
-    if (request.params.size() > 2) {
+    if (request.params.size() > 2 && !request.params[2].isNull()) {
         expire_time = request.params[2].get_int64();
     }
 
@@ -493,7 +493,7 @@ static const CRPCCommand commands[] =
             { "messages",       "subscribetochannel",         &subscribetochannel,         {"channel_name"}},
             { "messages",       "unsubscribefromchannel",     &unsubscribefromchannel,     {"channel_name"}},
 #ifdef ENABLE_WALLET
-            { "messages",       "sendmessage",                &sendmessage,                {"channel", "ipfs_hash", "expire_time"}},
+            { "messages",       "sendmessage",                &sendmessage,                {"channel_name|channel", "ipfs_hash", "expire_time"}},
             {"restricted",        "viewmytaggedaddresses",      &viewmytaggedaddresses,       {}},
             {"restricted",        "viewmyrestrictedaddresses",  &viewmyrestrictedaddresses,   {}},
 #endif
