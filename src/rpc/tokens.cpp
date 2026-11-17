@@ -737,8 +737,9 @@ UniValue issueunique(const JSONRPCRequest& request)
             throw JSONRPCError(RPC_INVALID_PARAMETER, std::string("Unique token tag is invalid: " + tag));
         }
 
-        std::string tokenName = GetUniqueTokenName(rootName, tag);
-        // (a name below a sub token reaches the length limit sooner)
+        // The name itself, not GetUniqueTokenName(), which gives "" for an invalid name and so
+        // hid the reason (a name below a sub token reaches the length limit sooner)
+        std::string tokenName = rootName + "#" + tag;
         KnownTokenType uniqueType;
         std::string nameError;
         if (!IsTokenNameValid(tokenName, uniqueType, nameError) || uniqueType != KnownTokenType::UNIQUE) {
@@ -817,17 +818,14 @@ UniValue registerusername(const JSONRPCRequest& request)
 
     EnsureWalletIsUnlocked(pwallet);
 
-    // Check token name and infer tokenType
+    // Check that the name is a username. A name that is not one was checked as another kind of
+    // token name, whose error does not apply here: the error gives the rules of a username.
     std::string tokenName = request.params[0].get_str();
     KnownTokenType tokenType;
     std::string tokenError = "";
-    if (!IsTokenNameValid(tokenName, tokenType, tokenError)) {
-        throw JSONRPCError(RPC_INVALID_PARAMETER, std::string("Invalid token name: ") + tokenName + std::string("\nError: ") + tokenError);
-    }
-
-    // Check tokenType supported
-    if (tokenType != KnownTokenType::USERNAME) {
-        throw JSONRPCError(RPC_INVALID_PARAMETER, std::string("Usename is invalid"));
+    if (!IsTokenNameValid(tokenName, tokenType, tokenError) || tokenType != KnownTokenType::USERNAME) {
+        IsTypeCheckNameValid(KnownTokenType::USERNAME, tokenName, tokenError);
+        throw JSONRPCError(RPC_INVALID_PARAMETER, std::string("Invalid username: ") + tokenName + std::string("\nError: ") + tokenError);
     }
 
     std::string address = "";
