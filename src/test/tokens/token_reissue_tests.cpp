@@ -204,5 +204,43 @@ BOOST_FIXTURE_TEST_SUITE(token_reissue_tests, BasicTestingSetup)
         BOOST_CHECK_MESSAGE(ContextualCheckReissueToken(&cache, reissue7, error), "Reissue with a txid hash should have been valid: " + error);
     }
 
+    // A second reissue of a token whose first reissue is not written to disk yet: its record
+    // keeps the height and the block of the issue. (They were left uninitialized and reached
+    // the token database, so the block height of a reissued token differed between nodes.)
+    BOOST_AUTO_TEST_CASE(reissue_twice_keeps_issue_height_test)
+    {
+        BOOST_TEST_MESSAGE("Running Reissue Twice Height Test");
+
+        SelectParams(CBaseChainParams::MAIN);
+
+        fTokenIndex = true;
+        ptokens = new CTokensCache();
+        CTokensCache cache;
+
+        const uint256 issueBlock = uint256S("0x0102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f20");
+        CNewToken token1("TWICE", CAmount(100 * COIN), 8, 1, 0, "", 0, "", 0);
+        BOOST_CHECK(cache.AddNewToken(token1, GetParams().GlobalFeeAddress(), 42, issueBlock));
+
+        CReissueToken reissue1("TWICE", CAmount(1 * COIN), 8, 1, "", 0, "", 0);
+        CReissueToken reissue2("TWICE", CAmount(2 * COIN), 8, 1, "", 0, "", 0);
+        BOOST_CHECK(cache.AddReissueToken(reissue1, GetParams().GlobalFeeAddress(), COutPoint(uint256S("01"), 1)));
+        BOOST_CHECK(cache.AddReissueToken(reissue2, GetParams().GlobalFeeAddress(), COutPoint(uint256S("02"), 1)));
+
+        BOOST_CHECK_EQUAL(cache.setNewReissueToAdd.size(), 2U);
+        for (const CTokenCacheReissueToken& record : cache.setNewReissueToAdd) {
+            BOOST_CHECK_EQUAL(record.blockHeight, 42);
+            BOOST_CHECK(record.blockHash == issueBlock);
+        }
+
+        // the lookup gives the reissued data with the height and the block of the issue
+        CNewToken token;
+        int height = -1;
+        uint256 block;
+        BOOST_CHECK(cache.GetTokenMetaDataIfExists("TWICE", token, height, block));
+        BOOST_CHECK_EQUAL(token.nAmount, 103 * COIN);
+        BOOST_CHECK_EQUAL(height, 42);
+        BOOST_CHECK(block == issueBlock);
+    }
+
 
 BOOST_AUTO_TEST_SUITE_END()

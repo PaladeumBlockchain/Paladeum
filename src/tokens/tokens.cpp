@@ -3592,77 +3592,93 @@ bool CTokensCache::GetTokenMetaDataIfExists(const std::string &name, CNewToken &
 
 bool CTokensCache::GetTokenMetaDataIfExists(const std::string &name, CNewToken &token, int& nHeight, uint256& blockHash)
 {
-    // Check the map that contains the reissued token data. If it is in this map, it hasn't been saved to disk yet
-    if (mapReissuedTokenData.count(name)) {
-        token = mapReissuedTokenData.at(name);
-        return true;
-    }
+    // A reissue that is not written to disk yet is in mapReissuedTokenData, of this cache or of
+    // the cache it was made from: it has the data of the token as reissued. The height and the
+    // block are those of the issue, from the record of the issue. (They were left as the caller
+    // had them, uninitialized, and a second reissue wrote them to the token database: the block
+    // height of a reissued token then differed from node to node, with a block hash of zero.)
+    const CNewToken* reissued = nullptr;
+    if (mapReissuedTokenData.count(name))
+        reissued = &mapReissuedTokenData.at(name);
+    else if (ptokens && ptokens->mapReissuedTokenData.count(name))
+        reissued = &ptokens->mapReissuedTokenData.at(name);
 
-    // Check the map that contains the reissued token data. If it is in this map, it hasn't been saved to disk yet
-    if (ptokens->mapReissuedTokenData.count(name)) {
-        token = ptokens->mapReissuedTokenData.at(name);
-        return true;
-    }
+    auto issueRecord = [this, &name](CNewToken& token, int& nHeight, uint256& blockHash) -> bool {
+        // Create objects that will be used to check the dirty cache
+        CNewToken tempToken;
+        tempToken.strName = name;
+        CTokenCacheNewToken cachedToken(tempToken, "", 0, uint256());
 
-    // Create objects that will be used to check the dirty cache
-    CNewToken tempToken;
-    tempToken.strName = name;
-    CTokenCacheNewToken cachedToken(tempToken, "", 0, uint256());
+        // Check the dirty caches first and see if it was recently added or removed
+        if (setNewTokensToRemove.count(cachedToken)) {
+            LogPrintf("GetTokenMetaDataIfExists : Found in new tokens to Remove - Returning False\n");
+            return false;
+        }
 
-    // Check the dirty caches first and see if it was recently added or removed
-    if (setNewTokensToRemove.count(cachedToken)) {
-        LogPrintf("%s : Found in new tokens to Remove - Returning False\n", __func__);
-        return false;
-    }
+        // Check the dirty caches first and see if it was recently added or removed
+        if (ptokens->setNewTokensToRemove.count(cachedToken)) {
+            LogPrintf("GetTokenMetaDataIfExists : Found in new tokens to Remove - Returning False\n");
+            return false;
+        }
 
-    // Check the dirty caches first and see if it was recently added or removed
-    if (ptokens->setNewTokensToRemove.count(cachedToken)) {
-        LogPrintf("%s : Found in new tokens to Remove - Returning False\n", __func__);
-        return false;
-    }
-
-    auto setIterator = setNewTokensToAdd.find(cachedToken);
-    if (setIterator != setNewTokensToAdd.end()) {
-        token = setIterator->token;
-        nHeight = setIterator->blockHeight;
-        blockHash = setIterator->blockHash;
-        return true;
-    }
-
-    setIterator = ptokens->setNewTokensToAdd.find(cachedToken);
-    if (setIterator != ptokens->setNewTokensToAdd.end()) {
-        token = setIterator->token;
-        nHeight = setIterator->blockHeight;
-        blockHash = setIterator->blockHash;
-        return true;
-    }
-
-    // Check the cache, if it doesn't exist in the cache. Try and read it from database
-    if (ptokensCache) {
-        CDatabasedTokenData data;
-        if (ptokensCache->GetIfExists(name, data)) {
-            token = data.token;
-            nHeight = data.nHeight;
-            blockHash = data.blockHash;
+        auto setIterator = setNewTokensToAdd.find(cachedToken);
+        if (setIterator != setNewTokensToAdd.end()) {
+            token = setIterator->token;
+            nHeight = setIterator->blockHeight;
+            blockHash = setIterator->blockHash;
             return true;
         }
-    }
 
-    if (ptokensdb && ptokensCache) {
-        CNewToken readToken;
-        int height;
+        setIterator = ptokens->setNewTokensToAdd.find(cachedToken);
+        if (setIterator != ptokens->setNewTokensToAdd.end()) {
+            token = setIterator->token;
+            nHeight = setIterator->blockHeight;
+            blockHash = setIterator->blockHash;
+            return true;
+        }
+
+        // Check the cache, if it doesn't exist in the cache. Try and read it from database
+        if (ptokensCache) {
+            CDatabasedTokenData data;
+            if (ptokensCache->GetIfExists(name, data)) {
+                token = data.token;
+                nHeight = data.nHeight;
+                blockHash = data.blockHash;
+                return true;
+            }
+        }
+
+        if (ptokensdb && ptokensCache) {
+            CNewToken readToken;
+            int height;
+            uint256 hash;
+            if (ptokensdb->ReadTokenData(name, readToken, height, hash)) {
+                token = readToken;
+                nHeight = height;
+                blockHash = hash;
+                ptokensCache->Put(readToken.strName, CDatabasedTokenData(readToken, height, hash));
+                return true;
+            }
+        }
+
+        LogPrintf("GetTokenMetaDataIfExists : Didn't find token meta data anywhere. Returning False\n");
+        return false;
+    };
+
+    if (reissued) {
+        CNewToken issued;
+        int height = 0;
         uint256 hash;
-        if (ptokensdb->ReadTokenData(name, readToken, height, hash)) {
-            token = readToken;
-            nHeight = height;
-            blockHash = hash;
-            ptokensCache->Put(readToken.strName, CDatabasedTokenData(readToken, height, hash));
-            return true;
+        if (!issueRecord(issued, height, hash)) {
+            height = 0;
+            hash.SetNull();
         }
+        token = *reissued;
+        nHeight = height;
+        blockHash = hash;
+        return true;
     }
-
-    LogPrintf("%s : Didn't find token meta data anywhere. Returning False\n", __func__);
-    return false;
+    return issueRecord(token, nHeight, blockHash);
 }
 
 bool GetTokenInfoFromScript(const CScript& scriptPubKey, std::string& strName, CAmount& nAmount, uint32_t& nTimeLock)
