@@ -252,6 +252,12 @@ bool BlockAssembler::TestPackageTransactions(const CTxMemPool::setEntries& packa
             return false;
         if (!fIncludeWitness && it->GetTx().HasWitness())
             return false;
+        // A block may not hold a transaction whose time is later than its own ("bad-tx-time").
+        // The mempool takes transactions up to the future drift, and the time of a proof-of-stake
+        // block is rounded down to the stake timestamp mask, so a transaction of the last seconds
+        // made the block invalid and the stake was lost. nLockTimeCutoff is the block's time here.
+        if ((int64_t)it->GetTx().nTime > nLockTimeCutoff)
+            return false;
     }
 
     // Governance. A transaction that spends a coin of a frozen script is invalid, and so is one
