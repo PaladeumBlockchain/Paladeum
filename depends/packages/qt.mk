@@ -155,6 +155,10 @@ $(package)_config_opts_linux += -dbus-runtime
 ifneq ($(LTO),)
 $(package)_config_opts_linux += -ltcg
 endif
+# Recent distributions' compilers default to _FORTIFY_SOURCE=3, under which Qt 5.15's
+# qt_readlink() (QLockFile, behind QSettings) aborts with "buffer overflow detected" at the
+# start of the desktop wallet. Level 2, as configure.ac sets for Paladeum's own code.
+$(package)_cppflags_linux += -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=2
 
 ifneq (,$(findstring clang,$($(package)_cxx)))
   ifneq (,$(findstring -stdlib=libc++,$($(package)_cxx)))
