@@ -3639,9 +3639,8 @@ bool CTokensCache::GetTokenMetaDataIfExists(const std::string &name, CNewToken &
 
     // Check the cache, if it doesn't exist in the cache. Try and read it from database
     if (ptokensCache) {
-        if (ptokensCache->Exists(name)) {
-            CDatabasedTokenData data;
-            data = ptokensCache->Get(name);
+        CDatabasedTokenData data;
+        if (ptokensCache->GetIfExists(name, data)) {
             token = data.token;
             nHeight = data.nHeight;
             blockHash = data.blockHash;

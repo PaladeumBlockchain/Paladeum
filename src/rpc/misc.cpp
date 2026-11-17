@@ -1531,6 +1531,7 @@ UniValue getaddressbalance(const JSONRPCRequest& request)
             }
 
         UniValue result(UniValue::VARR);
+        LOCK(cs_main); // the token cache and its metadata cache belong to cs_main
         auto currentActiveTokenCache = GetCurrentTokenCache();
 
         for (std::map<std::string, std::pair<CAmount, CAmount>>::const_iterator it = balances.begin();

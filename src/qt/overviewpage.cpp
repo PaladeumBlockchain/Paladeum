@@ -726,6 +726,7 @@ void OverviewPage::handleTokenClicked(const QModelIndex &index)
             issueUnique->setDisabled(false);
             reissue->setDisabled(true);
             CNewToken token;
+            LOCK(cs_main); // the token cache and its metadata cache belong to cs_main
             auto currentActiveTokenCache = GetCurrentTokenCache();
             if (currentActiveTokenCache && currentActiveTokenCache->GetTokenMetaDataIfExists(name.toStdString(), token))
                 if (token.nReissuable)

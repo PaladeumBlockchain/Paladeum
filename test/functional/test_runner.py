@@ -199,6 +199,7 @@ BASE_SCRIPTS= [
     'rpc_named_arguments.py',
     'rpc_uptime.py',
     'rpc_tokentransfer.py',
+    'rpc_tokens_concurrent.py',
     'feature_loadblock.py',
     'p2p_leak_tx.py'
     # Don't append tests at the end to avoid merge conflicts
