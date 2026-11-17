@@ -2640,6 +2640,22 @@ bool CTokensCache::DumpCacheToDatabase()
             CNewToken token(undoReissue.reissue.strName, 0);
             CTokenCacheNewToken testNewTokenCache(token, "", 0 , uint256());
             if (setNewTokensToRemove.count(testNewTokenCache)) {
+                // The amount that the reissue put on its address goes with the token
+                if (fTokenIndex) {
+                    if (!ptokensdb->EraseTokenAddressQuantity(undoReissue.reissue.strName, undoReissue.address)) {
+                        dirty = true;
+                        message = "_Failed Erasing Address Balance from database";
+                    }
+
+                    if (!ptokensdb->EraseAddressTokenQuantity(undoReissue.address, undoReissue.reissue.strName)) {
+                        dirty = true;
+                        message = "_Failed Erasing UndoReissue Balance from AddressToken database";
+                    }
+
+                    if (dirty) {
+                        return error("%s : %s", __func__, message);
+                    }
+                }
                 continue;
             }
 
@@ -2891,16 +2907,30 @@ bool CTokensCache::DumpCacheToDatabase()
             for (auto undoSpend : vUndoTokenAmount) {
                 auto pair = std::make_pair(undoSpend.tokenName, undoSpend.address);
                 if (mapTokensAddressAmount.count(pair)) {
-                    if (!ptokensdb->WriteTokenAddressQuantity(undoSpend.tokenName, undoSpend.address,
-                                                              mapTokensAddressAmount.at(pair))) {
-                        dirty = true;
-                        message = "_Failed Writing updated Address Quantity to database when undoing spends";
-                    }
+                    if (mapTokensAddressAmount.at(pair) == 0) {
+                        // The amount that came back was taken away again by another undo of the
+                        // same flush: no amount is left, and none is stored
+                        if (!ptokensdb->EraseTokenAddressQuantity(undoSpend.tokenName, undoSpend.address)) {
+                            dirty = true;
+                            message = "_Failed Erasing Address Quantity from database when undoing spends";
+                        }
 
-                    if (!ptokensdb->WriteAddressTokenQuantity(undoSpend.address, undoSpend.tokenName,
-                                                              mapTokensAddressAmount.at(pair))) {
-                        dirty = true;
-                        message = "_Failed Writing Address Balance to database";
+                        if (!ptokensdb->EraseAddressTokenQuantity(undoSpend.address, undoSpend.tokenName)) {
+                            dirty = true;
+                            message = "_Failed Erasing Address Balance from AddressToken database when undoing spends";
+                        }
+                    } else {
+                        if (!ptokensdb->WriteTokenAddressQuantity(undoSpend.tokenName, undoSpend.address,
+                                                                  mapTokensAddressAmount.at(pair))) {
+                            dirty = true;
+                            message = "_Failed Writing updated Address Quantity to database when undoing spends";
+                        }
+
+                        if (!ptokensdb->WriteAddressTokenQuantity(undoSpend.address, undoSpend.tokenName,
+                                                                  mapTokensAddressAmount.at(pair))) {
+                            dirty = true;
+                            message = "_Failed Writing Address Balance to database";
+                        }
                     }
 
                     if (dirty) {
@@ -4715,6 +4745,11 @@ void GetTxOutKnownTokenTypes(const std::vector<CTxOut>& vout, int& issues, int& 
 }
 
 bool ParseTokenScript(CScript scriptPubKey, uint160 &hashBytes, int& nScriptType, std::string &tokenName, CAmount &tokenAmount, uint32_t &nTimeLock) {
+    // Only a transfer can have a lock time. The callers store this value in the address index
+    // for every kind of token output, so it is set for every kind (it was left uninitialized,
+    // and issued, reissued and owner tokens could show as locked).
+    nTimeLock = 0;
+
     int nType;
     bool fIsOwner;
     int _nStartingPoint;
