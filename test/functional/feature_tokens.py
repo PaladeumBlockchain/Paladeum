@@ -11,6 +11,9 @@ from test_framework.util import assert_equal, assert_is_hash_string, assert_does
 
 import string
 
+# A regtest address that nobody has the key of: RIPEMD160(SHA256("Paladeum regtest burn"))
+BURN_ADDRESS = "aizAEMY2MQr6aQYwzw4t3qB7vZq2HuWNeV"
+
 
 class TokenTest(PaladeumTestFramework):
     def set_test_params(self):
@@ -18,15 +21,16 @@ class TokenTest(PaladeumTestFramework):
         self.num_nodes = 3
         self.extra_args = [['-tokenindex'], ['-tokenindex'], ['-tokenindex']]
 
-    def activate_tokens(self):
-        self.log.info("Generating PLB for node[0] and activating tokens...")
+    def generate_coins(self):
+        # Tokens are always active in Paladeum: there is no deployment to wait for.
+        self.log.info("Generating PLB for node[0]...")
         n0 = self.nodes[0]
 
+        # block 1 pays 1,000,000,000 PLB, mature after 10 more blocks
         n0.generate(1)
         self.sync_all()
-        n0.generate(431)
+        n0.generate(15)
         self.sync_all()
-        assert_equal("active", n0.getblockchaininfo()['bip9_softforks']['tokens']['status'])
 
     def big_test(self):
         self.log.info("Running big test!")
@@ -109,7 +113,7 @@ class TokenTest(PaladeumTestFramework):
         assert_equal(n0.listtokenbalancesbyaddress(address0)["MY_TOKEN!"], 1)
 
         self.log.info("Burning all units to test reissue on zero units...")
-        n0.transfer(token_name="MY_TOKEN", qty=800, to_address="n1BurnXXXXXXXXXXXXXXXXXXXXXXU1qejP")
+        n0.transfer(token_name="MY_TOKEN", qty=800, to_address=BURN_ADDRESS)
         n0.generate(1)
         assert_does_not_contain_key("MY_TOKEN", n0.listmytokens(token="MY_TOKEN", verbose=True))
 
@@ -352,7 +356,7 @@ class TokenTest(PaladeumTestFramework):
         assert_equal(Decimal('11.11111111'), n0.listtokens("*", True)[token_name]["amount"])
 
     def run_test(self):
-        self.activate_tokens()
+        self.generate_coins()
         self.big_test()
         self.issue_param_checks()
         self.chain_tokens()

@@ -72,16 +72,21 @@ BASE_SCRIPTS= [
     # Scripts that are run by the build process.
     # Longest test should go first, to favor running tests in parallel
     # vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv Tests less than 2m vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
+    'rpc_mnemonic.py',
+    'wallet_importmnemonic.py',
+    'rpc_tokens_concurrent.py',
     'wallet_backup.py',
     'wallet_hd.py',
     'p2p_timeouts.py',
     'mining_getblocktemplate_longpoll.py',
     'feature_maxuploadtarget.py',
+    'feature_tokens_undo.py',
     # vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv Tests less than 45s vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
+    'feature_rewards.py',
+    'feature_snapshot.py',
     'rpc_fundrawtransaction.py',
     'wallet_create_tx.py',
     # vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv Tests less than 30s vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
-    'feature_rewards.py',
     'wallet_basic.py',
     'mempool_limit.py',
     'feature_tokens.py',
@@ -94,8 +99,8 @@ BASE_SCRIPTS= [
     'wallet_bip44.py',
     'mining_prioritisetransaction.py',
     'feature_maxreorgdepth.py 4 --height=60 --tip_age=0 --should_reorg=0',      # Don't Reorg
-    'feature_maxreorgdepth.py 3 --height=60 --tip_age=0 --should_reorg=1',      # Reorg (low peer count)
-    'feature_maxreorgdepth.py 4 --height=60 --tip_age=43400 --should_reorg=1',  # Reorg (not caught up)
+    'feature_maxreorgdepth.py 3 --height=60 --tip_age=0 --should_reorg=0',      # Don't Reorg (also with few peers)
+    'feature_maxreorgdepth.py 4 --height=60 --tip_age=43400 --should_reorg=0',  # Don't Reorg (also with an old tip)
     'feature_maxreorgdepth.py 4 --height=59 --tip_age=0 --should_reorg=1',      # Reorg (<60)
     # vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv Tests less than 15s vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
     'rpc_rawtransaction.py',
@@ -143,7 +148,7 @@ BASE_SCRIPTS= [
     'feature_offline_staking.py',
     'feature_future_drift.py',
     'p2p_orphan_processing.py',
-    'feature_tokens.py',
+    'feature_tokens_basic.py',
     'wallet_send_arguments.py',
     'interface_cli_rpcwait.py',
     'wallet_removeaddress.py',
@@ -152,11 +157,8 @@ BASE_SCRIPTS= [
     'wallet_staking_unlock.py',
     'feature_staking_multiwallet.py',
     'feature_stake_variants.py',
-    'rpc_mnemonic.py',
-    'wallet_importmnemonic.py',
     'wallet_multisig_flow.py',
     'feature_bootstrap.py',
-    'feature_snapshot.py',
     'p2p_old_peer_cutoff.py',
     'wallet_multiwallet.py',
     'interface_zmq.py',
@@ -199,7 +201,6 @@ BASE_SCRIPTS= [
     'rpc_named_arguments.py',
     'rpc_uptime.py',
     'rpc_tokentransfer.py',
-    'rpc_tokens_concurrent.py',
     'feature_loadblock.py',
     'p2p_leak_tx.py'
     # Don't append tests at the end to avoid merge conflicts
