@@ -145,7 +145,9 @@ class AddressIndexTest(PaladeumTestFramework):
         scriptPubKey2 = CScript([OP_DUP, OP_HASH160, addressHash2, OP_EQUALVERIFY, OP_CHECKSIG])
         self.nodes[0].importprivkey(privkey2)
 
-        unspent = self.nodes[0].listunspent()
+        # (an output that is large enough for the two payments below: the first one that
+        # the wallet lists may be a small rest of an earlier payment)
+        unspent = sorted(self.nodes[0].listunspent(), key=lambda output: output["amount"], reverse=True)
         tx = CTransaction()
         tx.vin = [CTxIn(COutPoint(int(unspent[0]["txid"], 16), unspent[0]["vout"]))]
         amount = int(unspent[0]["amount"] * 100000000 - 100000)
@@ -432,6 +434,44 @@ class AddressIndexTest(PaladeumTestFramework):
         self.sync_all()
         assert(not has_p2pk_output())
         assert_equal(self.nodes[1].getaddressbalance(pk_address), balance_spent)
+
+        # Tokens in the address index: an issued and a reissued token, and the owner token,
+        # are not time locked. Each time a transfer with a lock time is in the same block:
+        # nothing of it may show at the other token outputs.
+        print("Testing tokens in the address index...")
+        wallet, index = self.nodes[0], self.nodes[1]
+
+        def token_balances(address):
+            return {entry["tokenName"]: entry for entry in index.getaddressbalance({"addresses": [address]}, True)}
+
+        wallet.issue("LOCKSOURCE", 100, wallet.getnewaddress())
+        wallet.generate(1)
+        self.sync_all()
+        locked_until = index.getblockcount() + 1000
+        locked_at = wallet.getnewaddress()
+        holder = wallet.getnewaddress()
+        wallet.transfer("LOCKSOURCE", 10, locked_at, locked_until)
+        wallet.issue("INDEXTEST", 1000, holder)
+        wallet.generate(1)
+        self.sync_all()
+        assert_equal(token_balances(locked_at)["LOCKSOURCE"]["locked"], 10 * COIN)
+        assert_equal(token_balances(locked_at)["LOCKSOURCE"]["balance"], 0)
+        issued = token_balances(holder)
+        assert_equal(issued["INDEXTEST"]["balance"], 1000 * COIN)
+        assert_equal(issued["INDEXTEST"]["locked"], 0)
+        assert_equal(issued["INDEXTEST!"]["balance"], 1 * COIN)
+        assert_equal(issued["INDEXTEST!"]["locked"], 0)
+
+        reissued_to = wallet.getnewaddress()
+        wallet.transfer("LOCKSOURCE", 10, wallet.getnewaddress(), locked_until)
+        wallet.reissue("INDEXTEST", 500, reissued_to)
+        wallet.generate(1)
+        self.sync_all()
+        reissued = token_balances(reissued_to)
+        assert_equal(reissued["INDEXTEST"]["balance"], 500 * COIN)
+        assert_equal(reissued["INDEXTEST"]["locked"], 0)
+        owner_at = [address for address in index.listaddressesbytoken("INDEXTEST!")][0]
+        assert_equal(token_balances(owner_at)["INDEXTEST!"]["locked"], 0)
 
         # mediantime of a block is the median time past, as getblockchaininfo has it for the tip
         print("Testing mediantime...")

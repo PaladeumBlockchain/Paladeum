@@ -355,7 +355,7 @@ UniValue createrawtransaction(const JSONRPCRequest& request)
         throw std::runtime_error(
             "createrawtransaction [{\"txid\":\"id\",\"vout\":n},...] {\"address\":(amount or object),\"data\":\"hex\",...} ( locktime )\n"
             "\nCreate a transaction spending the given inputs and creating new outputs.\n"
-            "Outputs are addresses (paired with a PLB amount, data or object specifying an token operation) or data.\n"
+            "Outputs are addresses (paired with an PLB amount, data or object specifying a token operation) or data.\n"
             "Returns hex-encoded raw transaction.\n"
             "Note that the transaction's inputs are not signed, and\n"
             "it is not stored in the wallet or transmitted to the network.\n"
@@ -445,10 +445,10 @@ UniValue createrawtransaction(const JSONRPCRequest& request)
             "\nExamples:\n"
             + HelpExampleCli("createrawtransaction", "\"[{\\\"txid\\\":\\\"mycoin\\\",\\\"vout\\\":0}]\" \"{\\\"address\\\":0.01}\"")
             + HelpExampleCli("createrawtransaction", "\"[{\\\"txid\\\":\\\"mycoin\\\",\\\"vout\\\":0}]\" \"{\\\"data\\\":\\\"00010203\\\"}\"")
-            + HelpExampleCli("createrawtransaction", "\"[{\\\"txid\\\":\\\"mycoin\\\",\\\"vout\\\":0}]\" \"{\\\"KdZFAFeKV8C5JzdEdgcPYDZku92KkD3fHy\\\":10000,\\\"change_address\\\":change_amount,\\\"issuer_address\\\":{\\\"issue\\\":{\\\"token_name\\\":\\\"MYTOKEN\\\",\\\"token_quantity\\\":1000000,\\\"units\\\":1,\\\"reissuable\\\":0,\\\"has_ipfs\\\":0}}}\"")
-            + HelpExampleCli("createrawtransaction", "\"[{\\\"txid\\\":\\\"mycoin\\\",\\\"vout\\\":0},{\\\"txid\\\":\\\"myownership\\\",\\\"vout\\\":0}]\" \"{\\\"KdZFAFeKV8C5JzdEdgcPYDZku92KkD3fHy\\\":200,\\\"change_address\\\":change_amount,\\\"issuer_address\\\":{\\\"issue_unique\\\":{\\\"root_name\\\":\\\"MYTOKEN\\\",\\\"token_tags\\\":[\\\"ALPHA\\\",\\\"BETA\\\"]}}}\"")
+            + HelpExampleCli("createrawtransaction", "\"[{\\\"txid\\\":\\\"mycoin\\\",\\\"vout\\\":0}]\" \"{\\\"KaokChainExampLeAddressFirstxCXj28\\\":10000,\\\"change_address\\\":change_amount,\\\"issuer_address\\\":{\\\"issue\\\":{\\\"token_name\\\":\\\"MYTOKEN\\\",\\\"token_quantity\\\":1000000,\\\"units\\\":1,\\\"reissuable\\\":0,\\\"has_ipfs\\\":0}}}\"")
+            + HelpExampleCli("createrawtransaction", "\"[{\\\"txid\\\":\\\"mycoin\\\",\\\"vout\\\":0},{\\\"txid\\\":\\\"myownership\\\",\\\"vout\\\":0}]\" \"{\\\"KaokChainExampLeAddressFirstxCXj28\\\":200,\\\"change_address\\\":change_amount,\\\"issuer_address\\\":{\\\"issue_unique\\\":{\\\"root_name\\\":\\\"MYTOKEN\\\",\\\"token_tags\\\":[\\\"ALPHA\\\",\\\"BETA\\\"]}}}\"")
             + HelpExampleCli("createrawtransaction", "\"[{\\\"txid\\\":\\\"mycoin\\\",\\\"vout\\\":0},{\\\"txid\\\":\\\"mytoken\\\",\\\"vout\\\":0}]\" \"{\\\"address\\\":{\\\"transfer\\\":{\\\"MYTOKEN\\\":50}}}\"")
-            + HelpExampleCli("createrawtransaction", "\"[{\\\"txid\\\":\\\"mycoin\\\",\\\"vout\\\":0},{\\\"txid\\\":\\\"myownership\\\",\\\"vout\\\":0}]\" \"{\\\"KdZFAFeKV8C5JzdEdgcPYDZku92KkD3fHy\\\":10000,\\\"change_address\\\":change_amount,\\\"issuer_address\\\":{\\\"reissue\\\":{\\\"token_name\\\":\\\"MYTOKEN\\\",\\\"token_quantity\\\":2000000}}}\"")
+            + HelpExampleCli("createrawtransaction", "\"[{\\\"txid\\\":\\\"mycoin\\\",\\\"vout\\\":0},{\\\"txid\\\":\\\"myownership\\\",\\\"vout\\\":0}]\" \"{\\\"KaokChainExampLeAddressFirstxCXj28\\\":10000,\\\"change_address\\\":change_amount,\\\"issuer_address\\\":{\\\"reissue\\\":{\\\"token_name\\\":\\\"MYTOKEN\\\",\\\"token_quantity\\\":2000000}}}\"")
             + HelpExampleRpc("createrawtransaction", "\"[{\\\"txid\\\":\\\"mycoin\\\",\\\"vout\\\":0}]\", \"{\\\"data\\\":\\\"00010203\\\"}\"")
         );
 
@@ -508,6 +508,8 @@ UniValue createrawtransaction(const JSONRPCRequest& request)
         rawTx.vin.push_back(in);
     }
 
+    // The token outputs below are checked against the token caches, which belong to cs_main
+    LOCK(cs_main);
     auto currentActiveTokenCache = GetCurrentTokenCache();
 
     std::set<CTxDestination> destinations;
@@ -734,7 +736,7 @@ UniValue createrawtransaction(const JSONRPCRequest& request)
                     reissueObj.strName = token_name.get_str();
                     reissueObj.nAmount = AmountFromValue(token_quantity);
 
-                    // Validate the the object is valid
+                    // Validate the object is valid
                     std::string strError;
                     if (!reissueObj.IsValid(strError, *currentActiveTokenCache))
                         throw JSONRPCError(RPC_INVALID_PARAMETER, strError);
@@ -852,7 +854,7 @@ UniValue decoderawtransaction(const JSONRPCRequest& request)
             "         \"reqSigs\" : n,            (numeric) The required sigs\n"
             "         \"type\" : \"pubkeyhash\",  (string) The type, eg 'pubkeyhash'\n"
             "         \"addresses\" : [           (json array of string)\n"
-            "           \"12tvKAXCxZjSmdNbao16dKXC8tRWfcF5oc\"   (string) paladeum address\n"
+            "           \"KaokChainExampLeAddressFirstxCXj28\"   (string) paladeum address\n"
             "           ,...\n"
             "         ]\n"
             "       }\n"
@@ -899,7 +901,7 @@ UniValue decodescript(const JSONRPCRequest& request)
             "     ,...\n"
             "  ],\n"
             "  \"p2sh\":\"address\",       (string) address of P2SH script wrapping this redeem script (not returned if the script is already a P2SH).\n"
-            "  \"(The following only appears if the script is an token script)\n"
+            "  \"(The following only appears if the script is a token script)\n"
             "  \"token_name\":\"name\",      (string) Name of the token.\n"
             "  \"amount\":\"x.xx\",          (numeric) The amount of tokens interacted with.\n"
             "  \"units\": n,                (numeric) The units of the token. (Only appears in the type (new_token))\n"

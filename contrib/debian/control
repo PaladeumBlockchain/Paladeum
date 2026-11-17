@@ -27,7 +27,7 @@ Build-Depends: debhelper,
  libzmq3-dev
 Standards-Version: 3.9.2
 Homepage: https://paladeum.io/
-Vcs-Git: git://github.com/PaladeumNetwork/PaladeumNetwork.git
+Vcs-Git: https://github.com/PaladeumBlockchain/Paladeum.git
 Vcs-Browser: https://github.com/PaladeumBlockchain/Paladeum
 
 Package: paladeumd

@@ -138,6 +138,8 @@ BASE_SCRIPTS= [
     'feature_governance_mempool.py',
     'wallet_staking_unlock.py',
     'feature_staking_multiwallet.py',
+    'feature_tokens_undo.py',
+    'feature_activation_heights.py',
     'feature_stake_variants.py',
     'rpc_mnemonic.py',
     'wallet_importmnemonic.py',
@@ -178,6 +180,7 @@ BASE_SCRIPTS= [
     'p2p_mempool.py',
     'feature_block_script_checks.py',
     'feature_reindex_tokens.py',
+    'rpc_tokens_concurrent.py',
     'feature_governance_forged.py',
     'rpc_named_arguments.py',
     'rpc_uptime.py',
@@ -258,8 +261,8 @@ def main():
     enable_paladeumd = config["components"].getboolean("ENABLE_PLBD")
 
     if config["environment"]["EXEEXT"] == ".exe" and not args.force:
-        # https://github.com/PaladeumBlockchain/Paladeum/commit/d52802551752140cf41f0d9a225a43e84404d3e9
-        # https://github.com/PaladeumBlockchain/Paladeum/pull/5677#issuecomment-136646964
+        # https://github.com/bitcoin/bitcoin/commit/d52802551752140cf41f0d9a225a43e84404d3e9
+        # https://github.com/bitcoin/bitcoin/pull/5677#issuecomment-136646964
         print("Tests currently disabled on Windows by default. Use --force option to enable")
         sys.exit(0)
 

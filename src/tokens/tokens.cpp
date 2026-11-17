@@ -217,7 +217,7 @@ bool IsTypeCheckNameValid(const KnownTokenType type, const std::string& name, st
         }  //Tokens and sub-tokens need to leave one extra char for OWNER indicator
 
         if (!IsTokenNameASubtoken(name) && name.size() < MIN_TOKEN_LENGTH) {
-            error = "Name must be contain " + std::to_string(MIN_TOKEN_LENGTH) + " characters";
+            error = "Name must have at least " + std::to_string(MIN_TOKEN_LENGTH) + " characters";
             return false;
         }
 
@@ -228,7 +228,11 @@ bool IsTypeCheckNameValid(const KnownTokenType type, const std::string& name, st
         }
 
         if (!valid) {
-            error = "Name contains invalid characters (Valid characters are: A-Z 0-9 _ .) (special characters can't be the first or last characters)";
+            // (a name that is kept for the coin itself is refused by the same check)
+            if (std::regex_match(name.substr(0, name.find('/')), PROTECTED_NAMES))
+                error = "Name is reserved: PLB, PLB, PLBCOIN, ALPHACOIN and ALPHACHAIN cannot be token names";
+            else
+                error = "Name contains invalid characters (Valid characters are: A-Z 0-9 _ .) (special characters can't be the first or last characters)";
             return false;
         }
 
@@ -1094,7 +1098,7 @@ bool CReissueToken::IsValid(std::string &strError, CTokensCache& tokenCache, boo
         // (A negative nAmount is rejected further below.)
         if (token.nAmount < 0 || token.nAmount > MAX_MONEY_TOKENS || this->nAmount > MAX_MONEY_TOKENS - token.nAmount) {
             strError = _("Unable to reissue token: token_name '") + strName +
-                       _("' the amount trying to reissue is to large");
+                       _("' the amount trying to reissue is too large");
             return false;
         }
 
@@ -1501,10 +1505,13 @@ bool CTokensCache::RemoveReissueToken(const CReissueToken& reissue, const std::s
     setNewReissueToRemove.insert(reissueToken);
 
     if (fTokenIndex) {
-        // Get the best amount form the database or dirty cache
-        if (!GetBestTokenAddressAmount(*this, reissue.strName, address))
-            return error("%s : Trying to undo reissue of an token but the tokens amount isn't in the database",
-                         __func__);
+        // Get the best amount form the database or dirty cache. A reissue that
+        // added no tokens left no amount for an address without the token.
+        if (!GetBestTokenAddressAmount(*this, reissue.strName, address)) {
+            if (reissueToken.reissue.nAmount != 0)
+                return error("%s : Trying to undo reissue of an token but the tokens amount isn't in the database",
+                             __func__);
+        }
 
         mapTokensAddressAmount[pair] -= reissue.nAmount;
 
@@ -1786,6 +1793,22 @@ bool CTokensCache::DumpCacheToDatabase()
             CNewToken token(undoReissue.reissue.strName, 0);
             CTokenCacheNewToken testNewTokenCache(token, "", 0 , uint256());
             if (setNewTokensToRemove.count(testNewTokenCache)) {
+                // The amount that the reissue put on its address goes with the token
+                if (fTokenIndex) {
+                    if (!ptokensdb->EraseTokenAddressQuantity(undoReissue.reissue.strName, undoReissue.address)) {
+                        dirty = true;
+                        message = "_Failed Erasing Address Balance from database";
+                    }
+
+                    if (!ptokensdb->EraseAddressTokenQuantity(undoReissue.address, undoReissue.reissue.strName)) {
+                        dirty = true;
+                        message = "_Failed Erasing UndoReissue Balance from AddressToken database";
+                    }
+
+                    if (dirty) {
+                        return error("%s : %s", __func__, message);
+                    }
+                }
                 continue;
             }
 
@@ -1838,16 +1861,30 @@ bool CTokensCache::DumpCacheToDatabase()
             for (auto undoSpend : vUndoTokenAmount) {
                 auto pair = std::make_pair(undoSpend.tokenName, undoSpend.address);
                 if (mapTokensAddressAmount.count(pair)) {
-                    if (!ptokensdb->WriteTokenAddressQuantity(undoSpend.tokenName, undoSpend.address,
-                                                              mapTokensAddressAmount.at(pair))) {
-                        dirty = true;
-                        message = "_Failed Writing updated Address Quantity to database when undoing spends";
-                    }
+                    if (mapTokensAddressAmount.at(pair) == 0) {
+                        // The amount that came back was taken away again by another undo of
+                        // the same flush: no amount is left, and none is stored
+                        if (!ptokensdb->EraseTokenAddressQuantity(undoSpend.tokenName, undoSpend.address)) {
+                            dirty = true;
+                            message = "_Failed Erasing Address Quantity from database when undoing spends";
+                        }
 
-                    if (!ptokensdb->WriteAddressTokenQuantity(undoSpend.address, undoSpend.tokenName,
-                                                              mapTokensAddressAmount.at(pair))) {
-                        dirty = true;
-                        message = "_Failed Writing Address Balance to database";
+                        if (!ptokensdb->EraseAddressTokenQuantity(undoSpend.address, undoSpend.tokenName)) {
+                            dirty = true;
+                            message = "_Failed Erasing Address Balance from AddressToken database when undoing spends";
+                        }
+                    } else {
+                        if (!ptokensdb->WriteTokenAddressQuantity(undoSpend.tokenName, undoSpend.address,
+                                                                  mapTokensAddressAmount.at(pair))) {
+                            dirty = true;
+                            message = "_Failed Writing updated Address Quantity to database when undoing spends";
+                        }
+
+                        if (!ptokensdb->WriteAddressTokenQuantity(undoSpend.address, undoSpend.tokenName,
+                                                                  mapTokensAddressAmount.at(pair))) {
+                            dirty = true;
+                            message = "_Failed Writing Address Balance to database";
+                        }
                     }
 
                     if (dirty) {
@@ -2358,16 +2395,21 @@ bool CTokensCache::GetTokenMetaDataIfExists(const std::string &name, CNewToken &
 
 bool CTokensCache::GetTokenMetaDataIfExists(const std::string &name, CNewToken &token, int& nHeight, uint256& blockHash)
 {
-    // Check the map that contains the reissued token data. If it is in this map, it hasn't been saved to disk yet
+    // Check the maps that contain the reissued token data. If it is in one of them, it hasn't been saved to disk yet.
+    // The height and the block of a token are the ones of its issue: they are looked up below, where the token
+    // was issued, and only the data of the token is taken from the reissue.
+    bool fReissued = false;
     if (mapReissuedTokenData.count(name)) {
         token = mapReissuedTokenData.at(name);
-        return true;
+        fReissued = true;
+    } else if (ptokens->mapReissuedTokenData.count(name)) {
+        token = ptokens->mapReissuedTokenData.at(name);
+        fReissued = true;
     }
 
-    // Check the map that contains the reissued token data. If it is in this map, it hasn't been saved to disk yet
-    if (ptokens->mapReissuedTokenData.count(name)) {
-        token = ptokens->mapReissuedTokenData.at(name);
-        return true;
+    if (fReissued) {
+        nHeight = 0;
+        blockHash.SetNull();
     }
 
     // Create objects that will be used to check the dirty cache
@@ -2375,21 +2417,24 @@ bool CTokensCache::GetTokenMetaDataIfExists(const std::string &name, CNewToken &
     tempToken.strName = name;
     CTokenCacheNewToken cachedToken(tempToken, "", 0, uint256());
 
-    // Check the dirty caches first and see if it was recently added or removed
-    if (setNewTokensToRemove.count(cachedToken)) {
-        LogPrintf("%s : Found in new tokens to Remove - Returning False\n", __func__);
-        return false;
-    }
+    if (!fReissued) {
+        // Check the dirty caches first and see if it was recently added or removed
+        if (setNewTokensToRemove.count(cachedToken)) {
+            LogPrintf("%s : Found in new tokens to Remove - Returning False\n", __func__);
+            return false;
+        }
 
-    // Check the dirty caches first and see if it was recently added or removed
-    if (ptokens->setNewTokensToRemove.count(cachedToken)) {
-        LogPrintf("%s : Found in new tokens to Remove - Returning False\n", __func__);
-        return false;
+        // Check the dirty caches first and see if it was recently added or removed
+        if (ptokens->setNewTokensToRemove.count(cachedToken)) {
+            LogPrintf("%s : Found in new tokens to Remove - Returning False\n", __func__);
+            return false;
+        }
     }
 
     auto setIterator = setNewTokensToAdd.find(cachedToken);
     if (setIterator != setNewTokensToAdd.end()) {
-        token = setIterator->token;
+        if (!fReissued)
+            token = setIterator->token;
         nHeight = setIterator->blockHeight;
         blockHash = setIterator->blockHash;
         return true;
@@ -2397,7 +2442,8 @@ bool CTokensCache::GetTokenMetaDataIfExists(const std::string &name, CNewToken &
 
     setIterator = ptokens->setNewTokensToAdd.find(cachedToken);
     if (setIterator != ptokens->setNewTokensToAdd.end()) {
-        token = setIterator->token;
+        if (!fReissued)
+            token = setIterator->token;
         nHeight = setIterator->blockHeight;
         blockHash = setIterator->blockHash;
         return true;
@@ -2405,10 +2451,10 @@ bool CTokensCache::GetTokenMetaDataIfExists(const std::string &name, CNewToken &
 
     // Check the cache, if it doesn't exist in the cache. Try and read it from database
     if (ptokensCache) {
-        if (ptokensCache->Exists(name)) {
-            CDatabasedTokenData data;
-            data = ptokensCache->Get(name);
-            token = data.token;
+        CDatabasedTokenData data;
+        if (ptokensCache->GetIfExists(name, data)) {
+            if (!fReissued)
+                token = data.token;
             nHeight = data.nHeight;
             blockHash = data.blockHash;
             return true;
@@ -2420,13 +2466,17 @@ bool CTokensCache::GetTokenMetaDataIfExists(const std::string &name, CNewToken &
         int height;
         uint256 hash;
         if (ptokensdb->ReadTokenData(name, readToken, height, hash)) {
-            token = readToken;
+            if (!fReissued)
+                token = readToken;
             nHeight = height;
             blockHash = hash;
             ptokensCache->Put(readToken.strName, CDatabasedTokenData(readToken, height, hash));
             return true;
         }
     }
+
+    if (fReissued)
+        return true;
 
     LogPrintf("%s : Didn't find token meta data anywhere. Returning False\n", __func__);
     return false;
@@ -3152,6 +3202,10 @@ void GetTxOutTokenTypes(const std::vector<CTxOut>& vout, int& issues, int& reiss
 }
 
 bool ParseTokenScript(CScript scriptPubKey, uint160 &hashBytes, int& nScriptType, std::string &tokenName, CAmount &tokenAmount, uint32_t &nTimeLock) {
+    // Only a transfer can have a lock time. The callers store this value in the address
+    // index for every kind of token output, so it is set for every kind.
+    nTimeLock = 0;
+
     int nType;
     bool fIsOwner;
     int _nStartingPoint;

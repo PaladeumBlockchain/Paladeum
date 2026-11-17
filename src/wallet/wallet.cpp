@@ -98,6 +98,20 @@ CWallet* GetDefaultWallet()
     return vpwallets.empty() ? nullptr : vpwallets[0];
 }
 
+bool StakingStartsForWallet(const std::string& name)
+{
+    if (!gArgs.GetBoolArg("-staking", DEFAULT_STAKE))
+        return false;
+    if (!gArgs.IsArgSet("-stakingwallet"))
+        return true;
+    for (const std::string& named : gArgs.GetArgs("-stakingwallet")) {
+        if (named == name)
+            return true;
+    }
+    LogPrintf("Wallet \"%s\" does not stake: -stakingwallet does not name it\n", name);
+    return false;
+}
+
 bool IsDefaultWallet(const CWallet* wallet)
 {
     LOCK(cs_wallets);
@@ -143,8 +157,8 @@ static CWallet* OpenWalletByName(const std::string& name, bool fCreate, WalletLo
         AddWallet(wallet);
     }
     wallet->postInitProcess();
-    // as the wallets of the start: they stake when -staking is on
-    if (gArgs.GetBoolArg("-staking", DEFAULT_STAKE))
+    // as the wallets of the start: they stake when -staking is on, unless -stakingwallet names others
+    if (StakingStartsForWallet(wallet->GetName()))
         wallet->StartStake();
     result = WalletLoadResult::OK;
     return wallet;
@@ -3245,8 +3259,8 @@ std::map<CTxDestination, std::vector<COutput>> CWallet::ListTokens() const
     // CWalletTx objects, callers to this function really should acquire the
     // cs_wallet lock before calling it. However, the current caller doesn't
     // acquire this lock yet. There was an attempt to add the missing lock in
-    // https://github.com/PaladeumBlockchain/Paladeum/pull/10340, but that change has been
-    // postponed until after https://github.com/PaladeumBlockchain/Paladeum/pull/10244 to
+    // https://github.com/bitcoin/bitcoin/pull/10340, but that change has been
+    // postponed until after https://github.com/bitcoin/bitcoin/pull/10244 to
     // avoid adding some extra complexity to the Qt code.
 
     std::map<CTxDestination, std::vector<COutput>> result;
@@ -3587,8 +3601,8 @@ std::map<CTxDestination, std::vector<COutput>> CWallet::ListCoins() const
     // CWalletTx objects, callers to this function really should acquire the
     // cs_wallet lock before calling it. However, the current caller doesn't
     // acquire this lock yet. There was an attempt to add the missing lock in
-    // https://github.com/PaladeumBlockchain/Paladeum/pull/10340, but that change has been
-    // postponed until after https://github.com/PaladeumBlockchain/Paladeum/pull/10244 to
+    // https://github.com/bitcoin/bitcoin/pull/10340, but that change has been
+    // postponed until after https://github.com/bitcoin/bitcoin/pull/10244 to
     // avoid adding some extra complexity to the Qt code.
 
     std::map<CTxDestination, std::vector<COutput>> result;
@@ -5692,7 +5706,7 @@ void CWallet::GetKeyBirthTimes(std::map<CTxDestination, int64_t> &mapKeyBirth) c
  *
  * For more information see CWalletTx::nTimeSmart,
  * https://bitcointalk.org/?topic=54527, or
- * https://github.com/PaladeumBlockchain/Paladeum/pull/1393.
+ * https://github.com/bitcoin/bitcoin/pull/1393.
  */
 unsigned int CWallet::ComputeTimeSmart(const CWalletTx& wtx) const
 {

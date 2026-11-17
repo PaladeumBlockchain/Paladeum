@@ -53,9 +53,9 @@ QString PaladeumUnits::description(int unit)
 {
     switch(unit)
     {
-    case PLB: return QString("Paladeums");
-    case mPLB: return QString("Milli-Paladeums (1 / 1" THIN_SP_UTF8 "000)");
-    case uPLB: return QString("Micro-Paladeums (1 / 1" THIN_SP_UTF8 "000" THIN_SP_UTF8 "000)");
+    case PLB: return QString("PLB");
+    case mPLB: return QString("Milli-PLB (1 / 1" THIN_SP_UTF8 "000)");
+    case uPLB: return QString("Micro-PLB (1 / 1" THIN_SP_UTF8 "000" THIN_SP_UTF8 "000)");
     default: return QString("???");
     }
 }

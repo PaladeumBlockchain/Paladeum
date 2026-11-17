@@ -59,7 +59,7 @@ public:
     explicit PaladeumUnits(QObject *parent);
 
     /** Paladeum units.
-      @note Source: https://en.paladeum.it/wiki/Units . Please add only sensible ones
+      @note Source: https://en.bitcoin.it/wiki/Units . Please add only sensible ones
      */
     enum Unit
     {

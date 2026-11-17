@@ -28,12 +28,12 @@ The interface is defined in the C header `paladeumconsensus.h` located in  `src/
 
 ##### Script Flags
 - `paladeumconsensus_SCRIPT_FLAGS_VERIFY_NONE`
-- `paladeumconsensus_SCRIPT_FLAGS_VERIFY_P2SH` - Evaluate P2SH ([BIP16](https://github.com/paladeum/bips/blob/master/bip-0016.mediawiki)) subscripts
-- `paladeumconsensus_SCRIPT_FLAGS_VERIFY_DERSIG` - Enforce strict DER ([BIP66](https://github.com/paladeum/bips/blob/master/bip-0066.mediawiki)) compliance
-- `paladeumconsensus_SCRIPT_FLAGS_VERIFY_NULLDUMMY` - Enforce NULLDUMMY ([BIP147](https://github.com/paladeum/bips/blob/master/bip-0147.mediawiki))
-- `paladeumconsensus_SCRIPT_FLAGS_VERIFY_CHECKLOCKTIMEVERIFY` - Enable CHECKLOCKTIMEVERIFY ([BIP65](https://github.com/paladeum/bips/blob/master/bip-0065.mediawiki))
-- `paladeumconsensus_SCRIPT_FLAGS_VERIFY_CHECKSEQUENCEVERIFY` - Enable CHECKSEQUENCEVERIFY ([BIP112](https://github.com/paladeum/bips/blob/master/bip-0112.mediawiki))
-- `paladeumconsensus_SCRIPT_FLAGS_VERIFY_WITNESS` - Enable WITNESS ([BIP141](https://github.com/paladeum/bips/blob/master/bip-0141.mediawiki))
+- `paladeumconsensus_SCRIPT_FLAGS_VERIFY_P2SH` - Evaluate P2SH ([BIP16](https://github.com/bitcoin/bips/blob/master/bip-0016.mediawiki)) subscripts
+- `paladeumconsensus_SCRIPT_FLAGS_VERIFY_DERSIG` - Enforce strict DER ([BIP66](https://github.com/bitcoin/bips/blob/master/bip-0066.mediawiki)) compliance
+- `paladeumconsensus_SCRIPT_FLAGS_VERIFY_NULLDUMMY` - Enforce NULLDUMMY ([BIP147](https://github.com/bitcoin/bips/blob/master/bip-0147.mediawiki))
+- `paladeumconsensus_SCRIPT_FLAGS_VERIFY_CHECKLOCKTIMEVERIFY` - Enable CHECKLOCKTIMEVERIFY ([BIP65](https://github.com/bitcoin/bips/blob/master/bip-0065.mediawiki))
+- `paladeumconsensus_SCRIPT_FLAGS_VERIFY_CHECKSEQUENCEVERIFY` - Enable CHECKSEQUENCEVERIFY ([BIP112](https://github.com/bitcoin/bips/blob/master/bip-0112.mediawiki))
+- `paladeumconsensus_SCRIPT_FLAGS_VERIFY_WITNESS` - Enable WITNESS ([BIP141](https://github.com/bitcoin/bips/blob/master/bip-0141.mediawiki))
 
 ##### Errors
 - `paladeumconsensus_ERR_OK` - No errors with input parameters *(see the return value of `paladeumconsensus_verify_script` for the verification status)*
@@ -43,7 +43,7 @@ The interface is defined in the C header `paladeumconsensus.h` located in  `src/
 - `paladeumconsensus_ERR_AMOUNT_REQUIRED` - Input amount is required if WITNESS is used
 
 ### Example Implementations
-- [NPaladeum](https://github.com/NicolasDorier/NPaladeum/blob/master/NPaladeum/Script.cs#L814) (.NET Bindings)
-- [node-libpaladeumconsensus](https://github.com/bitpay/node-libpaladeumconsensus) (Node.js Bindings)
-- [java-libpaladeumconsensus](https://github.com/dexX7/java-libpaladeumconsensus) (Java Bindings)
-- [paladeumconsensus-php](https://github.com/Bit-Wasp/paladeumconsensus-php) (PHP Bindings)
+- [NPaladeum](https://github.com/NicolasDorier/NBitcoin/blob/master/NPaladeum/Script.cs#L814) (.NET Bindings)
+- [node-libbitcoinconsensus](https://github.com/bitpay/node-libbitcoinconsensus) (Node.js Bindings)
+- [java-libbitcoinconsensus](https://github.com/dexX7/java-libbitcoinconsensus) (Java Bindings)
+- [bitcoinconsensus-php](https://github.com/Bit-Wasp/bitcoinconsensus-php) (PHP Bindings)
