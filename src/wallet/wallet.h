@@ -275,15 +275,17 @@ struct COutputEntry
 /** TOKENS START */
 struct CTokenOutputEntry
 {
-    txnouttype type;
-    txnouttype scriptType;
+    // (GetTokenData sets only the fields of the kind of output it reads: the others were left
+    // uninitialized, and getblock showed a random expire_time on new token outputs)
+    txnouttype type = TX_NONSTANDARD;
+    txnouttype scriptType = TX_NONSTANDARD;
     std::string tokenName;
     CTxDestination destination;
     CAmount nAmount = 0;
-    uint32_t nTimeLock;
+    uint32_t nTimeLock = 0;
     std::string message;
-    int64_t expireTime;
-    int vout;
+    int64_t expireTime = 0;
+    int vout = 0;
 };
 /** TOKENS END */
 
