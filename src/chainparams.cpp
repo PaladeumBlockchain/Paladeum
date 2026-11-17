@@ -173,10 +173,10 @@ public:
         consensus.vDeployments[Consensus::DEPLOYMENT_TESTDUMMY].nOverrideMinerConfirmationWindow = 2016;
 
         // The best chain should have at least this much work
-        consensus.nMinimumChainWork = uint256S("0x");
+        consensus.nMinimumChainWork = uint256S("0x000000000000000000000000000000000000000000000036afb9f21e9ba56ec8"); // block 716000
 
         // By default assume that the signatures in ancestors of this block are valid.
-        consensus.defaultAssumeValid = uint256S("0x10390eb26c0a67a9f3ba797ded61077651385523f031c69166c6ebb48c1e0deb"); // Block 1186833
+        consensus.defaultAssumeValid = uint256S("0xcefe3b72cf4f3e2e77159fa34f7935b8988274dff9c7e52a9b9f7bc6204e2bf8"); // block 716000
 
         // Proof-of-Stake
         consensus.nLastPOWBlock = 150;
@@ -230,16 +230,28 @@ public:
         fMineBlocksOnDemand = false;
         fMiningRequiresPeers = true;
 
+        // Blocks of the chain that was validated in full (-assumevalid=0) with this program and gave
+        // the same set of unspent outputs as Paladeum 0.1.7 (height 716790,
+        // hash_serialized_2 df5bfe07a46bb9c828b040263e645db09dd27947a76a97633f6e764fe09588be).
         checkpointData = (CCheckpointData) {
             {
-                
+                {     150, uint256S("0xf49e0798b0d129f51cbec02424957a518875c189b866eaa39bcf9e83e4095399")},
+                {   50000, uint256S("0x6f3531bd67cb04f24d995573f138f798d38372e677bfc46de8860922dd9959f3")},
+                {  100000, uint256S("0x0b6847b24f4b294221ff9554323fc5e050877c8b79377996bf2070a7413b30c2")},
+                {  200000, uint256S("0xb4c7ec7708f84e396b0779ede0d3f7f348ead0bfe4c3aa5719b9cc1e9e9cfc8e")},
+                {  300000, uint256S("0x6531290a7a682fe448ab76b7a498bcfcfcbe66f055f62f1167730958ea4f54a5")},
+                {  400000, uint256S("0xe906870e27485092857b2dc58e70b3e9c502b53bbdc4f3982f7ed59032e5a3c1")},
+                {  500000, uint256S("0x42aba1b794f86a2beddd29377a3fdcc8f31b188fe9ec3d3cb85e2a69d88ab080")},
+                {  600000, uint256S("0x3ca83cc31723846f0408d216f8adc63729fb344078cb52b6cb28cf4e6a258844")},
+                {  700000, uint256S("0x2c5c64ef1cdd402b5b4ecd9efc8c0460521d8bb4a58746257da0e5a759b9b398")},
             }
         };
 
+        // getchaintxstats 4096 at block 716000
         chainTxData = ChainTxData{
-            0,
-            0,
-            0
+            1794204176, // time of block 716000
+            1478617,    // transactions up to it
+            0.0026      // transactions per second in the 4096 blocks before it
         };
 
         /** PLB Start **/
