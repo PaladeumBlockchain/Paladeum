@@ -12,6 +12,9 @@ from test_framework.util import assert_equal, assert_raises_rpc_error, time
 class KeyPoolTest(PaladeumTestFramework):
     def set_test_params(self):
         self.num_nodes = 1
+        # Encrypting a BIP44 wallet keeps its seed and its key pool (no new pool is made), so
+        # the locked wallet below creates keys from what is left in the pool: one of two.
+        self.extra_args = [["-keypool=2"]]
 
     def run_test(self):
         nodes = self.nodes

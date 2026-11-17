@@ -15,7 +15,7 @@ import shutil
 import subprocess
 
 from test_framework.test_framework import PaladeumTestFramework
-from test_framework.util import assert_equal
+from test_framework.util import assert_equal, wallet_file
 
 
 class ToolWalletTest(PaladeumTestFramework):
@@ -43,40 +43,42 @@ class ToolWalletTest(PaladeumTestFramework):
         wallet_info = node.getwalletinfo()
         hd_seed = wallet_info["hdmasterkeyid"] if "hdmasterkeyid" in wallet_info else wallet_info.get("hdseedid")
         txcount = wallet_info["txcount"]
+        # the directory of the wallets of the node, and the database file of its default
+        # wallet (a new default wallet is the directory wallet.dat with the file wallet.dat in it)
         wallet_dir = os.path.join(node.datadir, "regtest", "wallets")
         if not os.path.isdir(wallet_dir):
             wallet_dir = os.path.join(node.datadir, "regtest")
-        wallet_file = os.path.join(wallet_dir, "wallet.dat")
-        assert os.path.exists(wallet_file)
+        default_wallet = wallet_file(node.datadir)
+        assert os.path.isfile(default_wallet)
 
         self.log.info("A wallet that a running node uses is refused")
-        assert "is a node using this wallet" in self.tool("-wallet=" + wallet_file, "info", fail=True)
+        assert "is a node using this wallet" in self.tool("-wallet=" + default_wallet, "info", fail=True)
         assert_equal(node.getwalletinfo()["txcount"], txcount)
 
         self.log.info("info and addresses of the wallet of a stopped node")
         self.stop_node(0)
-        info = self.info(self.tool("-wallet=" + wallet_file, "info"))
+        info = self.info(self.tool("-wallet=" + default_wallet, "info"))
         assert_equal(info["Encrypted"], "no")
         assert_equal(info["HD (hd seed available)"], "yes")
         if hd_seed:
             assert_equal(info["HD seed id"], hd_seed)
         assert_equal(int(info["Transactions"]), txcount)
         assert int(info["Keys"]) >= int(info["Key pool size"]) > 0
-        addresses = self.tool("-wallet=" + wallet_file, "addresses")
+        addresses = self.tool("-wallet=" + default_wallet, "addresses")
         assert "%s\treceive\tsavings" % labelled in addresses.splitlines()
-        every = self.tool("-wallet=" + wallet_file, "-allkeys", "addresses").splitlines()
+        every = self.tool("-wallet=" + default_wallet, "-allkeys", "addresses").splitlines()
         assert_equal(len(every), int(info["Keys"]))
         # by name, with the data directory
         assert_equal(self.info(self.tool("-datadir=" + node.datadir, "-wallet=wallet.dat", "info"))["Transactions"], info["Transactions"])
         # errors
         assert "There is no wallet file" in self.tool("-wallet=" + os.path.join(wallet_dir, "none.dat"), "info", fail=True)
         assert "-wallet=<wallet> is required" in self.tool("info", fail=True)
-        assert "give one of the commands" in self.tool("-wallet=" + wallet_file, "nothing", fail=True)
+        assert "give one of the commands" in self.tool("-wallet=" + default_wallet, "nothing", fail=True)
 
         self.log.info("salvage keeps the keys")
         copy_dir = os.path.join(self.options.tmpdir, "copy")
         os.makedirs(copy_dir)
-        shutil.copy(wallet_file, os.path.join(copy_dir, "wallet.dat"))
+        shutil.copy(default_wallet, os.path.join(copy_dir, "wallet.dat"))
         self.tool("-wallet=" + os.path.join(copy_dir, "wallet.dat"), "salvage")
         salvaged = self.info(self.tool("-wallet=" + os.path.join(copy_dir, "wallet.dat"), "info"))
         assert_equal(salvaged["Keys"], info["Keys"])

@@ -55,17 +55,18 @@ class WalletUnloadTest(PaladeumTestFramework):
         assert_raises_rpc_error(-18, "does not exist or is not loaded", w2.getbalance)
         assert_raises_rpc_error(-18, "does not exist or is not loaded", node.unloadwallet, "second")
         balance = node.getbalance()
-        node.sendtoaddress(address, 5)
+        # (more than the 10 PLB of the block reward that matures with the next block)
+        node.sendtoaddress(address, 15)
         node.generate(1)
         assert node.getbalance() < balance
 
         self.log.info("Loaded again it finds what it received meanwhile")
         assert_equal(node.loadwallet("second")["name"], "second")
         assert_equal(node.listwallets(), [first, "second"])
-        assert_equal(w2.getbalance(), Decimal("15"))
+        assert_equal(w2.getbalance(), Decimal("25"))
         w2.sendtoaddress(w1.getnewaddress(), 3)
         w1.generate(1)
-        assert w2.getbalance() < Decimal("12")
+        assert w2.getbalance() < Decimal("22")
 
         self.log.info("Unloaded through its endpoint; several times in a row")
         for _ in range(3):
@@ -73,7 +74,7 @@ class WalletUnloadTest(PaladeumTestFramework):
             assert_equal(node.listwallets(), [first])
             node.generate(1)
             node.loadwallet("second")
-            assert w2.getbalance() < Decimal("12")
+            assert w2.getbalance() < Decimal("22")
         node.unloadwallet("second")
 
         self.log.info("restorewallet makes a wallet from a backup and loads it")
@@ -109,7 +110,7 @@ class WalletUnloadTest(PaladeumTestFramework):
         assert_equal(node.listwallets(), [first])
         assert_equal(node.getblockcount(), height)
         node.loadwallet("second")
-        assert node.get_wallet_rpc("second").getbalance() < Decimal("14")
+        assert node.get_wallet_rpc("second").getbalance() < Decimal("24")
         self.stop_node(0)
         self.start_node(0, ["-wallet=" + first, "-wallet=second"])
         assert_equal(node.listwallets(), [first, "second"])

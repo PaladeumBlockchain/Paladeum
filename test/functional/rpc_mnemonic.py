@@ -12,7 +12,8 @@ import hashlib
 import hmac
 import unicodedata
 
-from test_framework.address import byte_to_base58, key_to_p2pkh
+from test_framework.address import byte_to_base58
+from test_framework.script import hash160
 from test_framework.test_framework import PaladeumTestFramework
 from test_framework.util import assert_equal, assert_raises_rpc_error
 
@@ -72,6 +73,11 @@ def wif_of(secret, compressed=True):
     return byte_to_base58(secret.to_bytes(32, 'big') + (b'\x01' if compressed else b''), 239)
 
 
+def p2pkh_of(pubkey):
+    # regtest pay-to-pubkey-hash address version (83: addresses start with 'a')
+    return byte_to_base58(hash160(pubkey), 83)
+
+
 ABANDON = "abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about"
 # vector 5 of the reference implementation's Korean test vectors, in NFC
 KOREAN = unicodedata.normalize("NFC", "가격 가격 가격 가격 가격 가격 가격 가격 가격 가격 가격 가능")
@@ -84,7 +90,7 @@ class MnemonicTest(PaladeumTestFramework):
 
     def expected(self, mnemonic, path, passphrase="", compressed=True):
         secret = derive(seed_of(mnemonic, passphrase), path)
-        return key_to_p2pkh(pubkey_of(secret, compressed)), wif_of(secret, compressed)
+        return p2pkh_of(pubkey_of(secret, compressed)), wif_of(secret, compressed)
 
     def run_test(self):
         node = self.nodes[0]

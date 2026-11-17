@@ -64,7 +64,8 @@ class RESTTest (PaladeumTestFramework):
         self.nodes[2].generate(100)
         self.sync_all()
 
-        assert_equal(self.nodes[0].getbalance(), 5000)
+        # the reward of block 1 (1,000,000,000 PLB), mature after the blocks of node 2
+        assert_equal(self.nodes[0].getbalance(), 1000000000)
 
         txid = self.nodes[0].sendtoaddress(self.nodes[1].getnewaddress(), 0.1)
         self.sync_all()

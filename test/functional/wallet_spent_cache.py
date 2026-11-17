@@ -13,11 +13,10 @@ it has to be dropped again when
 """
 
 from decimal import Decimal
-import os
 import shutil
 
 from test_framework.test_framework import PaladeumTestFramework
-from test_framework.util import assert_equal, connect_nodes_bi, disconnect_nodes, sync_blocks
+from test_framework.util import assert_equal, connect_nodes_bi, disconnect_nodes, sync_blocks, wallet_file
 
 
 class WalletSpentCacheTest(PaladeumTestFramework):
@@ -115,9 +114,9 @@ class WalletSpentCacheTest(PaladeumTestFramework):
         # HD chain, like a wallet in use next to an older backup of itself
         assert "hdmasterkeyid" in n0.getwalletinfo()
         self.sync_all()
+        wallets = [wallet_file(node.datadir) for node in self.nodes]
         self.stop_nodes()
-        shutil.copyfile(os.path.join(self.options.tmpdir, "node0", "regtest", "wallets", "wallet.dat"),
-                        os.path.join(self.options.tmpdir, "node1", "regtest", "wallets", "wallet.dat"))
+        shutil.copyfile(wallets[0], wallets[1])
         self.start_nodes()
         connect_nodes_bi(self.nodes, 0, 1)
         n0, n1 = self.nodes

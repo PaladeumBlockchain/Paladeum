@@ -6,8 +6,18 @@
 
 """Test the wallet accounts properly when there are cloned transactions with malleated scriptsigs."""
 
+import struct
+
 from test_framework.test_framework import PaladeumTestFramework
 from test_framework.util import disconnect_nodes, assert_equal, sync_blocks, connect_nodes
+
+# The balances of the nodes of the cached chain: 200 blocks, coinbase maturity 10, 10 PLB a
+# block and 1,000,000,000 PLB for block 1. The blocks that mature during the test (191 to 193)
+# were mined by node3, so the balance of node0 gains no block reward.
+STARTING_BALANCES = [1000000490, 500, 500, 400]
+# The amount of tx1: more than all the 10 PLB coins of node0 together, so that tx1
+# spends one coin, the output of the funding of foo (the clone copies its first input)
+TX1_AMOUNT = 1000
 
 class TxnMallTest(PaladeumTestFramework):
     def set_test_params(self):
@@ -26,11 +36,10 @@ class TxnMallTest(PaladeumTestFramework):
         disconnect_nodes(self.nodes[2], 1)
 
     def run_test(self):
-        # All nodes should start with 1,250 PLB:
-        starting_balance = 125000
         for i in range(4):
-            assert_equal(self.nodes[i].getbalance(), starting_balance)
+            assert_equal(self.nodes[i].getbalance(), STARTING_BALANCES[i])
             self.nodes[i].getnewaddress("")  # bug workaround, coins generated assigned to first getnewaddress!
+        starting_balance = STARTING_BALANCES[0]
 
         # Assign coins to foo and bar accounts:
         self.nodes[0].settxfee(.001)
@@ -49,12 +58,15 @@ class TxnMallTest(PaladeumTestFramework):
         # Coins are sent to node1_address
         node1_address = self.nodes[1].getnewaddress("from0")
 
-        # Send tx1, and another transaction tx2 that won't be cloned 
-        txid1 = self.nodes[0].sendfrom("foo", node1_address, 40, 0)
-        txid2 = self.nodes[0].sendfrom("bar", node1_address, 20, 0)
+        # Send tx1, and another transaction tx2 that won't be cloned
+        # (sendfrom fromaccount toaddress amount timelock minconf: spend unconfirmed coins)
+        txid1 = self.nodes[0].sendfrom("foo", node1_address, TX1_AMOUNT, 0, 0)
+        txid2 = self.nodes[0].sendfrom("bar", node1_address, 20, 0, 0)
 
         # Construct a clone of tx1, to be malleated 
         rawtx1 = self.nodes[0].getrawtransaction(txid1,1)
+        assert_equal(len(rawtx1["vin"]), 1)
+        assert_equal(len(rawtx1["vout"]), 2)
         clone_inputs = [{"txid":rawtx1["vin"][0]["txid"],"vout":rawtx1["vin"][0]["vout"]}]
         clone_outputs = {rawtx1["vout"][0]["scriptPubKey"]["addresses"][0]:rawtx1["vout"][0]["value"],
                          rawtx1["vout"][1]["scriptPubKey"]["addresses"][0]:rawtx1["vout"][1]["value"]}
@@ -62,13 +74,13 @@ class TxnMallTest(PaladeumTestFramework):
         clone_raw = self.nodes[0].createrawtransaction(clone_inputs, clone_outputs, clone_locktime)
 
         # createrawtransaction randomizes the order of its outputs, so swap them if necessary.
-        # output 0 is at version+#inputs+input+sigstub+sequence+#outputs
-        # 40 PLB serialized is 00286bee00000000
-        pos0 = 2*(4+1+36+1+4+1)
-        hex40 = "00286bee00000000"
+        # output 0 is at version+time+#inputs+input+sigstub+sequence+#outputs
+        # the amount of tx1 serialized (8 bytes, little endian)
+        pos0 = 2*(4+4+1+36+1+4+1)
+        hex_amount = struct.pack("<q", TX1_AMOUNT * 100000000).hex()
         output_len = 16 + 2 + 2 * int("0x" + clone_raw[pos0 + 16 : pos0 + 16 + 2], 0)
-        if (rawtx1["vout"][0]["value"] == 40 and clone_raw[pos0 : pos0 + 16] != hex40 or
-            rawtx1["vout"][0]["value"] != 40 and clone_raw[pos0 : pos0 + 16] == hex40):
+        if (rawtx1["vout"][0]["value"] == TX1_AMOUNT and clone_raw[pos0 : pos0 + 16] != hex_amount or
+            rawtx1["vout"][0]["value"] != TX1_AMOUNT and clone_raw[pos0 : pos0 + 16] == hex_amount):
             output0 = clone_raw[pos0 : pos0 + output_len]
             output1 = clone_raw[pos0 + output_len : pos0 + 2 * output_len]
             clone_raw = clone_raw[:pos0] + output1 + output0 + clone_raw[pos0 + 2 * output_len:]
@@ -86,10 +98,10 @@ class TxnMallTest(PaladeumTestFramework):
         tx1 = self.nodes[0].gettransaction(txid1)
         tx2 = self.nodes[0].gettransaction(txid2)
 
-        # Node0's balance should be starting balance, plus 50PLB for another
-        # matured block, minus tx1 and tx2 amounts, and minus transaction fees:
+        # Node0's balance should be starting balance (the block that matures with the
+        # block of node0 is not one of node0), minus tx1 and tx2 amounts, and minus
+        # transaction fees:
         expected = starting_balance + fund_foo_tx["fee"] + fund_bar_tx["fee"]
-        if self.options.mine_block: expected += 5000
         expected += tx1["amount"] + tx1["fee"]
         expected += tx2["amount"] + tx2["fee"]
         assert_equal(self.nodes[0].getbalance(), expected)
@@ -130,11 +142,8 @@ class TxnMallTest(PaladeumTestFramework):
         assert_equal(tx1_clone["confirmations"], 2)
         assert_equal(tx2["confirmations"], 1)
 
-        # Check node0's total balance; should be same as before the clone, + 100 PLB for 2 matured,
-        # less possible orphaned matured subsidy
-        expected += 10000
-        if self.options.mine_block:
-            expected -= 5000
+        # Check node0's total balance; should be same as before the clone (the two blocks
+        # that matured are not node0's, and its own block, if any, was orphaned unmatured)
         assert_equal(self.nodes[0].getbalance(), expected)
         assert_equal(self.nodes[0].getbalance("*", 0), expected)
 
@@ -143,13 +152,12 @@ class TxnMallTest(PaladeumTestFramework):
         assert_equal(self.nodes[0].getbalance("foo"), 1219 + tx1["amount"] + tx1["fee"])
         # "bar" should have been debited by (possibly unconfirmed) tx2
         assert_equal(self.nodes[0].getbalance("bar", 0), 29 + tx2["amount"] + tx2["fee"])
-        # "" should have starting balance, less funding txes, plus subsidies
+        # "" should have starting balance, less funding txes
         assert_equal(self.nodes[0].getbalance("", 0), starting_balance
                                                                 - 1219
                                                                 + fund_foo_tx["fee"]
                                                                 -   29
-                                                                + fund_bar_tx["fee"]
-                                                                +  10000)
+                                                                + fund_bar_tx["fee"])
 
         # Node1's "from0" account balance
         assert_equal(self.nodes[1].getbalance("from0", 0), -(tx1["amount"] + tx2["amount"]))
