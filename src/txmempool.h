@@ -469,7 +469,8 @@ public:
     indexed_transaction_set mapTx;
 
     std::map<std::string, uint256> mapTokenToHash;
-    std::map<uint256, std::string> mapHashToToken;
+    //! the new token names of a transaction (several for a transaction that issues unique tokens)
+    std::map<uint256, std::set<std::string>> mapHashToToken;
 
     /** Restricted tokens maps */
     // Helper maps for when addresses are marked as frozen

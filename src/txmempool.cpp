@@ -687,9 +687,15 @@ void CTxMemPool::removeUnchecked(txiter it, MemPoolRemovalReason reason)
         }
     }
 
-    // Erase from the token mempool maps if they match txid
+    // Erase from the token mempool maps if they match txid. A transaction that issues several
+    // unique tokens has all of their names here (only the last one was kept, and the others
+    // stayed reserved in the mempool after the transaction had left it).
     if (mapHashToToken.count(hash)) {
-        mapTokenToHash.erase(mapHashToToken.at(hash));
+        for (const std::string& name : mapHashToToken.at(hash)) {
+            auto it = mapTokenToHash.find(name);
+            if (it != mapTokenToHash.end() && it->second == hash)
+                mapTokenToHash.erase(it);
+        }
         mapHashToToken.erase(hash);
     }
 

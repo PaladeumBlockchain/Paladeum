@@ -1015,7 +1015,7 @@ static bool AcceptToMemoryPoolWorker(const CChainParams& chainparams, CTxMemPool
                         continue;
                     if (data.type == TX_NEW_TOKEN && !IsTokenNameAnOwner(data.tokenName)) {
                         pool.mapTokenToHash[data.tokenName] = hash;
-                        pool.mapHashToToken[hash] = data.tokenName;
+                        pool.mapHashToToken[hash].insert(data.tokenName);
                     }
 
                     // Keep track of all restricted tokens tx that can become invalid if qualifier or verifiers are changed
