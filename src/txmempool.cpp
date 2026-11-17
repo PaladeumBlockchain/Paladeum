@@ -843,7 +843,10 @@ void CTxMemPool::removeForReorg(const CCoinsViewCache *pcoins, unsigned int nMem
                     continue;
                 const Coin &coin = pcoins->AccessCoin(txin.prevout);
                 if (nCheckFrequency != 0) assert(!coin.IsSpent());
-                if (coin.IsSpent() || (coin.IsCoinBase() || (coin.IsCoinStake() && ((signed long)nMemPoolHeight) - coin.nHeight < COINBASE_MATURITY))) {
+                // (the same maturities as CheckTxInputs; the condition dropped every spend of a
+                // coinbase, however mature, because of its parentheses)
+                const int nDepth = ((signed long)nMemPoolHeight) - coin.nHeight;
+                if (coin.IsSpent() || (coin.IsCoinBase() && nDepth < COINBASE_MATURITY) || (coin.IsCoinStake() && nDepth < COINSTAKE_MATURITY)) {
                     txToRemove.insert(it);
                     break;
                 }
