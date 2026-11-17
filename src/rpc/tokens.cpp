@@ -2246,7 +2246,8 @@ UniValue sweep(const JSONRPCRequest& request)
             UniValue current_input = UniValue(UniValue::VOBJ);
 
             const UniValue& current = unspent[i];
-            std::string curr_token_name = current["tokenName"].getValStr();
+            // (getaddressutxos names the token of an output "token_name")
+            std::string curr_token_name = current["token_name"].getValStr();
             CAmount curr_amount;
 
             // Parse the amount safely
