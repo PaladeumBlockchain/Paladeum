@@ -1,0 +1,11 @@
+[Protocol]
+exec=paladeum-qt '%u'
+protocol=paladeum
+input=none
+output=none
+helper=true
+listing=
+reading=false
+writing=false
+makedir=false
+deleting=false
