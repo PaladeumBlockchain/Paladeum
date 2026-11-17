@@ -504,8 +504,11 @@ public:
         nIssueRestrictedTokenFeeAmount = 10 * COIN;
         nAddNullQualifierTagFeeAmount = 0.01 * COIN;
 
-        // Global fee address
-        strTokenFeeAddress = "mmbbmGLSeCpR9VhGp2JMXVkf7xkbjtcEET";
+        // Global fee address: a regtest address (version 83) that nobody has a key for, the
+        // hash160 is RIPEMD160(SHA256("Paladeum regtest token fees")). The address before
+        // (mmbbmG...) had Bitcoin's testnet version (111), so the fee output of a token could
+        // never match it and no token could be issued on regtest.
+        strTokenFeeAddress = "aWcYoTSeLQsdEaWmijA12pUYae5D2jSd93";
         strMasterAddress = "";
 
         nMaxReorganizationDepth = 500;
