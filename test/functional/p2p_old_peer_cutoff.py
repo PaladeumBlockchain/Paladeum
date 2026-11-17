@@ -5,10 +5,11 @@
 """Test the old peer cutoff.
 
 From a height of the active chain on (-oldpeercutoffheight on regtest), peers
-that announce a protocol version below 70021 are not kept: a new connection
-is refused with an "obsolete" reject, and a peer that is connected when the
-chain reaches the height is disconnected. Nobody is banned. Below the height
-nothing changes, and peers at 70021 are never affected.
+that announce a protocol version below 70029 (OLD_PEER_CUTOFF_VERSION, the first
+version of Paladeum Core 2.0; 0.1.7 announces 70028) are not kept: a new
+connection is refused with an "obsolete" reject, and a peer that is connected
+when the chain reaches the height is disconnected. Nobody is banned. Below the
+height nothing changes, and peers at 70029 are never affected.
 """
 
 from test_framework.mininode import NetworkThread, NodeConn, NodeConnCB, mininode_lock, msg_version
@@ -16,8 +17,8 @@ from test_framework.test_framework import PaladeumTestFramework
 from test_framework.util import assert_equal, p2p_port, wait_until
 
 CUTOFF_HEIGHT = 10
-OLD_VERSION = 70020
-NEW_VERSION = 70021
+OLD_VERSION = 70028
+NEW_VERSION = 70029
 
 
 class Peer(NodeConnCB):
@@ -97,7 +98,7 @@ class OldPeerCutoffTest(PaladeumTestFramework):
             assert_equal(late_old.message_count["verack"], 0)
             assert late_old.reject is not None
             assert_equal(late_old.reject.code, 0x11)   # REJECT_OBSOLETE
-            assert b"70021" in late_old.reject.reason
+            assert str(NEW_VERSION).encode() in late_old.reject.reason
         wait_until(lambda: self.versions() == [NEW_VERSION, NEW_VERSION], timeout=20)
         assert_equal(node.listbanned(), [])
 

@@ -6,9 +6,12 @@
 
 """Test mempool limiting together/eviction with the wallet."""
 
+from decimal import Decimal
+
 from test_framework.test_framework import PaladeumTestFramework
-from test_framework.util import gen_return_txouts, create_confirmed_utxos, satoshi_round, \
-    create_lots_of_big_transactions
+from test_framework.util import gen_return_txouts, satoshi_round, create_lots_of_big_transactions
+
+COINBASE_MATURITY = 10
 
 
 # noinspection PyAttributeOutsideInit
@@ -19,12 +22,26 @@ class MempoolLimitTest(PaladeumTestFramework):
         self.extra_args = [["-maxmempool=10", "-spendzeroconfchange=0"]]
         self.thirtyTransactions = 9  # tx are created in groups of 30.  Value here will be multiplied by thirty for the number of tx.
 
+    def create_coins(self, node, count, amount):
+        """count confirmed coins of amount PLB each, paid out of the coinbase of block 1
+        (1,000,000,000 PLB). A coinbase of another block (10 PLB) does not cover the fees
+        of the big transactions of the last groups."""
+        node.generate(COINBASE_MATURITY + 1)
+        coin = [u for u in node.listunspent() if u["amount"] > count * amount + 1][0]
+        outputs = {node.getnewaddress(): amount for _ in range(count)}
+        outputs[node.getnewaddress()] = coin["amount"] - count * amount - 1  # a fee of 1 PLB
+        raw = node.createrawtransaction([{"txid": coin["txid"], "vout": coin["vout"]}], outputs)
+        txid = node.sendrawtransaction(node.signrawtransaction(raw)["hex"])
+        node.generate(1)
+        coins = [u for u in node.listunspent() if u["txid"] == txid and u["amount"] == amount]
+        assert len(coins) == count
+        return coins
+
     def run_test(self):
         txouts = gen_return_txouts()
-        relayfee = self.nodes[0].getnetworkinfo()['relayfee']
 
         txids = []
-        utxos = create_confirmed_utxos(relayfee, self.nodes[0], self.thirtyTransactions * 30)
+        utxos = self.create_coins(self.nodes[0], self.thirtyTransactions * 30 + 1, Decimal(20))
 
         # create a mempool tx that will be evicted
         us0 = utxos.pop()

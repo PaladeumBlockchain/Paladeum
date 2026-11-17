@@ -12,7 +12,9 @@ that spend (directly or indirectly) coinbase transactions.
 from test_framework.test_framework import PaladeumTestFramework
 from test_framework.util import (assert_equal, create_tx, assert_raises_rpc_error)
 
-# Create one-input, one-output, no-fee transaction:
+COINBASE_MATURITY = 10
+
+# Create one-input, one-output transactions that spend coinbases (10 PLB):
 class MempoolCoinbaseTest(PaladeumTestFramework):
     def set_test_params(self):
         self.num_nodes = 2
@@ -24,9 +26,13 @@ class MempoolCoinbaseTest(PaladeumTestFramework):
         # Start with a 200 block chain
         assert_equal(self.nodes[0].getblockcount(), 200)
 
-        # Mine four blocks. After this, nodes[0] blocks
-        # 101, 102, and 103 are spend-able.
-        new_blocks = self.nodes[1].generate(4)
+        # nodes[0] mines four blocks whose coinbases are spent below, then nodes[1]
+        # mines COINBASE_MATURITY blocks. After this, the four coinbases are
+        # spend-able, and they are not once the blocks of nodes[1] are invalidated.
+        self.nodes[0].generate(4)
+        self.sync_all()
+        first = self.nodes[0].getblockcount() - 3
+        new_blocks = self.nodes[1].generate(COINBASE_MATURITY)
         self.sync_all()
 
         node0_address = self.nodes[0].getnewaddress()
@@ -38,14 +44,15 @@ class MempoolCoinbaseTest(PaladeumTestFramework):
         # 3. Indirect (coinbase and child both in chain) : spend_103 and spend_103_1
         # Use invalidatblock to make all of the above coinbase spends invalid (immature coinbase),
         # and make sure the mempool code behaves correctly.
-        b = [ self.nodes[0].getblockhash(n) for n in range(101, 105) ]
+        b = [ self.nodes[0].getblockhash(n) for n in range(first, first + 4) ]
         coinbase_txids = [ self.nodes[0].getblock(h)['tx'][0] for h in b ]
-        spend_101_raw = create_tx(self.nodes[0], coinbase_txids[1], node1_address, 4999.99)
-        spend_102_raw = create_tx(self.nodes[0], coinbase_txids[2], node0_address, 4999.99)
-        spend_103_raw = create_tx(self.nodes[0], coinbase_txids[3], node0_address, 4999.99)
+        spend_101_raw = create_tx(self.nodes[0], coinbase_txids[1], node1_address, 9.99)
+        spend_102_raw = create_tx(self.nodes[0], coinbase_txids[2], node0_address, 9.99)
+        spend_103_raw = create_tx(self.nodes[0], coinbase_txids[3], node0_address, 9.99)
 
         # Create a transaction which is time-locked to two blocks in the future
-        timelock_tx = self.nodes[0].createrawtransaction([{"txid": coinbase_txids[0], "vout": 0}], {node0_address: 4999.99})
+        # (version 1: nLockTime is the last field)
+        timelock_tx = self.nodes[0].createrawtransaction([{"txid": coinbase_txids[0], "vout": 0}], {node0_address: 9.99})
         # Set the time lock
         timelock_tx = timelock_tx.replace("ffffffff", "11111191", 1)
         timelock_tx = timelock_tx[:-8] + hex(self.nodes[0].getblockcount() + 2)[2:] + "000000"
@@ -61,8 +68,8 @@ class MempoolCoinbaseTest(PaladeumTestFramework):
         assert_raises_rpc_error(-26,'non-final', self.nodes[0].sendrawtransaction, timelock_tx)
 
         # Create 102_1 and 103_1:
-        spend_102_1_raw = create_tx(self.nodes[0], spend_102_id, node1_address, 4999.98)
-        spend_103_1_raw = create_tx(self.nodes[0], spend_103_id, node1_address, 4999.98)
+        spend_102_1_raw = create_tx(self.nodes[0], spend_102_id, node1_address, 9.98)
+        spend_103_1_raw = create_tx(self.nodes[0], spend_103_id, node1_address, 9.98)
 
         # Broadcast and mine 103_1:
         spend_103_1_id = self.nodes[0].sendrawtransaction(spend_103_1_raw)

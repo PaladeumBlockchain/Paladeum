@@ -48,6 +48,8 @@ class TimestampIndexTest(PaladeumTestFramework):
 
         self.log.info("Checking timestamp index...")
         hashes = self.nodes[1].getblockhashes(high, low)
+        # (the name that Paladeum gave the command before)
+        assert_equal(self.nodes[1].GetIndexHashes(high, low), hashes)
 
         assert_equal(len(hashes), len(blockhashes))
 

@@ -81,7 +81,7 @@ class UpstreamRpcTest(PaladeumTestFramework):
         assert node.scantxoutset("start", [key_address])["total_amount"] < Decimal("1")
 
         self.log.info("testmempoolaccept and the fee rate limit of sendrawtransaction")
-        utxo = [u for u in node.listunspent() if u["amount"] > 20][0]
+        utxo = [u for u in node.listunspent() if u["amount"] > 2000][0]
         target = other.getnewaddress()
 
         def signed(fee):
@@ -111,8 +111,8 @@ class UpstreamRpcTest(PaladeumTestFramework):
         assert_equal(node.testmempoolaccept([unsigned])[0]["allowed"], False)
         assert_raises_rpc_error(-8, "exactly one raw transaction", node.testmempoolaccept, [good, good])
         assert_raises_rpc_error(-22, "TX decode failed", node.testmempoolaccept, ["00"])
-        # the old boolean still works
-        huge = signed("12")
+        # the old boolean still works (a fee above -maxtxfee, by default 1000 PLB)
+        huge = signed("1001")
         assert_equal(node.testmempoolaccept([huge])[0]["allowed"], False)
         assert_equal(node.testmempoolaccept([huge], True)[0]["allowed"], True)
         sent = node.sendrawtransaction(good, "1.0")
