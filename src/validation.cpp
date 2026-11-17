@@ -2185,6 +2185,26 @@ static DisconnectResult DisconnectBlock(const CBlock& block, const CBlockIndex* 
                             }
                         }
                     }
+                } else if (tx.IsNewUsername()) {
+                    // AddCoins added the username to the tokens like a new token; without this undo
+                    // a disconnected registration stayed, its transaction could not return to the
+                    // mempool, and connecting the block again (a reorganization, VerifyDB at start)
+                    // failed with "has already been used"
+                    CNewToken token;
+                    std::string strAddress;
+
+                    if (!UsernameFromTransaction(tx, token, strAddress)) {
+                        error("%s : Failed to get username from transaction. TXID : %s", __func__,
+                              tx.GetHash().GetHex());
+                        return DISCONNECT_FAILED;
+                    }
+
+                    if (tokensCache->ContainsToken(token.strName)) {
+                        if (!tokensCache->RemoveNewToken(token, strAddress)) {
+                            error("%s : Failed to Undo Username. Name : %s", __func__, token.strName);
+                            return DISCONNECT_FAILED;
+                        }
+                    }
                 } else if (tx.IsNewMsgChannelToken()) {
                     CNewToken token;
                     std::string strAddress;
