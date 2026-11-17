@@ -203,6 +203,10 @@ void TokensDialog::buildLayout()
     form->addLayout(pickedRow);
     connect(picker, SIGNAL(tokenSelected(QString)), this, SLOT(tokenPicked(QString)));
 
+    // The list of recipients takes the height that is left and scrolls within it. (Its preferred
+    // height, up to 24 lines, made the page higher than a window of the default size: the page
+    // then scrolled with the send button below the window.)
+    ui->scrollArea->setSizePolicy(ui->scrollArea->sizePolicy().horizontalPolicy(), QSizePolicy::Ignored);
     form->addWidget(ui->scrollArea, 1);
     ui->addButton->setProperty("look", "dashed");
     ui->addButton->setText(tr("Add recipient"));
@@ -222,6 +226,8 @@ void TokensDialog::buildLayout()
     ui->sendButton->setCursor(Qt::PointingHandCursor);
     summary->addFooterWidget(ui->sendButton);
     columns->addWidget(summary, 2);
+    // in a narrow window the summary goes below the recipients, so that their fields are not cut off
+    new BoxDirectionFollower(this, columns, 900);
 }
 
 void TokensDialog::renumberEntries()
@@ -485,7 +491,9 @@ TokensDialog::~TokensDialog()
 void TokensDialog::setupTokenControlFrame(const PlatformStyle *platformStyle)
 {
     /** Update the tokencontrol frame */
-    ui->frameTokenControl->setStyleSheet(QString(".QFrame { background-color: %1; border: none; border-radius: 8px; padding: 10px 8px; }").arg(GUIUtil::theme().surfaceAlt.name()));
+    // a raised tile with cut corners (painted from cellFill)
+    ui->frameTokenControl->setProperty("cellFill", GUIUtil::theme().surfaceAlt);
+    ui->frameTokenControl->setStyleSheet(".QFrame#frameTokenControl { background: transparent; border: none; padding: 10px 8px; }");
     ui->widgetTokenControl->setStyleSheet(".QWidget {background-color: transparent;}");
     /** Create the shadow effects on the frames */
 
@@ -531,6 +539,7 @@ void TokensDialog::setupTokenControlFrame(const PlatformStyle *platformStyle)
     ui->checkBoxTokenControlChange->setFont(GUIUtil::getSubLabelFont());
     ui->lineEditTokenControlChange->setFont(GUIUtil::getSubLabelFont());
     ui->labelTokenControlInsuffFunds->setFont(GUIUtil::getSubLabelFont());
+    ui->labelTokenControlInsuffFunds->setStyleSheet(STRING_LABEL_COLOR_WARNING);
     ui->labelTokenControlAutomaticallySelected->setFont(GUIUtil::getSubLabelFont());
 
 }
@@ -548,7 +557,8 @@ void TokensDialog::setupScrollView(const PlatformStyle *platformStyle)
 void TokensDialog::setupFeeControl(const PlatformStyle *platformStyle)
 {
     /** Update the fee frame */
-    ui->frameFee->setStyleSheet(QString(".QFrame#frameFee { background-color: %1; border: none; border-radius: 8px; padding: 6px 8px; }").arg(GUIUtil::theme().surfaceAlt.name()));
+    ui->frameFee->setProperty("cellFill", GUIUtil::theme().surfaceAlt);
+    ui->frameFee->setStyleSheet(".QFrame#frameFee { background: transparent; border: none; padding: 6px 8px; }");
     /** Create the shadow effects on the frames */
 
     ui->frameFee->setGraphicsEffect(GUIUtil::getShadowEffect());
@@ -778,6 +788,15 @@ SendTokensEntry *TokensDialog::addEntry()
     entry->clear();
     entry->setFocusTokenListBox();
     ui->scrollAreaWidgetContents->resize(ui->scrollAreaWidgetContents->sizeHint());
+    // the list is at least as high as one recipient, so that one is always seen whole (more scroll in it)
+    int entryCount = 0;
+    for (int i = 0; i < ui->entries->count(); ++i)
+        if (ui->entries->itemAt(i)->widget())
+            ++entryCount;
+    if (entryCount == 1) {
+        entry->ensurePolished();
+        ui->scrollArea->setMinimumHeight(entry->sizeHint().height() + 4);
+    }
     qApp->processEvents();
     QScrollBar* bar = ui->scrollArea->verticalScrollBar();
     if(bar)
@@ -1165,7 +1184,7 @@ void TokensDialog::tokenControlChangeEdited(const QString& text)
     {
         // Default to no change address until verified
         TokenControlDialog::tokenControl->destChange = CNoDestination();
-        ui->labelTokenControlChangeLabel->setStyleSheet("QLabel{color:red;}");
+        ui->labelTokenControlChangeLabel->setStyleSheet(QString("QLabel { %1; }").arg(GUIUtil::warningLabelColorStyle()));
 
         const CTxDestination dest = DecodeDestination(text.toStdString());
 
@@ -1191,13 +1210,13 @@ void TokensDialog::tokenControlChangeEdited(const QString& text)
                 else
                 {
                     ui->lineEditTokenControlChange->setText("");
-                    ui->labelTokenControlChangeLabel->setStyleSheet("QLabel{color:black;}");
+                    ui->labelTokenControlChangeLabel->setStyleSheet(QString("QLabel { %1; }").arg(GUIUtil::labelColorStyle()));
                     ui->labelTokenControlChangeLabel->setText("");
                 }
             }
             else // Known change address
             {
-                ui->labelTokenControlChangeLabel->setStyleSheet("QLabel{color:black;}");
+                ui->labelTokenControlChangeLabel->setStyleSheet(QString("QLabel { %1; }").arg(GUIUtil::labelColorStyle()));
 
                 // Query label
                 QString associatedLabel = model->getAddressTableModel()->labelForAddress(text);

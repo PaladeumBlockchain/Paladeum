@@ -99,12 +99,11 @@ static const bool DEFAULT_SPLASHSCREEN = true;
 #define COLOR_LIGHT_DARK QColor("#1e2024")
 
 
-/* Paladeum label color as a string */
+/* Paladeum label color as a string: the text color of the theme. (A second definition with a
+   fixed near-black used to follow and win, which made the labels of the forms unreadable in the
+   dark theme.) */
 #define STRING_LABEL_COLOR GUIUtil::labelColorStyle()
-// #define STRING_LABEL_COLOR "color: #4960ad"
-// #define STRING_LABEL_COLOR_WARNING "color: #FF8080"
-#define STRING_LABEL_COLOR "color: #010101"
-#define STRING_LABEL_COLOR_WARNING "color: #010101"
+#define STRING_LABEL_COLOR_WARNING GUIUtil::warningLabelColorStyle()
 
 
 
@@ -131,8 +130,9 @@ static const int MAX_URI_LENGTH = 255;
 #define QAPP_APP_NAME_DEFAULT "Paladeum-Qt"
 #define QAPP_APP_NAME_TESTNET "Paladeum-Qt-testnet"
 
-/* Default third party browser urls */
-#define DEFAULT_THIRD_PARTY_BROWSERS "https://api.paladeum.io/tx/%s|https://paladeum.cryptoscope.io/tx/?txid=%s|https://blockbook.paladeum.io/tx/%s|https://explorer.mangofarmtokens.com/tx/%s|https://www.tokensexplorer.com/tx/%s|https://explorer.paladeumland.org/tx/%s"
+/* Default third party browser urls: Paladeum's explorer (the other addresses that were here were
+   the explorers of another chain with the names replaced, and do not exist) */
+#define DEFAULT_THIRD_PARTY_BROWSERS "https://explorer.paladeum.io/tx/%s"
 
 /* Default IPFS viewer */
 #define DEFAULT_IPFS_VIEWER "https://ipfs.io/ipfs/%s"

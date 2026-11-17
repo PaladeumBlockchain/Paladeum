@@ -438,8 +438,9 @@ void PaladeumApplication::createOptionsModel(bool resetSettings)
 void PaladeumApplication::createWindow(const NetworkStyle *networkStyle)
 {
     window = new PaladeumGUI(platformStyle, networkStyle, 0);
-    window->setMinimumSize(200,200);
-    window->setBaseSize(640,640);
+    // The smallest window in which every page is laid out without cutting anything off; the
+    // window opens larger (see PaladeumGUI) and remembers the size it had.
+    window->setMinimumSize(int(PaladeumGUI::MINIMUM_WIDTH), int(PaladeumGUI::MINIMUM_HEIGHT));
 
     pollShutdownTimer = new QTimer(window);
     connect(pollShutdownTimer, SIGNAL(timeout()), window, SLOT(detectShutdown()));

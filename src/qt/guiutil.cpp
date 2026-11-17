@@ -5,6 +5,7 @@
 
 #include "guiutil.h"
 
+#include "cellstyle.h"
 #include "paladeumaddressvalidator.h"
 #include "paladeumunits.h"
 #include "qvalidatedlineedit.h"
@@ -104,95 +105,215 @@ extern double NSAppKitVersionNumber;
 #include "guiconstants.h"
 #include "platformstyle.h"
 
+#include <cmath>
+
 namespace GUIUtil {
+
+const char* const DARK_THEME_SETTING = "fDarkModeEnabled";
+
+static bool fDarkTheme = false;
+
+bool darkTheme()
+{
+    return fDarkTheme;
+}
+
+void setDarkTheme(bool dark)
+{
+    fDarkTheme = dark;
+}
 
 const Theme& theme()
 {
+    // the values of the design guide; sent amounts are in the text color, received ones in positive
     static const Theme light = [] {
         Theme t;
-        t.bg = QColor("#FAFAFA");
+        t.bg = QColor("#F5F7FA");
         t.surface = QColor("#FFFFFF");
-        t.surfaceAlt = QColor("#F4F4F5");
-        t.border = QColor("#E5E5E5");
-        t.borderStrong = QColor("#D0D0D0");
-        t.line = QColor("#EDEDED");
-        t.text = QColor("#171717");
-        t.textSecondary = QColor("#525252");
-        t.label = QColor("#404040");
-        t.textDisabled = QColor("#A3A3A3");
-        t.fill = QColor("#054848");
-        t.fillHover = QColor("#0A5A58");
-        t.fillPressed = QColor("#033837");
+        t.surfaceAlt = QColor("#ECEFF4");
+        t.raisedHover = QColor("#E1E6EE");
+        t.border = QColor("#E3E7EE");
+        t.borderStrong = QColor("#C9D0DB");
+        t.line = QColor("#EEEFF1"); // rgba(17, 24, 39, 0.07) on the cell color
+        t.text = QColor("#111827");
+        t.textSecondary = QColor("#4B5565");
+        t.label = QColor("#4B5565");
+        t.muted = QColor("#6B7487");
+        t.textDisabled = QColor("#9AA2B3");
+        t.fill = QColor("#344C94");
+        t.fillHover = QColor("#22336A");
+        t.fillPressed = QColor("#1B2955");
         t.onFill = QColor("#FFFFFF");
-        t.accent = QColor("#066A63");
-        t.accentHover = QColor("#0A5A58");
-        t.accentPressed = QColor("#033837");
-        t.accentSoft = QColor("#E6EFEE");
+        t.action = QColor("#F7DE4E");
+        t.actionHover = QColor("#EFD43A");
+        t.actionPressed = QColor("#E3C72C");
+        t.onAction = QColor("#111827");
+        t.accent = QColor("#344C94");
+        t.accentHover = QColor("#22336A");
+        t.accentPressed = QColor("#1B2955");
+        t.accentSoft = QColor("#E4E9F5");
         t.onAccent = QColor("#FFFFFF");
-        t.positive = QColor("#06705F");
-        t.positiveSoft = QColor("#E6EFEE");
-        t.negative = QColor("#A84A0B");
-        t.negativeSoft = QColor("#FBEBDD");
-        t.ok = QColor("#0B7A4B");
-        t.okSoft = QColor("#DDF3E7");
+        t.positive = QColor("#16794A");
+        t.positiveSoft = QColor("#E2F1E9");
+        t.negative = QColor("#111827");
+        t.negativeSoft = QColor("#F8E5E3");
+        t.ok = QColor("#16794A");
+        t.okSoft = QColor("#E2F1E9");
         t.error = QColor("#B3261E");
-        t.errorSoft = QColor("#FDECEC");
-        t.warnBg = QColor("#FFF4DD");
-        t.warnText = QColor("#7A4A00");
-        t.warnBorder = QColor("#F0D58A");
-        t.chip = QColor("#F4F4F5");
-        t.chipText = QColor("#525252");
-        t.sideBg = QColor("#054848");
-        t.sideText = QColor("#C2DAD6");
-        t.sideStrong = QColor("#FFFFFF");
-        t.sideOnBg = QColor("#0B5A57");
-        t.sideCard = QColor("#1A5C5A");
-        t.sideTrack = QColor("#0B6460");
-        t.sideBar = QColor("#7EE0CF");
-        t.sideOff = QColor("#2F7C77");
+        t.errorSoft = QColor("#F8E5E3");
+        t.warnBg = QColor("#ECEFF4");
+        t.warnText = QColor("#6B4E00");
+        t.warnBorder = QColor("#DCCF9E");
+        t.chip = QColor("#ECEFF4");
+        t.chipText = QColor("#4B5565");
+        t.sideBg = QColor("#FFFFFF");
+        t.sideText = QColor("#4B5565");
+        t.sideStrong = QColor("#111827");
+        t.sideOnBg = QColor("#ECEFF4");
+        t.sideCard = QColor("#EEEFF1");
+        t.sideTrack = QColor("#ECEFF4");
+        t.sideBar = QColor("#344C94");
+        t.sideOff = QColor("#C9D0DB");
         return t;
     }();
-    return light;
+    static const Theme dark = [] {
+        Theme t;
+        t.bg = QColor("#0B0E16");
+        t.surface = QColor("#121726");
+        t.surfaceAlt = QColor("#1A2031");
+        t.raisedHover = QColor("#232B40");
+        t.border = QColor("#232A3C");
+        t.borderStrong = QColor("#343E56");
+        t.line = QColor("#242937"); // rgba(238, 241, 246, 0.08) on the cell color
+        t.text = QColor("#EEF1F6");
+        t.textSecondary = QColor("#A6AEC0");
+        t.label = QColor("#A6AEC0");
+        t.muted = QColor("#7E879C");
+        t.textDisabled = QColor("#5C657A");
+        // the mark blue stays a fill with white text; links and series are lighter
+        t.fill = QColor("#344C94");
+        t.fillHover = QColor("#3F59A8");
+        t.fillPressed = QColor("#2C407D");
+        t.onFill = QColor("#FFFFFF");
+        t.action = QColor("#F7DE4E");
+        t.actionHover = QColor("#FFE766");
+        t.actionPressed = QColor("#E3C72C");
+        t.onAction = QColor("#111827");
+        t.accent = QColor("#9DB0F2");
+        t.accentHover = QColor("#BAC8F6");
+        t.accentPressed = QColor("#8499E6");
+        t.accentSoft = QColor("#1F2946");
+        t.onAccent = QColor("#0B0E16");
+        t.positive = QColor("#5CCB93");
+        t.positiveSoft = QColor("#14281F");
+        t.negative = QColor("#EEF1F6");
+        t.negativeSoft = QColor("#2E1716");
+        t.ok = QColor("#5CCB93");
+        t.okSoft = QColor("#14281F");
+        t.error = QColor("#F07A70");
+        t.errorSoft = QColor("#2E1716");
+        t.warnBg = QColor("#1A2031");
+        t.warnText = QColor("#E6C65C");
+        t.warnBorder = QColor("#4A4224");
+        t.chip = QColor("#1A2031");
+        t.chipText = QColor("#A6AEC0");
+        t.sideBg = QColor("#121726");
+        t.sideText = QColor("#A6AEC0");
+        t.sideStrong = QColor("#EEF1F6");
+        t.sideOnBg = QColor("#1A2031");
+        t.sideCard = QColor("#242937");
+        t.sideTrack = QColor("#1A2031");
+        t.sideBar = QColor("#9DB0F2");
+        t.sideOff = QColor("#343E56");
+        return t;
+    }();
+    return fDarkTheme ? dark : light;
+}
+
+QString compactNumber(double value)
+{
+    const double magnitude = std::fabs(value);
+    if (magnitude == 0)
+        return QString("0");
+    // thousands separators up to 99,999; above that, a suffix and about three significant digits
+    if (magnitude >= 1e12)
+        return QString::number(value / 1e12, 'f', magnitude >= 1e14 ? 0 : magnitude >= 1e13 ? 1 : 2) + " T";
+    if (magnitude >= 1e9)
+        return QString::number(value / 1e9, 'f', magnitude >= 1e11 ? 0 : magnitude >= 1e10 ? 1 : 2) + " B";
+    if (magnitude >= 1e6)
+        return QString::number(value / 1e6, 'f', magnitude >= 1e8 ? 0 : magnitude >= 1e7 ? 1 : 2) + " M";
+    if (magnitude >= 1e5)
+        return QString::number(value / 1e3, 'f', 0) + " k";
+    if (magnitude >= 100)
+        return withThousands(QString::number(value, 'f', 0));
+    if (magnitude >= 0.001) {
+        // three significant digits, without trailing zeros
+        const int decimals = magnitude >= 10 ? 1 : magnitude >= 1 ? 2 : magnitude >= 0.1 ? 3 : magnitude >= 0.01 ? 4 : 5;
+        QString text = QString::number(value, 'f', decimals);
+        if (text.contains('.')) {
+            while (text.endsWith('0'))
+                text.chop(1);
+            if (text.endsWith('.'))
+                text.chop(1);
+        }
+        return text;
+    }
+    return QString::number(value, 'g', 3);
 }
 
 void loadAppFonts()
 {
-    for (const char* name : {"NotoSans-Regular", "NotoSans-Medium", "NotoSans-SemiBold", "NotoSans-Bold",
-                             "NotoSansKR-Regular", "NotoSansKR-Medium", "NotoSansKR-SemiBold", "NotoSansKR-Bold",
-                             "NotoSansMono-Regular", "NotoSansMono-Medium", "NotoSansMono-SemiBold", "NotoSansMono-Bold"}) {
+    // all three are under the SIL Open Font License (res/fonts/OFL-*.txt)
+    for (const char* name : {"Inter-Regular", "Inter-Medium", "Inter-SemiBold",
+                             "SpaceGrotesk-Regular", "SpaceGrotesk-Medium",
+                             "JetBrainsMono-Regular", "JetBrainsMono-Medium"}) {
         if (QFontDatabase::addApplicationFont(QString(":/fonts/%1").arg(name)) < 0)
             qWarning() << "Could not load the font" << name;
     }
 }
 
+/** The weights of the theme: 400 and 500, and 600 for rare emphasis */
+static int themeWeight(int weight)
+{
+    if (weight >= QFont::Bold)
+        return QFont::DemiBold;
+    if (weight >= QFont::DemiBold)
+        return QFont::Medium;
+    return weight >= QFont::Medium ? QFont::Medium : QFont::Normal;
+}
+
 QFont appFont(int pixelSize, int weight)
 {
-    QFont font;
-#if QT_VERSION >= QT_VERSION_CHECK(5, 13, 0)
-    // Latin from Noto Sans, Hangul and CJK from Noto Sans KR
-    font.setFamilies({"Noto Sans", "Noto Sans KR"});
-#else
-    font.setFamily("Noto Sans");
-#endif
+    QFont font("Inter");
     font.setPixelSize(pixelSize);
-    font.setWeight(weight);
+    font.setWeight(themeWeight(weight));
     font.setStyleStrategy(QFont::PreferAntialias);
     return font;
 }
 
 QFont monoFont(int pixelSize, int weight)
 {
-    QFont font;
-#if QT_VERSION >= QT_VERSION_CHECK(5, 13, 0)
-    font.setFamilies({"Noto Sans Mono", "Noto Sans KR"});
-#else
-    font.setFamily("Noto Sans Mono");
-#endif
+    QFont font("JetBrains Mono");
     font.setStyleHint(QFont::Monospace);
     font.setFixedPitch(true);
     font.setPixelSize(pixelSize);
-    font.setWeight(weight);
+    // no semibold: 500 at most
+    font.setWeight(themeWeight(weight) >= QFont::Medium ? QFont::Medium : QFont::Normal);
     font.setStyleStrategy(QFont::PreferAntialias);
+    return font;
+}
+
+QFont displayFont(int pixelSize, int weight)
+{
+    QFont font("Space Grotesk");
+    font.setPixelSize(pixelSize);
+    font.setWeight(themeWeight(weight) >= QFont::Medium ? QFont::Medium : QFont::Normal);
+    font.setStyleStrategy(QFont::PreferAntialias);
+    // from 40 px a little tighter, from 56 px tighter still
+    if (pixelSize >= 56)
+        font.setLetterSpacing(QFont::PercentageSpacing, 97);
+    else if (pixelSize >= 40)
+        font.setLetterSpacing(QFont::PercentageSpacing, 98);
     return font;
 }
 
@@ -231,7 +352,7 @@ protected:
     }
 };
 
-/** The icon of a message box: a soft disc with the sign in the color of its meaning. */
+/** The icon of a message box: a soft square with cut corners and the sign in the color of its meaning. */
 static QPixmap messageBadge(QStyle::StandardPixmap which, int size)
 {
     const Theme& t = theme();
@@ -252,9 +373,9 @@ static QPixmap messageBadge(QStyle::StandardPixmap which, int size)
     p.setRenderHints(QPainter::Antialiasing | QPainter::TextAntialiasing, true);
     p.setPen(Qt::NoPen);
     p.setBrush(fill);
-    p.drawEllipse(QRectF(0, 0, size, size));
+    p.drawPath(CellStyle::cutRect(QRectF(0, 0, size, size), 8));
     p.setPen(ink);
-    p.setFont(appFont(size * 55 / 100, QFont::DemiBold));
+    p.setFont(displayFont(size * 55 / 100, QFont::Medium));
     p.drawText(QRectF(0, 0, size, size), Qt::AlignCenter, sign);
     return pixmap;
 }
@@ -300,13 +421,16 @@ void fitDialogHeight(QWidget* dialog)
 
 void applyTheme(QApplication& app)
 {
+    // one choice for every network: it is kept in the settings of the main network, which are the
+    // settings in use when this is called (before the network is known)
+    setDarkTheme(QSettings().value(DARK_THEME_SETTING, false).toBool());
     const Theme& t = theme();
     app.installEventFilter(new DialogPolisher(&app));
+    // the cut corners, which a style sheet cannot draw
+    CellStyle::install(app);
 
     // The same widget style on every platform, colored by the palette
     app.setStyle(new ThemeStyle(QStyleFactory::create("Fusion")));
-    QFont::insertSubstitution("Noto Sans", "Noto Sans KR");
-    QFont::insertSubstitution("Noto Sans Mono", "Noto Sans KR");
     app.setFont(appFont());
     // Windows takes the fonts of these from the system settings unless told otherwise
     for (const char* cls : {"QMenuBar", "QMenu", "QToolTip", "QTipLabel", "QMessageBox", "QStatusBar",
@@ -334,7 +458,7 @@ void applyTheme(QApplication& app)
     p.setColor(QPalette::Dark, t.borderStrong);
     p.setColor(QPalette::Shadow, t.borderStrong);
 #if QT_VERSION >= QT_VERSION_CHECK(5, 12, 0)
-    p.setColor(QPalette::PlaceholderText, t.textDisabled);
+    p.setColor(QPalette::PlaceholderText, t.muted);
 #endif
     for (QPalette::ColorRole role : {QPalette::WindowText, QPalette::Text, QPalette::ButtonText})
         p.setColor(QPalette::Disabled, role, t.textDisabled);
@@ -349,6 +473,8 @@ void applyTheme(QApplication& app)
     // longer names first, so that @accent does not eat @accentHover
     const std::pair<const char*, QColor> tokens[] = {
         {"@accentPressed", t.accentPressed}, {"@accentHover", t.accentHover}, {"@accentSoft", t.accentSoft},
+        {"@actionPressed", t.actionPressed}, {"@actionHover", t.actionHover}, {"@onAction", t.onAction}, {"@action", t.action},
+        {"@raisedHover", t.raisedHover}, {"@muted", t.muted},
         {"@borderStrong", t.borderStrong}, {"@textSecondary", t.textSecondary}, {"@textDisabled", t.textDisabled},
         {"@surfaceAlt", t.surfaceAlt}, {"@warnBorder", t.warnBorder}, {"@warnText", t.warnText}, {"@warnBg", t.warnBg},
         {"@fillPressed", t.fillPressed}, {"@fillHover", t.fillHover}, {"@onFill", t.onFill}, {"@fill", t.fill},
@@ -550,36 +676,33 @@ QPixmap tokenLogo(const QString& tokenName, int size)
     pixmap.setDevicePixelRatio(dpr);
     pixmap.fill(Qt::transparent);
     QPainter p(&pixmap);
-    p.setRenderHints(QPainter::Antialiasing | QPainter::SmoothPixmapTransform, true);
-    QPainterPath circle;
-    circle.addEllipse(QRectF(0, 0, size, size));
-    p.setClipPath(circle);
-    QPixmap logo;
-    if (root == "PLB")
-        logo.load(":/icons/plb_logo");
-    else if (!root.isEmpty())
-        logo.load(":/tokens/" + root.toLower());
-    if (!logo.isNull()) {
-        p.fillRect(QRectF(0, 0, size, size), Qt::white);
-        p.drawPixmap(QRectF(0, 0, size, size), logo, QRectF(logo.rect()));
+    p.setRenderHints(QPainter::Antialiasing | QPainter::TextAntialiasing, true);
+    // a pointy-top hexagon as high as the square (28 x 32 in the guide)
+    const QRectF cell((size - size * 0.875) / 2, 0, size * 0.875, size);
+    if (root == "PLB") {
+        CellStyle::paintMark(&p, cell);
     } else {
-        p.fillRect(QRectF(0, 0, size, size), t.accentSoft);
-        p.setPen(t.accent);
-        p.setFont(appFont(qMax(10, size * 45 / 100), QFont::DemiBold));
-        p.drawText(QRectF(0, 0, size, size), Qt::AlignCenter, root.left(1));
+        p.setPen(Qt::NoPen);
+        p.setBrush(t.surfaceAlt);
+        p.drawPath(CellStyle::hexagon(cell));
+        p.setPen(t.text);
+        p.setFont(displayFont(qMax(11, size * 36 / 100), QFont::Medium));
+        p.drawText(cell, Qt::AlignCenter, root.left(1));
     }
     p.end();
     cache.insert(key, pixmap);
     return pixmap;
 }
 
-void paintDirectionTile(QPainter* painter, const QRect& tile, bool outgoing, bool reward)
+void paintHexBullet(QPainter* painter, const QRect& rect, bool token)
 {
-    const Theme& t = theme();
     painter->save();
     painter->setRenderHint(QPainter::Antialiasing, true);
-    const QPixmap icon = lineIcon(reward ? "stake" : (outgoing ? "send" : "receive"), 16, t.textSecondary, 2.0);
-    painter->drawPixmap(tile.left() + (tile.width() - 16) / 2, tile.top() + (tile.height() - 16) / 2, icon);
+    painter->setPen(Qt::NoPen);
+    // as in the explorer: mark blue (lighter in the dark theme) for PLB, the secondary grey for tokens
+    painter->setBrush(token ? theme().textSecondary : theme().accent);
+    const QRectF bullet(rect.left() + (rect.width() - 12) / 2.0, rect.top() + (rect.height() - 14) / 2.0, 12, 14);
+    painter->drawPath(CellStyle::hexagon(bullet));
     painter->restore();
 }
 
@@ -595,7 +718,7 @@ LogTimer::~LogTimer()
 
 QString monoHtml(const QString& escapedText)
 {
-    return "<span style=\"font-family:'Noto Sans Mono';\">" + escapedText + "</span>";
+    return "<span style=\"font-family:'JetBrains Mono';\">" + escapedText + "</span>";
 }
 
 void MonoColumnDelegate::initStyleOption(QStyleOptionViewItem *option, const QModelIndex &index) const
@@ -629,7 +752,7 @@ QString monoToolTip(const QString& value, const QString& caption)
     QString html = "<nobr>";
     if (!caption.isEmpty())
         html += HtmlEscape(caption) + "<br>";
-    html += "<span style=\"font-family:'Noto Sans Mono'; font-size:12px;\">" + HtmlEscape(value) + "</span></nobr>";
+    html += "<span style=\"font-family:'JetBrains Mono'; font-size:12px;\">" + HtmlEscape(value) + "</span></nobr>";
     return html;
 }
 
@@ -701,6 +824,10 @@ int paintAmount(QPainter* painter, const QRect& rect, const QString& amount, con
     painter->setFont(font);
     painter->drawText(x, baseline, whole);
     if (!fraction.isEmpty()) {
+        // the fraction also reads lighter than the whole part, as in the explorer
+        QColor light = color;
+        light.setAlphaF(color.alphaF() * 0.68);
+        painter->setPen(light);
         painter->setFont(small);
         painter->drawText(x + wholeWidth, baseline, fraction);
     }
@@ -713,12 +840,12 @@ int paintChip(QPainter* painter, int x, int centerY, const QString& text)
     const Theme& t = theme();
     painter->save();
     painter->setRenderHint(QPainter::Antialiasing, true);
-    painter->setFont(appFont(11, QFont::DemiBold));
+    painter->setFont(appFont(11, QFont::Medium));
     const int w = painter->fontMetrics().horizontalAdvance(text) + 16;
     const QRect r(x, centerY - 10, w, 20);
     painter->setPen(Qt::NoPen);
     painter->setBrush(t.chip);
-    painter->drawRoundedRect(r, 4, 4);
+    painter->drawPath(CellStyle::cutRect(QRectF(r), 6));
     painter->setPen(t.chipText);
     painter->drawText(r, Qt::AlignCenter, text);
     painter->restore();
@@ -729,14 +856,14 @@ void paintBadge(QPainter* painter, const QRect& rect, const QString& text, const
 {
     painter->save();
     painter->setRenderHint(QPainter::Antialiasing, true);
-    painter->setFont(appFont(12, QFont::DemiBold));
+    painter->setFont(appFont(12, QFont::Medium));
     const int w = qMin(rect.width(), painter->fontMetrics().horizontalAdvance(text) + 16);
     const int h = 20;
     const int x = (align & Qt::AlignRight) ? rect.right() - w + 1 : rect.left();
     const QRect r(x, rect.center().y() - h / 2 + 1, w, h);
     painter->setPen(Qt::NoPen);
     painter->setBrush(bg);
-    painter->drawRoundedRect(r, 4, 4);
+    painter->drawPath(CellStyle::cutRect(QRectF(r), 6));
     painter->setPen(fg);
     painter->drawText(r, Qt::AlignCenter, painter->fontMetrics().elidedText(text, Qt::ElideRight, w - 12));
     painter->restore();
@@ -747,11 +874,15 @@ QString labelColorStyle()
     return QString("color: %1").arg(theme().text.name());
 }
 
+QString warningLabelColorStyle()
+{
+    return QString("color: %1").arg(theme().error.name());
+}
+
 QString invalidFieldStyle()
 {
-    const Theme& t = theme();
-    return QString("background-color: %1; border: 1px solid %2;")
-        .arg(t.errorSoft.name(), t.error.name());
+    // the fill and the ring of a field with an error are painted (cut corners); the mark tells which
+    return QString(CellStyle::INVALID_MARK) + " background: transparent; border: 1px solid transparent;";
 }
 
 QString validFieldStyle()
@@ -761,9 +892,14 @@ QString validFieldStyle()
 
 QString cardFrameStyle(const QString& selector)
 {
-    const Theme& t = theme();
-    return QString("%1 { background-color: %2; border: 1px solid %3; border-radius: 12px; padding: 10px 8px; }")
-        .arg(selector, t.surface.name(), t.border.name());
+    return QString("%1 { background: transparent; border: none; padding: 10px 8px; }").arg(selector);
+}
+
+void makeCard(QWidget* frame)
+{
+    frame->setProperty("role", "card");
+    // only the frame itself: a style for ".QFrame" would also reach the lines inside the card
+    frame->setStyleSheet(cardFrameStyle(frame->objectName().isEmpty() ? QString(".QFrame") : "#" + frame->objectName()));
 }
 
 QFont getSubLabelFont()

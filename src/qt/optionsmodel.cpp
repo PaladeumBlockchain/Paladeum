@@ -296,6 +296,9 @@ QVariant OptionsModel::data(const QModelIndex & index, int role) const
             return settings.value("nThreadsScriptVerif");
         case Listen:
             return settings.value("fListen");
+        case DarkTheme:
+            // kept in the settings of the main network, which are read before the network is known
+            return QSettings(QAPP_ORG_NAME, QAPP_APP_NAME_DEFAULT).value(GUIUtil::DARK_THEME_SETTING, false);
         case BootstrapUse:
             return settings.value("fUseBootstrap");
         case BootstrapUrls:
@@ -435,6 +438,14 @@ bool OptionsModel::setData(const QModelIndex & index, const QVariant & value, in
                 setRestartRequired(true);
             }
             break;
+        case DarkTheme: {
+            QSettings mainSettings(QAPP_ORG_NAME, QAPP_APP_NAME_DEFAULT);
+            if (mainSettings.value(GUIUtil::DARK_THEME_SETTING, false).toBool() != value.toBool()) {
+                mainSettings.setValue(GUIUtil::DARK_THEME_SETTING, value.toBool());
+                setRestartRequired(true);
+            }
+            break;
+        }
         case CoinControlFeatures:
             fCoinControlFeatures = value.toBool();
             settings.setValue("fCoinControlFeatures", fCoinControlFeatures);

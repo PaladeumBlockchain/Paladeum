@@ -22,6 +22,7 @@ QT_BEGIN_NAMESPACE
 class QComboBox;
 class QDateTimeEdit;
 class QFrame;
+class QHBoxLayout;
 class QLineEdit;
 class QMenu;
 class QButtonGroup;
@@ -118,6 +119,12 @@ private:
     QWidget *createDateRangeWidget();
 
     GUIUtil::TableViewLastColumnResizingFixer *columnResizingFixer;
+
+    /** The filters in one row, or the search field in a row of its own when the page is narrow */
+    QHBoxLayout *filterRow;
+    QHBoxLayout *searchRow;
+    QWidget *segmentFrame;
+    void arrangeFilters();
 
     virtual void resizeEvent(QResizeEvent* event);
 

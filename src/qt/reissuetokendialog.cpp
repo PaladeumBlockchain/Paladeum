@@ -302,7 +302,7 @@ void ReissueTokenDialog::setUpValues()
 void ReissueTokenDialog::setupCoinControlFrame(const PlatformStyle *platformStyle)
 {
     /** Update the tokencontrol frame */
-    ui->frameCoinControl->setStyleSheet(GUIUtil::cardFrameStyle());
+    GUIUtil::makeCard(ui->frameCoinControl);
     ui->widgetCoinControl->setStyleSheet(".QWidget {background-color: transparent;}");
     /** Create the shadow effects on the frames */
 
@@ -348,6 +348,7 @@ void ReissueTokenDialog::setupCoinControlFrame(const PlatformStyle *platformStyl
     ui->checkBoxCoinControlChange->setFont(GUIUtil::getSubLabelFont());
     ui->lineEditCoinControlChange->setFont(GUIUtil::getSubLabelFont());
     ui->labelCoinControlInsuffFunds->setFont(GUIUtil::getSubLabelFont());
+    ui->labelCoinControlInsuffFunds->setStyleSheet(STRING_LABEL_COLOR_WARNING);
     ui->labelCoinControlAutomaticallySelected->setFont(GUIUtil::getSubLabelFont());
 
 }
@@ -355,7 +356,7 @@ void ReissueTokenDialog::setupCoinControlFrame(const PlatformStyle *platformStyl
 void ReissueTokenDialog::setupTokenDataView(const PlatformStyle *platformStyle)
 {
     /** Update the scrollview*/
-    ui->frame->setStyleSheet(GUIUtil::cardFrameStyle());
+    GUIUtil::makeCard(ui->frame);
 
     ui->tokenNameLabel->setStyleSheet(STRING_LABEL_COLOR);
     ui->tokenNameLabel->setFont(GUIUtil::getSubLabelFont());
@@ -373,9 +374,9 @@ void ReissueTokenDialog::setupTokenDataView(const PlatformStyle *platformStyle)
 
     ui->ipfsBox->setStyleSheet(QString(".QCheckBox{ %1; }").arg(STRING_LABEL_COLOR));
 
-    ui->frame_3->setStyleSheet(GUIUtil::cardFrameStyle());
+    GUIUtil::makeCard(ui->frame_3);
 
-    ui->frame_2->setStyleSheet(GUIUtil::cardFrameStyle());
+    GUIUtil::makeCard(ui->frame_2);
 
     ui->currentDataLabel->setStyleSheet(STRING_LABEL_COLOR);
     ui->currentDataLabel->setFont(GUIUtil::getTopLabelFont());
@@ -394,7 +395,7 @@ void ReissueTokenDialog::setupTokenDataView(const PlatformStyle *platformStyle)
 void ReissueTokenDialog::setupFeeControl(const PlatformStyle *platformStyle)
 {
     /** Update the coincontrol frame */
-    ui->frameFee->setStyleSheet(GUIUtil::cardFrameStyle());
+    GUIUtil::makeCard(ui->frameFee);
     /** Create the shadow effects on the frames */
 
     ui->frameFee->setGraphicsEffect(GUIUtil::getShadowEffect());
@@ -469,14 +470,14 @@ void ReissueTokenDialog::toggleIPFSText()
 
 void ReissueTokenDialog::showMessage(QString string)
 {
-    ui->messageLabel->setStyleSheet("color: red");
+    ui->messageLabel->setStyleSheet(GUIUtil::warningLabelColorStyle());
     ui->messageLabel->setText(string);
     ui->messageLabel->show();
 }
 
 void ReissueTokenDialog::showValidMessage(QString string)
 {
-    ui->messageLabel->setStyleSheet("color: green");
+    ui->messageLabel->setStyleSheet(QString("color: %1").arg(GUIUtil::theme().ok.name()));
     ui->messageLabel->setText(string);
     ui->messageLabel->show();
 }
@@ -978,7 +979,7 @@ void ReissueTokenDialog::onReissueTokenClicked()
     if(nFeeRequired > 0)
     {
         // append fee string if a fee is required
-        questionString.append("<hr /><span style='color:#aa0000;'>");
+        questionString.append(QString("<hr /><span style='color:%1;'>").arg(GUIUtil::theme().error.name()));
         questionString.append(PaladeumUnits::formatHtmlWithUnit(model->getOptionsModel()->getDisplayUnit(), nFeeRequired));
         questionString.append("</span> ");
         questionString.append(tr("added as transaction fee"));
@@ -1046,7 +1047,7 @@ void ReissueTokenDialog::onReissueBoxChanged()
 {
     if (!ui->reissuableBox->isChecked()) {
         ui->reissueWarningLabel->setText("Warning: Once this token is reissued with the reissuable flag set to false, it won't be able to be reissued in the future");
-        ui->reissueWarningLabel->setStyleSheet("color: red");
+        ui->reissueWarningLabel->setStyleSheet(GUIUtil::warningLabelColorStyle());
         ui->reissueWarningLabel->show();
     } else {
         ui->reissueWarningLabel->hide();
@@ -1198,7 +1199,7 @@ void ReissueTokenDialog::coinControlChangeEdited(const QString& text)
     {
         // Default to no change address until verified
         CoinControlDialog::coinControl->destChange = CNoDestination();
-        ui->labelCoinControlChangeLabel->setStyleSheet("QLabel{color:red;}");
+        ui->labelCoinControlChangeLabel->setStyleSheet(QString("QLabel { %1; }").arg(GUIUtil::warningLabelColorStyle()));
 
         const CTxDestination dest = DecodeDestination(text.toStdString());
 
@@ -1224,13 +1225,13 @@ void ReissueTokenDialog::coinControlChangeEdited(const QString& text)
                 else
                 {
                     ui->lineEditCoinControlChange->setText("");
-                    ui->labelCoinControlChangeLabel->setStyleSheet("QLabel{color:black;}");
+                    ui->labelCoinControlChangeLabel->setStyleSheet(QString("QLabel { %1; }").arg(GUIUtil::labelColorStyle()));
                     ui->labelCoinControlChangeLabel->setText("");
                 }
             }
             else // Known change address
             {
-                ui->labelCoinControlChangeLabel->setStyleSheet("QLabel{color:black;}");
+                ui->labelCoinControlChangeLabel->setStyleSheet(QString("QLabel { %1; }").arg(GUIUtil::labelColorStyle()));
 
                 // Query label
                 QString associatedLabel = model->getAddressTableModel()->labelForAddress(text);
@@ -1447,7 +1448,7 @@ void ReissueTokenDialog::restrictedTokenUnselected()
 void ReissueTokenDialog::showInvalidVerifierStringMessage(QString string)
 {
     ui->lineEditVerifierString->setStyleSheet(STYLE_INVALID);
-    ui->labelReissueVerifierStringErrorMessage->setStyleSheet("color: red; font-size: 15pt;font-weight: bold;");
+    ui->labelReissueVerifierStringErrorMessage->setStyleSheet(GUIUtil::warningLabelColorStyle() + "; font-size: 15pt; font-weight: 500;");
     ui->labelReissueVerifierStringErrorMessage->setText(string);
     ui->labelReissueVerifierStringErrorMessage->show();
 }

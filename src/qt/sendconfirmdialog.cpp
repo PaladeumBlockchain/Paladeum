@@ -43,8 +43,11 @@ static QFrame *assetCard(const SendConfirmData &data, QWidget *parent)
     const GUIUtil::Theme &t = GUIUtil::theme();
     QFrame *card = new QFrame(parent);
     card->setObjectName("assetCard");
-    card->setStyleSheet(QString("QFrame#assetCard { background-color: %1; border: 1px solid %2; border-radius: 12px; }")
-        .arg((data.token ? t.warnBg : t.surface).name(), (data.token ? t.warnBorder : t.accent).name()));
+    // a panel with cut corners (painted from cellFill): the coin on the cell color, a token raised
+    card->setProperty("cellFill", data.token ? t.warnBg : t.surface);
+    card->setProperty("cellCut", 12);
+    card->setProperty("cellSurface", true);
+    card->setStyleSheet("QFrame#assetCard { background: transparent; border: none; }");
     QVBoxLayout *layout = new QVBoxLayout(card);
     layout->setContentsMargins(20, 16, 20, 16);
     layout->setSpacing(10);
@@ -59,19 +62,20 @@ static QFrame *assetCard(const SendConfirmData &data, QWidget *parent)
     QVBoxLayout *names = new QVBoxLayout();
     names->setSpacing(2);
     QLabel *caption = plain(data.token ? SendConfirmDialog::tr("You are sending a token") : SendConfirmDialog::tr("You are sending the coin"), nullptr, card);
-    caption->setFont(GUIUtil::appFont(12, QFont::DemiBold));
+    caption->setFont(GUIUtil::appFont(12, QFont::Medium));
     caption->setStyleSheet(QString("color: %1;").arg((data.token ? t.warnText : t.textSecondary).name()));
     names->addWidget(caption);
     QHBoxLayout *nameRow = new QHBoxLayout();
     nameRow->setSpacing(10);
     QLabel *name = new QLabel(data.asset, card);
-    name->setFont(GUIUtil::appFont(28, QFont::DemiBold));
+    name->setFont(GUIUtil::displayFont(28, QFont::Medium));
     name->setStyleSheet(QString("color: %1;").arg(t.text.name()));
     nameRow->addWidget(name);
     QLabel *chip = new QLabel(data.token ? SendConfirmDialog::tr("Token") : SendConfirmDialog::tr("Coin"), card);
-    chip->setFont(GUIUtil::appFont(12, QFont::DemiBold));
-    chip->setStyleSheet(QString("background-color: %1; color: %2; border-radius: 11px; padding: 3px 12px;")
-        .arg((data.token ? t.warnText : t.accentSoft).name(), (data.token ? t.surface : t.accent).name()));
+    chip->setFont(GUIUtil::appFont(12, QFont::Medium));
+    chip->setProperty("cellFill", data.token ? t.warnText : t.accentSoft);
+    chip->setProperty("cellCut", 6);
+    chip->setStyleSheet(QString("background: transparent; color: %1; padding: 3px 12px;").arg((data.token ? t.surface : t.accent).name()));
     nameRow->addWidget(chip, 0, Qt::AlignVCenter);
     nameRow->addStretch();
     names->addLayout(nameRow);

@@ -41,6 +41,7 @@
 #include <QToolTip>
 #include <QVBoxLayout>
 
+#include <chainparams.h>
 #include <validation.h>
 #include <utiltime.h>
 
@@ -90,26 +91,27 @@ public:
         const int type = index.data(TransactionTableModel::TypeRole).toInt();
         const bool confirmed = index.data(TransactionTableModel::ConfirmedRole).toBool();
         const bool outgoing = amount < 0 || type == TransactionRecord::SendToSelf || type == TransactionRecord::TransferTo;
-        GUIUtil::paintDirectionTile(painter, QRect(r.left(), r.top() + (r.height() - 36) / 2, 36, 36), outgoing, type == TransactionRecord::Generated);
+        const QString asset = index.data(TransactionTableModel::TokenNameRole).toString();
+        // the hexagon bullet of a list row: blue for PLB, grey for a token
+        GUIUtil::paintHexBullet(painter, QRect(r.left(), r.top(), 16, r.height()), !asset.isEmpty() && asset != "PLB");
 
-        const int left = r.left() + 48;
-        const QRect topRect(left, r.top() + 7, r.width() - 48, 20);
-        const QRect bottomRect(left, r.top() + 27, r.width() - 48, 18);
+        const int left = r.left() + 28;
+        const QRect topRect(left, r.top() + 7, r.width() - 28, 20);
+        const QRect bottomRect(left, r.top() + 27, r.width() - 28, 18);
 
         // amount and asset, right-aligned
         const QString amountText = index.data(TransactionTableModel::DisplayAmountRole).toString();
         QColor amountColor = outgoing ? theme.negative : theme.positive;
         if (!confirmed)
             amountColor = theme.textDisabled;
-        const int amountWidth = GUIUtil::paintAmount(painter, topRect, amountText, GUIUtil::monoFont(15, QFont::DemiBold), amountColor);
+        const int amountWidth = GUIUtil::paintAmount(painter, topRect, amountText, GUIUtil::monoFont(14, QFont::Medium), amountColor);
         painter->setFont(GUIUtil::appFont(12));
-        painter->setPen(theme.textSecondary);
-        const QString asset = index.data(TransactionTableModel::TokenNameRole).toString();
+        painter->setPen(theme.muted);
         painter->drawText(bottomRect, Qt::AlignRight | Qt::AlignVCenter, asset);
         const int assetWidth = painter->fontMetrics().horizontalAdvance(asset);
 
         // title and chip
-        painter->setFont(GUIUtil::appFont(14, QFont::DemiBold));
+        painter->setFont(GUIUtil::appFont(14, QFont::Medium));
         painter->setPen(theme.text);
         const bool owner = index.data(TransactionTableModel::OwnerTokenRole).toBool();
         const QString chip = owner ? tr("Owner") : QString();
@@ -125,7 +127,7 @@ public:
         bool mono = false;
         QString sub = subLine(index, &mono);
         painter->setFont(mono ? GUIUtil::monoFont(12) : GUIUtil::appFont(12));
-        painter->setPen(theme.textSecondary);
+        painter->setPen(theme.muted);
         sub = painter->fontMetrics().elidedText(sub, Qt::ElideRight, qMax(40, bottomRect.width() - assetWidth - 12));
         painter->drawText(bottomRect, Qt::AlignLeft | Qt::AlignVCenter, sub);
 
@@ -338,7 +340,9 @@ static QLabel *captionLabel(const QString& text)
 
 static AmountLabel *amountLabel()
 {
-    return new AmountLabel(17, QFont::DemiBold);
+    AmountLabel *label = new AmountLabel(17, QFont::DemiBold);
+    label->setMinimumPixelSize(14);
+    return label;
 }
 
 static QWidget *statBlock(const QString& caption, QWidget *value)
@@ -414,9 +418,9 @@ OverviewPage::OverviewPage(const PlatformStyle *platformStyle, QWidget *parent) 
     searchEdit->setFixedHeight(40);
     searchEdit->addAction(QIcon(GUIUtil::lineIcon("search", 16, theme.textSecondary, 2.2)), QLineEdit::LeadingPosition);
     searchEdit->setClearButtonEnabled(true);
+    // the one primary action of the page is Send; looking up is the secondary filled one
     QPushButton *searchButton = new QPushButton(tr("Look up"));
-    searchButton->setProperty("primary", true);
-    searchButton->setProperty("look", "large");
+    searchButton->setProperty("look", "secondary");
     searchButton->setFixedHeight(40);
     searchButton->setCursor(Qt::PointingHandCursor);
     searchRow->addWidget(searchEdit, 1);
@@ -428,9 +432,9 @@ OverviewPage::OverviewPage(const PlatformStyle *platformStyle, QWidget *parent) 
     chainStats = new StatsStrip();
     chainStats->addCell(tr("Block height"));
     chainStats->addCell(tr("Difficulty"));
-    chainStats->addCell(tr("Network stake weight"));
-    chainStats->addCell(tr("Connected peers"));
-    chainStats->addCell(tr("Waiting in the memory pool"), true);
+    chainStats->addCell(tr("Network weight"));
+    chainStats->addCell(tr("Peers"));
+    chainStats->addCell(tr("Memory pool"), true);
     chainStats->setCompact(true);
     chainStats->setToolTip(tr("State of the chain as this node sees it. The memory pool opens the explorer."));
     pageLayout->addWidget(chainStats);
@@ -447,23 +451,28 @@ OverviewPage::OverviewPage(const PlatformStyle *platformStyle, QWidget *parent) 
     statsTimer->setInterval(10000);
     connect(statsTimer, SIGNAL(timeout()), this, SLOT(updateChainStrip()));
 
-    // balance card
+    // balance card: the total and the two actions on top, the parts of the total in a row below
     QFrame *balanceCard = new QFrame();
     balanceCard->setProperty("role", "card");
-    QHBoxLayout *balanceLayout = new QHBoxLayout(balanceCard);
-    balanceLayout->setContentsMargins(28, 16, 28, 18);
-    balanceLayout->setSpacing(24);
-
-    QVBoxLayout *balanceLeft = new QVBoxLayout();
+    QVBoxLayout *balanceLeft = new QVBoxLayout(balanceCard);
+    balanceLeft->setContentsMargins(28, 20, 28, 20);
     balanceLeft->setSpacing(4);
+    QHBoxLayout *balanceTop = new QHBoxLayout();
+    balanceTop->setSpacing(24);
+    QVBoxLayout *totalBox = new QVBoxLayout();
+    totalBox->setSpacing(4);
     QLabel *totalCaption = new QLabel(tr("Total balance"));
-    totalCaption->setFont(GUIUtil::appFont(13, QFont::DemiBold));
-    totalCaption->setProperty("role", "secondary");
-    balanceLeft->addWidget(totalCaption);
-    labelTotal = new AmountLabel(32, QFont::DemiBold);
-    labelTotal->setUnitColor(theme.accent);
-    balanceLeft->addWidget(labelTotal);
-    balanceLeft->addSpacing(2);
+    totalCaption->setProperty("role", "caption");
+    totalCaption->setStyleSheet("QLabel { font-size: 13px; }");
+    totalBox->addWidget(totalCaption);
+    labelTotal = new AmountLabel(40, QFont::Normal);
+    labelTotal->setUnitColor(theme.textSecondary);
+    // a large total in a narrow window gets smaller instead of being cut off
+    labelTotal->setMinimumPixelSize(22);
+    totalBox->addWidget(labelTotal);
+    balanceTop->addLayout(totalBox, 1);
+    balanceLeft->addLayout(balanceTop);
+    balanceLeft->addSpacing(12);
 
     QHBoxLayout *stats = new QHBoxLayout();
     stats->setSpacing(32);
@@ -477,7 +486,9 @@ OverviewPage::OverviewPage(const PlatformStyle *platformStyle, QWidget *parent) 
     labelStake->setToolTip(tr("Coins that are staked at the moment"));
     stats->addWidget(statBlock(tr("Available"), labelBalance));
     stats->addWidget(statBlock(tr("Pending"), labelUnconfirmed));
-    stats->addWidget(statBlock(tr("Immature (staking rewards)"), labelImmature));
+    QWidget *immatureBlock = statBlock(tr("Immature"), labelImmature);
+    immatureBlock->setToolTip(labelImmature->toolTip());
+    stats->addWidget(immatureBlock);
     stakeBlock = statBlock(tr("Staked"), labelStake);
     stats->addWidget(stakeBlock);
     labelOffline = amountLabel();
@@ -505,32 +516,42 @@ OverviewPage::OverviewPage(const PlatformStyle *platformStyle, QWidget *parent) 
     labelWatchOnly->setVisible(false);
     balanceLeft->addSpacing(6);
     balanceLeft->addWidget(labelWatchOnly);
-    balanceLayout->addLayout(balanceLeft, 1);
 
     QPushButton *sendButton = new QPushButton(tr("Send"));
     sendButton->setProperty("primary", true);
     sendButton->setProperty("look", "large");
-    sendButton->setIcon(QIcon(GUIUtil::lineIcon("send", 16, theme.onFill, 2.4)));
+    sendButton->setIcon(QIcon(GUIUtil::lineIcon("send", 16, theme.onAction, 2.0)));
     sendButton->setCursor(Qt::PointingHandCursor);
     QPushButton *receiveButton = new QPushButton(tr("Receive"));
     receiveButton->setProperty("look", "large");
-    receiveButton->setIcon(QIcon(GUIUtil::lineIcon("receive", 16, theme.text, 2.4)));
+    receiveButton->setIcon(QIcon(GUIUtil::lineIcon("receive", 16, theme.text, 2.0)));
     receiveButton->setCursor(Qt::PointingHandCursor);
     for (QPushButton *button : {sendButton, receiveButton}) {
-        button->setFont(GUIUtil::appFont(14, QFont::DemiBold));
+        button->setFont(GUIUtil::appFont(14, QFont::Medium));
         button->setIconSize(QSize(16, 16));
-        button->setFixedHeight(40);
+        button->setFixedHeight(44);
         button->setMinimumWidth(116);
     }
     QHBoxLayout *buttons = new QHBoxLayout();
-    buttons->setSpacing(12);
+    buttons->setSpacing(8);
     buttons->addWidget(sendButton);
     buttons->addWidget(receiveButton);
-    QVBoxLayout *balanceRight = new QVBoxLayout();
-    balanceRight->addStretch();
-    balanceRight->addLayout(buttons);
-    balanceLayout->addLayout(balanceRight);
-    pageLayout->addWidget(balanceCard);
+    balanceTop->addLayout(buttons);
+    balanceTop->setAlignment(buttons, Qt::AlignBottom);
+
+    // the balance and, next to it on the ground, the assets as hexagon cells (PLB, then tokens);
+    // in a narrow window the cells go below the balance
+    QBoxLayout *heroRow = new QBoxLayout(QBoxLayout::LeftToRight);
+    heroRow->setSpacing(20);
+    heroRow->addWidget(balanceCard, 1);
+    assetCells = new HexCells(HexCells::Assets);
+    assetCells->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Fixed);
+    assetCells->setMinimumCells(2);
+    heroRow->addWidget(assetCells, 0, Qt::AlignVCenter);
+    pageLayout->addLayout(heroRow);
+    new BoxDirectionFollower(this, heroRow, 860);
+    // a token cell leads to the tokens
+    connect(assetCells, &HexCells::cellClicked, this, [this](const QString&) { Q_EMIT allTokensClicked(); });
     connect(sendButton, SIGNAL(clicked()), this, SIGNAL(sendClicked()));
     connect(receiveButton, SIGNAL(clicked()), this, SIGNAL(receiveClicked()));
 
@@ -553,7 +574,7 @@ OverviewPage::OverviewPage(const PlatformStyle *platformStyle, QWidget *parent) 
     tokenCount->setFont(GUIUtil::appFont(13, QFont::DemiBold));
     tokenSearch = new QLineEdit();
     tokenSearch->setPlaceholderText(tr("Search tokens"));
-    tokenSearch->setFixedSize(200, 40);
+    tokenSearch->setFixedSize(176, 40);
     tokenSearch->addAction(QIcon(GUIUtil::lineIcon("search", 14, theme.textSecondary, 2.4)), QLineEdit::LeadingPosition);
     tokenSearch->setClearButtonEnabled(true);
     tokenHeader->addWidget(tokenTitle);
@@ -801,13 +822,69 @@ void OverviewPage::setBalance(const CAmount& balance, const CAmount& unconfirmed
     // the staked amount is only shown when there is one
     stakeBlock->setVisible(stake != 0 || watchOnlyStake != 0);
     labelOffline->setAmount(displayAmount(unit, offline));
-    // the coins given to a staker are only shown when there are some
-    offlineBlock->setVisible(offline != 0);
+    // the coins given to a staker are only shown when there are some, and only on a network on
+    // which offline staking is active (not on the main network)
+    bool offlineActive = false;
+    {
+        TRY_LOCK(cs_main, lockMain);
+        if (lockMain)
+            offlineActive = IsOfflineStakingEnabled(chainActive.Tip(), GetParams().GetConsensus());
+    }
+    offlineBlock->setVisible(offline != 0 && offlineActive);
 
     watchAmounts[0]->setAmount(displayAmount(unit, watchOnlyBalance));
     watchAmounts[1]->setAmount(displayAmount(unit, watchUnconfBalance));
     watchAmounts[2]->setAmount(displayAmount(unit, watchImmatureBalance));
     watchAmounts[3]->setAmount(displayAmount(unit, watchOnlyBalance + watchUnconfBalance + watchImmatureBalance + watchOnlyStake));
+    updateAssetCells();
+}
+
+void OverviewPage::updateAssetCells()
+{
+    if (!walletModel || !walletModel->getOptionsModel() || currentBalance == -1)
+        return;
+    const int unit = walletModel->getOptionsModel()->getDisplayUnit();
+    const CAmount total = currentBalance + currentUnconfirmedBalance + currentImmatureBalance + currentLockedBalance;
+    QList<HexCells::Cell> cells;
+    // PLB in mark blue, with the total in few characters; the exact amount in the tool tip
+    HexCells::Cell plb;
+    plb.top = PaladeumUnits::name(unit);
+    plb.bottom = GUIUtil::compactNumber(double(total) / PaladeumUnits::factor(unit));
+    plb.toolTip = GUIUtil::monoToolTip(displayAmount(unit, total) + " " + PaladeumUnits::name(unit), tr("Total balance"));
+    plb.kind = HexCells::Recent;
+    cells << plb;
+    // then the root tokens that the wallet holds, and how many more there are
+    static const int TOKEN_CELLS = 4;
+    int more = 0;
+    if (heldTokens) {
+        for (const RootToken& root : heldTokens->roots()) {
+            if (!root.held)
+                continue;
+            if (cells.size() > TOKEN_CELLS) {
+                ++more;
+                continue;
+            }
+            HexCells::Cell cell;
+            cell.top = root.name;
+            bool ok = false;
+            const double amount = QString(root.amount).remove(',').remove(QChar(0x2009)).toDouble(&ok);
+            cell.bottom = ok ? GUIUtil::compactNumber(amount) : root.amount;
+            cell.toolTip = GUIUtil::monoToolTip(GUIUtil::withThousands(root.amount) + " " + root.name);
+            cell.kind = HexCells::Settled;
+            cell.key = root.name;
+            cells << cell;
+        }
+    }
+    if (more > 0) {
+        HexCells::Cell cell;
+        cell.top = QString("+%1").arg(more);
+        cell.bottom = tr("more");
+        cell.toolTip = tr("Show all tokens");
+        cell.kind = HexCells::Old;
+        cell.key = "more";
+        cells << cell;
+    }
+    assetCells->setCells(cells);
 }
 
 // show/hide watch-only labels
@@ -849,6 +926,7 @@ void OverviewPage::setWalletModel(WalletModel *model)
         rootModel = new OverviewRootModel(heldTokens, this);
         listTokens->setModel(rootModel);
         connect(rootModel, SIGNAL(modelReset()), this, SLOT(updateTokenCount()));
+        connect(heldTokens, &HeldTokenIndex::changed, this, [this] { updateAssetCells(); });
         updateTokenCount();
 
         // Keep up to date with wallet

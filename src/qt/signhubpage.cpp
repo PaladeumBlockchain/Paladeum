@@ -19,6 +19,8 @@
 #include "ui_interface.h"
 
 #include <QApplication>
+#include <QBoxLayout>
+#include <QResizeEvent>
 #include <QButtonGroup>
 #include <QCheckBox>
 #include <QClipboard>
@@ -98,22 +100,25 @@ QLabel *badge(const QString& text, const char *kind, QWidget *parent = nullptr)
         front = t.error;
     }
     QLabel *label = new QLabel(text, parent);
-    label->setStyleSheet(QString("QLabel { background-color: %1; color: %2; border-radius: 8px; padding: 4px 11px; font-size: 12px; font-weight: 600; }")
-                             .arg(back.name(), front.name()));
+    // a chip with cut corners (painted from cellFill)
+    label->setProperty("cellFill", back);
+    label->setProperty("cellCut", 6);
+    label->setStyleSheet(QString("QLabel { background: transparent; color: %1; padding: 4px 11px; font-size: 12px; font-weight: 500; }").arg(front.name()));
     label->setSizePolicy(QSizePolicy::Maximum, QSizePolicy::Fixed);
     return label;
 }
 
-/** The round mark of a participant or of a step. */
+/** The mark of a participant or of a step: a small square with cut corners (painted from cellFill). */
 QLabel *avatar(const QString& text, int size, bool filled, QWidget *parent = nullptr)
 {
     const GUIUtil::Theme& t = GUIUtil::theme();
     QLabel *label = new QLabel(text, parent);
     label->setFixedSize(size, size);
     label->setAlignment(Qt::AlignCenter);
-    label->setStyleSheet(QString("QLabel { background-color: %1; color: %2; border-radius: %3px; font-size: %4px; font-weight: 600; }")
-                             .arg((filled ? t.fill : t.accentSoft).name(), (filled ? t.onFill : t.accent).name())
-                             .arg(size / 2).arg(size >= 36 ? 14 : 12));
+    label->setProperty("cellFill", filled ? t.fill : t.accentSoft);
+    label->setProperty("cellCut", 6);
+    label->setStyleSheet(QString("QLabel { background: transparent; color: %1; font-family: \"Space Grotesk\"; font-size: %2px; font-weight: 500; }")
+                             .arg((filled ? t.onFill : t.accent).name()).arg(size >= 36 ? 14 : 12));
     return label;
 }
 
@@ -124,7 +129,8 @@ QLabel *iconTile(const QString& icon, int size, QWidget *parent = nullptr)
     label->setFixedSize(size, size);
     label->setAlignment(Qt::AlignCenter);
     label->setPixmap(GUIUtil::lineIcon(icon, size / 2, t.accent, 2.0));
-    label->setStyleSheet(QString("QLabel { background-color: %1; border-radius: 8px; }").arg(t.accentSoft.name()));
+    // the icon alone: no tile under it
+    label->setStyleSheet("QLabel { background: transparent; }");
     return label;
 }
 
@@ -202,7 +208,7 @@ SignHubPage::SignHubPage(const PlatformStyle *_platformStyle, const PageChrome& 
     setObjectName("pageShell");
     setAttribute(Qt::WA_StyledBackground, true);
     QVBoxLayout *layout = new QVBoxLayout(this);
-    layout->setContentsMargins(36, 26, 36, 28);
+    layout->setContentsMargins(32, 24, 32, 24);
     stack = new QStackedWidget(this);
     layout->addWidget(stack);
     stack->addWidget(buildHub());
@@ -410,18 +416,26 @@ QWidget *SignHubPage::buildHub()
     // the multisig wallets of this wallet
     QVBoxLayout *body = nullptr;
     QFrame *wallets = card(page, &body, 6);
-    QHBoxLayout *top = new QHBoxLayout();
-    top->setSpacing(18);
+    // the heading and its three links in a row, or the links below it in a narrow window
+    QBoxLayout *top = new QBoxLayout(QBoxLayout::LeftToRight);
+    top->setSpacing(12);
     top->addWidget(heading(tr("My multisig wallets"), wallets));
     top->addStretch();
+    QWidget *linkRow = new QWidget(wallets);
+    QHBoxLayout *links = new QHBoxLayout(linkRow);
+    links->setContentsMargins(0, 0, 0, 0);
+    links->setSpacing(18);
     QPushButton *myKey = linkButton(tr("Copy my public key"), wallets);
     myKey->setToolTip(tr("The key to give to the person who makes a multisig wallet with you"));
     QPushButton *openRequest = linkButton(tr("Open a signing request"), wallets);
     openRequest->setToolTip(tr("A signing request that another participant sent you as a file or as a code"));
     QPushButton *join = linkButton(tr("Add a multisig wallet I was invited to"), wallets);
-    top->addWidget(myKey);
-    top->addWidget(openRequest);
-    top->addWidget(join);
+    links->addWidget(myKey);
+    links->addWidget(openRequest);
+    links->addWidget(join);
+    links->addStretch();
+    top->addWidget(linkRow);
+    new BoxDirectionFollower(wallets, top, 860);
     connect(myKey, SIGNAL(clicked()), this, SLOT(copyMyKey()));
     connect(openRequest, SIGNAL(clicked()), this, SLOT(openReceivedRequest()));
     connect(join, SIGNAL(clicked()), this, SLOT(showJoin()));
@@ -538,7 +552,7 @@ void SignHubPage::copyMyKey()
     GUIUtil::setClipboard(code);
     QMessageBox box(QMessageBox::Information, tr("My public key"),
                     tr("Your public key was copied. Send it to the person who makes the multisig wallet, by messenger or mail."), QMessageBox::Ok, this);
-    box.setInformativeText(QString("<span style=\"font-family:'Noto Sans Mono'; font-size:12px\">%1</span><br><br>%2")
+    box.setInformativeText(QString("<span style=\"font-family:'JetBrains Mono'; font-size:12px\">%1</span><br><br>%2")
                                .arg(code.left(44) + "<br>" + code.mid(44),
                                     tr("A public key only says \"this person is a signer\". It cannot take coins out, so it is safe to share. Never send your recovery words or a private key to anyone.")));
     box.exec();
@@ -683,6 +697,7 @@ QWidget *SignHubPage::buildVerify()
     layout->addLayout(subHeader(tr("Check a signature")));
 
     QHBoxLayout *columns = new QHBoxLayout();
+    columnLayouts << columns;
     columns->setSpacing(20);
     QVBoxLayout *body = nullptr;
     QFrame *frame = card(page, &body, 8);
@@ -762,8 +777,8 @@ void SignHubPage::showVerifyResult(bool checked, bool valid, const QString& reas
     const GUIUtil::Theme& t = GUIUtil::theme();
     const QColor back = !checked ? t.surfaceAlt : valid ? t.okSoft : t.errorSoft;
     const QColor front = !checked ? t.textSecondary : valid ? t.ok : t.error;
-    verifyBanner->setStyleSheet(QString("QWidget#verifyBanner { background-color: %1; border-radius: 8px; } QLabel { color: %2; background: transparent; }")
-                                    .arg(back.name(), front.name()));
+    verifyBanner->setProperty("cellFill", back);
+    verifyBanner->setStyleSheet(QString("QWidget#verifyBanner { background: transparent; } QLabel { color: %1; background: transparent; }").arg(front.name()));
     verifyResult->setText(!checked ? tr("Not checked yet") : valid ? tr("Valid") : tr("Not valid"));
     verifyReason->setText(!checked ? tr("The result appears here.") : reason);
 }
@@ -924,6 +939,7 @@ QWidget *SignHubPage::buildCreate()
     {
         QWidget *step = new QWidget(createStack);
         QHBoxLayout *columns = new QHBoxLayout(step);
+        columnLayouts << columns;
         columns->setContentsMargins(0, 0, 0, 0);
         columns->setSpacing(20);
         QVBoxLayout *body = nullptr;
@@ -1014,6 +1030,7 @@ QWidget *SignHubPage::buildCreate()
     {
         QWidget *step = new QWidget(createStack);
         QHBoxLayout *columns = new QHBoxLayout(step);
+        columnLayouts << columns;
         columns->setContentsMargins(0, 0, 0, 0);
         columns->setSpacing(20);
         QVBoxLayout *body = nullptr;
@@ -1315,7 +1332,9 @@ void SignHubPage::participantsChanged()
         if (kind == "bad") { back = t.errorSoft; front = t.error; }
         otherStatus[i]->setText(text);
         otherStatus[i]->setToolTip(error);
-        otherStatus[i]->setStyleSheet(QString("QLabel { background-color: %1; color: %2; border-radius: 8px; padding: 4px 11px; font-size: 12px; font-weight: 600; }").arg(back.name(), front.name()));
+        otherStatus[i]->setProperty("cellFill", back);
+        otherStatus[i]->setProperty("cellCut", 6);
+        otherStatus[i]->setStyleSheet(QString("QLabel { background: transparent; color: %1; padding: 4px 11px; font-size: 12px; font-weight: 500; }").arg(front.name()));
     }
     participantsTitle->setText(tr("%1 of %2 participants ready").arg(ready).arg(n));
     participantsRule->setText(tr("Name: %1 · %2").arg(createName->text().trimmed(), ruleText(m, n)));
@@ -1498,6 +1517,7 @@ QWidget *SignHubPage::buildJoin()
     layout->setSpacing(18);
     layout->addLayout(subHeader(tr("Add a multisig wallet I was invited to")));
     QHBoxLayout *columns = new QHBoxLayout();
+    columnLayouts << columns;
     columns->setSpacing(20);
     QVBoxLayout *body = nullptr;
     QFrame *frame = card(page, &body, 8);
@@ -1642,6 +1662,7 @@ QWidget *SignHubPage::buildWallet()
     layout->addLayout(header);
 
     QHBoxLayout *columns = new QHBoxLayout();
+    columnLayouts << columns;
     columns->setSpacing(20);
     QVBoxLayout *body = nullptr;
     QFrame *form = card(page, &body, 6);
@@ -2055,9 +2076,10 @@ void SignHubPage::fillRequestPage()
         QLabel *dot = new QLabel(stage.mark, strip);
         dot->setFixedSize(26, 26);
         dot->setAlignment(Qt::AlignCenter);
-        dot->setStyleSheet(QString("QLabel { background-color: %1; color: %2; border-radius: 13px; font-size: 12px; font-weight: 600; }")
-                               .arg((stage.state == 2 ? t.okSoft : stage.state == 1 ? t.fill : t.chip).name(),
-                                    (stage.state == 2 ? t.ok : stage.state == 1 ? t.onFill : t.chipText).name()));
+        dot->setProperty("cellFill", stage.state == 2 ? t.okSoft : stage.state == 1 ? t.fill : t.chip);
+        dot->setProperty("cellCut", 6);
+        dot->setStyleSheet(QString("QLabel { background: transparent; color: %1; font-size: 12px; font-weight: 500; }")
+                               .arg((stage.state == 2 ? t.ok : stage.state == 1 ? t.onFill : t.chipText).name()));
         progress->addWidget(dot);
         QLabel *text = new QLabel(stage.text, strip);
         text->setFont(GUIUtil::appFont(13, stage.state == 1 ? QFont::DemiBold : QFont::Medium));
@@ -2076,6 +2098,7 @@ void SignHubPage::fillRequestPage()
     requestBody->addWidget(strip);
 
     QHBoxLayout *columns = new QHBoxLayout();
+    columnLayouts << columns;
     columns->setSpacing(20);
 
     // --- what the request does, read from its transaction
@@ -2157,7 +2180,8 @@ void SignHubPage::fillRequestPage()
     QFrame *next = new QFrame(what);
     next->setObjectName("nextBox");
     const bool alarm = !sent && !view.spent && !view.problems.isEmpty() && known;
-    next->setStyleSheet(QString("QFrame#nextBox { background-color: %1; border-radius: 8px; }").arg((alarm ? t.errorSoft : t.accentSoft).name()));
+    next->setProperty("cellFill", alarm ? t.errorSoft : t.accentSoft);
+    next->setStyleSheet("QFrame#nextBox { background: transparent; }");
     QVBoxLayout *nextLayout = new QVBoxLayout(next);
     nextLayout->setContentsMargins(16, 12, 16, 12);
     nextLayout->setSpacing(4);
@@ -2514,4 +2538,23 @@ void SignHubPage::cancelCurrentRequest()
     const QString address = request.address;
     model->removeRequest(currentRequest);
     showWallet(address);
+}
+
+void SignHubPage::resizeEvent(QResizeEvent *event)
+{
+    QWidget::resizeEvent(event);
+    arrangeColumns();
+}
+
+void SignHubPage::arrangeColumns()
+{
+    const int available = stack->width();
+    for (QBoxLayout *columns : columnLayouts) {
+        // measured once, side by side
+        if (!columnWidths.contains(columns) && columns->direction() == QBoxLayout::LeftToRight)
+            columnWidths.insert(columns, columns->minimumSize().width());
+        const QBoxLayout::Direction direction = available >= columnWidths.value(columns) ? QBoxLayout::LeftToRight : QBoxLayout::TopToBottom;
+        if (columns->direction() != direction)
+            columns->setDirection(direction);
+    }
 }

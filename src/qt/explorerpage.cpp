@@ -38,6 +38,7 @@
 #include <QHBoxLayout>
 #include <QLabel>
 #include <QLineEdit>
+#include <QPainter>
 #include <QPlainTextEdit>
 #include <QPushButton>
 #include <QRegExp>
@@ -445,21 +446,71 @@ void ExplorerWorker::chainStatus()
     Q_EMIT statusDone(QString::fromStdString(readChainStatus().write()));
 }
 
-void ExplorerPage::fillChainStats(StatsStrip *strip, const QString& json)
+void ExplorerPage::fillChainStats(StatsStrip *strip, const QString& json, bool withHeight)
 {
     UniValue result;
     if (!result.read(json.toStdString()) || !result.isObject())
         return;
-    strip->setValue(0, GUIUtil::withThousands(QString::number(intOf(result, "height"))));
+    // the cells in their order; without the height all move one to the left
+    const int shift = withHeight ? 0 : -1;
+    if (withHeight)
+        strip->setValue(0, GUIUtil::withThousands(QString::number(intOf(result, "height"))));
+    // the difficulty and the weight in few characters (4.66e-10, 1.23 M PLB); the exact value in the tool tip
     bool ok = false;
-    const double difficulty = QString::fromStdString(strOf(result, "difficulty")).toDouble(&ok);
+    const QString difficultyText = QString::fromStdString(strOf(result, "difficulty"));
+    const double difficulty = difficultyText.toDouble(&ok);
     if (ok)
-        strip->setValue(1, difficulty >= 1000 ? GUIUtil::withThousands(QString::number(difficulty, 'f', 2)) : QString::number(difficulty, 'g', 6));
+        strip->setValue(1 + shift, GUIUtil::compactNumber(difficulty), QString(), GUIUtil::monoToolTip(difficultyText, tr("Difficulty")));
     const double weight = QString::fromStdString(strOf(result, "netweight")).toDouble(&ok);
     if (ok)
-        strip->setValue(2, GUIUtil::withThousands(QString::number(weight / COIN, 'f', 0)), "PLB");
-    strip->setValue(3, QString::number(intOf(result, "peers")));
-    strip->setValue(4, GUIUtil::withThousands(QString::number(intOf(result, "poolsize"))));
+        strip->setValue(2 + shift, GUIUtil::compactNumber(weight / COIN), "PLB",
+                        GUIUtil::monoToolTip(GUIUtil::withThousands(QString::number(weight / COIN, 'f', 0)) + " PLB", tr("Network weight: the coins that are staking now, estimated from the recent blocks")));
+    strip->setValue(3 + shift, QString::number(intOf(result, "peers")));
+    strip->setValue(4 + shift, GUIUtil::withThousands(QString::number(intOf(result, "poolsize"))));
+}
+
+void ExplorerPage::showLatestBlocks(const UniValue& result)
+{
+    const UniValue blocks = find_value(result, "blocks");
+    if (!blocks.isArray() || blocks.empty())
+        return;
+    const qint64 now = intOf(result, "now");
+    const int count = (int)blocks.size();
+    const UniValue& newest = blocks[0];
+    const qint64 newestTime = intOf(newest, "time");
+    const QString ago = GUIUtil::formatDurationStr(int(qMax<qint64>(0, now - newestTime)));
+    heroHeight->setText(GUIUtil::withThousands(QString::number(intOf(newest, "height"))));
+    const int newestTransactions = int(intOf(newest, "tx"));
+    QString sentence = newestTransactions == 1 ? tr("Added %1 ago, with one transaction.").arg(ago)
+                                               : tr("Added %1 ago, with %2 transactions.").arg(ago).arg(newestTransactions);
+    if (count > 1) {
+        const qint64 span = newestTime - intOf(blocks[count - 1], "time");
+        sentence += " " + tr("The last %1 blocks came about %2 apart.").arg(count)
+                              .arg(GUIUtil::formatDurationStr(int(qMax<qint64>(0, span) / (count - 1))));
+    }
+    heroSentence->setText(sentence);
+
+    // oldest on the left: old (raised), settled (the cell color), recent (mark blue), the newest (yellow)
+    QList<HexCells::Cell> cells;
+    for (int i = count - 1; i >= 0; --i) {
+        const UniValue& block = blocks[i];
+        const qint64 height = intOf(block, "height");
+        const int transactions = int(intOf(block, "tx"));
+        HexCells::Cell cell;
+        cell.top = GUIUtil::withThousands(QString::number(height));
+        cell.bottom = tr("%n tx", "", transactions);
+        cell.kind = i == 0 ? HexCells::Newest : i == 1 ? HexCells::Recent : i <= 4 ? HexCells::Settled : HexCells::Old;
+        if (i == 0)
+            cell.bottom += QString::fromUtf8(" · ") + ago;
+        const QString hash = QString::fromStdString(strOf(block, "hash"));
+        cell.toolTip = QString("<qt><b>%1</b><br>%2<br>%3</qt>")
+            .arg(tr("Block %1").arg(cell.top),
+                 GUIUtil::HtmlEscape(GUIUtil::isoDateTime(QDateTime::fromTime_t(intOf(block, "time")), true)),
+                 GUIUtil::monoHtml(GUIUtil::shortHash(hash)));
+        cell.key = QString::number(height);
+        cells << cell;
+    }
+    blockCells->setCells(cells);
 }
 
 void ExplorerWorker::refresh()
@@ -505,6 +556,22 @@ void ExplorerWorker::refresh()
     }
     result.pushKV("entries", entries);
     result.pushKV("now", GetTime());
+
+    // the latest blocks, newest first: height, number of transactions, time and hash
+    UniValue blocks(UniValue::VARR);
+    {
+        LOCK(cs_main);
+        const CBlockIndex *index = chainActive.Tip();
+        for (int i = 0; index && i < LATEST_BLOCKS; ++i, index = index->pprev) {
+            UniValue block(UniValue::VOBJ);
+            block.pushKV("height", index->nHeight);
+            block.pushKV("tx", (int64_t)index->nTx);
+            block.pushKV("time", index->GetBlockTime());
+            block.pushKV("hash", index->GetIndexHash().GetHex());
+            blocks.push_back(block);
+        }
+    }
+    result.pushKV("blocks", blocks);
     Q_EMIT refreshDone(QString::fromStdString(result.write()));
 }
 
@@ -547,7 +614,9 @@ ExplorerPage::ExplorerPage(const PlatformStyle *platformStyle, QWidget *parent) 
 {
     const GUIUtil::Theme& theme = GUIUtil::theme();
 
-    headerNote = caption(tr("Looked up on the node of this computer. Nothing is sent to an outside server."));
+    // (short: it shares the header with the title, also in the narrowest window)
+    headerNote = caption(tr("Looked up on this node, not on an outside server"));
+    headerNote->setToolTip(tr("Looked up on the node of this computer. Nothing is sent to an outside server."));
 
     QVBoxLayout *pageLayout = new QVBoxLayout(this);
     pageLayout->setContentsMargins(0, 0, 0, 0);
@@ -576,12 +645,39 @@ ExplorerPage::ExplorerPage(const PlatformStyle *platformStyle, QWidget *parent) 
     connect(searchButton, SIGNAL(clicked()), this, SLOT(searchClicked()));
     connect(searchEdit, SIGNAL(returnPressed()), this, SLOT(searchClicked()));
 
-    // chain status
+    // the latest block: its height large and one sentence, and the latest blocks as hexagon cells,
+    // the newest in yellow (the one bright element of the page); a cell opens its block
+    QBoxLayout *hero = new QBoxLayout(QBoxLayout::LeftToRight);
+    hero->setSpacing(32);
+    QVBoxLayout *heroText = new QVBoxLayout();
+    heroText->setSpacing(8);
+    const std::string network = GetParams().NetworkIDString();
+    const QString networkName = network == "main" ? tr("Paladeum main network")
+                              : network == "test" ? tr("Paladeum test network") : tr("Paladeum regression test network");
+    heroCaption = caption(tr("%1 · latest block").arg(networkName));
+    heroCaption->setStyleSheet("QLabel { font-size: 13px; }");
+    heroHeight = new QLabel(QString::fromUtf8("–"));
+    heroHeight->setFont(GUIUtil::displayFont(56));
+    heroSentence = new QLabel();
+    heroSentence->setProperty("role", "secondary");
+    heroSentence->setWordWrap(true);
+    heroText->addStretch(1);
+    heroText->addWidget(heroCaption);
+    heroText->addWidget(heroHeight);
+    heroText->addWidget(heroSentence);
+    heroText->addStretch(1);
+    hero->addLayout(heroText, 2);
+    blockCells = new HexCells(HexCells::Strip);
+    blockCells->setMinimumCells(4);
+    hero->addWidget(blockCells, 3, Qt::AlignVCenter);
+    pageLayout->addLayout(hero);
+    connect(blockCells, &HexCells::cellClicked, this, [this](const QString& height) { lookup(height); });
+
+    // chain status (the height is above)
     chainStats = new StatsStrip();
-    chainStats->addCell(tr("Block height"));
     chainStats->addCell(tr("Difficulty"));
-    chainStats->addCell(tr("Network stake weight"));
-    chainStats->addCell(tr("Connected peers"));
+    chainStats->addCell(tr("Network weight"));
+    chainStats->addCell(tr("Peers"));
     pageLayout->addWidget(chainStats);
 
     QHBoxLayout *cards = new QHBoxLayout();
@@ -905,8 +1001,10 @@ void ExplorerPage::setBadge(const QString& text, bool ok)
 {
     const GUIUtil::Theme& t = GUIUtil::theme();
     resultBadge->setText(text);
-    resultBadge->setStyleSheet(QString("QLabel { color: %1; background-color: %2; border-radius: 8px; padding: 4px 10px; }")
-        .arg((ok ? t.ok : t.negative).name(), (ok ? t.okSoft : t.negativeSoft).name()));
+    // a badge with cut corners (painted from cellFill)
+    resultBadge->setProperty("cellFill", ok ? t.okSoft : t.errorSoft);
+    resultBadge->setProperty("cellCut", 6);
+    resultBadge->setStyleSheet(QString("QLabel { color: %1; background: transparent; padding: 4px 10px; }").arg((ok ? t.ok : t.error).name()));
     resultBadge->setVisible(!text.isEmpty());
 }
 
@@ -1003,9 +1101,7 @@ QWidget *ExplorerPage::transferRow(const UniValue& entry)
     layout->addWidget(left);
     if (mine) {
         QLabel *chip = new QLabel(tr("Mine"));
-        chip->setFont(GUIUtil::appFont(11, QFont::DemiBold));
-        chip->setStyleSheet(QString("QLabel { color: %1; background-color: %2; border-radius: 6px; padding: 1px 7px; }")
-            .arg(GUIUtil::theme().chipText.name(), GUIUtil::theme().chip.name()));
+        chip->setProperty("role", "tag");
         layout->addWidget(chip);
     }
     layout->addStretch();
@@ -1312,7 +1408,8 @@ void ExplorerPage::refreshDone(const QString& json)
         activity->touch();
     const GUIUtil::Theme& t = GUIUtil::theme();
 
-    fillChainStats(chainStats, json);
+    fillChainStats(chainStats, json, false);
+    showLatestBlocks(result);
 
     poolCount->setAmount(GUIUtil::withThousands(QString::number(intOf(result, "poolsize"))));
     poolSize->setAmount(QString::number(intOf(result, "poolbytes") / 1000.0, 'f', 2), "kB");
@@ -1334,9 +1431,19 @@ void ExplorerPage::refreshDone(const QString& json)
         QHBoxLayout *layout = new QHBoxLayout();
         layout->setContentsMargins(0, 10, 0, 10);
         layout->setSpacing(12);
+        // the hexagon bullet of a list row
         QLabel *dot = new QLabel();
-        dot->setFixedSize(8, 8);
-        dot->setStyleSheet(QString("QLabel { background-color: %1; border-radius: 8px; }").arg(t.negative.name()));
+        dot->setFixedSize(16, 16);
+        {
+            const qreal dpr = devicePixelRatioF();
+            QPixmap bullet(QSize(16, 16) * dpr);
+            bullet.setDevicePixelRatio(dpr);
+            bullet.fill(Qt::transparent);
+            QPainter painter(&bullet);
+            GUIUtil::paintHexBullet(&painter, QRect(0, 0, 16, 16), false);
+            painter.end();
+            dot->setPixmap(bullet);
+        }
         layout->addWidget(dot);
         QVBoxLayout *left = new QVBoxLayout();
         left->setSpacing(1);
@@ -1347,7 +1454,10 @@ void ExplorerPage::refreshDone(const QString& json)
         const qint64 age = qMax<qint64>(0, now - intOf(entry, "time"));
         details << tr("%1 ago").arg(GUIUtil::formatNiceTimeOffset(age));
         details << bytesText(intOf(entry, "size"));
-        left->addWidget(caption(details.join(QString::fromUtf8(" · "))));
+        // the details wrap in a narrow card, so that the amount and the fee next to them are not cut off
+        QLabel *detailLabel = caption(details.join(QString::fromUtf8(" · ")));
+        detailLabel->setWordWrap(true);
+        left->addWidget(detailLabel);
         layout->addLayout(left, 1);
         QVBoxLayout *right = new QVBoxLayout();
         right->setSpacing(1);

@@ -8,6 +8,7 @@
 
 #include "firstrun.h"
 
+#include "cellstyle.h"
 #include "guiutil.h"
 
 #include <QHBoxLayout>
@@ -20,18 +21,14 @@
 
 QPixmap WizardHeader::logo(int size, qreal dpr)
 {
-    QPixmap source(":/icons/plb_logo");
-    QPixmap rounded(QSize(size, size) * dpr);
-    rounded.setDevicePixelRatio(dpr);
-    rounded.fill(Qt::transparent);
-    QPainter p(&rounded);
-    p.setRenderHints(QPainter::Antialiasing | QPainter::SmoothPixmapTransform, true);
-    QPainterPath clip;
-    clip.addRoundedRect(QRectF(0, 0, size, size), size / 4.0, size / 4.0);
-    p.setClipPath(clip);
-    p.drawPixmap(QRectF(0, 0, size, size), source, QRectF(source.rect()));
+    // the mark, drawn from its outline (a hexagon as high as the square)
+    QPixmap mark(QSize(size, size) * dpr);
+    mark.setDevicePixelRatio(dpr);
+    mark.fill(Qt::transparent);
+    QPainter p(&mark);
+    CellStyle::paintMark(&p, QRectF(0, 0, size, size));
     p.end();
-    return rounded;
+    return mark;
 }
 
 WizardHeader::WizardHeader(Step step, const QString &title, const QString &subtitle, QWidget *parent) :
@@ -64,16 +61,18 @@ WizardHeader::WizardHeader(Step step, const QString &title, const QString &subti
     // the steps: a numbered dot and a name each, the current one filled
     QHBoxLayout *steps = new QHBoxLayout();
     steps->setSpacing(8);
-    const QStringList names = {tr("Start"), tr("Wallet passphrase"), tr("Backup")};
+    const QStringList names = {tr("Start"), tr("Recovery words"), tr("Passphrase"), tr("Backup")};
     for (int i = 0; i < names.size(); ++i) {
         const bool current = i == step;
         const bool done = i < step;
         QLabel *dot = new QLabel(done ? QString::fromUtf8("✓") : QString::number(i + 1), this);
         dot->setFixedSize(22, 22);
         dot->setAlignment(Qt::AlignCenter);
-        dot->setFont(GUIUtil::appFont(11, QFont::DemiBold));
-        dot->setStyleSheet(QString("background-color: %1; color: %2; border-radius: 11px;")
-            .arg((current ? t.fill : done ? t.accentSoft : t.chip).name(), (current ? t.onFill : done ? t.accent : t.chipText).name()));
+        dot->setFont(GUIUtil::displayFont(11, QFont::Medium));
+        // a small square with cut corners (painted from cellFill): mark blue for the step that is shown
+        dot->setProperty("cellFill", current ? t.fill : done ? t.accentSoft : t.chip);
+        dot->setProperty("cellCut", 6);
+        dot->setStyleSheet(QString("background: transparent; color: %1;").arg((current ? t.onFill : done ? t.accent : t.chipText).name()));
         steps->addWidget(dot);
         QLabel *label = new QLabel(names.at(i), this);
         label->setFont(GUIUtil::appFont(12, current ? QFont::DemiBold : QFont::Medium));

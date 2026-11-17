@@ -174,9 +174,12 @@ public:
         const bool failed = status == TransactionStatus::Conflicted || status == TransactionStatus::Abandoned || status == TransactionStatus::NotAccepted;
 
         switch (index.column()) {
-        case TransactionTableModel::Type:
-            GUIUtil::paintDirectionTile(painter, QRect(r.left(), r.top() + (r.height() - 36) / 2, 36, 36), outgoing, type == TransactionRecord::Generated);
+        case TransactionTableModel::Type: {
+            // the hexagon bullet of a list row: blue for PLB, grey for a token
+            const QString asset = index.data(TransactionTableModel::TokenNameRole).toString();
+            GUIUtil::paintHexBullet(painter, QRect(r.left(), r.top(), qMin(r.width(), 28), r.height()), !asset.isEmpty() && asset != "PLB");
             break;
+        }
         case TransactionTableModel::Watchonly: {
             QIcon icon = qvariant_cast<QIcon>(index.data(TransactionTableModel::WatchonlyDecorationRole));
             icon.paint(painter, QRect(r.left(), r.top() + (r.height() - 16) / 2, 16, 16));
@@ -185,7 +188,7 @@ public:
         case TransactionTableModel::ToAddress: {
             const QRect topRect(r.left(), r.top() + 9, r.width() - 12, 20);
             const QRect bottomRect(r.left(), r.top() + 29, r.width() - 12, 18);
-            painter->setFont(GUIUtil::appFont(14, QFont::DemiBold));
+            painter->setFont(GUIUtil::appFont(14, QFont::Medium));
             painter->setPen(failed ? theme.textDisabled : theme.text);
             const bool owner = index.data(TransactionTableModel::OwnerTokenRole).toBool();
             const QString title = painter->fontMetrics().elidedText(index.data(TransactionTableModel::TitleRole).toString(), Qt::ElideRight, topRect.width() - (owner ? 80 : 0));
@@ -215,7 +218,7 @@ public:
             painter->drawText(r, Qt::AlignLeft | Qt::AlignVCenter, GUIUtil::isoDateTime(index.data(TransactionTableModel::DateRole).toDateTime()));
             break;
         case TransactionTableModel::Status: {
-            QColor fg = theme.negative, bg = theme.negativeSoft;
+            QColor fg = theme.warnText, bg = theme.warnBg;
             if (status == TransactionStatus::Confirmed) {
                 fg = theme.ok;
                 bg = theme.okSoft;
@@ -237,7 +240,7 @@ public:
             if (!confirmed || failed)
                 color = theme.textDisabled;
             const QRect amountRect = cell.adjusted(0, 0, -(assetWidth + 6), 0);
-            GUIUtil::paintAmount(painter, amountRect, index.data(TransactionTableModel::DisplayAmountRole).toString(), GUIUtil::monoFont(15, QFont::DemiBold), color);
+            GUIUtil::paintAmount(painter, amountRect, index.data(TransactionTableModel::DisplayAmountRole).toString(), GUIUtil::monoFont(14, QFont::Medium), color);
             break;
         }
         default:
@@ -306,6 +309,8 @@ TransactionView::TransactionView(const PlatformStyle *platformStyle, QWidget *pa
     }
     typeButtons->button(0)->setChecked(true);
     hlayout->addWidget(segFrame);
+    filterRow = hlayout;
+    segmentFrame = segFrame;
 
     addressWidget = new QLineEdit(this);
     addressWidget->setProperty("look", "search");
@@ -317,7 +322,7 @@ TransactionView::TransactionView(const PlatformStyle *platformStyle, QWidget *pa
 
     // the coins and tokens that occur in the transactions of the wallet
     assetWidget = new QComboBox(this);
-    assetWidget->setFixedSize(170, 48);
+    assetWidget->setFixedSize(160, 48);
     assetWidget->addItem(tr("All assets"), QString());
     assetWidget->setToolTip(tr("Show only the transactions of one coin or of one token with its sub tokens"));
     hlayout->addWidget(assetWidget);
@@ -327,7 +332,7 @@ TransactionView::TransactionView(const PlatformStyle *platformStyle, QWidget *pa
     connect(assetListTimer, SIGNAL(timeout()), this, SLOT(updateAssetList()));
 
     dateWidget = new QComboBox(this);
-    dateWidget->setFixedSize(140, 48);
+    dateWidget->setFixedSize(136, 48);
     dateWidget->addItem(tr("All time"), All);
     dateWidget->addItem(tr("Past year"), PastYear);
     dateWidget->addItem(tr("Today"), Today);
@@ -424,16 +429,21 @@ TransactionView::TransactionView(const PlatformStyle *platformStyle, QWidget *pa
     footer->addWidget(pageCountLabel);
     footer->addStretch();
     const std::pair<QPushButton**, QString> pageButtons[] = {
-        {&pageFirst, QString::fromUtf8("«")}, {&pagePrevious, QString::fromUtf8("‹ ") + tr("Previous")},
-        {&pageNext, tr("Next") + QString::fromUtf8(" ›")}, {&pageLast, QString::fromUtf8("»")}};
+        {&pageFirst, QString::fromUtf8("«")}, {&pagePrevious, QString::fromUtf8("‹")},
+        {&pageNext, QString::fromUtf8("›")}, {&pageLast, QString::fromUtf8("»")}};
     for (const std::pair<QPushButton**, QString>& button : pageButtons) {
         *button.first = new QPushButton(button.second, card);
         (*button.first)->setProperty("look", "chipButton");
         (*button.first)->setCursor(Qt::PointingHandCursor);
         (*button.first)->setFixedHeight(30);
     }
+    // (arrows only, with their names in the tool tips: the footer fits the narrowest window)
     pageFirst->setToolTip(tr("First page"));
+    pagePrevious->setToolTip(tr("Previous page"));
+    pageNext->setToolTip(tr("Next page"));
     pageLast->setToolTip(tr("Last page"));
+    for (QPushButton *arrow : {pageFirst, pagePrevious, pageNext, pageLast})
+        arrow->setFixedWidth(36);
     pageLabel = new QLabel(card);
     pageLabel->setFont(GUIUtil::monoFont(13, QFont::DemiBold));
     pageLabel->setMinimumWidth(80);
@@ -465,6 +475,9 @@ TransactionView::TransactionView(const PlatformStyle *platformStyle, QWidget *pa
     connect(explorerLink, SIGNAL(clicked()), this, SLOT(openExplorer()));
 
     vlayout->addLayout(hlayout);
+    searchRow = new QHBoxLayout();
+    searchRow->setContentsMargins(0, 0, 0, 0);
+    vlayout->addLayout(searchRow);
     vlayout->addWidget(moreRow);
     vlayout->addWidget(createDateRangeWidget());
     vlayout->addWidget(card, 1);
@@ -1188,6 +1201,33 @@ void TransactionView::focusTransaction(const QModelIndex &idx)
 void TransactionView::resizeEvent(QResizeEvent* event)
 {
     QWidget::resizeEvent(event);
+    arrangeFilters();
+    // in a narrow window the amounts take less room, so that the description keeps some
+    if (transactionView) {
+        const int amountWidth = transactionView->viewport()->width() < 820 ? AMOUNT_MINIMUM_COLUMN_WIDTH + 50 : AMOUNT_COLUMN_WIDTH;
+        if (transactionView->columnWidth(TransactionTableModel::Amount) != amountWidth)
+            transactionView->setColumnWidth(TransactionTableModel::Amount, amountWidth);
+    }
+}
+
+void TransactionView::arrangeFilters()
+{
+    // the search field needs some room to be of use: below the other filters when there is none
+    const int others = segmentFrame->sizeHint().width() + assetWidget->width() + dateWidget->width() + 48 + 4 * filterRow->spacing();
+    const bool narrow = width() < others + 240;
+    const bool inSearchRow = searchRow->indexOf(addressWidget) >= 0;
+    if (narrow == inSearchRow)
+        return;
+    if (narrow) {
+        filterRow->removeWidget(addressWidget);
+        // the filters keep to the left; the stretch takes the place of the search field
+        filterRow->insertStretch(1, 1);
+        searchRow->addWidget(addressWidget);
+    } else {
+        searchRow->removeWidget(addressWidget);
+        delete filterRow->takeAt(1);
+        filterRow->insertWidget(1, addressWidget, 1);
+    }
 }
 
 // Need to override default Ctrl+C action for amount as default behaviour is just to copy DisplayRole text

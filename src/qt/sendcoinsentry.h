@@ -17,6 +17,7 @@ class ChipButton;
 class WalletModel;
 
 QT_BEGIN_NAMESPACE
+class QBoxLayout;
 class QLabel;
 QT_END_NAMESPACE
 class PlatformStyle;
@@ -69,6 +70,8 @@ public:
     QDateTime lockTime() const;
     /** Address and amount are complete */
     bool isComplete() const;
+    /** The row of the fee option and the lock: one above the other when the form is narrow */
+    QBoxLayout *optionLayout() const { return optionRow; }
 
 public Q_SLOTS:
     void clear();
@@ -102,6 +105,7 @@ private:
 
     QLabel *addressHint;
     QLabel *cardTitle;
+    QBoxLayout *optionRow;
     ChipButton *labelChip;
     ChipButton *lockChip;
 

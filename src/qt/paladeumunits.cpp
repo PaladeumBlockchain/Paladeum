@@ -52,9 +52,9 @@ QString PaladeumUnits::description(int unit)
 {
     switch(unit)
     {
-    case PLB: return QString("Paladeums");
-    case mPLB: return QString("Milli-Paladeums (1 / 1" THIN_SP_UTF8 "000)");
-    case uPLB: return QString("Micro-Paladeums (1 / 1" THIN_SP_UTF8 "000" THIN_SP_UTF8 "000)");
+    case PLB: return QString("PLB");
+    case mPLB: return QString("Milli-PLB (1 / 1" THIN_SP_UTF8 "000)");
+    case uPLB: return QString("Micro-PLB (1 / 1" THIN_SP_UTF8 "000" THIN_SP_UTF8 "000)");
     default: return QString("???");
     }
 }
@@ -157,7 +157,7 @@ QString PaladeumUnits::formatHtmlWithUnit(int unit, const CAmount& amount, bool 
 {
     QString str(formatWithUnit(unit, amount, plussign, separators));
     str.replace(QChar(THIN_SP_CP), QString(THIN_SP_HTML));
-    return QString("<span style=\"white-space: nowrap; font-family:'Noto Sans Mono';\">%1</span>").arg(str);
+    return QString("<span style=\"white-space: nowrap; font-family:'JetBrains Mono';\">%1</span>").arg(str);
 }
 
 

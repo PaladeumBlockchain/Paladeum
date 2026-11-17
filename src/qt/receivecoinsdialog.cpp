@@ -11,6 +11,7 @@
 #include "paladeumunits.h"
 #include "guiutil.h"
 #include "optionsmodel.h"
+#include "pagewidgets.h"
 #include "platformstyle.h"
 #include "receiverequestdialog.h"
 #include "recentrequeststablemodel.h"
@@ -144,7 +145,7 @@ void ReceiveCoinsDialog::buildLayout()
     amountColumn->setSpacing(8);
     amountColumn->addWidget(ui->label);
     ui->reqAmount->setFixedHeight(44);
-    ui->reqAmount->setFixedWidth(220);
+    ui->reqAmount->setFixedWidth(180);
     amountColumn->addWidget(ui->reqAmount);
     firstRow->addLayout(labelColumn, 1);
     firstRow->addLayout(amountColumn);
@@ -189,13 +190,15 @@ void ReceiveCoinsDialog::buildLayout()
     qr->setSpacing(10);
     QLabel *qrTitle = new QLabel(tr("Receiving address"), qrCard);
     qrTitle->setProperty("role", "title");
-    qrTitle->setFont(GUIUtil::appFont(15, QFont::DemiBold));
+    qrTitle->setFont(GUIUtil::displayFont(17, QFont::Medium));
     qr->addWidget(qrTitle);
     qr->addStretch(1);
     qrImage = new QLabel(qrCard);
     qrImage->setFixedSize(188, 188);
     qrImage->setAlignment(Qt::AlignCenter);
-    qrImage->setStyleSheet(QString("QLabel { background-color: #FFFFFF; border: 1px solid %1; border-radius: 8px; }").arg(theme.border.name()));
+    // the code is read from white, also in the dark theme; cut corners (painted from cellFill)
+    qrImage->setProperty("cellFill", QColor("#FFFFFF"));
+    qrImage->setStyleSheet("QLabel { background: transparent; border: none; }");
     qr->addWidget(qrImage, 0, Qt::AlignHCenter);
     qrPlaceholder = new QLabel(tr("Press \"Request payment\" to get an address. It is shown here with its QR code."), qrCard);
     qrPlaceholder->setProperty("role", "secondary");
@@ -203,7 +206,7 @@ void ReceiveCoinsDialog::buildLayout()
     qrPlaceholder->setAlignment(Qt::AlignCenter);
     qr->addWidget(qrPlaceholder);
     qrAddress = new QLabel(qrCard);
-    qrAddress->setFont(GUIUtil::monoFont(13, QFont::DemiBold));
+    qrAddress->setFont(GUIUtil::monoFont(13, QFont::Medium));
     qrAddress->setAlignment(Qt::AlignCenter);
     qrAddress->setWordWrap(true);
     qrAddress->setTextInteractionFlags(Qt::TextSelectableByMouse);
@@ -215,13 +218,16 @@ void ReceiveCoinsDialog::buildLayout()
     qrDetails->setWordWrap(true);
     qr->addWidget(qrDetails);
     qr->addStretch(1);
-    QHBoxLayout *qrButtons = new QHBoxLayout();
-    qrButtons->setSpacing(10);
+    // side by side, or one above the other when the card is narrow
+    QBoxLayout *qrButtons = new QBoxLayout(QBoxLayout::LeftToRight);
+    qrButtons->setSpacing(8);
+    new BoxDirectionFollower(qrCard, qrButtons, 340);
     copyQrButton = new QPushButton(tr("Copy QR code"), qrCard);
     copyQrButton->setIcon(QIcon(GUIUtil::lineIcon("qr", 15, theme.label)));
     copyAddressButton = new QPushButton(tr("Copy address"), qrCard);
+    // the primary action of the page is "Request payment"; copying is the secondary filled one
     copyAddressButton->setIcon(QIcon(GUIUtil::lineIcon("copy", 15, theme.onFill)));
-    copyAddressButton->setProperty("primary", true);
+    copyAddressButton->setProperty("look", "secondary");
     for (QPushButton *button : {copyQrButton, copyAddressButton}) {
         button->setIconSize(QSize(15, 15));
         button->setFixedHeight(42);
@@ -360,7 +366,7 @@ void ReceiveCoinsDialog::accept()
 void ReceiveCoinsDialog::setupRequestFrame(const PlatformStyle *platformStyle)
 {
     /** Update the coincontrol frame */
-    ui->frame2->setStyleSheet(GUIUtil::cardFrameStyle());
+    GUIUtil::makeCard(ui->frame2);
     /** Create the shadow effects on the frames */
 
     ui->frame2->setGraphicsEffect(GUIUtil::getShadowEffect());
@@ -399,7 +405,7 @@ void ReceiveCoinsDialog::setupRequestFrame(const PlatformStyle *platformStyle)
 void ReceiveCoinsDialog::setupHistoryFrame(const PlatformStyle *platformStyle)
 {
     /** Update the coincontrol frame */
-    ui->frame->setStyleSheet(GUIUtil::cardFrameStyle());
+    GUIUtil::makeCard(ui->frame);
     /** Create the shadow effects on the frames */
 
     ui->frame->setGraphicsEffect(GUIUtil::getShadowEffect());

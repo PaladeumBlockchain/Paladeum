@@ -17,6 +17,7 @@
 #include <vector>
 
 class AmountLabel;
+class HexCells;
 class StatsStrip;
 class ClientModel;
 class PageActivity;
@@ -64,6 +65,10 @@ public Q_SLOTS:
     /** Read the chain status only: height, difficulty, network stake weight, peers, size of the memory pool. */
     void chainStatus();
 
+public:
+    /** How many of the latest blocks refresh() reads for the block cells */
+    static const int LATEST_BLOCKS = 7;
+
 Q_SIGNALS:
     void lookupDone(const QString& query, const QString& json);
     void refreshDone(const QString& json);
@@ -82,8 +87,9 @@ public:
     void setClientModel(ClientModel *clientModel);
     void setWalletModel(WalletModel *walletModel);
     /** Fill the cells of a chain status strip (height, difficulty, stake weight, peers and, when it has
-        a fifth cell, the transactions waiting in the memory pool) from what the worker read. */
-    static void fillChainStats(StatsStrip *strip, const QString& json);
+        a fifth cell, the transactions waiting in the memory pool) from what the worker read. Without
+        the height (withHeight false) the strip starts with the difficulty. */
+    static void fillChainStats(StatsStrip *strip, const QString& json, bool withHeight = true);
     /** Note shown next to the page title */
     QWidget *headerWidget() const;
     /** Where the page reports what it is reading */
@@ -146,6 +152,11 @@ private:
     QPointer<QLabel> headerNote;
     QLineEdit *searchEdit;
     QPushButton *searchButton;
+    /** The latest block: its height, a sentence about it, and the latest blocks as cells */
+    QLabel *heroCaption;
+    QLabel *heroHeight;
+    QLabel *heroSentence;
+    HexCells *blockCells;
     StatsStrip *chainStats;
     QLabel *resultTitle;
     QLabel *resultBadge;
@@ -160,6 +171,8 @@ private:
     QLabel *poolFooter;
 
     void clearLayout(QVBoxLayout *layout);
+    /** Show the latest blocks that refresh() read */
+    void showLatestBlocks(const UniValue& result);
     /** Look a query up; scroll: where to put the result (-1: the top) */
     void startLookup(const QString& query, int scroll);
     /** The first view: what can be looked up */

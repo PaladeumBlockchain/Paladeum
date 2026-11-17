@@ -115,18 +115,16 @@
         <file alias="spinner-035">res/movies/spinner-035.png</file>
     </qresource>
     <qresource prefix="/fonts">
-        <file alias="NotoSans-Regular">res/fonts/NotoSans-Regular.ttf</file>
-        <file alias="NotoSans-Medium">res/fonts/NotoSans-Medium.ttf</file>
-        <file alias="NotoSans-SemiBold">res/fonts/NotoSans-SemiBold.ttf</file>
-        <file alias="NotoSans-Bold">res/fonts/NotoSans-Bold.ttf</file>
-        <file alias="NotoSansKR-Regular">res/fonts/NotoSansKR-Regular.ttf</file>
-        <file alias="NotoSansKR-Medium">res/fonts/NotoSansKR-Medium.ttf</file>
-        <file alias="NotoSansKR-SemiBold">res/fonts/NotoSansKR-SemiBold.ttf</file>
-        <file alias="NotoSansKR-Bold">res/fonts/NotoSansKR-Bold.ttf</file>
-        <file alias="NotoSansMono-Regular">res/fonts/NotoSansMono-Regular.ttf</file>
-        <file alias="NotoSansMono-Medium">res/fonts/NotoSansMono-Medium.ttf</file>
-        <file alias="NotoSansMono-SemiBold">res/fonts/NotoSansMono-SemiBold.ttf</file>
-        <file alias="NotoSansMono-Bold">res/fonts/NotoSansMono-Bold.ttf</file>
+        <file alias="Inter-Regular">res/fonts/Inter-Regular.ttf</file>
+        <file alias="Inter-Medium">res/fonts/Inter-Medium.ttf</file>
+        <file alias="Inter-SemiBold">res/fonts/Inter-SemiBold.ttf</file>
+        <file alias="SpaceGrotesk-Regular">res/fonts/SpaceGrotesk-Regular.ttf</file>
+        <file alias="SpaceGrotesk-Medium">res/fonts/SpaceGrotesk-Medium.ttf</file>
+        <file alias="JetBrainsMono-Regular">res/fonts/JetBrainsMono-Regular.ttf</file>
+        <file alias="JetBrainsMono-Medium">res/fonts/JetBrainsMono-Medium.ttf</file>
+        <file alias="OFL-Inter">res/fonts/OFL-Inter.txt</file>
+        <file alias="OFL-SpaceGrotesk">res/fonts/OFL-SpaceGrotesk.txt</file>
+        <file alias="OFL-JetBrainsMono">res/fonts/OFL-JetBrainsMono.txt</file>
     </qresource>
     <qresource prefix="/css">
         <file alias="theme">res/css/theme.qss</file>

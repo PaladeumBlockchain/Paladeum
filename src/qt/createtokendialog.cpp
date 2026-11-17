@@ -310,7 +310,7 @@ void CreateTokenDialog::setUpValues()
 void CreateTokenDialog::setupCoinControlFrame(const PlatformStyle *platformStyle)
 {
     /** Update the tokencontrol frame */
-    ui->frameCoinControl->setStyleSheet(GUIUtil::cardFrameStyle());
+    GUIUtil::makeCard(ui->frameCoinControl);
     ui->widgetCoinControl->setStyleSheet(".QWidget {background-color: transparent;}");
     /** Create the shadow effects on the frames */
 
@@ -352,7 +352,7 @@ void CreateTokenDialog::setupTokenDataView(const PlatformStyle *platformStyle)
 {
     /** Update the scrollview*/
 
-    ui->frameTokenData->setStyleSheet(GUIUtil::cardFrameStyle());
+    GUIUtil::makeCard(ui->frameTokenData);
 
     ui->tokenTypeLabel->setStyleSheet(STRING_LABEL_COLOR);
     ui->tokenTypeLabel->setFont(GUIUtil::getSubLabelFont());
@@ -380,7 +380,7 @@ void CreateTokenDialog::setupTokenDataView(const PlatformStyle *platformStyle)
 void CreateTokenDialog::setupFeeControl(const PlatformStyle *platformStyle)
 {
     /** Update the coincontrol frame */
-    ui->frameFee->setStyleSheet(GUIUtil::cardFrameStyle());
+    GUIUtil::makeCard(ui->frameFee);
     /** Create the shadow effects on the frames */
 
     ui->frameFee->setGraphicsEffect(GUIUtil::getShadowEffect());
@@ -455,14 +455,14 @@ void CreateTokenDialog::toggleIPFSText()
 
 void CreateTokenDialog::showMessage(QString string)
 {
-    ui->messageLabel->setStyleSheet("color: red; font-size: 15pt;font-weight: 600;");
+    ui->messageLabel->setStyleSheet(GUIUtil::warningLabelColorStyle() + "; font-size: 15pt; font-weight: 500;");
     ui->messageLabel->setText(string);
     ui->messageLabel->show();
 }
 
 void CreateTokenDialog::showValidMessage(QString string)
 {
-    ui->messageLabel->setStyleSheet("color: green; font-size: 15pt;font-weight: 600;");
+    ui->messageLabel->setStyleSheet(QString("color: %1; font-size: 15pt; font-weight: 500;").arg(GUIUtil::theme().ok.name()));
     ui->messageLabel->setText(string);
     ui->messageLabel->show();
 }
@@ -480,7 +480,7 @@ void CreateTokenDialog::hideMessage()
 void CreateTokenDialog::showInvalidVerifierStringMessage(QString string)
 {
     ui->lineEditVerifierString->setStyleSheet(STYLE_INVALID);
-    ui->labelVerifierStringErrorMessage->setStyleSheet("color: red; font-size: 15pt;font-weight: bold;");
+    ui->labelVerifierStringErrorMessage->setStyleSheet(GUIUtil::warningLabelColorStyle() + "; font-size: 15pt; font-weight: 500;");
     ui->labelVerifierStringErrorMessage->setText(string);
     ui->labelVerifierStringErrorMessage->show();
 }
@@ -861,7 +861,7 @@ void CreateTokenDialog::onCreateTokenClicked()
     if(nFeeRequired > 0)
     {
         // append fee string if a fee is required
-        questionString.append("<hr /><span style='color:#aa0000;'>");
+        questionString.append(QString("<hr /><span style='color:%1;'>").arg(GUIUtil::theme().error.name()));
         questionString.append(PaladeumUnits::formatHtmlWithUnit(model->getOptionsModel()->getDisplayUnit(), nFeeRequired));
         questionString.append("</span> ");
         questionString.append(tr("added as transaction fee"));
@@ -1235,7 +1235,7 @@ void CreateTokenDialog::coinControlChangeEdited(const QString& text)
     {
         // Default to no change address until verified
         CoinControlDialog::coinControl->destChange = CNoDestination();
-        ui->labelCoinControlChangeLabel->setStyleSheet("QLabel{color:red;}");
+        ui->labelCoinControlChangeLabel->setStyleSheet(QString("QLabel { %1; }").arg(GUIUtil::warningLabelColorStyle()));
 
         const CTxDestination dest = DecodeDestination(text.toStdString());
 
@@ -1261,13 +1261,13 @@ void CreateTokenDialog::coinControlChangeEdited(const QString& text)
                 else
                 {
                     ui->lineEditCoinControlChange->setText("");
-                    ui->labelCoinControlChangeLabel->setStyleSheet("QLabel{color:black;}");
+                    ui->labelCoinControlChangeLabel->setStyleSheet(QString("QLabel { %1; }").arg(GUIUtil::labelColorStyle()));
                     ui->labelCoinControlChangeLabel->setText("");
                 }
             }
             else // Known change address
             {
-                ui->labelCoinControlChangeLabel->setStyleSheet("QLabel{color:black;}");
+                ui->labelCoinControlChangeLabel->setStyleSheet(QString("QLabel { %1; }").arg(GUIUtil::labelColorStyle()));
 
                 // Query label
                 QString associatedLabel = model->getAddressTableModel()->labelForAddress(text);

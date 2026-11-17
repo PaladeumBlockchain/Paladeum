@@ -36,9 +36,9 @@ WalletFrame::WalletFrame(const PlatformStyle *_platformStyle, PaladeumGUI *_gui)
     encryptBanner = new QFrame(this);
     encryptBanner->setObjectName("encryptBanner");
     encryptBanner->setStyleSheet(QString("QFrame#encryptBanner { background-color: %1; border: none; border-bottom: 1px solid %2; } QFrame#encryptBanner QLabel { color: %3; background: transparent; }")
-        .arg(GUIUtil::theme().warnBg.name(), GUIUtil::theme().warnBorder.name(), GUIUtil::theme().warnText.name()));
+        .arg(GUIUtil::theme().warnBg.name(), GUIUtil::theme().line.name(), GUIUtil::theme().warnText.name()));
     QHBoxLayout *bannerLayout = new QHBoxLayout(encryptBanner);
-    bannerLayout->setContentsMargins(36, 8, 20, 8);
+    bannerLayout->setContentsMargins(32, 8, 20, 8);
     bannerLayout->setSpacing(12);
     QLabel *bannerIcon = new QLabel(encryptBanner);
     bannerIcon->setPixmap(GUIUtil::lineIcon("lock", 16, GUIUtil::theme().warnText, 2.0));
@@ -47,7 +47,8 @@ WalletFrame::WalletFrame(const PlatformStyle *_platformStyle, PaladeumGUI *_gui)
     bannerText->setWordWrap(true);
     bannerLayout->addWidget(bannerText, 1);
     QPushButton *bannerEncrypt = new QPushButton(tr("Encrypt"), encryptBanner);
-    bannerEncrypt->setProperty("primary", true);
+    // the secondary filled action: the yellow one belongs to the page below
+    bannerEncrypt->setProperty("look", "secondary");
     bannerEncrypt->setFixedHeight(32);
     bannerEncrypt->setCursor(Qt::PointingHandCursor);
     bannerLayout->addWidget(bannerEncrypt);

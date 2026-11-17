@@ -43,26 +43,35 @@ QT_END_NAMESPACE
  */
 namespace GUIUtil
 {
-    /** Colors of the application theme. There is one (light) theme. */
+    /**
+     * Colors of the application theme ("Cell" of the Paladeum design guide), light or dark.
+     * Panels have no borders: the ground and the cell colors separate them.
+     */
     struct Theme {
-        QColor bg;            //!< window background
-        QColor surface;       //!< cards, inputs, tables
-        QColor surfaceAlt;    //!< secondary buttons, hover, read-only fields
-        QColor border;        //!< card borders
-        QColor borderStrong;  //!< input and button borders
-        QColor line;          //!< separators between rows
+        QColor bg;            //!< ground: the window background
+        QColor surface;       //!< cell: panels, cards, the rail; fields and quiet buttons on the ground
+        QColor surfaceAlt;    //!< raised: fields and quiet buttons on a cell, the active tab
+        QColor raisedHover;   //!< a raised fill under the pointer
+        QColor border;        //!< the few remaining outlines (menus, check boxes)
+        QColor borderStrong;  //!< unchecked check boxes, scroll bar handles
+        QColor line;          //!< hairlines between rows inside a panel
         QColor text;
         QColor textSecondary;
-        QColor label;         //!< field labels, secondary button text
+        QColor label;         //!< field labels, quiet button text
+        QColor muted;         //!< meta and captions only
         QColor textDisabled;
-        QColor fill;          //!< primary buttons
+        QColor fill;          //!< mark blue: selection, checked boxes, the secondary filled action
         QColor fillHover;
         QColor fillPressed;
-        QColor onFill;        //!< text on the primary fill
-        QColor accent;        //!< accent text, focus borders
+        QColor onFill;        //!< text on mark blue
+        QColor action;        //!< action yellow: the one primary action of a page
+        QColor actionHover;
+        QColor actionPressed;
+        QColor onAction;      //!< text on action yellow
+        QColor accent;        //!< links, focus rings and chart series (mark blue, lighter in the dark theme)
         QColor accentHover;
         QColor accentPressed;
-        QColor accentSoft;    //!< selection and hover tint
+        QColor accentSoft;    //!< selection tint
         QColor onAccent;      //!< text on the accent color
         QColor positive;      //!< received amounts
         QColor positiveSoft;
@@ -77,32 +86,52 @@ namespace GUIUtil
         QColor warnBorder;
         QColor chip;
         QColor chipText;
-        // side bar
+        // the rail on the left
         QColor sideBg;
         QColor sideText;
         QColor sideStrong;
         QColor sideOnBg;      //!< active navigation item
-        QColor sideCard;
-        QColor sideTrack;
-        QColor sideBar;
+        QColor sideCard;      //!< hairlines of the rail
+        QColor sideTrack;     //!< track of the progress bar
+        QColor sideBar;       //!< progress, a switch that is on
         QColor sideOff;       //!< switch that is off
     };
-    /** The theme. */
+    /** The theme in use (light unless the dark theme was chosen in the settings). */
     const Theme& theme();
-    /** Register the bundled fonts (Noto Sans, Noto Sans KR, Noto Sans Mono). Call once, before any widget is created. */
+    /** Is the dark theme in use? */
+    bool darkTheme();
+    /** Choose the theme; only before applyTheme() and before any widget is created. */
+    void setDarkTheme(bool dark);
+    /** Name of the setting (in the settings of the main network) that chooses the dark theme. */
+    extern const char* const DARK_THEME_SETTING;
+    /**
+     * A number in few characters for a narrow place: 1,234 / 123 k / 4.57 M / 1.23 B, and small
+     * numbers with three significant digits (0.00123, 4.66e-10). The exact value belongs in a tool tip.
+     */
+    QString compactNumber(double value);
+    /** Register the bundled fonts (Inter, Space Grotesk, JetBrains Mono). Call once, before any widget is created. */
     void loadAppFonts();
-    /** The application font at a pixel size and weight. */
-    QFont appFont(int pixelSize = 13, int weight = QFont::Medium);
-    /** The fixed-width font for amounts, addresses, transaction ids, dates in tables and block heights. */
-    QFont monoFont(int pixelSize = 13, int weight = QFont::Medium);
+    /**
+     * The interface font (Inter) at a pixel size and weight. The theme has two weights, 400 and 500,
+     * and 600 for rare emphasis: DemiBold is drawn as 500 and Bold as 600.
+     */
+    QFont appFont(int pixelSize = 14, int weight = QFont::Normal);
+    /** The fixed-width font (JetBrains Mono) for addresses, transaction ids, hashes, keys and amounts in lists. */
+    QFont monoFont(int pixelSize = 13, int weight = QFont::Normal);
+    /** The font of titles and figures (Space Grotesk), 400 or 500; large sizes are set a little tighter. */
+    QFont displayFont(int pixelSize, int weight = QFont::Normal);
     /** Apply style, palette, font and style sheet of the theme to the application. */
     void applyTheme(QApplication& app);
     /** Style sheet snippets that follow the theme. */
     QString labelColorStyle();
+    /** A warning in the text of a form, in the error color */
+    QString warningLabelColorStyle();
     QString invalidFieldStyle();
     QString validFieldStyle();
-    /** Style sheet of a card: a panel on the surface color with a border and rounded corners. */
+    /** Style sheet of a card frame: no background and no border of its own (see makeCard()). */
     QString cardFrameStyle(const QString& selector = ".QFrame");
+    /** Make a frame a card: a panel in the cell color with cut corners, painted by the theme. */
+    void makeCard(QWidget* frame);
 
     /** First and last four characters of an address ("Kj6i…qVgR"). Text that is not a valid address is returned as it is. */
     QString shortAddress(const QString& address);
@@ -124,12 +153,12 @@ namespace GUIUtil
     QStringList restartArguments();
     bool restartRequested();
     QPixmap lineIcon(const QString& name, int size, const QColor& color, qreal strokeWidth = 2.0);
-    /** The bundled logo of a token as a round pixmap; a letter avatar when there is none.
-        The logo is looked up by the root name (before '/', '#' and '!'). */
+    /** The avatar of a token, by its root name (before '/', '#' and '!'): a hexagon in the raised color
+        with the initial; for PLB the Paladeum mark. The hexagon is as high as the square of the pixmap. */
     QPixmap tokenLogo(const QString& tokenName, int size);
-    /** Paint the tile that shows the direction of a transaction: received (incoming arrow), sent
-        (outgoing arrow) or a staking reward. */
-    void paintDirectionTile(QPainter* painter, const QRect& tile, bool outgoing, bool reward = false);
+    /** Paint the bullet of a list row, a small hexagon (12 x 14) centered in the rectangle:
+        mark blue for PLB (the lighter link blue in the dark theme), the secondary grey for a token. */
+    void paintHexBullet(QPainter* painter, const QRect& rect, bool token);
     /** HTML that shows already escaped text in the fixed-width font. */
     QString monoHtml(const QString& escapedText);
     /** Tool tip text with the value in the fixed-width font, optionally with a caption line above. */
@@ -147,9 +176,9 @@ namespace GUIUtil
                     Qt::Alignment align = Qt::AlignRight | Qt::AlignVCenter);
     /** Width of an amount painted by paintAmount(). */
     int amountWidth(const QString& amount, const QFont& font);
-    /** Paint a chip (small rounded label) at the position; returns its width. */
+    /** Paint a chip (small label with cut corners) at the position; returns its width. */
     int paintChip(QPainter* painter, int x, int centerY, const QString& text);
-    /** Paint a rounded badge with its own colors, right- or left-aligned in the rectangle. */
+    /** Paint a badge (cut corners) with its own colors, right- or left-aligned in the rectangle. */
     void paintBadge(QPainter* painter, const QRect& rect, const QString& text, const QColor& fg, const QColor& bg, Qt::Alignment align = Qt::AlignLeft);
 
     // Get the font for the sub labels

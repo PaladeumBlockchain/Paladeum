@@ -258,7 +258,7 @@ MultisigModel::MultisigModel(WalletModel *_walletModel, QObject *parent) :
     QObject(parent), walletModel(_walletModel), refreshing(false), refreshAgain(false)
 {
     // a new block or a wallet transaction can change the balances and the state of requests
-    connect(walletModel, SIGNAL(balanceChanged(CAmount,CAmount,CAmount,CAmount,CAmount,CAmount,CAmount,CAmount,CAmount)), this, SLOT(refresh()));
+    connect(walletModel, SIGNAL(balanceChanged(CAmount,CAmount,CAmount,CAmount,CAmount,CAmount,CAmount,CAmount,CAmount,CAmount)), this, SLOT(refresh()));
 }
 
 MultisigModel::~MultisigModel()

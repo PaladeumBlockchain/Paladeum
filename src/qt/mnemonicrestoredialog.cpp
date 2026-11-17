@@ -160,11 +160,11 @@ QWidget *MnemonicRestoreDialog::enterPage()
     QVBoxLayout *layout = new QVBoxLayout(page);
     layout->setContentsMargins(0, 0, 0, 0);
     layout->setSpacing(8);
-    layout->addWidget(wrapped(tr("Enter the recovery words of the other wallet (for example a mobile wallet). Its keys are added to this wallet, so the coins can be used here."), "secondary", page));
+    layout->addWidget(wrapped(tr("Enter the recovery words of another wallet: a Paladeum 0.1.x wallet, the earlier Paladeum mobile app or another BIP39 wallet. Its keys are added to this wallet, so its coins can be used here."), "secondary", page));
     layout->addWidget(wrapped(tr("Anyone who sees these words can take the coins. Type them only on a computer you trust. The words are not saved; only the keys made from them go into this wallet."), "warning", page));
     layout->addSpacing(4);
 
-    QLabel *wordsLabel = new QLabel(tr("Recovery words (12 to 24, separated by spaces; English or Korean)"), page);
+    QLabel *wordsLabel = new QLabel(tr("Recovery words (12 to 24, separated by spaces)"), page);
     wordsLabel->setProperty("role", "fieldLabel");
     layout->addWidget(wordsLabel);
     words = new QPlainTextEdit(page);
@@ -178,8 +178,8 @@ QWidget *MnemonicRestoreDialog::enterPage()
     wordsStatus->setProperty("role", "caption");
     wordsStatus->setWordWrap(true);
     layout->addWidget(wordsStatus);
-    // Some wallets (the PLB mobile wallet) make the words without the BIP39 checksum; the
-    // seed is still made from the words as BIP39 says, so such words restore their keys.
+    // The earlier Paladeum mobile app made its words without the BIP39 checksum; the seed is
+    // still made from the words as BIP39 says, so such words restore their keys.
     noChecksum = new QCheckBox(tr("Search without the checksum"), page);
     noChecksum->hide();
     layout->addWidget(noChecksum);
@@ -379,7 +379,10 @@ void MnemonicRestoreDialog::validateWords()
             status = tr("12, 15, 18, 21 or 24 words.");
         } else if (bip39::CheckMnemonic(normalized, language, error)) {
             ok = true;
-            status = tr("%n words, correct.", "", count) + " " + (language == "korean" ? tr("Korean word list.") : tr("English word list."));
+            // Paladeum 0.1.x showed "paladeum" in place of the BIP39 word "raven" (see bip39::CheckMnemonic)
+            const bool oldWords = (" " + normalized + " ").find(" paladeum ") != std::string::npos;
+            status = tr("%n words, correct.", "", count) + " " + (oldWords ? tr("The words of a Paladeum 0.1.x wallet.")
+                     : language == "korean" ? tr("Korean word list.") : tr("English word list."));
             role = "ok";
         } else if (count != 12 && count != 15 && count != 18 && count != 21 && count != 24) {
             status = tr("%n words so far. 12, 15, 18, 21 or 24 are needed.", "", count);
@@ -396,7 +399,7 @@ void MnemonicRestoreDialog::validateWords()
                     role = "caution";
                 } else {
                     status = tr("The words do not fit together (checksum). A word is mistyped, missing or out of order.") + " " +
-                             tr("Some wallets, such as the PLB mobile wallet, make the words without this checksum. If you copied them exactly, search without it.");
+                             tr("The earlier Paladeum mobile app made its words without this checksum: if the words come from it and you copied them exactly, search without the checksum.");
                     role = "error";
                 }
             }

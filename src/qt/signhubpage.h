@@ -8,6 +8,7 @@
 #include "multisigmodel.h"
 #include "pagenav.h"
 
+#include <QMap>
 #include <QWidget>
 
 class PaladeumAmountField;
@@ -23,6 +24,8 @@ class QLineEdit;
 class QPlainTextEdit;
 class QPushButton;
 class QSpinBox;
+class QBoxLayout;
+class QResizeEvent;
 class QStackedWidget;
 class QTimer;
 class QVBoxLayout;
@@ -107,12 +110,21 @@ private Q_SLOTS:
     void broadcastCurrentRequest();
     void cancelCurrentRequest();
 
+protected:
+    void resizeEvent(QResizeEvent *event) override;
+
 private:
     const PlatformStyle *platformStyle;
     PageChrome chrome;
     WalletModel *walletModel;
     MultisigModel *model;
     QStackedWidget *stack;
+    /** The two columns of the sub pages, and the width each needs side by side: in a narrower
+        page the second column goes below the first (every sub page counts for the width of the
+        page, also those that are not shown) */
+    QList<QBoxLayout*> columnLayouts;
+    QMap<QBoxLayout*, int> columnWidths;
+    void arrangeColumns();
 
     // hub
     QVBoxLayout *walletList;

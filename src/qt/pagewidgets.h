@@ -10,18 +10,20 @@
 #include <QDateTime>
 #include <QFrame>
 #include <QList>
+#include <QPointer>
 #include <QString>
 #include <QStringList>
 #include <QWidget>
 
 class HeldTokenIndex;
+class QBoxLayout;
 class QLabel;
 class QVBoxLayout;
 
 /**
- * Shows an amount the way all pages do: fixed-width font, the fraction (the
- * point and the digits after it) at 60 % of the size of the integer part on
- * the same base line, optionally followed by a unit. See GUIUtil::paintAmount().
+ * Shows a figure the way all pages do: in the font of figures (Space Grotesk), the fraction (the
+ * point and the digits after it) at 60 % of the size of the integer part on the same base line,
+ * optionally followed by a unit. See GUIUtil::paintAmount().
  */
 class AmountLabel : public QWidget
 {
@@ -32,25 +34,55 @@ public:
     void setColor(const QColor& color);
     void setUnitColor(const QColor& color);
     void setAlignment(Qt::Alignment alignment);
+    /** Let a long amount get smaller, down to this pixel size, instead of being cut off */
+    void setMinimumPixelSize(int px);
+    /** The full size of the figure */
+    void setPixelSize(int px);
     QString amount() const { return text; }
 
     QSize sizeHint() const override;
-    QSize minimumSizeHint() const override { return sizeHint(); }
+    QSize minimumSizeHint() const override;
 
 protected:
     void paintEvent(QPaintEvent *event) override;
 
 private:
-    QFont amountFont() const;
-    QFont unitFont() const;
+    QFont amountFont(int size) const;
+    QFont unitFont(int size) const;
+    /** Width of the amount and its unit at a pixel size */
+    int widthAt(int size) const;
+    /** The largest pixel size (down to minPx) at which the amount fits into the width */
+    int fittingSize(int width) const;
 
     int px;
+    int minPx;
     int weight;
     QString text;
     QString unit;
     QColor color;
     QColor unitColor;
     Qt::Alignment alignment;
+};
+
+/**
+ * Keeps the items of a box layout side by side while the watched widget is at least minWidth
+ * wide, and one above the other below that: buttons that do not fit next to each other in a
+ * narrow window are not cut off.
+ */
+class BoxDirectionFollower : public QObject
+{
+public:
+    /** owner: what the follower lives as long as (the watched widget when there is none) */
+    BoxDirectionFollower(QWidget *watched, QBoxLayout *layout, int minWidth, QObject *owner = nullptr);
+
+protected:
+    bool eventFilter(QObject *object, QEvent *event) override;
+
+private:
+    void follow();
+    QWidget *watched;
+    QPointer<QBoxLayout> layout;
+    int minWidth;
 };
 
 /**
@@ -75,7 +107,7 @@ private:
     bool hovered;
 };
 
-/** A small rounded label that can be clicked and, optionally, removed with its "x". */
+/** A small label with cut corners that can be clicked and, optionally, removed with its "x". */
 class ChipButton : public QWidget
 {
     Q_OBJECT
@@ -129,7 +161,7 @@ private:
 };
 
 /**
- * A strip of figures in a card: a caption and a value per cell. The chain
+ * A row of stat cells: each a panel of its own with a caption and a figure. The chain
  * status at the top of the overview and of the explorer.
  */
 class StatsStrip : public QFrame
@@ -140,7 +172,9 @@ public:
     explicit StatsStrip(QWidget *parent = nullptr);
     /** Add a cell; a clickable one shows a chevron and emits cellClicked() */
     int addCell(const QString& caption, bool clickable = false);
-    void setValue(int cell, const QString& amount, const QString& unit = QString());
+    /** toolTip: the exact value of a figure that is shown shortened */
+    void setValue(int cell, const QString& amount, const QString& unit = QString(), const QString& toolTip = QString());
+    /** Less padding and smaller figures */
     void setCompact(bool compact);
 
 Q_SIGNALS:
@@ -155,7 +189,63 @@ private:
 };
 
 /**
- * The root tokens of the wallet as round logo buttons, at most 20; a "+"
+ * Hexagon cells of the design guide, for what the chain counts: the assets of the wallet (PLB,
+ * then tokens) and the latest blocks. Each cell has a first line (a name or a height) and a second
+ * one (an amount or a count). The cells alternate between two rows; with Strip the last one is
+ * larger (the newest block). As many cells as fit into the width are shown: the first ones are
+ * left out when it is too narrow for all.
+ */
+class HexCells : public QWidget
+{
+    Q_OBJECT
+
+public:
+    /** The fills of the guide: newest (yellow), recent and the PLB asset (mark blue), settled (the
+        cell color), old and "more" (raised) */
+    enum Kind { Newest, Recent, Settled, Old };
+    enum Layout { Assets, Strip };
+    struct Cell {
+        QString top;
+        QString bottom;
+        QString toolTip;
+        Kind kind = Settled;
+        QString key;   //!< what a click on the cell reports
+    };
+
+    explicit HexCells(Layout layout, QWidget *parent = nullptr);
+    void setCells(const QList<Cell>& cells);
+    /** The fewest cells that are shown however narrow it gets */
+    void setMinimumCells(int count);
+
+    QSize sizeHint() const override;
+    QSize minimumSizeHint() const override;
+
+Q_SIGNALS:
+    void cellClicked(const QString& key);
+
+protected:
+    void paintEvent(QPaintEvent *event) override;
+    void mouseMoveEvent(QMouseEvent *event) override;
+    void mouseReleaseEvent(QMouseEvent *event) override;
+    void leaveEvent(QEvent *event) override;
+    bool event(QEvent *event) override;
+
+private:
+    /** Where each shown cell is, for the width of the widget; the first ones may be left out */
+    QList<QRectF> placement(int *first) const;
+    int cellAt(const QPoint& pos) const;
+    /** Width and height of the cells at full size */
+    QSizeF cellSize(bool large) const;
+    qreal widthFor(int count) const;
+
+    Layout layoutKind;
+    QList<Cell> items;
+    int minimumCells;
+    int hover;
+};
+
+/**
+ * The root tokens of the wallet as hexagon avatars, at most 20; a "+"
  * opens a list with a search field, where sub tokens and unique tokens are
  * found as well. Sub and unique tokens are never buttons of their own: a
  * wallet can hold tens of thousands of them.

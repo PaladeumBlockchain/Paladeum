@@ -16,6 +16,7 @@
 #include <memory>
 
 class AmountLabel;
+class HexCells;
 class HeldTokenIndex;
 class OverviewRootModel;
 class PageActivity;
@@ -122,6 +123,8 @@ private:
     QWidget *offlineBlock;
     QWidget *labelWatchOnly;
     AmountLabel *watchAmounts[4];
+    /** The assets of the wallet as hexagon cells: PLB, then the first root tokens */
+    HexCells *assetCells;
     QFrame *tokenFrame;
     QLabel *tokenCount;
     QLineEdit *tokenSearch;
@@ -142,6 +145,8 @@ private:
 
     int transactionLimit;
     void updateTransactionLimit();
+    /** Fill the asset cells from the total balance and the root tokens */
+    void updateAssetCells();
 
 private Q_SLOTS:
     void updateDisplayUnit();

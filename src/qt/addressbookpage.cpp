@@ -56,7 +56,9 @@ AddressBookPage::AddressBookPage(const PlatformStyle *platformStyle, Mode _mode,
     topRow->addWidget(searchEdit, 1);
     ui->horizontalLayout->removeWidget(ui->newAddress);
     ui->newAddress->setText(_tab == SendingTab ? tr("Add address") : tr("New address"));
-    ui->newAddress->setProperty("primary", true);
+    // the secondary filled action: the address book shows two lists, and a choosing dialog has
+    // "Choose" as its one primary action
+    ui->newAddress->setProperty("look", "secondary");
     ui->newAddress->setFixedHeight(40);
     topRow->addWidget(ui->newAddress);
     ui->verticalLayout->insertLayout(1, topRow);
@@ -91,7 +93,7 @@ AddressBookPage::AddressBookPage(const PlatformStyle *platformStyle, Mode _mode,
     connect(sendButton, SIGNAL(clicked()), this, SLOT(sendToSelected()));
 
     Q_UNUSED(platformStyle);
-    ui->newAddress->setIcon(QIcon(GUIUtil::lineIcon("plus", 14, GUIUtil::theme().onFill, 2.4)));
+    ui->newAddress->setIcon(QIcon(GUIUtil::lineIcon("plus", 14, GUIUtil::theme().onFill, 2.0)));
     ui->copyAddress->setIcon(QIcon(GUIUtil::lineIcon("copy", 14, GUIUtil::theme().text, 2.0)));
     ui->deleteAddress->setIcon(QIcon());
     ui->exportButton->setIcon(QIcon(GUIUtil::lineIcon("download", 14, GUIUtil::theme().text, 2.2)));

@@ -34,7 +34,8 @@ AssignQualifier::AssignQualifier(const PlatformStyle *_platformStyle, QWidget *p
     ui->lineEditAddress->installEventFilter(this);
     ui->lineEditChangeAddress->installEventFilter(this);
     ui->lineEditTokenData->installEventFilter(this);
-    connect(ui->buttonClear, SIGNAL(clicked()), this, SLOT(clear()));
+    // (clear() is not a slot: the connection by name found nothing and the button did nothing)
+    connect(ui->buttonClear, &QPushButton::clicked, this, &AssignQualifier::clear);
     connect(ui->buttonCheck, SIGNAL(clicked()), this, SLOT(check()));
     connect(ui->lineEditAddress, SIGNAL(textChanged(QString)), this, SLOT(dataChanged()));
     connect(ui->lineEditChangeAddress, SIGNAL(textChanged(QString)), this, SLOT(dataChanged()));

@@ -4,6 +4,7 @@
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
 #if defined(HAVE_CONFIG_H)
+#include "cellstyle.h"
 #include "firstrun.h"
 #include "guiutil.h"
 #include "config/paladeum-config.h"
@@ -66,31 +67,28 @@ SplashScreen::SplashScreen(const NetworkStyle* networkStyle)
     QPainter pixPaint(&pixmap);
     pixPaint.setRenderHints(QPainter::Antialiasing | QPainter::TextAntialiasing | QPainter::SmoothPixmapTransform, true);
     pixPaint.fillRect(QRect(0, 0, width, height), t.surface);
-    pixPaint.fillRect(QRect(0, 0, width, 6), t.fill);
 
     const int logoSize = 76;
     pixPaint.drawPixmap(QPointF((width - logoSize) / 2.0, 56), WizardHeader::logo(logoSize, devicePixelRatio));
 
     pixPaint.setPen(t.text);
-    pixPaint.setFont(GUIUtil::appFont(24, QFont::DemiBold));
+    pixPaint.setFont(GUIUtil::displayFont(26, QFont::Medium));
     pixPaint.drawText(QRect(0, 146, width, 36), Qt::AlignHCenter | Qt::AlignVCenter, titleText);
 
     pixPaint.setPen(t.textSecondary);
     pixPaint.setFont(GUIUtil::monoFont(12));
     pixPaint.drawText(QRect(0, 184, width, 20), Qt::AlignHCenter | Qt::AlignVCenter, versionText);
 
-    pixPaint.setPen(t.textDisabled);
+    pixPaint.setPen(t.muted);
     pixPaint.setFont(GUIUtil::appFont(10));
     pixPaint.drawText(QRect(40, 208, width - 80, 30), Qt::AlignHCenter | Qt::AlignTop | Qt::TextWordWrap, copyrightText);
 
     // a chip for a network other than the main one
     if(!titleAddText.isEmpty()) {
-        pixPaint.setFont(GUIUtil::appFont(11, QFont::DemiBold));
+        pixPaint.setFont(GUIUtil::appFont(11, QFont::Medium));
         const int chipWidth = pixPaint.fontMetrics().boundingRect(titleAddText).width() + 20;
         const QRectF chip(width - chipWidth - 14, 18, chipWidth, 22);
-        pixPaint.setPen(Qt::NoPen);
-        pixPaint.setBrush(t.warnBg);
-        pixPaint.drawRoundedRect(chip, 6, 6);
+        CellStyle::paintCut(&pixPaint, chip, 6, t.warnBg);
         pixPaint.setPen(t.warnText);
         pixPaint.drawText(chip, Qt::AlignCenter, titleAddText);
     }
@@ -143,7 +141,7 @@ static void InitMessage(SplashScreen *splash, const std::string &message)
         Qt::QueuedConnection,
         Q_ARG(QString, QString::fromStdString(message)),
         Q_ARG(int, Qt::AlignBottom|Qt::AlignHCenter),
-        Q_ARG(QColor, QColor(55,55,55)));
+        Q_ARG(QColor, GUIUtil::theme().textSecondary));
 }
 
 static void ShowProgress(SplashScreen *splash, const std::string &title, int nProgress, bool resume_possible)

@@ -119,10 +119,7 @@ QT_FORMS_UI = \
   qt/forms/restrictedtokensdialog.ui \
   qt/forms/restrictedassignqualifier.ui \
   qt/forms/restrictedfreezeaddress.ui \
-  qt/forms/sendtokensentry.ui \
-  qt/forms/mnemonicdialog1.ui \
-  qt/forms/mnemonicdialog2.ui \
-  qt/forms/mnemonicdialog3.ui
+  qt/forms/sendtokensentry.ui
 
 QT_MOC_CPP = \
   qt/moc_addressbookpage.cpp \
@@ -240,6 +237,7 @@ PLB_QT_H = \
   qt/paladeumgui.h \
   qt/paladeumunits.h \
   qt/callback.h \
+  qt/cellstyle.h \
   qt/clientmodel.h \
   qt/coincontroldialog.h \
   qt/coincontroltreewidget.h \
@@ -380,23 +378,22 @@ RES_ICONS = \
   qt/res/icons/tx_token_output.png \
   qt/res/icons/warning.png \
   qt/res/icons/verify.png \
-  qt/res/fonts/NotoSans-Regular.ttf \
-  qt/res/fonts/NotoSans-Medium.ttf \
-  qt/res/fonts/NotoSans-SemiBold.ttf \
-  qt/res/fonts/NotoSans-Bold.ttf \
-  qt/res/fonts/NotoSansKR-Regular.ttf \
-  qt/res/fonts/NotoSansKR-Medium.ttf \
-  qt/res/fonts/NotoSansKR-SemiBold.ttf \
-  qt/res/fonts/NotoSansKR-Bold.ttf \
-  qt/res/fonts/NotoSansMono-Regular.ttf \
-  qt/res/fonts/NotoSansMono-Medium.ttf \
-  qt/res/fonts/NotoSansMono-SemiBold.ttf \
-  qt/res/fonts/NotoSansMono-Bold.ttf \
+  qt/res/fonts/Inter-Regular.ttf \
+  qt/res/fonts/Inter-Medium.ttf \
+  qt/res/fonts/Inter-SemiBold.ttf \
+  qt/res/fonts/SpaceGrotesk-Regular.ttf \
+  qt/res/fonts/SpaceGrotesk-Medium.ttf \
+  qt/res/fonts/JetBrainsMono-Regular.ttf \
+  qt/res/fonts/JetBrainsMono-Medium.ttf \
+  qt/res/fonts/OFL-Inter.txt \
+  qt/res/fonts/OFL-SpaceGrotesk.txt \
+  qt/res/fonts/OFL-JetBrainsMono.txt \
   qt/res/css/theme.qss
 
 
 PLB_QT_BASE_CPP = \
   qt/bantablemodel.cpp \
+  qt/cellstyle.cpp \
   qt/paladeumaddressvalidator.cpp \
   qt/paladeumamountfield.cpp \
   qt/paladeumgui.cpp \

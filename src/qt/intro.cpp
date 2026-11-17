@@ -36,6 +36,9 @@ static const uint64_t BLOCK_CHAIN_SIZE = 5;
 static const uint64_t CHAIN_STATE_SIZE = 3;
 /* Total required space (in GB) depending on user choice (prune, not prune) */
 static uint64_t requiredSpace;
+/* The year of the first block of the main network (2022-10-27); the intro is shown before the
+   network is chosen, so the parameters of the chain cannot be asked */
+static const int PALADEUM_LAUNCH_YEAR = 2022;
 
 /* Check free space asynchronously to prevent hanging the UI thread.
 
@@ -155,10 +158,11 @@ Intro::Intro(QWidget *parent) :
         globe->setFixedSize(36, 36);
         globe->setAlignment(Qt::AlignCenter);
         globe->setPixmap(GUIUtil::lineIcon("globe", 20, GUIUtil::theme().accent, 1.8));
-        globe->setStyleSheet(QString("QLabel { background-color: %1; border-radius: 8px; }").arg(GUIUtil::theme().accentSoft.name()));
+        // (no icon chip: the title says what it is)
+        globe->hide();
         row->addWidget(globe);
         const QString word = tr("Language");
-        QLabel *label = new QLabel(word == "Language" ? QString::fromUtf8("Language / 언어") : QString("Language / %1").arg(word), card);
+        QLabel *label = new QLabel(word == "Language" ? word : QString("Language / %1").arg(word), card);
         label->setProperty("role", "title");
         row->addWidget(label);
         row->addStretch(1);
@@ -243,7 +247,7 @@ Intro::Intro(QWidget *parent) :
 
     // (all four at once: a translation that leaves one of them out must not shift the others)
     ui->lblExplanation1->setText(ui->lblExplanation1->text()
-        .arg(tr(PACKAGE_NAME), QString::number(BLOCK_CHAIN_SIZE), QString::number(2018), tr("Paladeum")));
+        .arg(tr(PACKAGE_NAME), QString::number(BLOCK_CHAIN_SIZE), QString::number(PALADEUM_LAUNCH_YEAR), tr("Paladeum")));
     // With a chain state snapshot for this network the first start does not process the whole chain.
     try {
         const std::unique_ptr<CChainParams> params = CreateChainParams(ChainNameFromCommandLine());

@@ -471,6 +471,14 @@ RPCConsole::RPCConsole(const PlatformStyle *_platformStyle, QWidget *parent) :
     connect(ui->fontBiggerButton, SIGNAL(clicked()), this, SLOT(fontBigger()));
     connect(ui->fontSmallerButton, SIGNAL(clicked()), this, SLOT(fontSmaller()));
     connect(ui->btnClearTrafficGraph, SIGNAL(clicked()), ui->trafficGraph, SLOT(clear()));
+    // the legend in the colors of the graph (see TrafficGraphWidget::paintEvent)
+    for (const std::pair<QWidget*, QColor>& legend : {std::pair<QWidget*, QColor>(ui->line, GUIUtil::theme().accent),
+                                                       std::pair<QWidget*, QColor>(ui->line_2, GUIUtil::theme().textSecondary)}) {
+        QPalette palette = legend.first->palette();
+        for (QPalette::ColorRole role : {QPalette::WindowText, QPalette::Light, QPalette::Dark, QPalette::Mid})
+            palette.setColor(role, legend.second);
+        legend.first->setPalette(palette);
+    }
 
     // Wallet Repair Buttons
     connect(ui->btn_rescan, SIGNAL(clicked()), this, SLOT(walletRescan()));
@@ -812,13 +820,14 @@ void RPCConsole::clear(bool clearHistory)
     ui->messagesWidget->document()->setDefaultStyleSheet(
         QString(
                 "table { }"
-                "td.time { color: #808080; font-size: %2; padding-top: 3px; } "
+                "td.time { color: %3; font-size: %2; padding-top: 3px; } "
                 "td.message { font-family: %1; font-size: %2; white-space:pre-wrap; } "
-                "td.cmd-request { color: #006060; } "
-                "td.cmd-error { color: red; } "
-                ".secwarning { color: red; }"
-                "b { color: #006060; } "
-            ).arg(fixedFontInfo.family(), QString("%1pt").arg(consoleFontSize))
+                "td.cmd-request { color: %4; } "
+                "td.cmd-error { color: %5; } "
+                ".secwarning { color: %5; }"
+                "b { color: %4; } "
+            ).arg(fixedFontInfo.family(), QString("%1pt").arg(consoleFontSize), GUIUtil::theme().muted.name(),
+                  GUIUtil::theme().accent.name(), GUIUtil::theme().error.name())
         );
 
 #ifdef Q_OS_MAC

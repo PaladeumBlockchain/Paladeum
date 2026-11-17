@@ -106,7 +106,8 @@ public:
     /** A line between two groups of navigation items */
     void addSeparator();
 
-    void setStaking(bool on, const QString& detail, const QString& toolTip);
+    /** available: the wallet has an address that may stake (proof-of-stake authorization) */
+    void setStaking(bool on, const QString& detail, const QString& toolTip, bool available = true);
     void setSyncState(const QString& status, const QString& remaining, double progress, bool showProgress, const QString& toolTip);
     void setNetworkState(const QString& text, const QString& toolTip);
     void setWalletState(const QString& text, const QString& toolTip);

@@ -4,6 +4,7 @@
 
 #include "tokenlists.h"
 
+#include "cellstyle.h"
 #include "guiutil.h"
 #include "tokenrecord.h"
 #include "tokentablemodel.h"
@@ -258,9 +259,7 @@ void TokenRowDelegate::paint(QPainter *painter, const QStyleOptionViewItem& opti
     painter->setRenderHint(QPainter::Antialiasing, true);
     const QRect r = option.rect.adjusted(8, 0, -12, 0);
     if (option.state & QStyle::State_Selected) {
-        painter->setPen(Qt::NoPen);
-        painter->setBrush(theme.accentSoft);
-        painter->drawRoundedRect(option.rect.adjusted(0, 1, -4, -1), 8, 8);
+        CellStyle::paintCut(painter, QRectF(option.rect.adjusted(0, 1, -4, -1)), 8, theme.accentSoft);
     }
     const QString name = index.data(TokenListModel::NameRole).toString();
     const bool held = index.data(TokenListModel::HeldRole).toBool();
@@ -270,7 +269,7 @@ void TokenRowDelegate::paint(QPainter *painter, const QStyleOptionViewItem& opti
     int amountWidth;
     if (held) {
         amountWidth = GUIUtil::paintAmount(painter, r, GUIUtil::withThousands(index.data(TokenListModel::AmountRole).toString()),
-                                          GUIUtil::monoFont(15, QFont::DemiBold), theme.text);
+                                          GUIUtil::monoFont(14, QFont::Medium), theme.text);
     } else {
         const QString none = TokenListDialog::tr("None held");
         painter->setFont(GUIUtil::appFont(13));

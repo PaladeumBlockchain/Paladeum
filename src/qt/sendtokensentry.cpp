@@ -60,8 +60,6 @@ SendTokensEntry::SendTokensEntry(const PlatformStyle *_platformStyle, const QStr
     buildLayout();
 #if QT_VERSION >= 0x040700
     ui->addAsLabel->setPlaceholderText(tr("Enter a label for this address to add it to your address book"));
-
-    ui->txMessageEdit->setPlaceholderText(tr("Enter a transaction message (optional)"));
 #endif
 
     // normal paladeum address field
@@ -235,6 +233,20 @@ void SendTokensEntry::buildLayout()
     chipRow->addWidget(labelChip);
     chipRow->addWidget(lockChip);
     layout->addLayout(chipRow);
+
+    // the message of Paladeum that is written into the transaction (it was not in the layout:
+    // the field lay over the address row)
+    ui->txMessageLabel->setText(tr("Message (optional)"));
+    ui->txMessageLabel->setProperty("role", "fieldLabel");
+    ui->txMessageLabel->setStyleSheet(QString());
+    ui->txMessageLabel->setAlignment(Qt::AlignLeft | Qt::AlignVCenter);
+    ui->txMessageLabel->setToolTip(tr("Written into the transaction: anyone can read it on the chain. At most 120 characters."));
+    ui->txMessageEdit->setProperty("look", "field");
+    ui->txMessageEdit->setFixedHeight(44);
+    ui->txMessageEdit->setPlaceholderText(tr("Written into the transaction, readable by anyone"));
+    ui->txMessageEdit->setToolTip(ui->txMessageLabel->toolTip());
+    layout->addWidget(ui->txMessageLabel);
+    layout->addWidget(ui->txMessageEdit);
     connect(labelChip, SIGNAL(clicked()), this, SLOT(editLabel()));
     connect(labelChip, SIGNAL(removeClicked()), this, SLOT(clearLabel()));
     connect(lockChip, SIGNAL(clicked()), this, SLOT(editLockTime()));
@@ -890,7 +902,7 @@ void SendTokensEntry::switchAdministratorList(bool fSwitchStatus)
         ui->tokenAmountLabel->clear();
 
         ui->ownershipWarningMessage->setText(tr("Warning: Transferring administrator token"));
-        ui->ownershipWarningMessage->setStyleSheet("color: red");
+        ui->ownershipWarningMessage->setStyleSheet(GUIUtil::warningLabelColorStyle());
         ui->ownershipWarningMessage->show();
     } else {
         ui->administratorCheckbox->setChecked(false);

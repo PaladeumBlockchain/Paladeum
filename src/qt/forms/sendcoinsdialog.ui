@@ -150,7 +150,7 @@
                </font>
               </property>
               <property name="styleSheet">
-               <string notr="true">color:red;font-weight:500;</string>
+               <string notr="true">font-weight:500;</string>
               </property>
               <property name="text">
                <string>Insufficient funds!</string>
@@ -895,7 +895,7 @@
                    <item>
                     <widget class="QCheckBox" name="checkBoxMinimumFee">
                      <property name="toolTip">
-                      <string>Paying only the minimum fee is just fine as long as there is less transaction volume than space in the blocks. But be aware that this can end up in a never confirming transaction once there is more demand for paladeum transactions than the network can process.</string>
+                      <string>Paying only the minimum fee is just fine as long as there is less transaction volume than space in the blocks. But be aware that this can end up in a never confirming transaction once there is more demand for Paladeum transactions than the network can process.</string>
                      </property>
                      <property name="text">
                       <string/>
@@ -908,7 +908,7 @@
                       <bool>true</bool>
                      </property>
                      <property name="toolTip">
-                      <string>Paying only the minimum fee is just fine as long as there is less transaction volume than space in the blocks. But be aware that this can end up in a never confirming transaction once there is more demand for paladeum transactions than the network can process.</string>
+                      <string>Paying only the minimum fee is just fine as long as there is less transaction volume than space in the blocks. But be aware that this can end up in a never confirming transaction once there is more demand for Paladeum transactions than the network can process.</string>
                      </property>
                      <property name="text">
                       <string>(read the tooltip)</string>

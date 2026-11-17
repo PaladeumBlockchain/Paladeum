@@ -4,6 +4,7 @@
 
 #include "pagenav.h"
 
+#include "cellstyle.h"
 #include "clientmodel.h"
 #include "guiutil.h"
 #include "walletmodel.h"
@@ -400,7 +401,7 @@ void PageStatusPill::updateState()
 
 QSize PageStatusPill::sizeHint() const
 {
-    int width = 12 + 8 + 8 + QFontMetrics(GUIUtil::appFont(12, QFont::DemiBold)).horizontalAdvance(label) + 12;
+    int width = 12 + 8 + 8 + QFontMetrics(GUIUtil::appFont(12, QFont::Medium)).horizontalAdvance(label) + 12;
     if (!time.isEmpty())
         width += 7 + QFontMetrics(GUIUtil::monoFont(11)).horizontalAdvance(time);
     if (activity && activity->refreshable())
@@ -424,23 +425,17 @@ void PageStatusPill::paintEvent(QPaintEvent *event)
 
     QPainter p(this);
     p.setRenderHint(QPainter::Antialiasing, true);
-    const QRectF r = QRectF(rect()).adjusted(0.5, 0.5, -0.5, -0.5);
-    p.setPen(hovered && refreshable ? QPen(front, 1) : QPen(Qt::NoPen));
-    p.setBrush(back);
-    p.drawRoundedRect(r, r.height() / 2, r.height() / 2);
+    // a chip with cut corners; under the pointer, when a click reads the page again, a ring
+    CellStyle::paintCut(&p, QRectF(rect()), 6, back, hovered && refreshable ? front : QColor(), 1);
 
-    // the light: a dot with a soft ring
+    // the light: a small square
     const qreal cy = height() / 2.0;
-    QColor ring = front;
-    ring.setAlphaF(0.22);
     p.setPen(Qt::NoPen);
-    p.setBrush(ring);
-    p.drawEllipse(QPointF(16, cy), 6, 6);
     p.setBrush(front);
-    p.drawEllipse(QPointF(16, cy), 3.6, 3.6);
+    p.drawRect(QRectF(13, cy - 3, 6, 6));
 
     qreal x = 12 + 8 + 8;
-    const QFont labelFont = GUIUtil::appFont(12, QFont::DemiBold);
+    const QFont labelFont = GUIUtil::appFont(12, QFont::Medium);
     p.setFont(labelFont);
     p.setPen(front);
     const int labelWidth = QFontMetrics(labelFont).horizontalAdvance(label);
@@ -459,7 +454,7 @@ void PageStatusPill::paintEvent(QPaintEvent *event)
     }
     if (refreshable) {
         x += 8;
-        p.drawPixmap(QPointF(x, cy - 7), GUIUtil::lineIcon("refresh", 14, front, 2.2));
+        p.drawPixmap(QPointF(x, cy - 7), GUIUtil::lineIcon("refresh", 14, front, 2.0));
     }
 }
 

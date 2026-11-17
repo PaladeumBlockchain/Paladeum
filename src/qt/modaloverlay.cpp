@@ -10,6 +10,7 @@
 
 #include "chainparams.h"
 
+#include <QPainter>
 #include <QResizeEvent>
 #include <QVBoxLayout>
 #include <QPushButton>
@@ -26,17 +27,33 @@ userClosed(false)
 {
     ui->setupUi(this);
     // colors of the active theme (the form has fixed light colors)
-    ui->contentWidget->setStyleSheet(QString("#contentWidget { background: %1; border: 1px solid %2; border-radius: 12px; }")
-        .arg(GUIUtil::theme().surface.name(), GUIUtil::theme().border.name()));
+    // a panel with cut corners (painted from cellFill); what is on it is on a panel
+    ui->contentWidget->setProperty("cellFill", GUIUtil::theme().surface);
+    ui->contentWidget->setProperty("cellCut", 12);
+    ui->contentWidget->setProperty("cellSurface", true);
+    ui->contentWidget->setStyleSheet("#contentWidget { background: transparent; border: none; }");
     ui->bgWidget->setStyleSheet("#bgWidget { background: rgba(10,14,18,150); }");
     ui->warningIcon->setFlat(true);
     ui->warningIcon->setStyleSheet("QPushButton { border: none; background: transparent; }");
+    // the sign in the color of secondary text (the image is black), also on the disabled button
+    {
+        QPixmap sign(":/icons/warning");
+        QPainter painter(&sign);
+        painter.setCompositionMode(QPainter::CompositionMode_SourceIn);
+        painter.fillRect(sign.rect(), GUIUtil::theme().textSecondary);
+        painter.end();
+        QIcon icon;
+        icon.addPixmap(sign, QIcon::Normal);
+        icon.addPixmap(sign, QIcon::Disabled);
+        ui->warningIcon->setIcon(icon);
+    }
     connect(ui->closeButton, SIGNAL(clicked()), this, SLOT(closeClicked()));
 
     // Block bootstrap: what it does, how far it is, and the way out. Above the buttons.
     bootstrapBox = new QWidget(ui->contentWidget);
     bootstrapBox->setObjectName("bootstrapBox");
-    bootstrapBox->setStyleSheet(QString("#bootstrapBox { background: %1; border-radius: 8px; }").arg(GUIUtil::theme().accentSoft.name()));
+    bootstrapBox->setProperty("cellFill", GUIUtil::theme().accentSoft);
+    bootstrapBox->setStyleSheet("#bootstrapBox { background: transparent; }");
     QVBoxLayout *boxLayout = new QVBoxLayout(bootstrapBox);
     boxLayout->setContentsMargins(16, 12, 16, 12);
     boxLayout->setSpacing(4);
@@ -76,10 +93,14 @@ bool ModalOverlay::eventFilter(QObject * obj, QEvent * ev) {
     if (obj == parent()) {
         if (ev->type() == QEvent::Resize) {
             QResizeEvent * rev = static_cast<QResizeEvent*>(ev);
+            // the window changes its size while the layer slides (at the start): the layer
+            // ends where it belongs for the new size, not half way
+            if (animation)
+                animation->stop();
             resize(rev->size());
+            setGeometry(0, layerIsVisible ? 0 : height(), width(), height());
             if (!layerIsVisible)
-                setGeometry(0, height(), width(), height());
-
+                setVisible(false);
         }
         else if (ev->type() == QEvent::ChildAdded) {
             raise();
@@ -202,11 +223,18 @@ void ModalOverlay::showHide(bool hide, bool userRequested)
 
     setGeometry(0, hide ? 0 : height(), width(), height());
 
-    QPropertyAnimation* animation = new QPropertyAnimation(this, "pos");
+    if (animation)
+        animation->stop();
+    animation = new QPropertyAnimation(this, "pos");
     animation->setDuration(300);
     animation->setStartValue(QPoint(0, hide ? 0 : this->height()));
     animation->setEndValue(QPoint(0, hide ? this->height() : 0));
     animation->setEasingCurve(QEasingCurve::OutQuad);
+    // a hidden layer is not shown at all, so that no part of it can stay in sight
+    connect(animation, &QPropertyAnimation::finished, this, [this] {
+        if (!layerIsVisible)
+            setVisible(false);
+    });
     animation->start(QAbstractAnimation::DeleteWhenStopped);
     layerIsVisible = !hide;
 }

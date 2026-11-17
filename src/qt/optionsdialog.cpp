@@ -15,6 +15,7 @@
 #include "bootstrap.h"
 #include "guiutil.h"
 #include "optionsmodel.h"
+#include "pagewidgets.h"
 #include "guiconstants.h" // for DEFAULT_IPFS_VIEWER and DEFAULT_THIRD_PARTY_BROWSERS
 
 #include "validation.h" // for DEFAULT_SCRIPTCHECK_THREADS and MAX_SCRIPTCHECK_THREADS
@@ -227,6 +228,8 @@ void OptionsDialog::embedAsPage()
     extraColumn->setSpacing(16);
     columns->addLayout(left, 1);
     columns->addLayout(extraColumn, 1);
+    // one column in a narrow window: the second one would go past the edge of the page
+    new BoxDirectionFollower(scroll->viewport(), columns, 960);
 
     // The language first, across the page, with a label that can be read in any language.
     {
@@ -238,10 +241,11 @@ void OptionsDialog::embedAsPage()
         globe->setFixedSize(40, 40);
         globe->setAlignment(Qt::AlignCenter);
         globe->setPixmap(GUIUtil::lineIcon("globe", 22, GUIUtil::theme().accent, 1.8));
-        globe->setStyleSheet(QString("QLabel { background-color: %1; border-radius: 8px; }").arg(GUIUtil::theme().accentSoft.name()));
+        // (no icon chip: the title says what it is)
+        globe->hide();
         row->addWidget(globe);
         const QString word = tr("Language");
-        QLabel *label = new QLabel(word == "Language" ? QString::fromUtf8("Language / 언어") : QString("Language / %1").arg(word), languageCard);
+        QLabel *label = new QLabel(word == "Language" ? word : QString("Language / %1").arg(word), languageCard);
         label->setProperty("role", "title");
         row->addWidget(label);
         if (QLayout *displayLayout = ui->tabDisplay->layout()) {
@@ -514,7 +518,7 @@ void OptionsDialog::setModel(OptionsModel *_model)
     connect(ui->thirdPartyTxUrls, SIGNAL(textChanged(const QString &)), this, SLOT(showRestartWarning()));
     connect(ui->ipfsUrl, SIGNAL(textChanged(const QString &)), this, SLOT(showRestartWarning()));
     connect(ui->darkModeCheckBox, SIGNAL(clicked(bool)), this, SLOT(showRestartWarning()));
-    ui->darkModeCheckBox->hide();
+    ui->darkModeCheckBox->setText(tr("Dark theme (after a restart)"));
 }
 
 void OptionsDialog::setMapper()
@@ -555,6 +559,7 @@ void OptionsDialog::setMapper()
     mapper->addMapping(ui->unit, OptionsModel::DisplayUnit);
     mapper->addMapping(ui->thirdPartyTxUrls, OptionsModel::ThirdPartyTxUrls);
     mapper->addMapping(ui->ipfsUrl, OptionsModel::IpfsUrl);
+    mapper->addMapping(ui->darkModeCheckBox, OptionsModel::DarkTheme);
 }
 
 void OptionsDialog::setOkButtonState(bool fState)

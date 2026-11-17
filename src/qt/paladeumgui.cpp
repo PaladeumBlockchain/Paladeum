@@ -17,6 +17,7 @@
 #include "clientmodel.h"
 #include "guiconstants.h"
 #include "guiutil.h"
+#include "consensus/consensus.h"
 #include "modaloverlay.h"
 #include "networkstyle.h"
 #include "notificator.h"
@@ -189,8 +190,12 @@ PaladeumGUI::PaladeumGUI(const PlatformStyle *_platformStyle, const NetworkStyle
 {
     QSettings settings;
     if (!restoreGeometry(settings.value("MainWindowGeometry").toByteArray())) {
-        // Restore failed (perhaps missing setting), center the window
-        move(QGuiApplication::primaryScreen()->availableGeometry().center() - frameGeometry().center());
+        // The first start: most of the screen, up to 1280 x 800, centered
+        const QRect screen = QGuiApplication::primaryScreen()->availableGeometry();
+        const int minWidth = MINIMUM_WIDTH, minHeight = MINIMUM_HEIGHT;
+        const QSize size(qBound(minWidth, screen.width() * 9 / 10, 1280), qBound(minHeight, screen.height() * 9 / 10, 800));
+        resize(size);
+        move(screen.center() - QPoint(size.width() / 2, size.height() / 2));
     }
 
     QString windowTitle = tr(PACKAGE_NAME) + " - ";
@@ -437,7 +442,7 @@ void PaladeumGUI::createActions()
     createTokenAction->setStatusTip(tr("Create new main/sub/unique tokens"));
     createTokenAction->setToolTip(createTokenAction->statusTip());
     createTokenAction->setCheckable(true);
-    createTokenAction->setShortcut(QKeySequence(Qt::ALT + Qt::Key_6));
+    createTokenAction->setShortcut(QKeySequence(Qt::ALT + Qt::Key_7));
     createTokenAction->setFont(font);
     tabGroup->addAction(createTokenAction);
 
@@ -445,7 +450,7 @@ void PaladeumGUI::createActions()
     manageTokenAction->setStatusTip(tr("Manage tokens you are the administrator of"));
     manageTokenAction->setToolTip(manageTokenAction->statusTip());
     manageTokenAction->setCheckable(true);
-    manageTokenAction->setShortcut(QKeySequence(Qt::ALT + Qt::Key_7));
+    manageTokenAction->setShortcut(QKeySequence(Qt::ALT + Qt::Key_8));
     manageTokenAction->setFont(font);
     tabGroup->addAction(manageTokenAction);
 
@@ -453,7 +458,7 @@ void PaladeumGUI::createActions()
     restrictedTokenAction->setStatusTip(tr("Qualifiers, tags of addresses and frozen addresses of restricted tokens"));
     restrictedTokenAction->setToolTip(restrictedTokenAction->statusTip());
     restrictedTokenAction->setCheckable(true);
-    restrictedTokenAction->setShortcut(QKeySequence(Qt::ALT + Qt::Key_8));
+    restrictedTokenAction->setShortcut(QKeySequence(Qt::ALT + Qt::Key_9));
     restrictedTokenAction->setFont(font);
     tabGroup->addAction(restrictedTokenAction);
 
@@ -463,7 +468,7 @@ void PaladeumGUI::createActions()
     explorerAction->setStatusTip(tr("Look up transactions, addresses and blocks on this node"));
     explorerAction->setToolTip(explorerAction->statusTip());
     explorerAction->setCheckable(true);
-    explorerAction->setShortcut(QKeySequence(Qt::ALT + Qt::Key_8));
+    explorerAction->setShortcut(QKeySequence(Qt::ALT + Qt::Key_6));
     explorerAction->setFont(font);
     tabGroup->addAction(explorerAction);
 
@@ -472,7 +477,7 @@ void PaladeumGUI::createActions()
     addressBookAction->setStatusTip(tr("Show the receiving and the sending addresses and their labels"));
     addressBookAction->setToolTip(addressBookAction->statusTip());
     addressBookAction->setCheckable(true);
-    addressBookAction->setShortcut(QKeySequence(Qt::ALT + Qt::Key_9));
+    addressBookAction->setShortcut(QKeySequence(Qt::ALT + Qt::Key_0));
     addressBookAction->setFont(font);
     tabGroup->addAction(addressBookAction);
 
@@ -487,7 +492,8 @@ void PaladeumGUI::createActions()
     settingsPageAction->setStatusTip(tr("Options, wallet management and information"));
     settingsPageAction->setToolTip(settingsPageAction->statusTip());
     settingsPageAction->setCheckable(true);
-    settingsPageAction->setShortcut(QKeySequence(Qt::ALT + Qt::Key_0));
+    // the usual shortcut of the settings of a program (Cmd+, on a Mac)
+    settingsPageAction->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_Comma));
     settingsPageAction->setFont(font);
     tabGroup->addAction(settingsPageAction);
 
@@ -726,7 +732,9 @@ void PaladeumGUI::createToolBars()
         sidebar->addPage(signPageAction, "sign");
         sidebar->addPage(settingsPageAction, "settings");
 
-        // The actions carry the Alt+number shortcuts of the pages
+        // The actions carry the shortcuts of the pages: Alt+1 to Alt+9 and Alt+0 are the first ten
+        // entries of the side bar in their order (one shortcut each: two actions with the same one
+        // would both stop working), Ctrl+, (Cmd+, on a Mac) the settings
         addAction(overviewAction);
         addAction(sendCoinsAction);
         addAction(receiveCoinsAction);
@@ -1983,11 +1991,45 @@ void PaladeumGUI::updateStakingIcon()
         othersTip = tr("Also staking: %1").arg(othersStaking.join(", ").toHtmlEscaped());
     }
 
+    // Proof-of-stake authorization: on Paladeum only addresses that governance authorized stake,
+    // and the staking of the wallet uses only their coins. The list is kept while the chain is busy.
+    if (current != stakingListWallet) {
+        stakingListWallet = current;
+        stakingListKnown = false;
+        stakingList.clear();
+    }
+    if (current) {
+        QStringList addresses;
+        if (current->stakingAddresses(addresses)) {
+            stakingList = addresses;
+            stakingListKnown = true;
+        }
+    }
+    const bool authorized = !stakingListKnown || !stakingList.isEmpty();
+    QString authorizedTip;
+    if (stakingListKnown && !stakingList.isEmpty()) {
+        QStringList shown = stakingList.mid(0, 5);
+        for (QString &address : shown)
+            address = GUIUtil::monoHtml(address.toHtmlEscaped());
+        authorizedTip = (stakingList.size() == 1 ? tr("Authorized to stake (one address of this wallet):")
+                                                 : tr("Authorized to stake (%1 addresses of this wallet):").arg(stakingList.size()))
+            + "<br>" + shown.join("<br>")
+            + (stakingList.size() > shown.size() ? "<br>" + tr("and %1 more").arg(stakingList.size() - shown.size()) : QString())
+            + "<br><br>" + tr("Only the coins at these addresses stake, once they have %1 confirmations.").arg(COINSTAKE_MATURITY);
+    }
+
     QString detail;
-    if (staking && nWeight) {
+    if (!authorized && !staking) {
+        labelStakingIcon->setPixmap(platformStyle->SingleColorIcon(":/icons/staking_off").pixmap(STATUSBAR_ICONSIZE, STATUSBAR_ICONSIZE));
+        labelStakingIcon->setToolTip(tr("On Paladeum only addresses that governance has authorized can stake (proof-of-stake authorization). No address of this wallet is authorized, so this wallet cannot stake."));
+        detail = tr("No address of this wallet is authorized to stake");
+        stakeStatsLine.clear();
+        if (stakingButton)
+            stakingButton->setText(tr("Start Staking"));
+    } else if (staking && nWeight) {
         uint64_t nWeight = this->nWeight;
         uint64_t nNetworkWeight = 1.1429 * GetPoSKernelPS();
-        unsigned nEstimateTime = 1.0455 * 64 * nNetworkWeight / nWeight;
+        unsigned nEstimateTime = 1.0455 * GetParams().GetConsensus().nTargetSpacing * nNetworkWeight / nWeight;
 
         QString text;
         if (nEstimateTime < 60) {
@@ -2004,10 +2046,16 @@ void PaladeumGUI::updateStakingIcon()
         nNetworkWeight /= COIN;
 
         labelStakingIcon->setPixmap(platformStyle->SingleColorIcon(":/icons/staking_on").pixmap(STATUSBAR_ICONSIZE, STATUSBAR_ICONSIZE));
-        labelStakingIcon->setToolTip(tr("Staking.<br>Your weight is %1<br>Network weight is %2<br>Expected time to earn reward is %3").arg(nWeight).arg(nNetworkWeight).arg(text));
         if (stakingButton)
             stakingButton->setText(tr("Stop Staking"));
-        detail = tr("On · a reward about every %1").arg(text);
+        if (nNetworkWeight == 0) {
+            // no proof-of-stake blocks lately: there is nothing to estimate the time from
+            labelStakingIcon->setToolTip(tr("Staking.<br>Your weight is %1<br>The network weight is not known yet: there were no recent proof-of-stake blocks.").arg(nWeight));
+            detail = tr("On · staking");
+        } else {
+            labelStakingIcon->setToolTip(tr("Staking.<br>Your weight is %1<br>Network weight is %2<br>Expected time to earn reward is %3").arg(nWeight).arg(nNetworkWeight).arg(text));
+            detail = tr("On · a reward about every %1").arg(text);
+        }
         // the last 24 hours of this wallet, when it can be asked without waiting
         {
             TRY_LOCK(cs_main, lockMain);
@@ -2040,22 +2088,34 @@ void PaladeumGUI::updateStakingIcon()
         stakeStatsLine.clear();
         labelStakingIcon->setPixmap(platformStyle->SingleColorIcon(":/icons/staking_off").pixmap(STATUSBAR_ICONSIZE, STATUSBAR_ICONSIZE));
         const QString state = staking ? tr("On") : tr("Off");
-        if (IsInitialBlockDownload()) {
+        if (!authorized) {
+            // switched on (-staking=1) in a wallet that has nothing that may stake
+            labelStakingIcon->setToolTip(tr("On Paladeum only addresses that governance has authorized can stake (proof-of-stake authorization). No address of this wallet is authorized, so nothing is staked."));
+            detail = tr("On · no address of this wallet is authorized to stake");
+        } else if (IsInitialBlockDownload()) {
             labelStakingIcon->setToolTip(tr("Not staking because wallet is syncing"));
             detail = staking ? tr("On · waiting for the synchronization to finish") : tr("Off · staking is possible once synchronized");
         } else if (walletFrame && !walletFrame->isWalletUnlocked()) {
             labelStakingIcon->setToolTip(tr("Not staking because wallet is locked"));
             detail = tr("%1 · the wallet is locked").arg(state);
         } else if (!nWeight) {
-            labelStakingIcon->setToolTip(tr("Not staking because you don't have mature coins"));
-            detail = tr("%1 · no mature coins").arg(state);
+            labelStakingIcon->setToolTip(tr("Not staking: the authorized addresses of this wallet have no coins with %1 confirmations yet").arg(COINSTAKE_MATURITY));
+            detail = (stakingList.size() == 1 ? tr("%1 · no mature coins at the authorized address")
+                                              : tr("%1 · no mature coins at the authorized addresses")).arg(state);
         } else {
             labelStakingIcon->setToolTip(tr("Not staking"));
-            detail = state;
+            // (while the list could not be read yet, only the state)
+            if (!stakingListKnown)
+                detail = state;
+            else
+                detail = stakingList.size() == 1 ? tr("%1 · one authorized address").arg(state)
+                                                 : tr("%1 · %2 authorized addresses").arg(state).arg(stakingList.size());
         }
         if (stakingButton)
             stakingButton->setText(tr("Start Staking"));
     }
+    if (!authorizedTip.isEmpty())
+        labelStakingIcon->setToolTip(labelStakingIcon->toolTip() + "<br><br>" + authorizedTip);
     if (!othersLine.isEmpty()) {
         detail += "\n" + othersLine;
         labelStakingIcon->setToolTip(labelStakingIcon->toolTip() + "<br><br>" + othersTip);
@@ -2064,7 +2124,7 @@ void PaladeumGUI::updateStakingIcon()
         QString tip = labelStakingIcon->toolTip();
         if (walletController && walletController->models().size() > 1 && current)
             tip = tr("The switch is for %1: every wallet stakes on its own.").arg(walletController->displayName(current).toHtmlEscaped()) + "<br><br>" + tip;
-        sidebar->setStaking(staking, detail, tip);
+        sidebar->setStaking(staking, detail, tip, authorized);
     }
 }
 
@@ -2176,6 +2236,12 @@ void PaladeumGUI::toggleStakingActive()
         return;
     CWallet *wallet = current->getWallet();
     if (!wallet->IsStaking()) {
+        // nothing of this wallet may stake (proof-of-stake authorization): the switch stays off
+        QStringList addresses;
+        if (current->stakingAddresses(addresses) && addresses.isEmpty()) {
+            updateStakingIcon();
+            return;
+        }
         walletFrame->unlockWalletForStaking();
         // (the passphrase dialog was cancelled: staking is not started)
         if (walletFrame->isWalletUnlocked())

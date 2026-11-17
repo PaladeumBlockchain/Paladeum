@@ -17,6 +17,8 @@
 #include <QMap>
 #include <QMenu>
 #include <QPoint>
+#include <QPointer>
+#include <QStringList>
 #include <QSystemTrayIcon>
 #include <QComboBox>
 #include <QDateTime>
@@ -56,6 +58,9 @@ class PaladeumGUI : public QMainWindow
 public:
     static const QString DEFAULT_WALLET;
     static const std::string DEFAULT_UIPLATFORM;
+    /** The smallest size of the window: every page fits without cutting anything off */
+    static const int MINIMUM_WIDTH = 1040;
+    static const int MINIMUM_HEIGHT = 640;
 
     explicit PaladeumGUI(const PlatformStyle *platformStyle, const NetworkStyle *networkStyle, QWidget *parent = 0);
     /** The actions of the former menus for the cards of the settings page:
@@ -169,6 +174,11 @@ private:
     /** The staking of the last 24 hours, for the side bar (kept while the wallet is busy) */
     QString stakeStatsLine;
     QString stakeStatsTip;
+    /** The addresses of the shown wallet that may stake (proof-of-stake authorization), kept
+        while the chain is busy; stakingListKnown is false until they could be read */
+    QPointer<WalletModel> stakingListWallet;
+    QStringList stakingList;
+    bool stakingListKnown = false;
     /** Start of the measured span of the past block download, for the time that is left */
     qint64 pastBlocksSeenAt;
     quint64 pastBlocksSeenBytes;

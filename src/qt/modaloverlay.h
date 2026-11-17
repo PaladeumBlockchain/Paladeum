@@ -7,6 +7,8 @@
 #define PLB_QT_MODALOVERLAY_H
 
 #include <QDateTime>
+#include <QPointer>
+#include <QPropertyAnimation>
 #include <QWidget>
 
 QT_BEGIN_NAMESPACE
@@ -62,6 +64,8 @@ private:
     QDateTime bestHeaderDate;
     QVector<QPair<qint64, double> > blockProcessTime;
     bool layerIsVisible;
+    /** The slide that runs, if one does */
+    QPointer<QPropertyAnimation> animation;
     bool userClosed;
 };
 

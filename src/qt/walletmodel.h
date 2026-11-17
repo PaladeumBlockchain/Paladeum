@@ -316,6 +316,12 @@ public:
     bool saveReceiveRequest(const std::string &sAddress, const int64_t nId, const std::string &sRequest);
 
     unsigned long long updateWeight();
+    /**
+     * The addresses of this wallet that may stake. On Paladeum only scripts that governance
+     * authorized can stake (proof-of-stake authorization, CGovernance::CanStake), and the staking
+     * of the wallet uses only their coins. Returns false when the chain is busy and nothing was read.
+     */
+    bool stakingAddresses(QStringList& addresses) const;
 
     bool transactionCanBeAbandoned(uint256 hash) const;
     bool abandonTransaction(uint256 hash) const;
@@ -327,7 +333,12 @@ public:
 
     bool hdEnabled() const;
     bool hd44Enabled() const;
-    QString getMyWords() const;
+    /**
+     * The recovery words of the wallet and their passphrase. Only from a wallet that is not
+     * encrypted or fully unlocked: keys unlocked for staking only do not give them. The lock
+     * state is not changed (see requestUnlock() for a full unlock that is undone afterwards).
+     */
+    bool getRecoveryWords(SecureString& words, SecureString& passphrase) const;
 
     int getDefaultConfirmTarget() const;
 
@@ -362,6 +373,8 @@ private:
     CAmount cachedLockedBalance;
     CAmount cachedOfflineBalance;
     EncryptionStatus cachedEncryptionStatus;
+    /** The state of the lock at the last poll (see pollBalanceChanged) */
+    EncryptionStatus polledEncryptionStatus;
     int cachedNumBlocks;
 
     QTimer *pollTimer;

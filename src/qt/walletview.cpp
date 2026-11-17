@@ -11,6 +11,7 @@
 
 #include "addressbookpage.h"
 #include "askpassphrasedialog.h"
+#include "mnemonicdialog.h"
 #include "mnemonicrestoredialog.h"
 #include "paladeumgui.h"
 #include "clientmodel.h"
@@ -62,6 +63,7 @@
 #include <QLabel>
 #include <QProgressDialog>
 #include <QPushButton>
+#include <QScrollArea>
 #include <QVBoxLayout>
 
 
@@ -129,6 +131,19 @@ WalletView::WalletView(const PlatformStyle *_platformStyle, QWidget *parent):
     sendStack->addWidget(sendCoinsPage);
     sendStack->addWidget(tokensPage);
     sendLayout->addWidget(sendStack, 1);
+    // Only the form that is shown counts for the height of the page: a stacked widget asks for the
+    // room of its largest page, and the PLB form scrolled (its send button below the window) for the
+    // height of the hidden token form.
+    auto followSendStack = [this]() {
+        for (int i = 0; i < sendStack->count(); ++i) {
+            const bool shown = i == sendStack->currentIndex();
+            sendStack->widget(i)->setSizePolicy(shown ? QSizePolicy::Preferred : QSizePolicy::Ignored,
+                                                shown ? QSizePolicy::Preferred : QSizePolicy::Ignored);
+        }
+        sendStack->updateGeometry();
+    };
+    connect(sendStack, &QStackedWidget::currentChanged, this, followSendStack);
+    followSendStack();
     connect(sendTabs, SIGNAL(buttonClicked(int)), this, SLOT(showSendTab(int)));
     sendShell = addPage(PAGE_SEND, sendContainer, tr("Send"), sendCoinsPage->headerWidget());
 
@@ -374,7 +389,7 @@ QWidget *WalletView::addPage(int id, QWidget *page, const QString &title, QWidge
     QWidget *shell = new QWidget(this);
     shell->setObjectName("pageShell");
     QVBoxLayout *layout = new QVBoxLayout(shell);
-    layout->setContentsMargins(36, 26, 36, 28);
+    layout->setContentsMargins(32, 24, 32, 24);
     layout->setSpacing(20);
 
     // [back][forward]  Title  (status light) ........ [context]
@@ -405,7 +420,18 @@ QWidget *WalletView::addPage(int id, QWidget *page, const QString &title, QWidge
             }
         }
     }
-    layout->addWidget(page, 1);
+    // A window lower than the page scrolls the page below its header; nothing is squeezed.
+    // (The width of the window is at least what every page needs.)
+    QScrollArea *scroll = new QScrollArea(shell);
+    scroll->setObjectName("pageScroll");
+    scroll->setFrameShape(QFrame::NoFrame);
+    scroll->setWidgetResizable(true);
+    scroll->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+    scroll->setStyleSheet("QScrollArea#pageScroll, QScrollArea#pageScroll > QWidget > QWidget { background: transparent; }");
+    scroll->viewport()->setAutoFillBackground(false);
+    page->setAutoFillBackground(false);
+    scroll->setWidget(page);
+    layout->addWidget(scroll, 1);
     addWidget(shell);
     shells[id] = shell;
     titles[id] = title;
@@ -594,7 +620,7 @@ void WalletView::setPaladeumGUI(PaladeumGUI *gui)
             {tr("Backup"), tr("A copy of the wallet file. If this computer breaks or is lost, the backup brings the coins back. Keep it on a USB drive or another computer, and make a new one after adding keys.")},
         };
         if (fShowRestore)
-            securityNotes.push_back({tr("Recovery words"), tr("The 12 or 24 words of another wallet, such as a mobile wallet. Restoring adds the keys of that wallet to this one, so its coins can be used here.")});
+            securityNotes.push_back({tr("Recovery words"), tr("The 12 to 24 words of another wallet: a Paladeum 0.1.x wallet, the earlier Paladeum mobile app or another BIP39 wallet. Restoring adds the keys of that wallet to this one, so its coins can be used here.")});
         for (const std::pair<QString, QString> &note : securityNotes) {
             QLabel *label = new QLabel(QString("<b>%1</b> &nbsp;%2").arg(note.first, note.second), walletCard);
             label->setProperty("role", "secondary");
@@ -912,25 +938,25 @@ void WalletView::unlockWallet()
 }
 void WalletView::getMyWords()
 {
-    // Create the box and set the default text.
-    QMessageBox box;
-    box.setWindowTitle(tr("Recovery information"));
-    box.setText(tr("No words available."));
-
-    // Check for HD-wallet and set text if not HD-wallet.
-    if(!walletModel->hd44Enabled())
-        box.setText(tr("This wallet is not a HD wallet, words not supported."));
-
-    // Unlock wallet requested by wallet model
-    WalletView::unlockWallet();
-
-    // Make sure wallet is unlocked before trying to fetch the words.
-    // When unlocked, set the text to 12words and passphrase.
-    if (walletModel->getEncryptionStatus() != WalletModel::Locked)
-        box.setText(walletModel->getMyWords());
-
-    // Show the box
-    box.exec();
+    if (!walletModel)
+        return;
+    if (!walletModel->hd44Enabled()) {
+        QMessageBox::information(this, tr("Recovery words"),
+            tr("This wallet was not made from recovery words, so it has none. A backup of the wallet file keeps its keys."));
+        return;
+    }
+    // The words give every key away, so they need the passphrase: keys that are open for the
+    // staking thread only are not enough, and a cancelled request shows nothing. The context
+    // locks the wallet again afterwards (back to staking only, if it was that).
+    WalletModel::UnlockContext context(walletModel->requestUnlock());
+    if (!context.isValid())
+        return;
+    SecureString words, passphrase;
+    if (!walletModel->getRecoveryWords(words, passphrase)) {
+        QMessageBox::warning(this, tr("Recovery words"), tr("The recovery words of this wallet could not be read."));
+        return;
+    }
+    MnemonicDialog::showWords(this, words, passphrase);
 }
 
 void WalletView::unlockWalletForStaking()

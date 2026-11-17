@@ -6,6 +6,7 @@
 
 #include "clientversion.h"
 
+#include "cellstyle.h"
 #include "guiutil.h"
 
 #include <QAction>
@@ -24,7 +25,7 @@ ToggleSwitch::ToggleSwitch(QWidget* parent) : QAbstractButton(parent)
 {
     setCheckable(true);
     setCursor(Qt::PointingHandCursor);
-    setFixedSize(44, 26);
+    setFixedSize(44, 24);
     setFocusPolicy(Qt::TabFocus);
 }
 
@@ -33,16 +34,18 @@ void ToggleSwitch::paintEvent(QPaintEvent*)
     const GUIUtil::Theme& t = GUIUtil::theme();
     QPainter p(this);
     p.setRenderHint(QPainter::Antialiasing, true);
-    p.setPen(Qt::NoPen);
-    p.setBrush(isChecked() ? t.sideBar : t.sideOff);
-    p.drawRoundedRect(rect(), 13, 13);
-    p.setBrush(isChecked() ? t.sideBg : t.sideStrong);
-    p.drawEllipse(QRectF(isChecked() ? width() - 23 : 3, 3, 20, 20));
-    if (hasFocus()) {
-        p.setBrush(Qt::NoBrush);
-        p.setPen(QPen(t.sideStrong, 1));
-        p.drawRoundedRect(QRectF(rect()).adjusted(0.5, 0.5, -0.5, -0.5), 13, 13);
+    const QRectF track(rect());
+    const QRectF knobOff(4, 4, 16, 16);
+    const QRectF knobOn(width() - 20, 4, 16, 16);
+    // a switch that cannot be used is a flat track with a dim knob
+    if (!isEnabled()) {
+        CellStyle::paintCut(&p, track, 6, t.sideTrack);
+        CellStyle::paintCut(&p, knobOff, 4, t.sideOff);
+        return;
     }
+    // on: the mark blue track (also in the dark theme, where it carries the white knob)
+    CellStyle::paintCut(&p, track, 6, isChecked() ? t.fill : t.sideOff, hasFocus() ? t.accent : QColor(), 2);
+    CellStyle::paintCut(&p, isChecked() ? knobOn : knobOff, 4, QColor("#FFFFFF"));
 }
 
 SideNavButton::SideNavButton(QAction* _action, const QString& _iconName, QWidget* parent) :
@@ -50,7 +53,8 @@ SideNavButton::SideNavButton(QAction* _action, const QString& _iconName, QWidget
 {
     setCheckable(true);
     setCursor(Qt::PointingHandCursor);
-    setFixedHeight(36);
+    // 32: the twelve pages fit into the side bar of a window of the usual size
+    setFixedHeight(32);
     setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
     setFocusPolicy(Qt::TabFocus);
     connect(this, SIGNAL(clicked()), action, SLOT(trigger()));
@@ -71,7 +75,11 @@ void SideNavButton::actionChanged()
 {
     setChecked(action->isChecked());
     setEnabled(action->isEnabled());
-    setToolTip(action->toolTip());
+    // the tool tip names the shortcut of the page
+    QString tip = action->toolTip();
+    if (!action->shortcut().isEmpty())
+        tip += QString(" (%1)").arg(action->shortcut().toString(QKeySequence::NativeText));
+    setToolTip(tip);
     setText(plainActionText(action));
     update();
 }
@@ -97,18 +105,22 @@ void SideNavButton::paintEvent(QPaintEvent*)
     const bool on = action->isChecked();
     QPainter p(this);
     p.setRenderHint(QPainter::Antialiasing, true);
+    // text links; the page that is shown is a tab of the raised color, marked with a small yellow
+    // hexagon (the column of the mark is kept on every row, so that the names line up)
+    const bool keyFocus = hasFocus() && window()->testAttribute(Qt::WA_KeyboardFocusChange);
+    if (on || keyFocus)
+        CellStyle::paintCut(&p, QRectF(rect()), 6, on ? t.sideOnBg : QColor(), keyFocus ? t.accent : QColor(), 2);
     if (on) {
         p.setPen(Qt::NoPen);
-        p.setBrush(t.sideOnBg);
-        p.drawRoundedRect(rect(), 8, 8);
+        p.setBrush(t.action);
+        p.drawPath(CellStyle::hexagon(QRectF(12, (height() - 11) / 2.0, 10, 11)));
     }
-    QColor color = (on || hovered || hasFocus()) ? t.sideStrong : t.sideText;
+    QColor color = (on || hovered || keyFocus) ? t.sideStrong : t.sideText;
     if (!isEnabled())
-        color = t.sideOff;
-    p.drawPixmap(12, (height() - 18) / 2, GUIUtil::lineIcon(iconName, 18, color));
+        color = t.textDisabled;
     p.setPen(color);
-    p.setFont(GUIUtil::appFont(14, on ? QFont::DemiBold : QFont::Medium));
-    p.drawText(QRect(42, 0, width() - 50, height()), Qt::AlignLeft | Qt::AlignVCenter, plainActionText(action));
+    p.setFont(GUIUtil::appFont(14, on ? QFont::Medium : QFont::Normal));
+    p.drawText(QRect(32, 0, width() - 40, height()), Qt::AlignLeft | Qt::AlignVCenter, plainActionText(action));
 }
 
 WalletSwitcher::WalletSwitcher(QWidget* parent) : QAbstractButton(parent), hovered(false), keyFocus(false)
@@ -173,36 +185,31 @@ void WalletSwitcher::paintEvent(QPaintEvent*)
     const GUIUtil::Theme& t = GUIUtil::theme();
     QPainter p(this);
     p.setRenderHint(QPainter::Antialiasing, true);
-    const QRectF frame = QRectF(rect()).adjusted(0.5, 0.5, -0.5, -0.5);
-    // a hairline box; hovered or pressed it takes the fill of the active page, and the keyboard
-    // focus shows as a brighter line, as on the staking switch
-    p.setPen(QPen(hasFocus() && keyFocus ? t.sideStrong : t.sideCard, 1));
-    p.setBrush((hovered || isDown()) ? t.sideOnBg : Qt::transparent);
-    p.drawRoundedRect(frame, 10, 10);
+    // a quiet button on the rail: raised, darker under the pointer; the keyboard focus is a ring
+    CellStyle::paintCut(&p, QRectF(rect()), 8, (hovered || isDown()) ? t.raisedHover : t.surfaceAlt,
+                        hasFocus() && keyFocus ? t.accent : QColor(), 2);
 
-    // the mark: the first letters of the name in a rounded square (tokens have round ones)
+    // the first letters of the name on a small cell
     const QRectF mark(12, (height() - 32) / 2.0, 32, 32);
-    p.setPen(Qt::NoPen);
-    p.setBrush(t.sideCard);
-    p.drawRoundedRect(mark, 6, 6);
+    CellStyle::paintCut(&p, mark, 6, t.surface);
     p.setPen(t.sideStrong);
-    p.setFont(GUIUtil::appFont(13, QFont::DemiBold));
+    p.setFont(GUIUtil::displayFont(13, QFont::Medium));
     p.drawText(mark, Qt::AlignCenter, walletInitials(name));
 
     // name and state on two lines of 18, centered in the 56 of the box
     const int left = 56;
     const int right = width() - 36;
-    const QFont nameFont = GUIUtil::appFont(14, QFont::DemiBold);
-    const QFont stateFont = GUIUtil::appFont(12, QFont::Medium);
+    const QFont nameFont = GUIUtil::appFont(14, QFont::Medium);
+    const QFont stateFont = GUIUtil::appFont(12);
     p.setFont(nameFont);
     p.setPen(t.sideStrong);
     p.drawText(QRect(left, 10, right - left, 18), Qt::AlignLeft | Qt::AlignVCenter,
                QFontMetrics(nameFont).elidedText(name, Qt::ElideRight, right - left));
     p.setFont(stateFont);
-    p.setPen(t.sideText);
+    p.setPen(t.muted);
     p.drawText(QRect(left, 28, right - left, 18), Qt::AlignLeft | Qt::AlignVCenter,
                QFontMetrics(stateFont).elidedText(state, Qt::ElideRight, right - left));
-    p.drawPixmap(width() - 28, (height() - 16) / 2, GUIUtil::lineIcon("chevron", 16, t.sideText));
+    p.drawPixmap(width() - 28, (height() - 16) / 2, GUIUtil::lineIcon("chevron", 16, t.muted, 1.5));
 }
 
 SideProgress::SideProgress(QWidget* parent) : QWidget(parent), value(0)
@@ -220,13 +227,12 @@ void SideProgress::paintEvent(QPaintEvent*)
 {
     const GUIUtil::Theme& t = GUIUtil::theme();
     QPainter p(this);
-    p.setRenderHint(QPainter::Antialiasing, true);
     p.setPen(Qt::NoPen);
     p.setBrush(t.sideTrack);
-    p.drawRoundedRect(rect(), 2, 2);
+    p.drawRect(rect());
     if (value > 0) {
         p.setBrush(t.sideBar);
-        p.drawRoundedRect(QRectF(0, 0, qMax(4.0, width() * value), height()), 2, 2);
+        p.drawRect(QRectF(0, 0, qMax(4.0, width() * value), height()));
     }
 }
 
@@ -243,34 +249,34 @@ Sidebar::Sidebar(QWidget* parent) : QWidget(parent), walletCount(0)
     const GUIUtil::Theme& t = GUIUtil::theme();
     setObjectName("sidebar");
     setFixedWidth(240);
+    // a rail in the cell color: what is on it is on a panel (raised fields and buttons)
+    setProperty("cellSurface", true);
 
     QVBoxLayout* layout = new QVBoxLayout(this);
     layout->setContentsMargins(16, 24, 16, 20);
     layout->setSpacing(0);
 
-    // logo and word mark
+    // the mark and the name
     QHBoxLayout* brand = new QHBoxLayout();
     brand->setContentsMargins(8, 0, 8, 0);
     brand->setSpacing(10);
     QLabel* logo = new QLabel();
-    logo->setFixedSize(36, 36);
+    logo->setFixedSize(28, 32);
     {
         const qreal dpr = devicePixelRatioF();
-        QPixmap source(":/icons/plb_logo");
-        QPixmap rounded(QSize(36, 36) * dpr);
-        rounded.setDevicePixelRatio(dpr);
-        rounded.fill(Qt::transparent);
-        QPainter p(&rounded);
-        p.setRenderHints(QPainter::Antialiasing | QPainter::SmoothPixmapTransform, true);
-        QPainterPath clip;
-        clip.addRoundedRect(QRectF(0, 0, 36, 36), 8, 8);
-        p.setClipPath(clip);
-        p.drawPixmap(QRectF(0, 0, 36, 36), source, QRectF(source.rect()));
+        QPixmap mark(QSize(28, 32) * dpr);
+        mark.setDevicePixelRatio(dpr);
+        mark.fill(Qt::transparent);
+        QPainter p(&mark);
+        CellStyle::paintMark(&p, QRectF(0, 0, 28, 32));
         p.end();
-        logo->setPixmap(rounded);
+        logo->setPixmap(mark);
     }
     brand->addWidget(logo);
-    brand->addWidget(sideLabel("Paladeum", t.sideStrong, 17, QFont::DemiBold));
+    QLabel* name = new QLabel("Paladeum");
+    name->setFont(GUIUtil::displayFont(19, QFont::Medium));
+    name->setStyleSheet(QString("QLabel { color: %1; background: transparent; }").arg(t.sideStrong.name()));
+    brand->addWidget(name);
     brand->addStretch();
     layout->addLayout(brand);
     layout->addSpacing(20);
@@ -279,7 +285,7 @@ Sidebar::Sidebar(QWidget* parent) : QWidget(parent), walletCount(0)
     walletSwitcher = new WalletSwitcher(this);
     walletSwitcher->setToolTip(tr("The wallet shown. Click to switch to another wallet, or to create, open or close one."));
     layout->addWidget(walletSwitcher);
-    layout->addSpacing(16);
+    layout->addSpacing(12);
     connect(walletSwitcher, SIGNAL(clicked()), this, SIGNAL(walletClicked()));
 
     // the pages; the list scrolls when the window is too low for all of them
@@ -299,7 +305,7 @@ Sidebar::Sidebar(QWidget* parent) : QWidget(parent), walletCount(0)
     navScroll->setFrameShape(QFrame::NoFrame);
     navScroll->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     navScroll->setStyleSheet(QString("QScrollArea { background: transparent; } QScrollBar:vertical { width: 6px; margin: 0; }"
-                                     " QScrollBar::handle:vertical { background: %1; border-radius: 3px; }").arg(t.sideTrack.name()));
+                                     " QScrollBar::handle:vertical { background: %1; }").arg(t.borderStrong.name()));
     navScroll->viewport()->setAutoFillBackground(false);
     navScroll->setWidget(navBody);
     navScroll->setMinimumHeight(48);
@@ -310,18 +316,21 @@ Sidebar::Sidebar(QWidget* parent) : QWidget(parent), walletCount(0)
     stakingCard = new QWidget();
     stakingCard->setObjectName("sideCard");
     stakingCard->setAttribute(Qt::WA_StyledBackground, true);
-    stakingCard->setStyleSheet(QString("QWidget#sideCard { background: transparent; border-top: 1px solid %1; border-radius: 0; }").arg(t.sideCard.name()));
+    stakingCard->setStyleSheet(QString("QWidget#sideCard { background: transparent; border-top: 1px solid %1; }").arg(t.sideCard.name()));
     QVBoxLayout* stakingLayout = new QVBoxLayout(stakingCard);
     stakingLayout->setContentsMargins(8, 14, 8, 6);
     stakingLayout->setSpacing(8);
     QHBoxLayout* stakingRow = new QHBoxLayout();
-    stakingRow->addWidget(sideLabel(tr("Staking"), t.sideStrong, 14, QFont::DemiBold));
+    QLabel* stakingTitle = new QLabel(tr("Staking"));
+    stakingTitle->setFont(GUIUtil::displayFont(15, QFont::Medium));
+    stakingTitle->setStyleSheet(QString("QLabel { color: %1; background: transparent; }").arg(t.sideStrong.name()));
+    stakingRow->addWidget(stakingTitle);
     stakingRow->addStretch();
     stakingSwitch = new ToggleSwitch();
     stakingSwitch->setAccessibleName(tr("Staking"));
     stakingRow->addWidget(stakingSwitch);
     stakingLayout->addLayout(stakingRow);
-    stakingDetail = sideLabel(QString(), t.sideText, 12, QFont::Medium);
+    stakingDetail = sideLabel(QString(), t.sideText, 12, QFont::Normal);
     stakingDetail->setWordWrap(true);
     stakingLayout->addWidget(stakingDetail);
     layout->addWidget(stakingCard);
@@ -336,8 +345,8 @@ Sidebar::Sidebar(QWidget* parent) : QWidget(parent), walletCount(0)
     syncLayout->setContentsMargins(8, 0, 8, 0);
     syncLayout->setSpacing(8);
     QHBoxLayout* syncRow = new QHBoxLayout();
-    syncStatus = sideLabel(QString(), t.sideText, 12, QFont::Medium);
-    syncRemaining = sideLabel(QString(), t.sideText, 12, QFont::Medium);
+    syncStatus = sideLabel(QString(), t.sideText, 12, QFont::Normal);
+    syncRemaining = sideLabel(QString(), t.sideText, 12, QFont::Normal);
     syncRow->addWidget(syncStatus);
     syncRow->addStretch();
     syncRow->addWidget(syncRemaining);
@@ -347,19 +356,19 @@ Sidebar::Sidebar(QWidget* parent) : QWidget(parent), walletCount(0)
     layout->addWidget(syncBox);
     layout->addSpacing(8);
 
-    networkLabel = sideLabel(QString(), t.sideText, 12, QFont::Medium);
+    networkLabel = sideLabel(QString(), t.sideText, 12, QFont::Normal);
     networkLabel->setContentsMargins(8, 0, 8, 0);
     networkLabel->setCursor(Qt::PointingHandCursor);
     networkLabel->installEventFilter(this);
     layout->addWidget(networkLabel);
 
-    walletLabel = sideLabel(QString(), t.sideText, 12, QFont::Medium);
+    walletLabel = sideLabel(QString(), t.sideText, 12, QFont::Normal);
     walletLabel->setContentsMargins(8, 4, 8, 0);
     walletLabel->hide();
     layout->addWidget(walletLabel);
 
     // warnings of the node, such as the notice of a pre-release build: small, at the very bottom
-    noticeLabel = sideLabel(QString(), t.sideText, 11, QFont::Medium);
+    noticeLabel = sideLabel(QString(), t.muted, 11, QFont::Normal);
     noticeLabel->setContentsMargins(8, 6, 8, 0);
     noticeLabel->setWordWrap(true);
     noticeLabel->hide();
@@ -368,7 +377,7 @@ Sidebar::Sidebar(QWidget* parent) : QWidget(parent), walletCount(0)
     // which build this is: small, at the very bottom
     QLabel* versionLabel = new QLabel(QString::fromStdString(FormatFullVersion()));
     versionLabel->setFont(GUIUtil::monoFont(10));
-    versionLabel->setStyleSheet(QString("color: %1; background: transparent;").arg(t.sideText.darker(135).name()));
+    versionLabel->setStyleSheet(QString("color: %1; background: transparent;").arg(t.muted.name()));
     versionLabel->setContentsMargins(8, 8, 8, 0);
     versionLabel->setToolTip(tr("Version of this program"));
     versionLabel->setTextInteractionFlags(Qt::TextSelectableByMouse);
@@ -393,11 +402,15 @@ void Sidebar::addSeparator()
     navLayout->addWidget(box);
 }
 
-void Sidebar::setStaking(bool on, const QString& detail, const QString& toolTip)
+void Sidebar::setStaking(bool on, const QString& detail, const QString& toolTip, bool available)
 {
     stakingSwitch->setChecked(on);
+    // without an address that may stake the switch would do nothing: it cannot be used then
+    stakingSwitch->setEnabled(available || on);
+    stakingSwitch->setCursor(available || on ? Qt::PointingHandCursor : Qt::ArrowCursor);
     stakingDetail->setText(detail);
     stakingCard->setToolTip(toolTip);
+    stakingSwitch->setToolTip(toolTip);
 }
 
 void Sidebar::setStakingVisible(bool visible)
@@ -449,7 +462,7 @@ int Sidebar::walletMenuWidth() const
 void Sidebar::setNotice(const QString& text, const QString& toolTip, bool warning)
 {
     const GUIUtil::Theme& t = GUIUtil::theme();
-    noticeLabel->setStyleSheet(QString("QLabel { color: %1; background: transparent; }").arg((warning ? QColor("#FFD58A") : t.sideText).name()));
+    noticeLabel->setStyleSheet(QString("QLabel { color: %1; background: transparent; }").arg((warning ? t.error : t.muted).name()));
     // at most two short lines; the tool tip has the whole text
     const QFontMetrics fm(noticeLabel->font());
     const int width = 232 - 32 - 16;

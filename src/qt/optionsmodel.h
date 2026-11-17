@@ -51,6 +51,7 @@ public:
         CustomFeeFeatures,      // bool
         BootstrapUse,           // bool
         BootstrapUrls,          // QString: addresses of the block archives, one per line
+        DarkTheme,              // bool: the dark theme (one choice for all networks; after a restart)
         OptionIDRowCount,
     };
 
