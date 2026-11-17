@@ -26,6 +26,7 @@
 #include "script/standard.h"
 #include "txmempool.h"
 #include "uint256.h"
+#include "utilmoneystr.h"
 #include "utilstrencodings.h"
 #ifdef ENABLE_WALLET
 #include "wallet/rpcwallet.h"
@@ -362,25 +363,27 @@ UniValue createrawtransaction(const JSONRPCRequest& request)
             "it is not stored in the wallet or transmitted to the network.\n"
 
             "\nPaying for Token Operations:\n"
-            "  Some operations require an amount of PLB to be sent to a burn address:\n"
+            "  Issuing and reissuing tokens and tagging addresses pay a fee in PLB, in an output to\n"
+            "  the token fee address (" + GetBurnAddress(KnownTokenType::ROOT) + "). Governance sets the\n"
+            "  costs (getissuanceinfo); these are the costs now:\n"
             "\n"
-            "    Operation          Amount + Burn Address\n"
-            "    transfer                 0\n"
-            "    transferwithmessage      0\n"
-            "    issue                  " + i64tostr(GetBurnAmount(KnownTokenType::ROOT) / COIN) + " to " + GetBurnAddress(KnownTokenType::ROOT) + "\n"
-            "    issue (subtoken)       " + i64tostr(GetBurnAmount(KnownTokenType::SUB) / COIN) + " to " + GetBurnAddress(KnownTokenType::SUB) + "\n"
-            "    issue_unique             " + i64tostr(GetBurnAmount(KnownTokenType::UNIQUE) / COIN) + " to " + GetBurnAddress(KnownTokenType::UNIQUE) + "\n"
-            "    reissue                " + i64tostr(GetBurnAmount(KnownTokenType::REISSUE) / COIN) + " to " + GetBurnAddress(KnownTokenType::REISSUE) + "\n"
-            "    issue_restricted      " + i64tostr(GetBurnAmount(KnownTokenType::RESTRICTED) / COIN) + " to " + GetBurnAddress(KnownTokenType::RESTRICTED) + "\n"
-            "    reissue_restricted     " + i64tostr(GetBurnAmount(KnownTokenType::REISSUE) / COIN) + " to " + GetBurnAddress(KnownTokenType::REISSUE) + "\n"
-            "    issue_qualifier       " + i64tostr(GetBurnAmount(KnownTokenType::QUALIFIER) / COIN) + " to " + GetBurnAddress(KnownTokenType::QUALIFIER) + "\n"
-            "    issue_qualifier (sub)  " + i64tostr(GetBurnAmount(KnownTokenType::SUB_QUALIFIER) / COIN) + " to " + GetBurnAddress(KnownTokenType::SUB_QUALIFIER) + "\n"
-            "    tag_addresses          " + "0.1 to " + GetBurnAddress(KnownTokenType::NULL_ADD_QUALIFIER) + " (per address)\n"
-            "    untag_addresses        " + "0.1 to " + GetBurnAddress(KnownTokenType::NULL_ADD_QUALIFIER) + " (per address)\n"
-            "    freeze_addresses         0\n"
-            "    unfreeze_addresses       0\n"
-            "    freeze_token             0\n"
-            "    unfreeze_token           0\n"
+            "    Operation              Cost in PLB\n"
+            "    transfer               0\n"
+            "    transferwithmessage    0\n"
+            "    issue                  " + FormatMoney(GetBurnAmount(KnownTokenType::ROOT)) + "\n"
+            "    issue (subtoken)       " + FormatMoney(GetBurnAmount(KnownTokenType::SUB)) + "\n"
+            "    issue_unique           " + FormatMoney(GetBurnAmount(KnownTokenType::UNIQUE)) + " (per token)\n"
+            "    reissue                " + FormatMoney(GetBurnAmount(KnownTokenType::REISSUE)) + "\n"
+            "    issue_restricted       " + FormatMoney(GetBurnAmount(KnownTokenType::RESTRICTED)) + "\n"
+            "    reissue_restricted     " + FormatMoney(GetBurnAmount(KnownTokenType::REISSUE)) + "\n"
+            "    issue_qualifier        " + FormatMoney(GetBurnAmount(KnownTokenType::QUALIFIER)) + "\n"
+            "    issue_qualifier (sub)  " + FormatMoney(GetBurnAmount(KnownTokenType::SUB_QUALIFIER)) + "\n"
+            "    tag_addresses          " + FormatMoney(GetBurnAmount(KnownTokenType::NULL_ADD_QUALIFIER)) + " (per address)\n"
+            "    untag_addresses        " + FormatMoney(GetBurnAmount(KnownTokenType::NULL_ADD_QUALIFIER)) + " (per address)\n"
+            "    freeze_addresses       0\n"
+            "    unfreeze_addresses     0\n"
+            "    freeze_token           0\n"
+            "    unfreeze_token         0\n"
 
             "\nTokens For Authorization:\n"
             "  These operations require a specific token input for authorization:\n"
@@ -593,9 +596,9 @@ UniValue createrawtransaction(const JSONRPCRequest& request)
             "\nExamples:\n"
             + HelpExampleCli("createrawtransaction", "\"[{\\\"txid\\\":\\\"mycoin\\\",\\\"vout\\\":0}]\" \"{\\\"address\\\":0.01}\"")
             + HelpExampleCli("createrawtransaction", "\"[{\\\"txid\\\":\\\"mycoin\\\",\\\"vout\\\":0}]\" \"{\\\"data\\\":\\\"00010203\\\"}\"")
-            + HelpExampleCli("createrawtransaction", "\"[{\\\"txid\\\":\\\"mycoin\\\",\\\"vout\\\":0}]\" \"{\\\"RXissueTokenXXXXXXXXXXXXXXXXXhhZGt\\\":500,\\\"change_address\\\":change_amount,\\\"issuer_address\\\":{\\\"issue\\\":{\\\"token_name\\\":\\\"MYTOKEN\\\",\\\"token_quantity\\\":1000000,\\\"units\\\":1,\\\"reissuable\\\":0,\\\"has_ipfs\\\":1,\\\"ipfs_hash\\\":\\\"43f81c6f2c0593bde5a85e09ae662816eca80797\\\"}}}\"")
-            + HelpExampleCli("createrawtransaction", "\"[{\\\"txid\\\":\\\"mycoin\\\",\\\"vout\\\":0}]\" \"{\\\"RXissueRestrictedXXXXXXXXXXXXzJZ1q\\\":1500,\\\"change_address\\\":change_amount,\\\"issuer_address\\\":{\\\"issue_restricted\\\":{\\\"token_name\\\":\\\"$MYTOKEN\\\",\\\"token_quantity\\\":1000000,\\\"verifier_string\\\":\\\"#TAG & !KYC\\\",\\\"units\\\":1,\\\"reissuable\\\":0,\\\"has_ipfs\\\":1,\\\"ipfs_hash\\\":\\\"43f81c6f2c0593bde5a85e09ae662816eca80797\\\"}}}\"")
-            + HelpExampleCli("createrawtransaction", "\"[{\\\"txid\\\":\\\"mycoin\\\",\\\"vout\\\":0}]\" \"{\\\"RXissueUniqueTokenXXXXXXXXXXWEAe58\\\":20,\\\"change_address\\\":change_amount,\\\"issuer_address\\\":{\\\"issue_unique\\\":{\\\"root_name\\\":\\\"MYTOKEN\\\",\\\"token_tags\\\":[\\\"ALPHA\\\",\\\"BETA\\\"],\\\"ipfs_hashes\\\":[\\\"43f81c6f2c0593bde5a85e09ae662816eca80797\\\",\\\"43f81c6f2c0593bde5a85e09ae662816eca80797\\\"]}}}\"")
+            + HelpExampleCli("createrawtransaction", "\"[{\\\"txid\\\":\\\"mycoin\\\",\\\"vout\\\":0}]\" \"{\\\"" + GetBurnAddress(KnownTokenType::ROOT) + "\\\":" + FormatMoney(GetBurnAmount(KnownTokenType::ROOT)) + ",\\\"change_address\\\":change_amount,\\\"issuer_address\\\":{\\\"issue\\\":{\\\"token_name\\\":\\\"MYTOKEN\\\",\\\"token_quantity\\\":1000000,\\\"units\\\":1,\\\"reissuable\\\":0,\\\"has_ipfs\\\":1,\\\"ipfs_hash\\\":\\\"43f81c6f2c0593bde5a85e09ae662816eca80797\\\"}}}\"")
+            + HelpExampleCli("createrawtransaction", "\"[{\\\"txid\\\":\\\"mycoin\\\",\\\"vout\\\":0}]\" \"{\\\"" + GetBurnAddress(KnownTokenType::RESTRICTED) + "\\\":" + FormatMoney(GetBurnAmount(KnownTokenType::RESTRICTED)) + ",\\\"change_address\\\":change_amount,\\\"issuer_address\\\":{\\\"issue_restricted\\\":{\\\"token_name\\\":\\\"$MYTOKEN\\\",\\\"token_quantity\\\":1000000,\\\"verifier_string\\\":\\\"#TAG & !KYC\\\",\\\"units\\\":1,\\\"reissuable\\\":0,\\\"has_ipfs\\\":1,\\\"ipfs_hash\\\":\\\"43f81c6f2c0593bde5a85e09ae662816eca80797\\\"}}}\"")
+            + HelpExampleCli("createrawtransaction", "\"[{\\\"txid\\\":\\\"mycoin\\\",\\\"vout\\\":0}]\" \"{\\\"" + GetBurnAddress(KnownTokenType::UNIQUE) + "\\\":" + FormatMoney(2 * GetBurnAmount(KnownTokenType::UNIQUE)) + ",\\\"change_address\\\":change_amount,\\\"issuer_address\\\":{\\\"issue_unique\\\":{\\\"root_name\\\":\\\"MYTOKEN\\\",\\\"token_tags\\\":[\\\"ALPHA\\\",\\\"BETA\\\"],\\\"ipfs_hashes\\\":[\\\"43f81c6f2c0593bde5a85e09ae662816eca80797\\\",\\\"43f81c6f2c0593bde5a85e09ae662816eca80797\\\"]}}}\"")
             + HelpExampleCli("createrawtransaction", "\"[{\\\"txid\\\":\\\"mycoin\\\",\\\"vout\\\":0},{\\\"txid\\\":\\\"mytoken\\\",\\\"vout\\\":0}]\" \"{\\\"address\\\":{\\\"transfer\\\":{\\\"MYTOKEN\\\":50}}}\"")
             + HelpExampleCli("createrawtransaction", "\"[{\\\"txid\\\":\\\"mycoin\\\",\\\"vout\\\":0},{\\\"txid\\\":\\\"mytoken\\\",\\\"vout\\\":0}]\" \"{\\\"address\\\":{\\\"transferwithmessage\\\":{\\\"MYTOKEN\\\":50,\\\"message\\\":\\\"hash\\\",\\\"expire_time\\\": utc_time}}}\"")
             + HelpExampleCli("createrawtransaction", "\"[{\\\"txid\\\":\\\"mycoin\\\",\\\"vout\\\":0},{\\\"txid\\\":\\\"myownership\\\",\\\"vout\\\":0}]\" \"{\\\"issuer_address\\\":{\\\"reissue\\\":{\\\"token_name\\\":\\\"MYTOKEN\\\",\\\"token_quantity\\\":2000000}}}\"")
