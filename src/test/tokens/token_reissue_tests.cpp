@@ -34,18 +34,18 @@ BOOST_FIXTURE_TEST_SUITE(token_reissue_tests, BasicTestingSetup)
 
         // Add an token to a valid PLB address
         uint256 hash = uint256();
-        BOOST_CHECK_MESSAGE(cache.AddNewToken(token1, GetParams().GlobalBurnAddress(), 0, hash), "Failed to add new token");
+        BOOST_CHECK_MESSAGE(cache.AddNewToken(token1, GetParams().TokenFeeAddress(), 0, hash), "Failed to add new token");
 
         // Create a reissuance of the token
-        CReissueToken reissue1("PLBTOKEN", CAmount(1 * COIN), 8);
+        CReissueToken reissue1("PLBTOKEN", CAmount(1 * COIN), 8, 1, "");
         COutPoint out(uint256S("BF50CB9A63BE0019171456252989A459A7D0A5F494735278290079D22AB704A4"), 1);
 
         // Add an reissuance of the token to the cache
-        BOOST_CHECK_MESSAGE(cache.AddReissueToken(reissue1, GetParams().GlobalBurnAddress(), out), "Failed to add reissue");
+        BOOST_CHECK_MESSAGE(cache.AddReissueToken(reissue1, GetParams().TokenFeeAddress(), out), "Failed to add reissue");
 
         // Check to see if the reissue changed the cache data correctly
         BOOST_CHECK_MESSAGE(cache.mapReissuedTokenData.count("PLBTOKEN"), "Map Reissued Token should contain the token \"PLBTOKEN\"");
-        BOOST_CHECK_MESSAGE(cache.mapTokensAddressAmount.at(make_pair("PLBTOKEN", GetParams().GlobalBurnAddress())) == CAmount(101 * COIN), "Reissued amount wasn't added to the previous total");
+        BOOST_CHECK_MESSAGE(cache.mapTokensAddressAmount.at(std::make_pair("PLBTOKEN", GetParams().TokenFeeAddress())) == CAmount(101 * COIN), "Reissued amount wasn't added to the previous total");
 
         // Get the new token data from the cache
         CNewToken token2;
@@ -60,7 +60,7 @@ BOOST_FIXTURE_TEST_SUITE(token_reissue_tests, BasicTestingSetup)
         // Remove the reissue from the cache
         std::vector<std::pair<std::string, CBlockTokenUndo> > undoBlockData;
         undoBlockData.emplace_back(std::make_pair("PLBTOKEN", CBlockTokenUndo{true, false, "", 0}));
-        BOOST_CHECK_MESSAGE(cache.RemoveReissueToken(reissue1, GetParams().GlobalBurnAddress(), out, undoBlockData), "Failed to remove reissue");
+        BOOST_CHECK_MESSAGE(cache.RemoveReissueToken(reissue1, GetParams().TokenFeeAddress(), out, undoBlockData), "Failed to remove reissue");
 
         // Get the token data from the cache now that the reissuance was removed
         CNewToken token3;
@@ -74,7 +74,7 @@ BOOST_FIXTURE_TEST_SUITE(token_reissue_tests, BasicTestingSetup)
 
         // Check to see if the reissue removal updated the cache correctly
         BOOST_CHECK_MESSAGE(cache.mapReissuedTokenData.count("PLBTOKEN"), "Map of reissued data was removed, even though changes were made and not databased yet");
-        BOOST_CHECK_MESSAGE(cache.mapTokensAddressAmount.at(make_pair("PLBTOKEN", GetParams().GlobalBurnAddress())) == CAmount(100 * COIN), "Tokens total wasn't undone when reissuance was");
+        BOOST_CHECK_MESSAGE(cache.mapTokensAddressAmount.at(std::make_pair("PLBTOKEN", GetParams().TokenFeeAddress())) == CAmount(100 * COIN), "Tokens total wasn't undone when reissuance was");
     }
 
 
@@ -90,26 +90,26 @@ BOOST_FIXTURE_TEST_SUITE(token_reissue_tests, BasicTestingSetup)
         CNewToken token1("PLBTOKEN", CAmount(100 * COIN), 8, 1, 0, "");
 
         // Add an token to a valid PLB address
-        BOOST_CHECK_MESSAGE(cache.AddNewToken(token1, GetParams().GlobalBurnAddress(), 0, uint256()), "Failed to add new token");
+        BOOST_CHECK_MESSAGE(cache.AddNewToken(token1, GetParams().TokenFeeAddress(), 0, uint256()), "Failed to add new token");
 
         // Create a reissuance of the token that is valid
-        CReissueToken reissue1("PLBTOKEN", CAmount(1 * COIN), 8);
+        CReissueToken reissue1("PLBTOKEN", CAmount(1 * COIN), 8, 1, "");
 
         std::string error;
         BOOST_CHECK_MESSAGE(reissue1.IsValid(error, cache), "Reissue should of been valid");
 
         // Create a reissuance of the token that is not valid
-        CReissueToken reissue2("NOTEXIST", CAmount(1 * COIN), 8);
+        CReissueToken reissue2("NOTEXIST", CAmount(1 * COIN), 8, 1, "");
 
         BOOST_CHECK_MESSAGE(!reissue2.IsValid(error, cache), "Reissue shouldn't of been valid");
 
         // Create a reissuance of the token that is not valid (unit is smaller than current token)
-        CReissueToken reissue3("PLBTOKEN", CAmount(1 * COIN), 7);
+        CReissueToken reissue3("PLBTOKEN", CAmount(1 * COIN), 7, 1, "");
 
         BOOST_CHECK_MESSAGE(!reissue3.IsValid(error, cache), "Reissue shouldn't of been valid because of units");
 
         // Create a reissuance of the token that is not valid (unit is not changed)
-        CReissueToken reissue4("PLBTOKEN", CAmount(1 * COIN), -1);
+        CReissueToken reissue4("PLBTOKEN", CAmount(1 * COIN), -1, 1, "");
 
         BOOST_CHECK_MESSAGE(reissue4.IsValid(error, cache), "Reissue4 wasn't valid");
 
@@ -117,15 +117,15 @@ BOOST_FIXTURE_TEST_SUITE(token_reissue_tests, BasicTestingSetup)
         CNewToken token2("PLBTOKEN2", CAmount(100 * COIN), 0, 1, 0, "");
 
         // Add new token to a valid PLB address
-        BOOST_CHECK_MESSAGE(cache.AddNewToken(token2, GetParams().GlobalBurnAddress(), 0, uint256()), "Failed to add new token");
+        BOOST_CHECK_MESSAGE(cache.AddNewToken(token2, GetParams().TokenFeeAddress(), 0, uint256()), "Failed to add new token");
 
         // Create a reissuance of the token that is valid unit go from 0 -> 1
-        CReissueToken reissue5("PLBTOKEN2", CAmount(1 * COIN), 1);
+        CReissueToken reissue5("PLBTOKEN2", CAmount(1 * COIN), 1, 1, "");
 
         BOOST_CHECK_MESSAGE(reissue5.IsValid(error, cache), "Reissue5 wasn't valid");
 
         // Create a reissuance of the token that is valid unit go from 1 -> 1
-        CReissueToken reissue6("PLBTOKEN2", CAmount(1 * COIN), 1);
+        CReissueToken reissue6("PLBTOKEN2", CAmount(1 * COIN), 1, 1, "");
 
         BOOST_CHECK_MESSAGE(reissue6.IsValid(error, cache), "Reissue6 wasn't valid");
     }

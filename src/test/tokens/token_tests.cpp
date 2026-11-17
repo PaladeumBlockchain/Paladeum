@@ -54,10 +54,12 @@ BOOST_FIXTURE_TEST_SUITE(token_tests, BasicTestingSetup)
         BOOST_CHECK(!IsTokenNameValid("A._BC", type));
         BOOST_CHECK(!IsTokenNameValid("AB_.C", type));
 
-        //- Versions of PLBCOIN NOT allowed
+        //- Protected names NOT allowed (see PROTECTED_NAMES in tokens/tokens.cpp)
         BOOST_CHECK(!IsTokenNameValid("PLB", type));
         BOOST_CHECK(!IsTokenNameValid("PLB", type));
         BOOST_CHECK(!IsTokenNameValid("PLBCOIN", type));
+        BOOST_CHECK(!IsTokenNameValid("ALPHACOIN", type));
+        BOOST_CHECK(!IsTokenNameValid("ALPHACHAIN", type));
 
         //- Versions of PLBCOIN ALLOWED
         BOOST_CHECK(IsTokenNameValid("PLB.COIN", type));
@@ -152,7 +154,7 @@ BOOST_FIXTURE_TEST_SUITE(token_tests, BasicTestingSetup)
 
         // Create the token scriptPubKey
         CTokenTransfer token("PLB", 1000, 0);
-        CScript scriptPubKey = GetScriptForDestination(DecodeDestination(GetParams().GlobalBurnAddress()));
+        CScript scriptPubKey = GetScriptForDestination(DecodeDestination(GetParams().TokenFeeAddress()));
         token.ConstructTransaction(scriptPubKey);
 
         CTxOut txOut;
@@ -172,7 +174,7 @@ BOOST_FIXTURE_TEST_SUITE(token_tests, BasicTestingSetup)
 
         // Create the token scriptPubKey
         CNewToken token("PLB", 1000, 8, 1, 0, "");
-        CScript scriptPubKey = GetScriptForDestination(DecodeDestination(GetParams().GlobalBurnAddress()));
+        CScript scriptPubKey = GetScriptForDestination(DecodeDestination(GetParams().TokenFeeAddress()));
         token.ConstructTransaction(scriptPubKey);
 
         CTxOut txOut;

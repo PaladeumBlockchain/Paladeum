@@ -6,6 +6,9 @@
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
 #include "base58.h"
+#include "bip39.h"
+#include "key.h"
+#include "support/cleanse.h"
 #include "chain.h"
 #include "clientversion.h"
 #include "core_io.h"
@@ -375,6 +378,209 @@ UniValue verifymessage(const JSONRPCRequest& request)
     return (pubkey.GetID() == *keyID);
 }
 
+/** Turn the mnemonic and passphrase parameters into a BIP32 master key. */
+static CExtKey MnemonicMasterKey(const UniValue& mnemonicParam, const UniValue& passphraseParam, const UniValue& validateParam, std::string& language)
+{
+    std::string mnemonic;
+    if (!bip39::Normalize(mnemonicParam.get_str(), true, mnemonic))
+        throw JSONRPCError(RPC_INVALID_PARAMETER, "The mnemonic contains characters that cannot be normalized here (only ASCII and Hangul are supported)");
+    std::string passphrase;
+    if (!passphraseParam.isNull() && !bip39::Normalize(passphraseParam.get_str(), false, passphrase))
+        throw JSONRPCError(RPC_INVALID_PARAMETER, "The passphrase contains characters that cannot be normalized here (only ASCII and Hangul are supported)");
+
+    language = "";
+    if (validateParam.isNull() || validateParam.get_bool()) {
+        std::string error;
+        if (!bip39::CheckMnemonic(mnemonic, language, error))
+            throw JSONRPCError(RPC_INVALID_PARAMETER, "Invalid mnemonic: " + error + ". Pass validate=false to skip this check for a word list other than English or Korean.");
+    }
+
+    std::vector<unsigned char> seed = bip39::MnemonicToSeed(mnemonic, passphrase);
+    CExtKey master;
+    master.SetSeed(seed.data(), seed.size());
+    memory_cleanse(seed.data(), seed.size());
+    memory_cleanse(&mnemonic[0], mnemonic.size());
+    if (!passphrase.empty())
+        memory_cleanse(&passphrase[0], passphrase.size());
+    return master;
+}
+
+static bool DerivePath(const CExtKey& master, const std::vector<uint32_t>& path, CExtKey& out)
+{
+    out = master;
+    for (uint32_t n : path) {
+        CExtKey child;
+        if (!out.Derive(child, n))
+            return false;
+        out = child;
+    }
+    return true;
+}
+
+UniValue mnemonictokeys(const JSONRPCRequest& request)
+{
+    if (request.fHelp || request.params.size() < 1 || request.params.size() > 6)
+        throw std::runtime_error(
+            "mnemonictokeys \"mnemonic\" ( \"path\" count \"passphrase\" start validate )\n"
+            "\nDerive private keys and addresses from a BIP39 mnemonic (recovery words) of another wallet.\n"
+            "Nothing is stored and the wallet is not touched; import a key with importprivkey if wanted.\n"
+            "The path depends on the wallet that created the mnemonic. If it is not known, use\n"
+            "mnemonicfindaddress with an address of that wallet.\n"
+            "WARNING: anyone who sees the mnemonic or the keys can spend the coins. Use this on an\n"
+            "offline machine if possible.\n"
+            "\nArguments:\n"
+            "1. \"mnemonic\"    (string, required) The 12 to 24 words, separated by spaces\n"
+            "2. \"path\"        (string, optional, default=m/44'/0'/0'/0) BIP32 path of the parent of the keys; ' or h marks a hardened level\n"
+            "3. count         (numeric, optional, default=5) Number of keys to derive below the path (1-1000)\n"
+            "4. \"passphrase\"  (string, optional, default=\"\") The optional BIP39 passphrase (\"25th word\")\n"
+            "5. start         (numeric, optional, default=0) Index of the first key\n"
+            "6. validate      (boolean, optional, default=true) Check the words and the checksum (English and Korean word lists)\n"
+            "\nResult:\n"
+            "{\n"
+            "  \"language\": \"xxx\",      (string) word list the mnemonic was validated against, empty if not validated\n"
+            "  \"keys\": [\n"
+            "    {\n"
+            "      \"path\": \"xxx\",      (string) path of the key\n"
+            "      \"address\": \"xxx\",   (string) its address\n"
+            "      \"pubkey\": \"hex\",    (string) its public key\n"
+            "      \"privkey\": \"xxx\"    (string) its private key, as used by importprivkey\n"
+            "    }, ...\n"
+            "  ]\n"
+            "}\n"
+            "\nExamples:\n"
+            + HelpExampleCli("mnemonictokeys", "\"word1 word2 ... word12\"")
+            + HelpExampleCli("mnemonictokeys", "\"word1 word2 ... word12\" \"m/44'/0'/0'/0\" 20")
+        );
+
+    std::vector<uint32_t> path;
+    if (!bip39::ParsePath(request.params[1].isNull() ? "m/44'/0'/0'/0" : request.params[1].get_str(), path))
+        throw JSONRPCError(RPC_INVALID_PARAMETER, "Invalid path, expected something like m/44'/0'/0'/0");
+    const int64_t nCount = request.params[2].isNull() ? 5 : request.params[2].get_int64();
+    if (nCount < 1 || nCount > 1000)
+        throw JSONRPCError(RPC_INVALID_PARAMETER, "count must be between 1 and 1000");
+    const int64_t nStart = request.params[4].isNull() ? 0 : request.params[4].get_int64();
+    if (nStart < 0 || nStart + nCount > 0x80000000LL)
+        throw JSONRPCError(RPC_INVALID_PARAMETER, "start is out of range");
+
+    std::string language;
+    const CExtKey master = MnemonicMasterKey(request.params[0], request.params[3], request.params[5], language);
+    CExtKey parent;
+    if (!DerivePath(master, path, parent))
+        throw JSONRPCError(RPC_INTERNAL_ERROR, "Key derivation failed");
+
+    UniValue keys(UniValue::VARR);
+    path.push_back(0);
+    for (int64_t i = nStart; i < nStart + nCount; i++) {
+        CExtKey child;
+        if (!parent.Derive(child, (uint32_t)i))
+            continue; // astronomically unlikely; BIP32 says to skip the index
+        path.back() = (uint32_t)i;
+        const CPubKey pubkey = child.key.GetPubKey();
+        UniValue entry(UniValue::VOBJ);
+        entry.pushKV("path", bip39::FormatPath(path));
+        entry.pushKV("address", EncodeDestination(pubkey.GetID()));
+        entry.pushKV("pubkey", HexStr(pubkey.begin(), pubkey.end()));
+        entry.pushKV("privkey", CPaladeumSecret(child.key).ToString());
+        keys.push_back(entry);
+    }
+
+    UniValue result(UniValue::VOBJ);
+    result.pushKV("language", language);
+    result.pushKV("keys", keys);
+    return result;
+}
+
+UniValue mnemonicfindaddress(const JSONRPCRequest& request)
+{
+    if (request.fHelp || request.params.size() < 2 || request.params.size() > 4)
+        throw std::runtime_error(
+            "mnemonicfindaddress \"mnemonic\" \"address\" ( \"passphrase\" validate )\n"
+            "\nFind the key of an address among the keys a BIP39 mnemonic (recovery words) can produce.\n"
+            "Use this when the derivation path of the wallet that created the mnemonic is not known.\n"
+            "It tries the usual layouts: BIP44 (m/44'/coin'/account'/change/index) for coin types 0 to 2047,\n"
+            "accounts 0 and 1 and indexes 0 to 19, BIP49/84 style paths for the common coin types, and\n"
+            "simple layouts such as m/0'/0'/index' and m/0/index. This takes up to a minute.\n"
+            "Nothing is stored and the wallet is not touched.\n"
+            "WARNING: anyone who sees the mnemonic or the key can spend the coins.\n"
+            "\nArguments:\n"
+            "1. \"mnemonic\"    (string, required) The 12 to 24 words, separated by spaces\n"
+            "2. \"address\"     (string, required) An address of the wallet that created the mnemonic\n"
+            "3. \"passphrase\"  (string, optional, default=\"\") The optional BIP39 passphrase (\"25th word\")\n"
+            "4. validate      (boolean, optional, default=true) Check the words and the checksum (English and Korean word lists)\n"
+            "\nResult:\n"
+            "{\n"
+            "  \"found\": true|false,  (boolean) whether the address was found\n"
+            "  \"searched\": n,        (numeric) number of keys tried\n"
+            "  \"path\": \"xxx\",        (string) path of the key, if found; use its parent with mnemonictokeys for the other keys\n"
+            "  \"address\": \"xxx\",     (string) the address\n"
+            "  \"compressed\": true|false, (boolean) whether the address is of the compressed public key\n"
+            "  \"privkey\": \"xxx\"      (string) its private key, as used by importprivkey\n"
+            "}\n"
+            "\nExamples:\n"
+            + HelpExampleCli("mnemonicfindaddress", "\"word1 word2 ... word12\" \"address\"")
+        );
+
+    const CTxDestination dest = DecodeDestination(request.params[1].get_str());
+    const CKeyID* target = boost::get<CKeyID>(&dest);
+    if (!target)
+        throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, "The address must be a pay-to-pubkey-hash address of this network");
+
+    std::string language;
+    const CExtKey master = MnemonicMasterKey(request.params[0], request.params[2], request.params[3], language);
+
+    const uint32_t H = 0x80000000;
+    uint64_t nSearched = 0;
+    std::vector<uint32_t> foundPath;
+    CKey foundKey;
+
+    // Try the nCount children of a path, from index 0; fHardened for hardened children
+    auto tryChildren = [&](const std::vector<uint32_t>& path, uint32_t nCount, bool fHardened) -> bool {
+        CExtKey parent;
+        if (!DerivePath(master, path, parent))
+            return false;
+        for (uint32_t i = 0; i < nCount; i++) {
+            CExtKey child;
+            if (!parent.Derive(child, fHardened ? (i | H) : i))
+                continue;
+            nSearched++;
+            CPubKey pubkey = child.key.GetPubKey();
+            bool fMatch = pubkey.GetID() == *target;
+            bool fCompressed = true;
+            if (!fMatch && pubkey.Decompress()) {
+                fMatch = pubkey.GetID() == *target;
+                fCompressed = false;
+            }
+            if (fMatch) {
+                foundPath = path;
+                foundPath.push_back(fHardened ? (i | H) : i);
+                foundKey.Set(child.key.begin(), child.key.end(), fCompressed);
+                return true;
+            }
+        }
+        return false;
+    };
+
+    auto search = [&]() -> bool {
+        for (const bip39::PathLayout& layout : bip39::CandidateLayouts(true)) {
+            if (tryChildren(layout.parent, layout.nCount, layout.fHardened))
+                return true;
+        }
+        return false;
+    };
+
+    const bool fFound = search();
+    UniValue result(UniValue::VOBJ);
+    result.pushKV("found", UniValue(fFound));
+    result.pushKV("searched", nSearched);
+    if (fFound) {
+        result.pushKV("path", bip39::FormatPath(foundPath));
+        result.pushKV("address", EncodeDestination(foundKey.GetPubKey().GetID()));
+        result.pushKV("compressed", UniValue(foundKey.IsCompressed()));
+        result.pushKV("privkey", CPaladeumSecret(foundKey).ToString());
+    }
+    return result;
+}
+
 UniValue signmessagewithprivkey(const JSONRPCRequest& request)
 {
     if (request.fHelp || request.params.size() != 2)
@@ -615,31 +821,74 @@ bool getAddressFromIndex(const int &type, const uint160 &hash, std::string &addr
     return true;
 }
 
+/** One address of an address index call: an address, or a username (the address it names). */
+static void addIndexAddress(std::string address, std::vector<std::pair<uint160, int> > &addresses)
+{
+    if (IsUsernameValid(address)) {
+        address = ptokensdb->UsernameAddress(address);
+        if (address == "") {
+            throw JSONRPCError(RPC_INVALID_PARAMETER, "You specified invalid username.");
+        }
+    }
+
+    CPaladeumAddress dest(address);
+    uint160 hashBytes;
+    int type = 0;
+    if (!dest.GetIndexKey(hashBytes, type)) {
+        throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, "Invalid address");
+    }
+
+    // an address given twice would count twice
+    const std::pair<uint160, int> entry = std::make_pair(hashBytes, type);
+    if (std::find(addresses.begin(), addresses.end(), entry) == addresses.end())
+        addresses.push_back(entry);
+}
+
+/**
+ * The addresses of an address index call: one address (or username) as a string, or
+ * {"addresses": ["address", ...], ...} as the help of these calls describes it.
+ */
 static bool getAddressesFromParams(const UniValue& params, std::vector<std::pair<uint160, int> > &addresses)
 {
     if (params[0].isStr()) {
-        std::string address = params[0].get_str();
-
-        if (IsUsernameValid(address)) {
-            address = ptokensdb->UsernameAddress(address);
-            if (address == "") {
-                throw JSONRPCError(RPC_INVALID_PARAMETER, "You specified invalid username.");
+        addIndexAddress(params[0].get_str(), addresses);
+    } else if (params[0].isObject()) {
+        const UniValue list = find_value(params[0].get_obj(), "addresses");
+        if (!list.isArray() || list.empty()) {
+            throw JSONRPCError(RPC_INVALID_PARAMETER, "\"addresses\" is expected to be an array of at least one address");
+        }
+        for (size_t i = 0; i < list.size(); ++i) {
+            if (!list[i].isStr()) {
+                throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, "Invalid address");
             }
+            addIndexAddress(list[i].get_str(), addresses);
         }
-
-        CPaladeumAddress dest(address);
-        uint160 hashBytes;
-        int type = 0;
-        if (!dest.GetIndexKey(hashBytes, type)) {
-            throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, "Invalid address");
-        }
-
-        addresses.push_back(std::make_pair(hashBytes, type));
     } else {
         throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, "Invalid address");
     }
 
     return true;
+}
+
+/** Start and end height of an address index call ({"start": n, "end": n}); 0 and 0 when not given. */
+static void getHeightRangeFromParams(const UniValue& params, int& start, int& end)
+{
+    start = 0;
+    end = 0;
+    if (!params[0].isObject())
+        return;
+    const UniValue startValue = find_value(params[0].get_obj(), "start");
+    const UniValue endValue = find_value(params[0].get_obj(), "end");
+    if (startValue.isNum() && endValue.isNum()) {
+        start = startValue.get_int();
+        end = endValue.get_int();
+        if (start <= 0 || end <= 0) {
+            throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, "Start and end is expected to be greater than zero");
+        }
+        if (end < start) {
+            throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, "End value is expected to be greater than start");
+        }
+    }
 }
 
 bool heightSort(std::pair<CAddressUnspentKey, CAddressUnspentValue> a,
@@ -659,6 +908,7 @@ UniValue getaddressmempool(const JSONRPCRequest& request)
             "getaddressmempool\n"
             "\nReturns all mempool deltas for an address (requires addressindex to be enabled).\n"
             "\nArguments:\n"
+            "\"address\"  (string) An address or a username, or the object:\n"
             "{\n"
             "  \"addresses\"\n"
             "    [\n"
@@ -743,54 +993,133 @@ UniValue getaddressmempool(const JSONRPCRequest& request)
     return result;
 }
 
+/** The order of the outputs of getaddressutxos and of its pages: block height, transaction id, output index. */
+static bool unspentOrder(const std::pair<CAddressUnspentKey, CAddressUnspentValue>& a,
+                         const std::pair<CAddressUnspentKey, CAddressUnspentValue>& b)
+{
+    if (a.second.blockHeight != b.second.blockHeight)
+        return a.second.blockHeight < b.second.blockHeight;
+    if (a.first.txhash != b.first.txhash)
+        return a.first.txhash < b.first.txhash;
+    return a.first.index < b.first.index;
+}
+
+/** The place of an output in that order, as the "next" of a page: "height:txid:index" */
+static std::string unspentCursor(const std::pair<CAddressUnspentKey, CAddressUnspentValue>& entry)
+{
+    return strprintf("%d:%s:%u", entry.second.blockHeight, entry.first.txhash.GetHex(), (unsigned int)entry.first.index);
+}
+
 UniValue getaddressutxos(const JSONRPCRequest& request)
 {
     if (request.fHelp || request.params.size() < 1 || request.params.size() > 3)
         throw std::runtime_error(
-            "getaddressutxos\n"
-            "\nReturns all unspent outputs for an address (requires addressindex to be enabled).\n"
+            "getaddressutxos \"address\" ( amount \"tokenName\" )\n"
+            "getaddressutxos {\"addresses\": [\"address\",...], ...}\n"
+            "\nReturns the unspent outputs of addresses that are not time locked any more (requires addressindex to be enabled),\n"
+            "in the order of their block height, then of their transaction id and output index.\n"
             "\nArguments:\n"
+            "1. \"address\"        (string) An address or a username\n"
+            "   or an object:\n"
             "{\n"
-            "  \"addresses\"\n"
-            "    [\n"
-            "      \"address\"  (string) The base58check encoded address\n"
-            "      ,...\n"
-            "    ],\n"
-            "  \"chainInfo\",  (boolean, optional, default false) Include chain info with results\n"
-            "  \"tokenName\"   (string, optional) Get UTXOs for a particular token instead of PLB ('*' for all tokens).\n"
+            "  \"addresses\": [\"address\",...]  (array) The addresses (or usernames)\n"
+            "  \"tokenName\": \"name\"   (string, optional) Outputs of this token instead of PLB ('*' for all tokens)\n"
+            "  \"amount\": n           (numeric, optional) Stop once the listed outputs add up to this amount\n"
+            "  \"chainInfo\": true|false  (boolean, optional, default false) Return an object with the hash and height of the tip as well\n"
+            "  \"limit\": n            (numeric, optional) At most n outputs: the result is an object, its \"next\" leads to the next page\n"
+            "  \"after\": \"next\"       (string, optional) Continue after this output: the \"next\" of the previous page\n"
+            "                         (\"height:txid:index\"), or \"txid:index\" of an output that is still unspent\n"
             "}\n"
+            "2. amount           (numeric, optional) As \"amount\" above, after an address\n"
+            "3. \"tokenName\"      (string, optional) As \"tokenName\" above, after an address\n"
             "\nResult\n"
             "[\n"
             "  {\n"
             "    \"address\"  (string) The address base58check encoded\n"
-            "    \"tokenName\" (string) The token associated with the UTXOs (PLB for Paladeum)\n"
+            "    \"token_name\" (string) The token associated with the UTXOs (PLB for Paladeum)\n"
             "    \"txid\"  (string) The output txid\n"
-            "    \"height\"  (number) The block height\n"
             "    \"outputIndex\"  (number) The output index\n"
-            "    \"script\"  (strin) The script hex encoded\n"
+            "    \"script\"  (string) The script hex encoded\n"
+            "    \"asm\"  (string) The script\n"
             "    \"satoshis\"  (number) The number of satoshis of the output\n"
+            "    \"height\"  (number) The block height\n"
+            "    \"timelock\"  (number) The lock time of the output (0 when it was not locked)\n"
             "  }\n"
             "]\n"
+            "With \"limit\" or \"chainInfo\":\n"
+            "{\n"
+            "  \"utxos\": [...]     (array) The outputs as above\n"
+            "  \"next\": \"next\"      (string or null) With \"limit\": where the next page starts, null on the last page\n"
+            "  \"hash\": \"hash\"      (string) With \"chainInfo\": the hash of the tip\n"
+            "  \"height\": n        (number) With \"chainInfo\": the height of the tip\n"
+            "}\n"
             "\nExamples:\n"
+            + HelpExampleCli("getaddressutxos", "\"12c6DSiU4Rq3P4ZxziKxzrL5LmMBrzjrJX\"")
             + HelpExampleCli("getaddressutxos", "'{\"addresses\": [\"12c6DSiU4Rq3P4ZxziKxzrL5LmMBrzjrJX\"]}'")
-            + HelpExampleRpc("getaddressutxos", "{\"addresses\": [\"12c6DSiU4Rq3P4ZxziKxzrL5LmMBrzjrJX\"]}")
-            + HelpExampleCli("getaddressutxos", "'{\"addresses\": [\"12c6DSiU4Rq3P4ZxziKxzrL5LmMBrzjrJX\"],\"tokenName\":\"MY_TOKEN\"}'")
+            + HelpExampleCli("getaddressutxos", "'{\"addresses\": [\"12c6DSiU4Rq3P4ZxziKxzrL5LmMBrzjrJX\"], \"limit\": 1000}'")
+            + HelpExampleRpc("getaddressutxos", "{\"addresses\": [\"12c6DSiU4Rq3P4ZxziKxzrL5LmMBrzjrJX\"], \"limit\": 1000, \"after\": \"<next of the last page>\"}")
             + HelpExampleRpc("getaddressutxos", "{\"addresses\": [\"12c6DSiU4Rq3P4ZxziKxzrL5LmMBrzjrJX\"],\"tokenName\":\"MY_TOKEN\"}")
             );
 
+    const UniValue options = request.params[0].isObject() ? request.params[0].get_obj() : UniValue(UniValue::VOBJ);
+
     CAmount requiredAmount = 0;
-    if (!request.params[1].isNull()) {
+    const UniValue amountOption = find_value(options, "amount");
+    if (!amountOption.isNull()) {
+        requiredAmount = AmountFromValue(amountOption);
+    } else if (!request.params[1].isNull()) {
         requiredAmount = AmountFromValue(request.params[1]);
     }
 
     std::string tokenName = PLB;
-    if (!request.params[2].isNull()) {
-        if (request.params[2].isStr()) {
-            if (!AreTokensDeployed()) {
-                throw JSONRPCError(RPC_INVALID_PARAMETER, "Tokens aren't active.  tokenName can't be specified.");
-            }
-            tokenName = request.params[2].get_str();
+    const UniValue tokenOption = find_value(options, "tokenName");
+    const UniValue& tokenValue = tokenOption.isNull() ? request.params[2] : tokenOption;
+    if (tokenValue.isStr()) {
+        if (!AreTokensDeployed()) {
+            throw JSONRPCError(RPC_INVALID_PARAMETER, "Tokens aren't active.  tokenName can't be specified.");
         }
+        tokenName = tokenValue.get_str();
+    }
+
+    const UniValue chainInfoOption = find_value(options, "chainInfo");
+    const bool includeChainInfo = chainInfoOption.isBool() && chainInfoOption.get_bool();
+
+    // pages: at most "limit" outputs, after the output of "after"
+    int64_t limit = 0;
+    const UniValue limitOption = find_value(options, "limit");
+    if (!limitOption.isNull()) {
+        if (!limitOption.isNum() || limitOption.get_int64() <= 0) {
+            throw JSONRPCError(RPC_INVALID_PARAMETER, "\"limit\" is expected to be a number greater than zero");
+        }
+        limit = limitOption.get_int64();
+    }
+    bool hasAfter = false, afterHasHeight = false;
+    int afterHeight = 0;
+    uint256 afterTxid;
+    unsigned int afterIndex = 0;
+    const UniValue afterOption = find_value(options, "after");
+    if (!afterOption.isNull()) {
+        if (!afterOption.isStr()) {
+            throw JSONRPCError(RPC_INVALID_PARAMETER, "\"after\" is expected to be the \"next\" of the previous page");
+        }
+        std::vector<std::string> parts(1);
+        for (const char c : afterOption.get_str()) {
+            if (c == ':')
+                parts.emplace_back();
+            else
+                parts.back() += c;
+        }
+        int32_t height = 0, index = 0;
+        const bool ok = (parts.size() == 3 && ParseInt32(parts[0], &height) && height >= 0 && IsHex(parts[1]) && parts[1].size() == 64 && ParseInt32(parts[2], &index) && index >= 0)
+                     || (parts.size() == 2 && IsHex(parts[0]) && parts[0].size() == 64 && ParseInt32(parts[1], &index) && index >= 0);
+        if (!ok) {
+            throw JSONRPCError(RPC_INVALID_PARAMETER, "\"after\" is expected to be \"height:txid:index\" (the \"next\" of the previous page) or \"txid:index\"");
+        }
+        hasAfter = true;
+        afterHasHeight = parts.size() == 3;
+        afterHeight = height;
+        afterTxid = uint256S(parts[afterHasHeight ? 1 : 0]);
+        afterIndex = (unsigned int)index;
     }
 
     std::vector<std::pair<uint160, int> > addresses;
@@ -813,15 +1142,51 @@ UniValue getaddressutxos(const JSONRPCRequest& request)
         }
     }
 
-    std::sort(unspentOutputs.begin(), unspentOutputs.end(), heightSort);
+    std::sort(unspentOutputs.begin(), unspentOutputs.end(), unspentOrder);
+
+    int nHeight;
+    int64_t nMedianTime;
+    uint256 tipHash;
+    {
+        LOCK(cs_main);
+        nHeight = chainActive.Height();
+        nMedianTime = chainActive.Tip()->GetMedianTimePast();
+        tipHash = chainActive.Tip()->GetIndexHash();
+    }
+
+    // where the page starts
+    std::vector<std::pair<CAddressUnspentKey, CAddressUnspentValue> >::const_iterator first = unspentOutputs.begin();
+    if (hasAfter) {
+        if (afterHasHeight) {
+            // the first output after that place, also when the output itself was spent since
+            while (first != unspentOutputs.end()) {
+                const int height = first->second.blockHeight;
+                if (height > afterHeight || (height == afterHeight && (afterTxid < first->first.txhash
+                        || (first->first.txhash == afterTxid && first->first.index > afterIndex))))
+                    break;
+                ++first;
+            }
+        } else {
+            while (first != unspentOutputs.end() && !(first->first.txhash == afterTxid && first->first.index == afterIndex))
+                ++first;
+            if (first == unspentOutputs.end()) {
+                throw JSONRPCError(RPC_INVALID_PARAMETER, "The output of \"after\" is not unspent any more: give the \"next\" of the previous page");
+            }
+            ++first;
+        }
+    }
 
     UniValue utxos(UniValue::VARR);
     CAmount total = 0;
+    std::string next;
 
-    int nHeight = chainActive.Height();
-
-    for (std::vector<std::pair<CAddressUnspentKey, CAddressUnspentValue> >::const_iterator it=unspentOutputs.begin(); it!=unspentOutputs.end(); it++) {
+    for (std::vector<std::pair<CAddressUnspentKey, CAddressUnspentValue> >::const_iterator it = first; it != unspentOutputs.end(); it++) {
         if (requiredAmount > 0 && total >= requiredAmount) {
+            break;
+        }
+        if (limit > 0 && (int64_t)utxos.size() >= limit) {
+            // a full page: the next one starts after its last output
+            next = unspentCursor(*(it - 1));
             break;
         }
 
@@ -841,7 +1206,7 @@ UniValue getaddressutxos(const JSONRPCRequest& request)
         }
 
         int64_t timeLock = (tokenName == "PLB") ? it->first.timeLock : nTimeLock;
-        if (timeLock < ((int64_t)timeLock < LOCKTIME_THRESHOLD ? nHeight : (int64_t)chainActive.Tip()->GetMedianTimePast())) {
+        if (timeLock < ((int64_t)timeLock < LOCKTIME_THRESHOLD ? nHeight : nMedianTime)) {
             output.pushKV("address", address);
             output.pushKV("token_name", tokenNameOut);
             output.pushKV("txid", it->first.txhash.GetHex());
@@ -857,16 +1222,28 @@ UniValue getaddressutxos(const JSONRPCRequest& request)
         }
     }
 
-    return utxos;
+    if (limit <= 0 && !includeChainInfo)
+        return utxos;
+
+    UniValue result(UniValue::VOBJ);
+    result.pushKV("utxos", utxos);
+    if (limit > 0)
+        result.pushKV("next", next.empty() ? NullUniValue : UniValue(next));
+    if (includeChainInfo) {
+        result.pushKV("hash", tipHash.GetHex());
+        result.pushKV("height", nHeight);
+    }
+    return result;
 }
 
 UniValue getaddressdeltas(const JSONRPCRequest& request)
 {
-    if (request.fHelp || request.params.size() != 1 || !request.params[0].isObject())
+    if (request.fHelp || request.params.size() != 1 || !(request.params[0].isObject() || request.params[0].isStr()))
         throw std::runtime_error(
             "getaddressdeltas\n"
             "\nReturns all changes for an address (requires addressindex to be enabled).\n"
             "\nArguments:\n"
+            "\"address\"  (string) An address or a username, or the object:\n"
             "{\n"
             "  \"addresses\"\n"
             "    [\n"
@@ -897,17 +1274,16 @@ UniValue getaddressdeltas(const JSONRPCRequest& request)
         );
 
 
-    UniValue startValue = find_value(request.params[0].get_obj(), "start");
-    UniValue endValue = find_value(request.params[0].get_obj(), "end");
+    const UniValue options = request.params[0].isObject() ? request.params[0].get_obj() : UniValue(UniValue::VOBJ);
 
-    UniValue chainInfo = find_value(request.params[0].get_obj(), "chainInfo");
+    const UniValue chainInfo = find_value(options, "chainInfo");
     bool includeChainInfo = false;
     if (chainInfo.isBool()) {
         includeChainInfo = chainInfo.get_bool();
     }
 
     std::string tokenName = PLB;
-    UniValue tokenNameParam = find_value(request.params[0].get_obj(), "tokenName");
+    const UniValue tokenNameParam = find_value(options, "tokenName");
     if (tokenNameParam.isStr()) {
         if (!AreTokensDeployed())
             throw JSONRPCError(RPC_INVALID_PARAMETER, "Tokens aren't active.  tokenName can't be specified.");
@@ -916,17 +1292,7 @@ UniValue getaddressdeltas(const JSONRPCRequest& request)
 
     int start = 0;
     int end = 0;
-
-    if (startValue.isNum() && endValue.isNum()) {
-        start = startValue.get_int();
-        end = endValue.get_int();
-        if (start <= 0 || end <= 0) {
-            throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, "Start and end is expected to be greater than zero");
-        }
-        if (end < start) {
-            throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, "End value is expected to be greater than start");
-        }
-    }
+    getHeightRangeFromParams(request.params, start, end);
 
     std::vector<std::pair<uint160, int> > addresses;
 
@@ -1005,6 +1371,7 @@ UniValue getaddressbalance(const JSONRPCRequest& request)
             "getaddressbalance\n"
             "\nReturns the balance for an address(es) (requires addressindex to be enabled).\n"
             "\nArguments:\n"
+            "\"address\"  (string) An address or a username, or the object:\n"
             "{\n"
             "  \"addresses:\"\n"
             "    [\n"
@@ -1143,6 +1510,7 @@ UniValue getaddresstxids(const JSONRPCRequest& request)
             "getaddresstxids\n"
             "\nReturns the txids for an address(es) (requires addressindex to be enabled).\n"
             "\nArguments:\n"
+            "\"address\"  (string) An address or a username, or the object:\n"
             "{\n"
             "  \"addresses\"\n"
             "    [\n"
@@ -1180,15 +1548,20 @@ UniValue getaddresstxids(const JSONRPCRequest& request)
         if (!AreTokensDeployed())
             throw JSONRPCError(RPC_INVALID_PARAMETER, "Tokens aren't active.  includeTokens can't be true.");
 
+    // the blocks from "start" to "end" only, when the object gives them
+    int start = 0;
+    int end = 0;
+    getHeightRangeFromParams(request.params, start, end);
+
     std::vector<std::pair<CAddressIndexKey, CAmount> > addressIndex;
 
     for (std::vector<std::pair<uint160, int> >::iterator it = addresses.begin(); it != addresses.end(); it++) {
         if (includeTokens) {
-            if (!GetAddressIndex((*it).first, (*it).second, addressIndex)) {
+            if (!GetAddressIndex((*it).first, (*it).second, addressIndex, start, end)) {
                 throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, "No information available for address");
             }
         } else {
-            if (!GetAddressIndex((*it).first, (*it).second, PLB, addressIndex)) {
+            if (!GetAddressIndex((*it).first, (*it).second, PLB, addressIndex, start, end)) {
                 throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, "No information available for address");
             }
         }
@@ -1391,10 +1764,12 @@ static const CRPCCommand commands[] =
     { "util",               "createmultisig",         &createmultisig,         {"nrequired","keys"} },
     { "util",               "verifymessage",          &verifymessage,          {"address","signature","message"} },
     { "util",               "signmessagewithprivkey", &signmessagewithprivkey, {"privkey","message"} },
+    { "util",               "mnemonictokeys",         &mnemonictokeys,         {"mnemonic","path","count","passphrase","start","validate"} },
+    { "util",               "mnemonicfindaddress",    &mnemonicfindaddress,    {"mnemonic","address","passphrase","validate"} },
 
     /* Address index */
     { "addressindex",       "getaddressmempool",      &getaddressmempool,      {"addresses","includeTokens"} },
-    { "addressindex",       "getaddressutxos",        &getaddressutxos,        {"addresses"} },
+    { "addressindex",       "getaddressutxos",        &getaddressutxos,        {"addresses","amount","tokenName"} },
     { "addressindex",       "getaddressdeltas",       &getaddressdeltas,       {"addresses"} },
     { "addressindex",       "getaddresstxids",        &getaddresstxids,        {"addresses","includeTokens"} },
     { "addressindex",       "getaddressbalance",      &getaddressbalance,      {"addresses","includeTokens"} },

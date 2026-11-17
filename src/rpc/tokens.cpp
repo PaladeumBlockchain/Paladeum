@@ -243,10 +243,11 @@ UniValue registerusername(const JSONRPCRequest& request)
 {
     if (request.fHelp || !AreTokensDeployed() || request.params.size() < 1 || request.params.size() > 8)
         throw std::runtime_error(
-            "registerusername \"username\" \"( to_address )\""
+            "registerusername \"username\" \"( to_address )\"\n"
 
             "\nArguments:\n"
-            "1. \"username\"              (string, required) a unique username\n"
+            "1. \"username\"              (string, required) a unique username: @ followed by at least 4 characters,\n"
+            "                             each one of A-Z 0-9 _ . (at most 31 characters with the @)\n"
             "2. \"to_address\"            (string), optional, default=\"\"), address token will be sent to, if it is empty, address will be generated for you\n"
 
             "\nResult:\n"
@@ -267,17 +268,14 @@ UniValue registerusername(const JSONRPCRequest& request)
 
     EnsureWalletIsUnlocked(pwallet);
 
-    // Check token name and infer tokenType
+    // Check that the name is a username. A name that is not one was checked as another kind of
+    // token name, whose error does not apply here: the error gives the rules of a username.
     std::string tokenName = request.params[0].get_str();
     KnownTokenType tokenType;
     std::string tokenError = "";
-    if (!IsTokenNameValid(tokenName, tokenType, tokenError)) {
-        throw JSONRPCError(RPC_INVALID_PARAMETER, std::string("Invalid token name: ") + tokenName + std::string("\nError: ") + tokenError);
-    }
-
-    // Check tokenType supported
-    if (tokenType != KnownTokenType::USERNAME) {
-        throw JSONRPCError(RPC_INVALID_PARAMETER, std::string("Usename is invalid"));
+    if (!IsTokenNameValid(tokenName, tokenType, tokenError) || tokenType != KnownTokenType::USERNAME) {
+        IsTypeCheckNameValid(KnownTokenType::USERNAME, tokenName, tokenError);
+        throw JSONRPCError(RPC_INVALID_PARAMETER, std::string("Invalid username: ") + tokenName + std::string("\nError: ") + tokenError);
     }
 
     std::string address = "";
@@ -345,13 +343,14 @@ UniValue issueunique(const JSONRPCRequest& request)
                 "issueunique \"root_name\" [token_tags] ( [ipfs_hashes] ) \"( to_address )\" \"( change_address )\"\n"
                 + TokenActivationWarning() +
                 "\nIssue unique token(s).\n"
-                "root_name must be an token you own.\n"
-                "An token will be created for each element of token_tags.\n"
+                "root_name is a token or a sub token whose owner token (root_name!) is in the wallet.\n"
+                "A token root_name#tag will be created for each element of token_tags.\n"
                 "If provided ipfs_hashes must be the same length as token_tags.\n"
-                "Hunderd (100) PLB will be burned for each token created.\n"
+                "Each unique token costs the fee for a unique token in PLB, paid to the token fee address\n"
+                "(issuanceinfo shows the fee and the address).\n"
 
                 "\nArguments:\n"
-                "1. \"root_name\"             (string, required) name of the token the unique token(s) are being issued under\n"
+                "1. \"root_name\"             (string, required) name of the token or sub token the unique token(s) are being issued under\n"
                 "2. \"token_tags\"            (array, required) the unique tag for each token which is to be issued\n"
                 "3. \"ipfs_hashes\"           (array, optional) ipfs hashes corresponding to each supplied tag (should be same size as \"token_tags\") (only sha2-256 hashes currently supported -- Qm...)\n"
                 "4. \"to_address\"            (string, optional, default=\"\"), address tokens will be sent to, if it is empty, address will be generated for you\n"
@@ -363,6 +362,7 @@ UniValue issueunique(const JSONRPCRequest& request)
                 "\nExamples:\n"
                 + HelpExampleCli("issueunique", "\"MY_TOKEN\" \'[\"primo\",\"secundo\"]\'")
                 + HelpExampleCli("issueunique", "\"MY_TOKEN\" \'[\"primo\",\"secundo\"]\' \'[\"first_hash\",\"second_hash\"]\'")
+                + HelpExampleCli("issueunique", "\"MY_TOKEN/SUB_TOKEN\" \'[\"primo\"]\'")
         );
 
     CWallet * const pwallet = GetWalletForJSONRPCRequest(request);
@@ -447,6 +447,12 @@ UniValue issueunique(const JSONRPCRequest& request)
         }
 
         std::string tokenName = GetUniqueTokenName(rootName, tag);
+        // (a name below a sub token reaches the length limit sooner)
+        KnownTokenType uniqueType;
+        std::string nameError;
+        if (!IsTokenNameValid(tokenName, uniqueType, nameError) || uniqueType != KnownTokenType::UNIQUE) {
+            throw JSONRPCError(RPC_INVALID_PARAMETER, std::string("Invalid unique token name: ") + tokenName + std::string("\nError: ") + nameError);
+        }
         CNewToken token;
 
         if (ipfsHashes.isNull()) {

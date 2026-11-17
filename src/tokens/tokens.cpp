@@ -204,7 +204,8 @@ bool IsTypeCheckNameValid(const KnownTokenType type, const std::string& name, st
 
         bool valid = IsUsernameValid(name);
         if (!valid) {
-            error = "Username contains invalid characters (Valid characters are: A-Z 0-9 _ .) (special characters can't be the first or last characters)";
+            // what USERNAME_CHARACTERS takes: '.' and '_' anywhere after the '@', also side by side
+            error = "A username is @ followed by at least 4 characters (valid characters are: A-Z 0-9 _ .)";
             return false;
         }
 
@@ -257,9 +258,18 @@ std::string GetParentName(const std::string& name)
     return name;
 }
 
+bool CanHoldTokens(const std::string& address)
+{
+    // CScript::IsTokenScript() finds token data behind a P2PKH or a P2SH script only
+    const CTxDestination dest = DecodeDestination(address);
+    return boost::get<std::pair<CKeyID, CKeyID>>(&dest) == nullptr;
+}
+
 std::string GetUniqueTokenName(const std::string& parent, const std::string& tag)
 {
-    if (!IsRootNameValid(parent))
+    // A unique token is issued below a root token or below a sub token (see the UNIQUE case of
+    // IsTypeCheckNameValid)
+    if (!IsNameValidBeforeTag(parent))
         return "";
 
     if (!IsUniqueTagValid(tag))
@@ -1079,7 +1089,10 @@ bool CReissueToken::IsValid(std::string &strError, CTokensCache& tokenCache, boo
             return false;
         }
 
-        if (token.nAmount + this->nAmount > MAX_MONEY_TOKENS) {
+        // Written so that it cannot overflow; for amounts that did not
+        // overflow the result is the same as token.nAmount + nAmount > MAX.
+        // (A negative nAmount is rejected further below.)
+        if (token.nAmount < 0 || token.nAmount > MAX_MONEY_TOKENS || this->nAmount > MAX_MONEY_TOKENS - token.nAmount) {
             strError = _("Unable to reissue token: token_name '") + strName +
                        _("' the amount trying to reissue is to large");
             return false;
@@ -2674,11 +2687,12 @@ bool GetAllMyTokenBalancesWallet(CWallet* pwallet, std::map<std::string, std::ve
 //! sets _balances_ with the total quantity of each owned token
 bool GetAllMyTokenBalances(std::map<std::string, std::vector<COutput> >& outputs, std::map<std::string, CAmount>& amounts, const std::string& prefix) {
 
-    // Return false if no wallet was found to compute token balances
-    if (!vpwallets.size())
+    // The first wallet. Return false if no wallet was found to compute token balances
+    CWallet* const pwallet = GetDefaultWallet();
+    if (!pwallet)
         return false;
 
-    return GetAllMyTokenBalancesWallet(vpwallets[0], outputs, amounts, prefix);
+    return GetAllMyTokenBalancesWallet(pwallet, outputs, amounts, prefix);
 }
 
 bool GetAllMyLockedTokenBalancesWallet(CWallet* pwallet, std::map<std::string, std::vector<COutput> >& outputs, std::map<std::string, CAmount>& amounts, const std::string& prefix) {
@@ -2707,11 +2721,12 @@ bool GetAllMyLockedTokenBalancesWallet(CWallet* pwallet, std::map<std::string, s
 //! sets _balances_ with the total quantity of each owned locked token
 bool GetAllMyLockedTokenBalances(std::map<std::string, std::vector<COutput> >& outputs, std::map<std::string, CAmount>& amounts, const std::string& prefix) {
 
-    // Return false if no wallet was found to compute token balances
-    if (!vpwallets.size())
+    // The first wallet. Return false if no wallet was found to compute token balances
+    CWallet* const pwallet = GetDefaultWallet();
+    if (!pwallet)
         return false;
 
-    return GetAllMyLockedTokenBalancesWallet(vpwallets[0], outputs, amounts, prefix);
+    return GetAllMyLockedTokenBalancesWallet(pwallet, outputs, amounts, prefix);
 }
 
 // 46 char base58 --> 34 char KAW compatible
@@ -2755,6 +2770,11 @@ bool CreateTokenTransaction(CWallet* pwallet, CCoinControl& coinControl, const s
         }
     }
 
+    if (!CanHoldTokens(address)) {
+        error = std::make_pair(RPC_INVALID_ADDRESS_OR_KEY, std::string("Tokens cannot be sent to an offline staking address: ") + address);
+        return false;
+    }
+
     if (!change_address.empty()) {
         CTxDestination destination = DecodeDestination(change_address);
         if (!IsValidDestination(destination)) {
@@ -2779,6 +2799,11 @@ bool CreateTokenTransaction(CWallet* pwallet, CCoinControl& coinControl, const s
     for (auto token : tokens) {
         if (!IsTokenNameValid(token.strName, tokenType)) {
             error = std::make_pair(RPC_INVALID_PARAMETER, "Token name not valid");
+            return false;
+        }
+        // the owner token of the parent of a sub token or a unique token comes back to the change address
+        if ((tokenType == KnownTokenType::SUB || tokenType == KnownTokenType::UNIQUE) && !CanHoldTokens(change_address)) {
+            error = std::make_pair(RPC_INVALID_ADDRESS_OR_KEY, std::string("Tokens cannot be sent to an offline staking address: ") + change_address + " (the change address, which receives the owner token)");
             return false;
         }
         if (tokens.size() > 1 && tokenType != KnownTokenType::UNIQUE) {
@@ -2865,11 +2890,20 @@ bool CreateReissueTokenTransaction(CWallet* pwallet, CCoinControl& coinControl, 
         error = std::make_pair(RPC_INVALID_ADDRESS_OR_KEY, std::string("Invalid Paladeum address: ") + address);
         return false;
     }
+    if (!CanHoldTokens(address)) {
+        error = std::make_pair(RPC_INVALID_ADDRESS_OR_KEY, std::string("Tokens cannot be sent to an offline staking address: ") + address);
+        return false;
+    }
 
     if (!change_address.empty()) {
         CTxDestination destination = DecodeDestination(change_address);
         if (!IsValidDestination(destination)) {
             error = std::make_pair(RPC_INVALID_ADDRESS_OR_KEY, std::string("Invalid Paladeum address: ") + change_address);
+            return false;
+        }
+        // the owner token comes back to the change address
+        if (!CanHoldTokens(change_address)) {
+            error = std::make_pair(RPC_INVALID_ADDRESS_OR_KEY, std::string("Tokens cannot be sent to an offline staking address: ") + change_address + " (the change address, which receives the owner token)");
             return false;
         }
     } else {
@@ -2999,6 +3033,11 @@ bool CreateTransferTokenTransaction(CWallet* pwallet, const CCoinControl& coinCo
             error = std::make_pair(RPC_INVALID_ADDRESS_OR_KEY, std::string("Invalid Paladeum address: ") + address);
             return false;
         }
+        // (the wallet would otherwise find the output without tokens "too small")
+        if (!CanHoldTokens(address)) {
+            error = std::make_pair(RPC_INVALID_ADDRESS_OR_KEY, std::string("Tokens cannot be sent to an offline staking address: ") + address);
+            return false;
+        }
         auto currentActiveTokenCache = GetCurrentTokenCache();
         if (!currentActiveTokenCache) {
             error = std::make_pair(RPC_DATABASE_ERROR, std::string("ptokens isn't initialized"));
@@ -3074,7 +3113,14 @@ bool VerifyWalletHasToken(CWallet* pwallet, const std::string& token_name, std::
 // Return true if the amount is valid with the units passed in
 bool CheckAmountWithUnits(const CAmount& nAmount, const int8_t nUnits)
 {
-    return nAmount % int64_t(pow(10, (MAX_UNIT - nUnits))) == 0;
+    // Integer version of nAmount % 10^(MAX_UNIT - nUnits) == 0. For the valid
+    // range 0..MAX_UNIT the result is identical to the former pow() based
+    // code; out-of-range units (which would have divided by zero) fail.
+    static const int64_t POW10[] = {1, 10, 100, 1000, 10000, 100000, 1000000, 10000000, 100000000};
+    static_assert(MAX_UNIT == 8, "POW10 table assumes MAX_UNIT == 8");
+    if (nUnits < 0 || nUnits > MAX_UNIT)
+        return false;
+    return nAmount % POW10[MAX_UNIT - nUnits] == 0;
 }
 
 bool CheckEncodedIPFS(const std::string& hash, std::string& strError)

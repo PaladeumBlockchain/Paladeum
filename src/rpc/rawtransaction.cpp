@@ -5,6 +5,7 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
+#include "snapshot.h"
 #include "base58.h"
 #include "chain.h"
 #include "coins.h"
@@ -214,7 +215,8 @@ UniValue getrawtransaction(const JSONRPCRequest& request)
     if (!GetTransaction(hash, tx, GetParams().GetConsensus(), hashBlock, true))
         throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, std::string(fTxIndex ? "No such mempool or blockchain transaction"
             : "No such mempool transaction. Use -txindex to enable blockchain transaction queries") +
-            ". Use gettransaction for wallet transactions.");
+            ". Use gettransaction for wallet transactions." +
+            (PastBlocksMissing() ? " If it is a transaction of a block up to height " + std::to_string(SnapshotHeight()) + ": " + PastBlocksMessage() : ""));
 
     if (!fVerbose)
         return EncodeHexTx(*tx, RPCSerializationFlags());
@@ -292,6 +294,9 @@ UniValue gettxoutproof(const JSONRPCRequest& request)
         pblockindex = mapBlockIndex[hashBlock];
     }
 
+    if (IsPastBlockMissing(pblockindex))
+        throw JSONRPCError(RPC_MISC_ERROR, PastBlocksMessage());
+
     CBlock block;
     if(!ReadBlockFromDisk(block, pblockindex, GetParams().GetConsensus()))
         throw JSONRPCError(RPC_INTERNAL_ERROR, "Can't read block from disk");
@@ -348,7 +353,7 @@ UniValue createrawtransaction(const JSONRPCRequest& request)
 {
     if (request.fHelp || request.params.size() < 2 || request.params.size() > 3)
         throw std::runtime_error(
-            "createrawtransaction [{\"txid\":\"id\",\"vout\":n},...] {\"address\":(amount or object),\"data\":\"hex\",...} ( locktime ) ( replaceable )\n"
+            "createrawtransaction [{\"txid\":\"id\",\"vout\":n},...] {\"address\":(amount or object),\"data\":\"hex\",...} ( locktime )\n"
             "\nCreate a transaction spending the given inputs and creating new outputs.\n"
             "Outputs are addresses (paired with a PLB amount, data or object specifying an token operation) or data.\n"
             "Returns hex-encoded raw transaction.\n"
@@ -356,11 +361,9 @@ UniValue createrawtransaction(const JSONRPCRequest& request)
             "it is not stored in the wallet or transmitted to the network.\n"
 
             "\nPaying for Token Operations:\n"
-            "  Some operations require an amount of PLB to be sent to a burn address:\n"
-            "    transfer:       0\n"
-            "    issue:        500 to Issue Burn Address\n"
-            "    issue_unique    5 to Issue Unique Burn Address\n"
-            "    reissue:      100 to Reissue Burn Address\n"
+            "  issue, issue_unique and reissue pay a fee in PLB, in an output to the token fee address.\n"
+            "  The fees and the address are set by governance: issuanceinfo shows them. A transfer pays\n"
+            "  no such fee.\n"
 
             "\nOwnership:\n"
             "  These operations require an ownership token input for the token being operated upon:\n"
@@ -369,7 +372,7 @@ UniValue createrawtransaction(const JSONRPCRequest& request)
 
             "\nOutput Ordering:\n"
             "  Token operations require the following:\n"
-            "    1) All coin outputs come first (including the burn output).\n"
+            "    1) All coin outputs come first (including the fee output).\n"
             "    2) The owner token change output comes next (if required).\n"
             "    3) An issue, issue_unique, reissue or any number of transfers comes last\n"
             "       (different types can't be mixed in a single transaction).\n"
@@ -393,7 +396,7 @@ UniValue createrawtransaction(const JSONRPCRequest& request)
             "           \"transfer\":\n"
             "             {\n"
             "               \"token-name\":               (string, required) token name\n"
-            "               token-quantity              (numeric, required) the number of raw units to transfer\n"
+            "               token-quantity              (numeric, required) the quantity of the token to transfer\n"
             "               ,...\n"
             "             }\n"
             "         }\n"
@@ -402,8 +405,8 @@ UniValue createrawtransaction(const JSONRPCRequest& request)
             "           \"issue\":\n"
             "             {\n"
             "               \"token_name\":\"token-name\",  (string, required) new token name\n"
-            "               \"token_quantity\":n,         (number, required) the number of raw units to issue\n"
-            "               \"units\":[1-8],              (number, required) display units, between 1 (integral) to 8 (max precision)\n"
+            "               \"token_quantity\":n,         (number, required) the quantity to issue\n"
+            "               \"units\":[0-8],              (number, required) display units, between 0 (whole units) and 8 (max precision)\n"
             "               \"reissuable\":[0-1],         (number, required) 1=reissuable token\n"
             "               \"has_ipfs\":[0-1],           (number, required) 1=passing ipfs_hash\n"
             "               \"ipfs_hash\":\"hash\"          (string, optional) an ipfs hash for discovering token metadata\n"
@@ -423,11 +426,9 @@ UniValue createrawtransaction(const JSONRPCRequest& request)
             "           \"reissue\":\n"
             "             {\n"
             "               \"token_name\":\"token-name\",  (string, required) name of token to be reissued\n"
-            "               \"token_quantity\":n,         (number, required) the number of raw units to issue\n"
+            "               \"token_quantity\":n,         (number, required) the quantity to add\n"
             "               \"reissuable\":[0-1],         (number, optional) default is 1, 1=reissuable token\n"
-            "               \"ipfs_hashes\":[\"hash\", ...],     (array, optional) ipfs hashes corresponding to each supplied tag (should be same size as \"token_tags\")\n"
-            "             }\n"
-            "         }\n"
+            "               \"ipfs_hash\":\"hash\"          (string, optional) a new ipfs hash for the token\n"
             "             }\n"
             "         }\n"
             "         or\n"
@@ -444,10 +445,10 @@ UniValue createrawtransaction(const JSONRPCRequest& request)
             "\nExamples:\n"
             + HelpExampleCli("createrawtransaction", "\"[{\\\"txid\\\":\\\"mycoin\\\",\\\"vout\\\":0}]\" \"{\\\"address\\\":0.01}\"")
             + HelpExampleCli("createrawtransaction", "\"[{\\\"txid\\\":\\\"mycoin\\\",\\\"vout\\\":0}]\" \"{\\\"data\\\":\\\"00010203\\\"}\"")
-            + HelpExampleCli("createrawtransaction", "\"[{\\\"txid\\\":\\\"mycoin\\\",\\\"vout\\\":0}]\" \"{\\\"RXissueTokenXXXXXXXXXXXXXXXXXhhZGt\\\":500,\\\"change_address\\\":change_amount,\\\"issuer_address\\\":{\\\"issue\\\":{\\\"token_name\\\":\\\"MYTOKEN\\\",\\\"token_quantity\\\":1000000,\\\"units\\\":1,\\\"reissuable\\\":0\\\"}}}\"")
-            + HelpExampleCli("createrawtransaction", "\"[{\\\"txid\\\":\\\"mycoin\\\",\\\"vout\\\":0}]\" \"{\\\"RXissueUniqueTokenXXXXXXXXXXWEAe58\\\":20,\\\"change_address\\\":change_amount,\\\"issuer_address\\\":{\\\"issue_unique\\\":{\\\"root_name\\\":\\\"MYTOKEN\\\",\\\"token_tags\\\":[\\\"ALPHA\\\",\\\"BETA\\\"],\\\"]}}}\"")
+            + HelpExampleCli("createrawtransaction", "\"[{\\\"txid\\\":\\\"mycoin\\\",\\\"vout\\\":0}]\" \"{\\\"KdZFAFeKV8C5JzdEdgcPYDZku92KkD3fHy\\\":10000,\\\"change_address\\\":change_amount,\\\"issuer_address\\\":{\\\"issue\\\":{\\\"token_name\\\":\\\"MYTOKEN\\\",\\\"token_quantity\\\":1000000,\\\"units\\\":1,\\\"reissuable\\\":0,\\\"has_ipfs\\\":0}}}\"")
+            + HelpExampleCli("createrawtransaction", "\"[{\\\"txid\\\":\\\"mycoin\\\",\\\"vout\\\":0},{\\\"txid\\\":\\\"myownership\\\",\\\"vout\\\":0}]\" \"{\\\"KdZFAFeKV8C5JzdEdgcPYDZku92KkD3fHy\\\":200,\\\"change_address\\\":change_amount,\\\"issuer_address\\\":{\\\"issue_unique\\\":{\\\"root_name\\\":\\\"MYTOKEN\\\",\\\"token_tags\\\":[\\\"ALPHA\\\",\\\"BETA\\\"]}}}\"")
             + HelpExampleCli("createrawtransaction", "\"[{\\\"txid\\\":\\\"mycoin\\\",\\\"vout\\\":0},{\\\"txid\\\":\\\"mytoken\\\",\\\"vout\\\":0}]\" \"{\\\"address\\\":{\\\"transfer\\\":{\\\"MYTOKEN\\\":50}}}\"")
-            + HelpExampleCli("createrawtransaction", "\"[{\\\"txid\\\":\\\"mycoin\\\",\\\"vout\\\":0},{\\\"txid\\\":\\\"myownership\\\",\\\"vout\\\":0}]\" \"{\\\"issuer_address\\\":{\\\"reissue\\\":{\\\"token_name\\\":\\\"MYTOKEN\\\",\\\"token_quantity\\\":2000000}}}\"")
+            + HelpExampleCli("createrawtransaction", "\"[{\\\"txid\\\":\\\"mycoin\\\",\\\"vout\\\":0},{\\\"txid\\\":\\\"myownership\\\",\\\"vout\\\":0}]\" \"{\\\"KdZFAFeKV8C5JzdEdgcPYDZku92KkD3fHy\\\":10000,\\\"change_address\\\":change_amount,\\\"issuer_address\\\":{\\\"reissue\\\":{\\\"token_name\\\":\\\"MYTOKEN\\\",\\\"token_quantity\\\":2000000}}}\"")
             + HelpExampleRpc("createrawtransaction", "\"[{\\\"txid\\\":\\\"mycoin\\\",\\\"vout\\\":0}]\", \"{\\\"data\\\":\\\"00010203\\\"}\"")
         );
 
@@ -548,6 +549,9 @@ UniValue createrawtransaction(const JSONRPCRequest& request)
             }
             /** PLB COIN START **/
             else if (sendTo[name_].type() == UniValue::VOBJ) {
+                if (!CanHoldTokens(name_))
+                    throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, std::string("Tokens cannot be sent to an offline staking address: ") + name_);
+
                 auto token_ = sendTo[name_].get_obj();
                 auto tokenKey_ = token_.getKeys()[0];
 
@@ -1360,16 +1364,172 @@ UniValue signrawtransaction(const JSONRPCRequest& request)
     return result;
 }
 
+UniValue signrawtransactionwithkey(const JSONRPCRequest& request)
+{
+    if (request.fHelp || request.params.size() < 2 || request.params.size() > 4)
+        throw std::runtime_error(
+            "signrawtransactionwithkey \"hexstring\" [\"privatekey1\",...] ( [{\"txid\":\"id\",\"vout\":n,\"scriptPubKey\":\"hex\",\"redeemScript\":\"hex\"},...] sighashtype )\n"
+            "\nSigns the inputs of a raw transaction (serialized, hex-encoded) with the given private keys only;\n"
+            "no wallet is used. The arguments and the result are those of signrawtransaction, with the keys\n"
+            "in second place.\n"
+            "\nArguments:\n"
+            "1. \"hexstring\"   (string, required) The transaction hex string\n"
+            "2. \"privkeys\"    (array, required) Base58-encoded private keys for signing\n"
+            "3. \"prevtxs\"     (array, optional) Previous dependent transaction outputs, as for signrawtransaction\n"
+            "4. \"sighashtype\" (string, optional, default=ALL) The signature hash type\n"
+            "\nResult:\n"
+            "{\n"
+            "  \"hex\" : \"value\",      (string) The hex-encoded raw transaction with signature(s)\n"
+            "  \"complete\" : true|false, (boolean) If the transaction has a complete set of signatures\n"
+            "  \"errors\" : [ ... ]      (array) Script verification errors (if there are any)\n"
+            "}\n"
+            "\nExamples:\n"
+            + HelpExampleCli("signrawtransactionwithkey", "\"myhex\" '[\"privatekey\"]'")
+            + HelpExampleRpc("signrawtransactionwithkey", "\"myhex\", [\"privatekey\"]")
+        );
+    RPCTypeCheck(request.params, {UniValue::VSTR, UniValue::VARR}, true);
+    JSONRPCRequest inner(request);
+    inner.params = UniValue(UniValue::VARR);
+    inner.params.push_back(request.params[0]);
+    inner.params.push_back(request.params.size() > 2 ? request.params[2] : NullUniValue);
+    inner.params.push_back(request.params[1]);
+    if (request.params.size() > 3)
+        inner.params.push_back(request.params[3]);
+    return signrawtransaction(inner);
+}
+
+#ifdef ENABLE_WALLET
+UniValue signrawtransactionwithwallet(const JSONRPCRequest& request)
+{
+    if (request.fHelp || request.params.size() < 1 || request.params.size() > 3)
+        throw std::runtime_error(
+            "signrawtransactionwithwallet \"hexstring\" ( [{\"txid\":\"id\",\"vout\":n,\"scriptPubKey\":\"hex\",\"redeemScript\":\"hex\"},...] sighashtype )\n"
+            "\nSigns the inputs of a raw transaction (serialized, hex-encoded) with the keys of the wallet.\n"
+            "The arguments and the result are those of signrawtransaction without the list of keys.\n"
+            "\nArguments:\n"
+            "1. \"hexstring\"   (string, required) The transaction hex string\n"
+            "2. \"prevtxs\"     (array, optional) Previous dependent transaction outputs, as for signrawtransaction\n"
+            "3. \"sighashtype\" (string, optional, default=ALL) The signature hash type\n"
+            "\nResult:\n"
+            "{\n"
+            "  \"hex\" : \"value\",      (string) The hex-encoded raw transaction with signature(s)\n"
+            "  \"complete\" : true|false, (boolean) If the transaction has a complete set of signatures\n"
+            "  \"errors\" : [ ... ]      (array) Script verification errors (if there are any)\n"
+            "}\n"
+            "\nExamples:\n"
+            + HelpExampleCli("signrawtransactionwithwallet", "\"myhex\"")
+            + HelpExampleRpc("signrawtransactionwithwallet", "\"myhex\"")
+        );
+    if (!EnsureWalletIsAvailable(GetWalletForJSONRPCRequest(request), false))
+        return NullUniValue;
+    JSONRPCRequest inner(request);
+    inner.params = UniValue(UniValue::VARR);
+    inner.params.push_back(request.params[0]);
+    inner.params.push_back(request.params.size() > 1 ? request.params[1] : NullUniValue);
+    inner.params.push_back(NullUniValue);
+    if (request.params.size() > 2)
+        inner.params.push_back(request.params[2]);
+    return signrawtransaction(inner);
+}
+#endif
+
+/**
+ * The highest fee that sendrawtransaction and testmempoolaccept accept for a transaction.
+ * The second argument is the old "allowhighfees" boolean or a fee rate per kB.
+ */
+static CAmount MaxRawTxFee(const UniValue& param, const CTransaction& tx)
+{
+    if (param.isNull())
+        return maxTxFee;
+    if (param.isBool())
+        return param.get_bool() ? 0 : maxTxFee;
+    const CAmount rate = AmountFromValue(param);
+    if (rate == 0)
+        return 0; // no limit
+    return std::max<CAmount>(1, CFeeRate(rate).GetFee(GetVirtualTransactionSize(tx)));
+}
+
+UniValue testmempoolaccept(const JSONRPCRequest& request)
+{
+    if (request.fHelp || request.params.size() < 1 || request.params.size() > 2)
+        throw std::runtime_error(
+            "testmempoolaccept [\"rawtx\"] ( allowhighfees|maxfeerate )\n"
+            "\nReturns whether a raw transaction (serialized, hex-encoded) would be accepted by the mempool.\n"
+            "The transaction is checked against the consensus and policy rules and is neither added to the\n"
+            "mempool nor sent to the network.\n"
+            "\nSee sendrawtransaction for how to send it.\n"
+            "\nArguments:\n"
+            "1. [\"rawtx\"]      (array, required) An array with one hex string of a raw transaction.\n"
+            "2. allowhighfees    (boolean, optional, default=false) Allow high fees\n"
+            "   or maxfeerate    (numeric or string) Reject the transaction if its fee rate is above this value in " + CURRENCY_UNIT + "/kB; 0 accepts any fee\n"
+            "\nResult:\n"
+            "[                   (array) One result for each transaction of the array\n"
+            " {\n"
+            "  \"txid\"           (string) The transaction hash in hex\n"
+            "  \"allowed\"        (boolean) Whether the mempool would accept it\n"
+            "  \"reject-reason\"  (string) Why it was rejected (only when it is not allowed)\n"
+            " }\n"
+            "]\n"
+            "\nExamples:\n"
+            + HelpExampleCli("testmempoolaccept", "\"[\\\"signedhex\\\"]\"")
+            + HelpExampleRpc("testmempoolaccept", "[\"signedhex\"]")
+        );
+
+    ObserveSafeMode();
+
+    RPCTypeCheck(request.params, {UniValue::VARR});
+    if (request.params[0].get_array().size() != 1)
+        throw JSONRPCError(RPC_INVALID_PARAMETER, "Array must contain exactly one raw transaction for now");
+
+    CMutableTransaction mtx;
+    if (!DecodeHexTx(mtx, request.params[0].get_array()[0].get_str()))
+        throw JSONRPCError(RPC_DESERIALIZATION_ERROR, "TX decode failed");
+    CTransactionRef tx(MakeTransactionRef(std::move(mtx)));
+    const uint256& hashTx = tx->GetHash();
+    const CAmount nMaxRawTxFee = MaxRawTxFee(request.params[1], *tx);
+
+    UniValue result(UniValue::VARR);
+    UniValue entry(UniValue::VOBJ);
+    entry.pushKV("txid", hashTx.GetHex());
+
+    CValidationState state;
+    bool fMissingInputs = false;
+    bool allowed;
+    {
+        LOCK(cs_main);
+        if (mempool.exists(hashTx)) {
+            allowed = false;
+            state.Invalid(false, REJECT_DUPLICATE, "txn-already-in-mempool");
+        } else {
+            allowed = AcceptToMemoryPool(mempool, state, std::move(tx), &fMissingInputs,
+                                         nullptr /* plTxnReplaced */, false /* bypass_limits */, nMaxRawTxFee, true /* test_accept */);
+        }
+    }
+    entry.pushKV("allowed", allowed);
+    if (!allowed) {
+        if (state.IsInvalid())
+            entry.pushKV("reject-reason", strprintf("%i: %s", state.GetRejectCode(), state.GetRejectReason()));
+        else if (fMissingInputs)
+            entry.pushKV("reject-reason", "missing-inputs");
+        else
+            entry.pushKV("reject-reason", state.GetRejectReason());
+    }
+    result.push_back(entry);
+    return result;
+}
+
 UniValue sendrawtransaction(const JSONRPCRequest& request)
 {
     if (request.fHelp || request.params.size() < 1 || request.params.size() > 2)
         throw std::runtime_error(
-            "sendrawtransaction \"hexstring\" ( allowhighfees )\n"
+            "sendrawtransaction \"hexstring\" ( allowhighfees|maxfeerate )\n"
             "\nSubmits raw transaction (serialized, hex-encoded) to local node and network.\n"
             "\nAlso see createrawtransaction and signrawtransaction calls.\n"
             "\nArguments:\n"
             "1. \"hexstring\"    (string, required) The hex string of the raw transaction)\n"
             "2. allowhighfees    (boolean, optional, default=false) Allow high fees\n"
+            "   or maxfeerate    (numeric or string) Reject the transaction if its fee rate is above this value in " + CURRENCY_UNIT + "/kB;\n"
+            "                    0 accepts any fee. Without this argument the limit is -maxtxfee for the whole transaction.\n"
             "\nResult:\n"
             "\"hex\"             (string) The transaction hash in hex\n"
             "\nExamples:\n"
@@ -1387,7 +1547,7 @@ UniValue sendrawtransaction(const JSONRPCRequest& request)
 
     std::promise<void> promise;
 
-    RPCTypeCheck(request.params, {UniValue::VSTR, UniValue::VBOOL});
+    RPCTypeCheck(request.params, {UniValue::VSTR});
 
     // parse hex string from parameter
     CMutableTransaction mtx;
@@ -1396,9 +1556,7 @@ UniValue sendrawtransaction(const JSONRPCRequest& request)
     CTransactionRef tx(MakeTransactionRef(std::move(mtx)));
     const uint256& hashTx = tx->GetHash();
 
-    CAmount nMaxRawTxFee = maxTxFee;
-    if (!request.params[1].isNull() && request.params[1].get_bool())
-        nMaxRawTxFee = 0;
+    const CAmount nMaxRawTxFee = MaxRawTxFee(request.params[1], *tx);
 
     { // cs_main scope
     LOCK(cs_main);
@@ -1465,8 +1623,13 @@ static const CRPCCommand commands[] =
     { "rawtransactions",    "decoderawtransaction",   &decoderawtransaction,   {"hexstring"} },
     { "rawtransactions",    "decodescript",           &decodescript,           {"hexstring"} },
     { "rawtransactions",    "sendrawtransaction",     &sendrawtransaction,     {"hexstring","allowhighfees"} },
+    { "rawtransactions",    "testmempoolaccept",      &testmempoolaccept,      {"rawtxs","allowhighfees"} },
     { "rawtransactions",    "combinerawtransaction",  &combinerawtransaction,  {"txs"} },
     { "rawtransactions",    "signrawtransaction",     &signrawtransaction,     {"hexstring","prevtxs","privkeys","sighashtype"} }, /* uses wallet if enabled */
+    { "rawtransactions",    "signrawtransactionwithkey", &signrawtransactionwithkey, {"hexstring","privkeys","prevtxs","sighashtype"} },
+#ifdef ENABLE_WALLET
+    { "rawtransactions",    "signrawtransactionwithwallet", &signrawtransactionwithwallet, {"hexstring","prevtxs","sighashtype"} },
+#endif
 
     { "blockchain",         "gettxoutproof",          &gettxoutproof,          {"txids", "blockhash"} },
     { "blockchain",         "verifytxoutproof",       &verifytxoutproof,       {"proof"} },

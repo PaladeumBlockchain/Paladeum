@@ -41,6 +41,14 @@
 #include <QSortFilterProxyModel>
 #include <QCompleter>
 
+#include <cmath>
+
+/** The quantity of the spin box in the amount unit. The spin box has no decimals; a double times
+ *  COIN would lose the last digits of the quantities near the maximum (above 2^53). */
+static CAmount QuantityFromSpinBox(const QDoubleSpinBox *box)
+{
+    return static_cast<CAmount>(std::llround(box->value())) * COIN;
+}
 
 ReissueTokenDialog::ReissueTokenDialog(const PlatformStyle *_platformStyle, QWidget *parent) :
         QDialog(parent),
@@ -48,6 +56,7 @@ ReissueTokenDialog::ReissueTokenDialog(const PlatformStyle *_platformStyle, QWid
         platformStyle(_platformStyle)
 {
     ui->setupUi(this);
+    ui->reissueTokenButton->setProperty("primary", true);
     setWindowTitle("Reissue Tokens");
     connect(ui->comboBox, SIGNAL(activated(int)), this, SLOT(onTokenSelected(int)));
     connect(ui->quantitySpinBox, SIGNAL(valueChanged(double)), this, SLOT(onQuantityChanged(double)));
@@ -114,8 +123,6 @@ ReissueTokenDialog::ReissueTokenDialog(const PlatformStyle *_platformStyle, QWid
 
     formatGreen = "%1%2 <font color=green><b>%3</b></font>";
     formatBlack = "%1%2 <font color=black><b>%3</b></font>";
-    if (darkModeEnabled)
-        formatBlack = "%1%2 <font color=white><b>%3</b></font>";
 
     setupCoinControlFrame(platformStyle);
     setupTokenDataView(platformStyle);
@@ -130,7 +137,7 @@ ReissueTokenDialog::ReissueTokenDialog(const PlatformStyle *_platformStyle, QWid
 
     ui->comboBox->setModel(proxy);
     ui->comboBox->setEditable(true);
-    ui->comboBox->lineEdit()->setPlaceholderText("Select an token");
+    ui->comboBox->lineEdit()->setPlaceholderText("Select a token");
 
     completer = new QCompleter(proxy,this);
     completer->setCompletionMode(QCompleter::PopupCompletion);
@@ -157,7 +164,7 @@ void ReissueTokenDialog::setModel(WalletModel *_model)
     {
         setBalance(_model->getBalance(), _model->getUnconfirmedBalance(), _model->getImmatureBalance(),
                    _model->getWatchBalance(), _model->getWatchUnconfirmedBalance(), _model->getWatchImmatureBalance());
-        connect(_model, SIGNAL(balanceChanged(CAmount,CAmount,CAmount,CAmount,CAmount,CAmount)), this, SLOT(setBalance(CAmount,CAmount,CAmount,CAmount,CAmount,CAmount)));
+        connect(_model, SIGNAL(balanceChanged(CAmount,CAmount,CAmount,CAmount,CAmount,CAmount,CAmount,CAmount,CAmount)), this, SLOT(setBalance(CAmount,CAmount,CAmount,CAmount,CAmount,CAmount)));
         connect(_model->getOptionsModel(), SIGNAL(displayUnitChanged(int)), this, SLOT(updateDisplayUnit()));
         updateDisplayUnit();
 
@@ -233,7 +240,7 @@ void ReissueTokenDialog::setUpValues()
     ui->reissuableBox->setCheckState(Qt::CheckState::Checked);
     hideMessage();
 
-    ui->unitExampleLabel->setStyleSheet("font-weight: bold");
+    ui->unitExampleLabel->setStyleSheet("font-weight: 600");
 
     updateTokensList();
 
@@ -256,7 +263,7 @@ void ReissueTokenDialog::setUpValues()
 void ReissueTokenDialog::setupCoinControlFrame(const PlatformStyle *platformStyle)
 {
     /** Update the tokencontrol frame */
-    ui->frameCoinControl->setStyleSheet(QString(".QFrame {background-color: %1; padding-top: 10px; padding-right: 5px; border: none;}").arg(platformStyle->WidgetBackGroundColor().name()));
+    ui->frameCoinControl->setStyleSheet(GUIUtil::cardFrameStyle());
     ui->widgetCoinControl->setStyleSheet(".QWidget {background-color: transparent;}");
     /** Create the shadow effects on the frames */
 
@@ -307,7 +314,7 @@ void ReissueTokenDialog::setupCoinControlFrame(const PlatformStyle *platformStyl
 void ReissueTokenDialog::setupTokenDataView(const PlatformStyle *platformStyle)
 {
     /** Update the scrollview*/
-    ui->frame->setStyleSheet(QString(".QFrame {background-color: %1; padding-top: 10px; padding-right: 5px; border: none;}").arg(platformStyle->WidgetBackGroundColor().name()));
+    ui->frame->setStyleSheet(GUIUtil::cardFrameStyle());
 
     ui->tokenNameLabel->setStyleSheet(STRING_LABEL_COLOR);
     ui->tokenNameLabel->setFont(GUIUtil::getSubLabelFont());
@@ -325,9 +332,9 @@ void ReissueTokenDialog::setupTokenDataView(const PlatformStyle *platformStyle)
 
     ui->ipfsBox->setStyleSheet(QString(".QCheckBox{ %1; }").arg(STRING_LABEL_COLOR));
 
-    ui->frame_3->setStyleSheet(QString(".QFrame {background-color: %1; padding-top: 10px; padding-right: 5px; border: none;}").arg(platformStyle->WidgetBackGroundColor().name()));
+    ui->frame_3->setStyleSheet(GUIUtil::cardFrameStyle());
 
-    ui->frame_2->setStyleSheet(QString(".QFrame {background-color: %1; padding-top: 10px; padding-right: 5px; border: none;}").arg(platformStyle->WidgetBackGroundColor().name()));
+    ui->frame_2->setStyleSheet(GUIUtil::cardFrameStyle());
 
     ui->currentDataLabel->setStyleSheet(STRING_LABEL_COLOR);
     ui->currentDataLabel->setFont(GUIUtil::getTopLabelFont());
@@ -340,7 +347,7 @@ void ReissueTokenDialog::setupTokenDataView(const PlatformStyle *platformStyle)
 void ReissueTokenDialog::setupFeeControl(const PlatformStyle *platformStyle)
 {
     /** Update the coincontrol frame */
-    ui->frameFee->setStyleSheet(QString(".QFrame {background-color: %1; padding-top: 10px; padding-right: 5px; border: none;}").arg(platformStyle->WidgetBackGroundColor().name()));
+    ui->frameFee->setStyleSheet(GUIUtil::cardFrameStyle());
     /** Create the shadow effects on the frames */
 
     ui->labelFeeHeadline->setStyleSheet(STRING_LABEL_COLOR);
@@ -449,9 +456,10 @@ void ReissueTokenDialog::CheckFormState()
         return;
     }
 
-    // If the quantity is to large
-    if (token->nAmount + ui->quantitySpinBox->value() * COIN > MAX_MONEY) {
-        showMessage(tr("Quantity is to large. Max is 21,000,000,000"));
+    // If the quantity is too large: the total of a token is limited by consensus
+    if (QuantityFromSpinBox(ui->quantitySpinBox) > MAX_MONEY_TOKENS - token->nAmount) {
+        showMessage(tr("Quantity is too large. Max is %1").arg(
+            PaladeumUnits::format(PaladeumUnits::PLB, MAX_MONEY_TOKENS / COIN, false, PaladeumUnits::separatorAlways, 0)));
         return;
     }
 
@@ -499,23 +507,17 @@ void ReissueTokenDialog::enableDataEntry()
 
 void ReissueTokenDialog::buildUpdatedData()
 {
-    // Get the display value for the token quantity
-    auto value = ValueFromAmount(token->nAmount, token->units);
-
-    double newValue = value.get_real() + ui->quantitySpinBox->value();
-
-    std::stringstream ss;
-    ss.precision(token->units);
-    ss << std::fixed << newValue;
+    // The total after the reissue, in the units of the token (exactly: a double has too few digits)
+    const std::string newValue = ValueFromAmountString(token->nAmount + QuantityFromSpinBox(ui->quantitySpinBox), token->units);
 
     QString reissuable = ui->reissuableBox->isChecked() ? tr("Yes") : tr("No");
     QString name = formatBlack.arg(tr("Name"), ":", QString::fromStdString(token->strName)) + "\n";
 
     QString quantity;
     if (ui->quantitySpinBox->value() > 0)
-        quantity = formatGreen.arg(tr("Total Quantity"), ":", QString::fromStdString(ss.str())) + "\n";
+        quantity = formatGreen.arg(tr("Total Quantity"), ":", QString::fromStdString(newValue)) + "\n";
     else
-        quantity = formatBlack.arg(tr("Total Quantity"), ":", QString::fromStdString(ss.str())) + "\n";
+        quantity = formatBlack.arg(tr("Total Quantity"), ":", QString::fromStdString(newValue)) + "\n";
 
     QString units;
     if (ui->unitSpinBox->value() != token->units)
@@ -525,9 +527,9 @@ void ReissueTokenDialog::buildUpdatedData()
 
     QString reissue;
     if (ui->reissuableBox->isChecked())
-        reissue = formatBlack.arg(tr("Can Reisssue"), ":", reissuable) + "\n";
+        reissue = formatBlack.arg(tr("Can Reissue"), ":", reissuable) + "\n";
     else
-        reissue = formatGreen.arg(tr("Can Reisssue"), ":", reissuable) + "\n";
+        reissue = formatGreen.arg(tr("Can Reissue"), ":", reissuable) + "\n";
 
     QString ipfs;
     if (token->nHasIPFS && (!ui->ipfsBox->isChecked() || (ui->ipfsBox->isChecked() && ui->ipfsText->text().isEmpty())))
@@ -550,8 +552,8 @@ void ReissueTokenDialog::setDisplayedDataToNone()
 {
     ui->currentTokenData->clear();
     ui->updatedTokenData->clear();
-    ui->currentTokenData->setText(tr("Please select a token from the menu to display the tokens current settings"));
-    ui->updatedTokenData->setText(tr("Please select a token from the menu to display the tokens updated settings"));
+    ui->currentTokenData->setText(tr("Please select a token from the menu to display the token's current settings"));
+    ui->updatedTokenData->setText(tr("Please select a token from the menu to display the token's updated settings"));
 }
 
 /** SLOTS */
@@ -576,20 +578,18 @@ void ReissueTokenDialog::onTokenSelected(int index)
         }
 
         // Get the display value for the token quantity
-        auto value = ValueFromAmount(token->nAmount, token->units);
-        std::stringstream ss;
-        ss.precision(token->units);
-        ss << std::fixed << value.get_real();
+        const std::string value = ValueFromAmountString(token->nAmount, token->units);
 
         ui->unitSpinBox->setValue(token->units);
         ui->unitSpinBox->setMinimum(token->units);
 
-        ui->quantitySpinBox->setMaximum(21000000000 - value.get_real());
+        // Consensus limits the total of a token: the whole quantity that can still be added
+        ui->quantitySpinBox->setMaximum(static_cast<double>((MAX_MONEY_TOKENS - token->nAmount) / COIN));
 
         ui->currentTokenData->clear();
         // Create the QString to display to the user
         QString name = formatBlack.arg(tr("Name"), ":", QString::fromStdString(token->strName)) + "\n";
-        QString quantity = formatBlack.arg(tr("Current Quantity"), ":", QString::fromStdString(ss.str())) + "\n";
+        QString quantity = formatBlack.arg(tr("Current Quantity"), ":", QString::fromStdString(value)) + "\n";
         QString units = formatBlack.arg(tr("Current Units"), ":", QString::number(ui->unitSpinBox->value()));
         QString reissue = formatBlack.arg(tr("Can Reissue"), ":", tr("Yes")) + "\n";
         QString ipfs;
@@ -706,7 +706,7 @@ void ReissueTokenDialog::onReissueTokenClicked()
     }
 
     QString name = ui->comboBox->currentText();
-    CAmount quantity = ui->quantitySpinBox->value() * COIN;
+    CAmount quantity = QuantityFromSpinBox(ui->quantitySpinBox);
     bool reissuable = ui->reissuableBox->isChecked();
     bool hasIPFS = ui->ipfsBox->isChecked() && !ui->ipfsText->text().isEmpty();
 
@@ -833,7 +833,7 @@ void ReissueTokenDialog::onReissueTokenClicked()
 void ReissueTokenDialog::onReissueBoxChanged()
 {
     if (!ui->reissuableBox->isChecked()) {
-        ui->reissueWarningLabel->setText("Warning: Once this token is reissued with the reissuable flag set to false. It won't be able to be reissued in the future");
+        ui->reissueWarningLabel->setText("Warning: Once this token is reissued with the reissuable flag set to false, it won't be able to be reissued in the future");
         ui->reissueWarningLabel->setStyleSheet("color: red");
         ui->reissueWarningLabel->show();
     } else {
@@ -1141,6 +1141,7 @@ void ReissueTokenDialog::onUnitChanged(int value)
 
 void ReissueTokenDialog::updateTokensList()
 {
+    GUIUtil::LogTimer timer("manage token dialog list");
     LOCK(cs_main);
     std::vector<std::string> tokens;
     GetAllAdministrativeTokens(model->getWallet(), tokens, 0);

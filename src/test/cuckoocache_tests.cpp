@@ -8,6 +8,7 @@
 #include "script/sigcache.h"
 #include "test/test_paladeum.h"
 #include "random.h"
+#include <deque>
 #include <thread>
 
 /** Test Suite for CuckooCache

@@ -68,6 +68,9 @@ bool Solver(const CScript& scriptPubKey, txnouttype& typeRet, txnouttype& script
     }
 
     vSolutionsRet.clear();
+    // Only a token script has a second type. Callers compare it for every
+    // script, so it must not be left as they passed it in (uninitialized).
+    scriptTypeRet = TX_NONSTANDARD;
 
     // Shortcut for pay-to-script-hash, which are more constrained than the other types:
     // it is always OP_HASH160 20 [20 byte hash] OP_EQUAL
@@ -376,7 +379,7 @@ CScript GetScriptForDestination(const CTxDestination& dest, const int64_t lockTi
     CScript scriptDest;
     boost::apply_visitor(CScriptVisitor(&scriptDest), dest);
 
-    if (lockTime > 255) {
+    if (lockTime >= MIN_SCRIPT_LOCK_TIME) {
         CScript cltvScript = CScript() << lockTime << OP_CHECKLOCKTIMEVERIFY << OP_DROP;
         script = cltvScript + scriptDest;
     } else {

@@ -12,23 +12,31 @@
 #include <QSortFilterProxyModel>
 #include <QWidget>
 #include <QMenu>
+#include <QPointer>
+#include <QThread>
 #include <memory>
 
+class AmountLabel;
+class HeldTokenIndex;
+class OverviewRootModel;
+class PageActivity;
+class StatsStrip;
 class ClientModel;
 class TransactionFilterProxy;
 class TxViewDelegate;
 class PlatformStyle;
 class WalletModel;
 class TokenFilterProxy;
-
 class TokenViewDelegate;
 
-namespace Ui {
-    class OverviewPage;
-}
-
 QT_BEGIN_NAMESPACE
+class QFrame;
+class QLabel;
+class QLineEdit;
+class QListView;
 class QModelIndex;
+class QPushButton;
+class QTimer;
 QT_END_NAMESPACE
 
 /** Overview ("home") page widget */
@@ -44,8 +52,14 @@ public:
     void setWalletModel(WalletModel *walletModel);
     void showOutOfSyncWarning(bool fShow);
     void showTokens();
+    /** The "balances may be wrong while synchronizing" marker, shown next to the page title */
+    QWidget *headerWidget() const;
+    /** Where the page reports when it read the chain status */
+    void setActivity(PageActivity *activity);
 
 public Q_SLOTS:
+    /** Read the balances, the confirmations, the tokens and the chain status again */
+    void refreshPage();
     void setBalance(const CAmount& balance, const CAmount& unconfirmedBalance, const CAmount& immatureBalance, const CAmount& stake,
                     const CAmount& watchOnlyBalance, const CAmount& watchUnconfBalance, const CAmount& watchImmatureBalance, const CAmount& watchOnlyStake, const CAmount& lockedBalance);
 
@@ -56,9 +70,22 @@ Q_SIGNALS:
     void tokenIssueUniqueClicked(const QModelIndex &index);
     void tokenReissueClicked(const QModelIndex &index);
     void outOfSyncWarningClicked();
+    void sendClicked();
+    void receiveClicked();
+    void allTransactionsClicked();
+    void allTokensClicked();
+    void explorerClicked();
+    /** Look something up in the explorer */
+    void explorerRequested(const QString &query);
+    void sendTokenRequested(const QString &name);
+    void requestChainStatus();
+
+protected:
+    void resizeEvent(QResizeEvent *event) override;
+    void showEvent(QShowEvent *event) override;
+    void hideEvent(QHideEvent *event) override;
 
 private:
-    Ui::OverviewPage *ui;
     ClientModel *clientModel;
     WalletModel *walletModel;
     CAmount currentBalance;
@@ -71,9 +98,35 @@ private:
     CAmount currentWatchOnlyStake;
     CAmount currentLockedBalance;
 
+    QPointer<QWidget> syncPill;
+    QPointer<PageActivity> activity;
+    QWidget *syncHint;
+    QLineEdit *searchEdit;
+    StatsStrip *chainStats;
+    QThread statsThread;
+    QTimer *statsTimer;
+    bool outOfSync;
+    bool statsPending;
+    HeldTokenIndex *heldTokens;
+    OverviewRootModel *rootModel;
+    QAction *belowAction;
+    void showTokensBelow(const QString &root);
+    AmountLabel *labelTotal;
+    AmountLabel *labelBalance;
+    AmountLabel *labelUnconfirmed;
+    AmountLabel *labelImmature;
+    AmountLabel *labelStake;
+    QWidget *stakeBlock;
+    QWidget *labelWatchOnly;
+    AmountLabel *watchAmounts[4];
+    QFrame *tokenFrame;
+    QLabel *tokenCount;
+    QLineEdit *tokenSearch;
+    QListView *listTokens;
+    QListView *listTransactions;
+
     TxViewDelegate *txdelegate;
     std::unique_ptr<TransactionFilterProxy> filter;
-    std::unique_ptr<TokenFilterProxy> tokenFilter;
 
     TokenViewDelegate *tokendelegate;
     QMenu *contextMenu;
@@ -82,6 +135,8 @@ private:
     QAction *issueUnique;
     QAction *reissue;
 
+    int transactionLimit;
+    void updateTransactionLimit();
 
 private Q_SLOTS:
     void updateDisplayUnit();
@@ -91,6 +146,10 @@ private Q_SLOTS:
     void updateWatchOnlyLabels(bool showWatchOnly);
     void handleOutOfSyncWarningClicks();
     void tokenSearchChanged();
+    void updateTokenCount();
+    void updateChainStrip();
+    void chainStatusDone(const QString &json);
+    void searchSubmitted();
 };
 
 #endif // PLB_QT_OVERVIEWPAGE_H
