@@ -1798,6 +1798,14 @@ bool AppInitMain(boost::thread_group& threadGroup, CScheduler& scheduler)
                     break;
                 }
 
+                // Check for changed -tokenindex state (the database's flag was used and the
+                // option ignored)
+                if (fTokenIndex != gArgs.GetBoolArg("-tokenindex", DEFAULT_TOKENINDEX)) {
+                    strLoadError = _("You need to rebuild the database using -reindex to change -tokenindex");
+                    fOnlyReindexHelps = true;
+                    break;
+                }
+
                 // Check for changed -addressindex state
                 if (fAddressIndex != gArgs.GetBoolArg("-addressindex", DEFAULT_ADDRESSINDEX)) {
                     strLoadError = _("You need to rebuild the database using -reindex to change -addressindex");
