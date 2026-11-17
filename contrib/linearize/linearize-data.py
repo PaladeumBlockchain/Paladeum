@@ -9,6 +9,7 @@
 #
 
 from __future__ import print_function, division
+import hashlib
 import struct
 import re
 import os
@@ -50,10 +51,9 @@ def wordreverse(in_buf):
 	return b''.join(out_words)
 
 def calc_hash_str(blk_hdr):
-	x16r_hash_cmd = os.path.dirname(os.path.realpath(__file__)) + "/../../src/test/test_paladeum_hash"
-	cmd = [x16r_hash_cmd, hexlify(blk_hdr).decode('utf-8'), "2"]
-	blk_hash = subprocess.run(cmd, stdout=subprocess.PIPE, check=True).stdout.decode('ascii')
-	return blk_hash
+	# The id of a block: SHA256d of its 80-byte header, in the byte order the node shows.
+	# (BLAKE2b of the header is its proof of work, not its id.)
+	return hashlib.sha256(hashlib.sha256(blk_hdr).digest()).digest()[::-1].hex()
 
 def get_blk_dt(blk_hdr):
 	members = struct.unpack("<I", blk_hdr[68:68+4])
@@ -253,12 +253,12 @@ if __name__ == '__main__':
 	f = open(sys.argv[1], encoding="utf8")
 	for line in f:
 		# skip comment lines
-		m = re.search('^\s*#', line)
+		m = re.search(r'^\s*#', line)
 		if m:
 			continue
 
 		# parse key=value lines
-		m = re.search('^(\w+)\s*=\s*(\S.*)$', line)
+		m = re.search(r'^(\w+)\s*=\s*(\S.*)$', line)
 		if m is None:
 			continue
 		settings[m.group(1)] = m.group(2)
