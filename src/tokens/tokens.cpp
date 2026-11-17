@@ -397,11 +397,31 @@ bool IsTypeCheckNameValid(const KnownTokenType type, const std::string& name, st
 
         return true;
     } else {
-        if (name.size() > MAX_NAME_LENGTH - 1) { error = "Name is greater than max length of " + std::to_string(MAX_NAME_LENGTH - 1); return false; }  //Tokens and sub-tokens need to leave one extra char for OWNER indicator
-        if (!IsTokenNameASubtoken(name) && name.size() < MIN_TOKEN_LENGTH) { error = "Name must be contain " + std::to_string(MIN_TOKEN_LENGTH) + " characters"; return false; }
+        if (name.size() > MAX_NAME_LENGTH - 1) {
+            error = "Name is greater than max length of " + std::to_string(MAX_NAME_LENGTH - 1);
+            return false;
+        }  //Tokens and sub-tokens need to leave one extra char for OWNER indicator
+
+        if (!IsTokenNameASubtoken(name) && name.size() < MIN_TOKEN_LENGTH) {
+            error = "Name must have at least " + std::to_string(MIN_TOKEN_LENGTH) + " characters";
+            return false;
+        }
+
         bool valid = IsNameValidBeforeTag(name);
-        if (!valid && IsTokenNameASubtoken(name) && name.size() < 3) { error = "Name must have at least 3 characters (Valid characters are: A-Z 0-9 _ .)";  return false; }
-        if (!valid) { error = "Name contains invalid characters (Valid characters are: A-Z 0-9 _ .) (special characters can't be the first or last characters)";  return false; }
+        if (!valid && IsTokenNameASubtoken(name) && name.size() < 3) {
+            error = "Name must have at least 3 characters (Valid characters are: A-Z 0-9 _ .)";
+            return false;
+        }
+
+        if (!valid) {
+            // (a name that is kept for the coin itself is refused by the same check)
+            if (std::regex_match(name.substr(0, name.find('/')), PLB_NAMES))
+                error = "Name is reserved: PLB and PLBCOIN cannot be token names";
+            else
+                error = "Name contains invalid characters (Valid characters are: A-Z 0-9 _ .) (special characters can't be the first or last characters)";
+            return false;
+        }
+
         return true;
     }
 }

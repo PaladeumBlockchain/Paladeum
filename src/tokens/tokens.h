@@ -309,7 +309,9 @@ public :
     //! Returns true if an token with this name already exists
     bool CheckIfTokenExists(const std::string& name, bool fForceDuplicateCheck = true);
 
-    //! Returns true if an token with the name exists, and it was able to get the token metadata from database
+    //! Returns true if an token with the name exists, and it was able to get the token metadata from database.
+    //! Looks in this cache, in the global token cache and in the metadata cache and database.
+    //! All of them belong to cs_main: the caller holds it.
     bool GetTokenMetaDataIfExists(const std::string &name, CNewToken &token);
     bool GetTokenMetaDataIfExists(const std::string &name, CNewToken &token, int& nHeight, uint256& blockHash);
 

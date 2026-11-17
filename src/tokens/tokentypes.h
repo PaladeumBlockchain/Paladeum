@@ -10,6 +10,7 @@
 #include <sstream>
 #include <list>
 #include <mutex>
+#include <stdexcept>
 #include <unordered_map>
 #include "amount.h"
 #include "script/standard.h"
@@ -569,6 +570,10 @@ struct CTokenCacheRestrictedVerifiers
 };
 
 // Least Recently Used Cache
+//
+// The cache locks its own lists. Reading an entry moves it to the front, so even two
+// readers change the lists; the token metadata cache is used under cs_main, but a
+// caller that does not hold it must never be able to break the lists or the heap.
 template<typename cache_key_t, typename cache_value_t>
 class CLRUCache
 {

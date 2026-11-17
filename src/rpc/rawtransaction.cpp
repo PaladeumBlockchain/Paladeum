@@ -357,7 +357,7 @@ UniValue createrawtransaction(const JSONRPCRequest& request)
             "createrawtransaction [{\"txid\":\"id\",\"vout\":n},...] {\"address\":(amount or object),\"data\":\"hex\",...}\n"
             "                     ( locktime ) ( replaceable )\n"
             "\nCreate a transaction spending the given inputs and creating new outputs.\n"
-            "Outputs are addresses (paired with a PLB amount, data or object specifying an token operation) or data.\n"
+            "Outputs are addresses (paired with an PLB amount, data or object specifying a token operation) or data.\n"
             "Returns hex-encoded raw transaction.\n"
             "Note that the transaction's inputs are not signed, and\n"
             "it is not stored in the wallet or transmitted to the network.\n"
@@ -928,7 +928,7 @@ UniValue createrawtransaction(const JSONRPCRequest& request)
                     reissueObj.strName = token_name.get_str();
                     reissueObj.nAmount = AmountFromValue(token_quantity);
 
-                    // Validate the the object is valid
+                    // Validate the object is valid
                     std::string strError;
                     if (!ContextualCheckReissueToken(currentActiveTokenCache, reissueObj, strError))
                         throw JSONRPCError(RPC_INVALID_PARAMETER, strError);
@@ -1569,7 +1569,7 @@ UniValue decoderawtransaction(const JSONRPCRequest& request)
             "           \"message\" : \"message\", (string optional) the message if one was sent\n"
             "           \"expire_time\" : n,      (numeric optional) the message epoch expiration time if one was set\n"
             "         \"addresses\" : [           (json array of string)\n"
-            "           \"12tvKAXCxZjSmdNbao16dKXC8tRWfcF5oc\"   (string) paladeum address\n"
+            "           \"PaLadeumExampLeAddressFirstxxCXj28\"   (string) paladeum address\n"
             "           ,...\n"
             "         ]\n"
             "       }\n"
@@ -1621,7 +1621,7 @@ UniValue decodescript(const JSONRPCRequest& request)
             "     ,...\n"
             "  ],\n"
             "  \"p2sh\":\"address\",       (string) address of P2SH script wrapping this redeem script (not returned if the script is already a P2SH).\n"
-            "  \"(The following only appears if the script is an token script)\n"
+            "  \"(The following only appears if the script is a token script)\n"
             "  \"token_name\":\"name\",      (string) Name of the token.\n"
             "  \"amount\":\"x.xx\",          (numeric) The amount of tokens interacted with.\n"
             "  \"units\": n,                (numeric) The units of the token. (Only appears in the type (new_token))\n"

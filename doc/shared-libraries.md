@@ -43,7 +43,7 @@ The interface is defined in the C header `paladeumconsensus.h` located in  `src/
 - `paladeumconsensus_ERR_AMOUNT_REQUIRED` - Input amount is required if WITNESS is used
 
 ### Example Implementations
-- [NPaladeum](https://github.com/NicolasDorier/NPaladeum/blob/master/NPaladeum/Script.cs#L814) (.NET Bindings)
-- [node-libpaladeumconsensus](https://github.com/bitpay/node-libpaladeumconsensus) (Node.js Bindings)
-- [java-libpaladeumconsensus](https://github.com/dexX7/java-libpaladeumconsensus) (Java Bindings)
-- [paladeumconsensus-php](https://github.com/Bit-Wasp/paladeumconsensus-php) (PHP Bindings)
+- [NPaladeum](https://github.com/NicolasDorier/NBitcoin/blob/master/NPaladeum/Script.cs#L814) (.NET Bindings)
+- [node-libbitcoinconsensus](https://github.com/bitpay/node-libbitcoinconsensus) (Node.js Bindings)
+- [java-libbitcoinconsensus](https://github.com/dexX7/java-libbitcoinconsensus) (Java Bindings)
+- [bitcoinconsensus-php](https://github.com/Bit-Wasp/bitcoinconsensus-php) (PHP Bindings)

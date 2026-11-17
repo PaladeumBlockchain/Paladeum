@@ -94,6 +94,8 @@ std::string KnownTokenTypeToString(KnownTokenType& tokenType)
     }
 }
 
+/** An amount of a token in that token's units. The units are looked up in the token
+ *  metadata cache, which belongs to cs_main: the caller holds it. */
 UniValue UnitValueFromAmount(const CAmount& amount, const std::string token_name)
 {
     // the token cache and its metadata cache belong to cs_main
@@ -451,7 +453,7 @@ UniValue issue(const JSONRPCRequest& request)
         throw std::runtime_error(
             "issue \"token_name\" qty \"( to_address )\" \"( change_address )\" ( units ) ( reissuable ) ( has_ipfs ) \"( ipfs_hash )\"\n"
             + TokenActivationWarning() +
-            "\nIssue an token, subtoken or unique token.\n"
+            "\nIssue a token, a sub token or a unique token.\n"
             "Token name must not conflict with any existing token.\n"
             "Unit as the number of decimals precision for the token (0 for whole units (\"1\"), 8 for max precision (\"1.00000000\")\n"
             "Reissuable is true/false for whether additional units can be issued by the original issuer.\n"
@@ -461,10 +463,10 @@ UniValue issue(const JSONRPCRequest& request)
             "1. \"token_name\"            (string, required) a unique name\n"
             "2. \"qty\"                   (numeric, optional, default=1) the number of units to be issued\n"
             "3. \"to_address\"            (string), optional, default=\"\"), address token will be sent to, if it is empty, address will be generated for you\n"
-            "4. \"change_address\"        (string), optional, default=\"\"), address the the paladeum change will be sent to, if it is empty, change address will be generated for you\n"
+            "4. \"change_address\"        (string), optional, default=\"\"), address the PLB change will be sent to, if it is empty, change address will be generated for you\n"
             "5. \"units\"                 (integer, optional, default=0, min=0, max=8), the number of decimals precision for the token (0 for whole units (\"1\"), 8 for max precision (\"1.00000000\")\n"
             "6. \"reissuable\"            (boolean, optional, default=true (false for unique tokens)), whether future reissuance is allowed\n"
-            "7. \"has_ipfs\"              (boolean, optional, default=false), whether ipfs hash is going to be added to the token\n"
+            "7. \"has_ipfs\"              (boolean, optional, default=false), whether an IPFS hash is going to be added to the token\n"
             "8. \"ipfs_hash\"             (string, optional but required if has_ipfs = 1), an ipfs hash or a txid hash once messaging is activated\n"
 
             "\nResult:\n"
@@ -645,7 +647,7 @@ UniValue issueunique(const JSONRPCRequest& request)
                 "2. \"token_tags\"            (array, required) the unique tag for each token which is to be issued\n"
                 "3. \"ipfs_hashes\"           (array, optional) ipfs hashes or txid hashes corresponding to each supplied tag (should be same size as \"token_tags\")\n"
                 "4. \"to_address\"            (string, optional, default=\"\"), address tokens will be sent to, if it is empty, address will be generated for you\n"
-                "5. \"change_address\"        (string, optional, default=\"\"), address the the paladeum change will be sent to, if it is empty, change address will be generated for you\n"
+                "5. \"change_address\"        (string, optional, default=\"\"), address the PLB change will be sent to, if it is empty, change address will be generated for you\n"
 
                 "\nResult:\n"
                 "\"txid\"                     (string) The transaction id\n"
@@ -901,7 +903,7 @@ UniValue listtokenbalancesbyaddress(const JSONRPCRequest& request)
             "\nReturns a list of all token balances for an address.\n"
 
             "\nArguments:\n"
-            "1. \"address\"                  (string, required) a paladeum address\n"
+            "1. \"address\"                  (string, required) an paladeum address\n"
             "2. \"onlytotal\"                (boolean, optional, default=false) when false result is just a list of tokens balances -- when true the result is just a single number representing the number of tokens\n"
             "3. \"count\"                    (integer, optional, default=50000, MAX=50000) truncates results to include only the first _count_ tokens found\n"
             "4. \"start\"                    (integer, optional, default=0) results skip over the first _start_ tokens found (if negative it skips back from the end)\n"
@@ -1051,7 +1053,7 @@ UniValue listmytokens(const JSONRPCRequest &request)
                 "\nReturns a list of all token that are owned by this wallet\n"
 
                 "\nArguments:\n"
-                "1. \"token\"                    (string, optional, default=\"*\") filters results -- must be an token name or a partial token name followed by '*' ('*' matches all trailing characters)\n"
+                "1. \"token\"                    (string, optional, default=\"*\") filters results -- must be a token name or a partial token name followed by '*' ('*' matches all trailing characters)\n"
                 "2. \"verbose\"                  (boolean, optional, default=false) when false results only contain balances -- when true results include outpoints\n"
                 "3. \"count\"                    (integer, optional, default=ALL) truncates results to include only the first _count_ tokens found\n"
                 "4. \"start\"                    (integer, optional, default=0) results skip over the first _start_ tokens found (if negative it skips back from the end)\n"
@@ -1233,7 +1235,7 @@ UniValue listmylockedtokens(const JSONRPCRequest &request)
                 "\nReturns a list of all locked token that are owned by this wallet\n"
 
                 "\nArguments:\n"
-                "1. \"token\"                    (string, optional, default=\"*\") filters results -- must be an token name or a partial token name followed by '*' ('*' matches all trailing characters)\n"
+                "1. \"token\"                    (string, optional, default=\"*\") filters results -- must be a token name or a partial token name followed by '*' ('*' matches all trailing characters)\n"
                 "2. \"verbose\"                  (boolean, optional, default=false) when false results only contain balances -- when true results include outpoints\n"
                 "3. \"count\"                    (integer, optional, default=ALL) truncates results to include only the first _count_ tokens found\n"
                 "4. \"start\"                    (integer, optional, default=0) results skip over the first _start_ tokens found (if negative it skips back from the end)\n"
@@ -1965,7 +1967,7 @@ UniValue reissue(const JSONRPCRequest& request)
         throw std::runtime_error(
                 "reissue \"token_name\" qty \"to_address\" \"change_address\" ( reissuable ) ( new_units) \"( new_ipfs )\" \n"
                 + TokenActivationWarning() +
-                "\nReissues a quantity of an token to an owned address if you own the Owner Token"
+                "\nReissues a quantity of a token to an owned address if you own the Owner Token"
                 "\nCan change the reissuable flag during reissuance"
                 "\nCan change the ipfs hash during reissuance"
 
@@ -2453,7 +2455,7 @@ UniValue listtokens(const JSONRPCRequest& request)
                 "\nThis could be a slow/expensive operation as it reads from the database\n"
 
                 "\nArguments:\n"
-                "1. \"token\"                    (string, optional, default=\"*\") filters results -- must be an token name or a partial token name followed by '*' ('*' matches all trailing characters)\n"
+                "1. \"token\"                    (string, optional, default=\"*\") filters results -- must be a token name or a partial token name followed by '*' ('*' matches all trailing characters)\n"
                 "2. \"verbose\"                  (boolean, optional, default=false) when false result is just a list of token names -- when true results are token name mapped to metadata\n"
                 "3. \"count\"                    (integer, optional, default=ALL) truncates results to include only the first _count_ tokens found\n"
                 "4. \"start\"                    (integer, optional, default=0) results skip over the first _start_ tokens found (if negative it skips back from the end)\n"
@@ -3151,7 +3153,7 @@ UniValue issuequalifiertoken(const JSONRPCRequest& request)
                 "2. \"qty\"                   (numeric, optional, default=1) the number of units to be issued\n"
                 "3. \"to_address\"            (string), optional, default=\"\"), address token will be sent to, if it is empty, address will be generated for you\n"
                 "4. \"change_address\"        (string), optional, default=\"\"), address the the paladeum change will be sent to, if it is empty, change address will be generated for you\n"
-                "5. \"has_ipfs\"              (boolean, optional, default=false), whether ipfs hash is going to be added to the token\n"
+                "5. \"has_ipfs\"              (boolean, optional, default=false), whether an IPFS hash is going to be added to the token\n"
                 "6. \"ipfs_hash\"             (string, optional but required if has_ipfs = 1), an ipfs hash or a txid hash once messaging is activated\n"
 
                 "\nResult:\n"

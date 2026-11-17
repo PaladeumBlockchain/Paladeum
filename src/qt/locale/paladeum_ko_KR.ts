@@ -282,7 +282,7 @@
         <translation>암호는 영문, 숫자, 특수문자로 입력합니다.</translation>
     </message>
     <message>
-        <source>Only English letters, digits and symbols can be used in the passphrase. Check the Korean/English key.</source>
+        <source>Only English letters, digits and symbols can be used in the passphrase. Check the input language of the keyboard.</source>
         <translation>암호에는 영문, 숫자, 특수문자만 쓸 수 있습니다. 한/영 키를 확인하세요.</translation>
     </message>
     <message>
@@ -1358,7 +1358,7 @@
         <translation>유효한 Paladeum 주소입니다</translation>
     </message>
     <message>
-        <source>A user name: it is resolved to its address when sending</source>
+        <source>A username: it is resolved to its address when sending</source>
         <translation>사용자 이름입니다. 보낼 때 연결된 주소로 바뀝니다</translation>
     </message>
     <message>
@@ -1781,6 +1781,10 @@
     <message>
         <source>Choose data directory on startup (default: %u)</source>
         <translation>실행시 데이터 폴더 선택하기 (기본값: %u)</translation>
+    </message>
+    <message>
+        <source>Show the controls for experts: the unit of the amount fields, and owner tokens in the fields for sending tokens (default: %u)</source>
+        <translation>전문가용 조작부 표시: 금액 입력란의 단위 선택, 토큰 보내기 입력란의 소유자 토큰 (기본값: %u)</translation>
     </message>
     <message>
         <source>Set language, for example "de_DE" (default: system locale)</source>
@@ -3915,7 +3919,7 @@
         <translation>유효한 Paladeum 주소입니다</translation>
     </message>
     <message>
-        <source>A user name: it is resolved to its address when sending</source>
+        <source>A username: it is resolved to its address when sending</source>
         <translation>사용자 이름입니다. 보낼 때 연결된 주소로 바뀝니다</translation>
     </message>
     <message>
@@ -8635,8 +8639,8 @@
         <translation>지갑</translation>
     </message>
     <message>
-        <source>Opening %1 …</source>
-        <translation>%1 여는 중…</translation>
+        <source>Opening %1...</source>
+        <translation>%1 여는 중...</translation>
     </message>
     <message>
         <source>Open wallet</source>
@@ -8647,8 +8651,8 @@
         <translation>%1 지갑을 열지 못했습니다: %2</translation>
     </message>
     <message>
-        <source>Creating %1 …</source>
-        <translation>%1 만드는 중…</translation>
+        <source>Creating %1...</source>
+        <translation>%1 만드는 중...</translation>
     </message>
     <message>
         <source>Create wallet</source>
@@ -8659,8 +8663,8 @@
         <translation>%1 지갑을 만들지 못했습니다: %2</translation>
     </message>
     <message>
-        <source>Restoring %1 …</source>
-        <translation>%1 복원하는 중…</translation>
+        <source>Restoring %1...</source>
+        <translation>%1 복원하는 중...</translation>
     </message>
     <message>
         <source>Restore wallet</source>
@@ -8671,8 +8675,8 @@
         <translation>%1 지갑을 복원하지 못했습니다: %2</translation>
     </message>
     <message>
-        <source>Closing %1 …</source>
-        <translation>%1 닫는 중…</translation>
+        <source>Closing %1...</source>
+        <translation>%1 닫는 중...</translation>
     </message>
     <message>
         <source>The wallet is being rescanned. Try again when the rescan is over.</source>
@@ -8691,8 +8695,8 @@
         <translation>지갑은 닫혔지만 실행 중인 명령이 지갑 파일을 아직 쓰고 있습니다. 프로그램을 끝내면 풀립니다. 그 전에는 파일을 복사하거나 옮기지 마세요.</translation>
     </message>
     <message>
-        <source>Finishing the encryption of %1 …</source>
-        <translation>%1 암호화를 마무리하는 중…</translation>
+        <source>Finishing the encryption of %1...</source>
+        <translation>%1 암호화를 마무리하는 중...</translation>
     </message>
     <message>
         <source>Encrypt wallet</source>
