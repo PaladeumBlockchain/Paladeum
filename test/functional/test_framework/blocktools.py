@@ -6,7 +6,7 @@
 """Utilities for manipulating blocks and transactions."""
 
 from .mininode import *
-from .script import CScript, OP_TRUE, OP_CHECKSIG, OP_RETURN
+from .script import CScript, CScriptOp, OP_1, OP_TRUE, OP_CHECKSIG, OP_RETURN
 
 # Create a block (with regtest difficulty)
 def create_block(hashprev, coinbase, nTime=None):
@@ -18,10 +18,20 @@ def create_block(hashprev, coinbase, nTime=None):
         block.nTime = nTime
     block.hashPrevBlock = hashprev
     block.nBits = 0x207fffff # Will break after a difficulty adjustment...
+    # A block may not be earlier than one of its transactions, nor much later than its coinbase
+    # (CheckBlock: bad-tx-time, bad-cb-time): the coinbase gets the time of the block.
+    if coinbase.nTime != block.nTime:
+        coinbase.nTime = block.nTime
+        coinbase.rehash()
     block.vtx.append(coinbase)
     block.hashMerkleRoot = block.calc_merkle_root()
     block.calc_sha256()
     return block
+
+# The time of the regtest genesis block (CRegTestParams in src/chainparams.cpp)
+REGTEST_GENESIS_BLOCK_TIME = 1524179366
+# The name of the constant in older tests
+REGTEST_GENISIS_BLOCK_TIME = REGTEST_GENESIS_BLOCK_TIME
 
 # From BIP141
 WITNESS_COMMITMENT_HEADER = b"\xaa\x21\xa9\xed"
@@ -66,17 +76,28 @@ def serialize_script_num(value):
         r[-1] |= 0x80
     return r
 
+def block_subsidy(height):
+    """The block reward of Paladeum (GetBlockSubsidy in src/validation.cpp): 1,000,000,000 PLB
+    for block 1, 10 PLB for every other block, no halving."""
+    return 1000000000 * COIN if height == 1 else 10 * COIN
+
+def coinbase_height_script(height):
+    """The scriptSig of a coinbase that starts with its height (BIP34, active on regtest),
+    as CScript() << height writes it: OP_1 to OP_16 for 1 to 16 (then OP_1, since a coinbase
+    scriptSig has at least 2 bytes), else a push of the number."""
+    if 1 <= height <= 16:
+        return bytes([CScriptOp.encode_op_n(height), OP_1])
+    return ser_string(serialize_script_num(height))
+
 # Create a coinbase transaction, assuming no miner fees.
 # If pubkey is passed in, the coinbase output will be a P2PK output;
 # otherwise an anyone-can-spend output.
 def create_coinbase(height, pubkey = None):
     coinbase = CTransaction()
     coinbase.vin.append(CTxIn(COutPoint(0, 0xffffffff), 
-                ser_string(serialize_script_num(height)), 0xffffffff))
+                coinbase_height_script(height), 0xffffffff))
     coinbaseoutput = CTxOut()
-    coinbaseoutput.nValue = 5000 * COIN
-    halvings = int(height/150) # regtest
-    coinbaseoutput.nValue >>= halvings
+    coinbaseoutput.nValue = block_subsidy(height)
     if (pubkey != None):
         coinbaseoutput.scriptPubKey = CScript([pubkey, OP_CHECKSIG])
     else:

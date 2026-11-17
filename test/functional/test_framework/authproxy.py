@@ -48,13 +48,15 @@ USER_AGENT = "AuthServiceProxy/0.1"
 log = logging.getLogger("PaladeumRPC")
 
 class JSONRPCException(Exception):
-    def __init__(self, rpc_error):
+    def __init__(self, rpc_error, http_status=None):
         try:
             errmsg = '%(message)s (%(code)i)' % rpc_error
         except (KeyError, TypeError):
             errmsg = ''
         super().__init__(errmsg)
         self.error = rpc_error
+        # The HTTP status of the reply that carried the error (None if there was no reply)
+        self.http_status = http_status
 
 
 def EncodeDecimal(o):
@@ -71,6 +73,7 @@ class AuthServiceProxy():
         self._service_name = service_name
         self.ensure_ascii = ensure_ascii  # can be toggled on the fly by tests
         self.__url = urllib.parse.urlparse(service_url)
+        self._http_status = None
         port = 80 if self.__url.port is None else self.__url.port
         user = None if self.__url.username is None else self.__url.username.encode('utf8')
         passwd = None if self.__url.password is None else self.__url.password.encode('utf8')
@@ -139,10 +142,10 @@ class AuthServiceProxy():
             log.debug("Call failed.  postdata:")
             log.debug(postdata)
             log.debug("----</authproxy>---")
-            raise JSONRPCException(response['error'])
+            raise JSONRPCException(response['error'], self._http_status)
         elif 'result' not in response:
             raise JSONRPCException({
-                'code': -343, 'message': 'missing JSON-RPC result'})
+                'code': -343, 'message': 'missing JSON-RPC result'}, self._http_status)
         else:
             return response['result']
 
@@ -166,10 +169,12 @@ class AuthServiceProxy():
             raise JSONRPCException({
                 'code': -342, 'message': 'missing HTTP response from server'})
 
+        self._http_status = http_response.status
         content_type = http_response.getheader('Content-Type')
         if content_type != 'application/json':
             raise JSONRPCException({
-                'code': -342, 'message': 'non-JSON HTTP response with \'%i %s\' from server' % (http_response.status, http_response.reason)})
+                'code': -342, 'message': 'non-JSON HTTP response with \'%i %s\' from server' % (http_response.status, http_response.reason)},
+                http_response.status)
 
         responsedata = http_response.read().decode('utf8')
         response = json.loads(responsedata, parse_float=decimal.Decimal)

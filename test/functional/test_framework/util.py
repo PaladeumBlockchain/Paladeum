@@ -7,6 +7,7 @@
 
 from base64 import b64encode
 from binascii import hexlify, unhexlify
+from datetime import datetime, timezone
 from decimal import Decimal, ROUND_DOWN
 import hashlib
 import json
@@ -59,13 +60,29 @@ def assert_equal(thing1, thing2, *args):
     if thing1 != thing2 or any(thing1 != arg for arg in args):
         raise AssertionError("not(%s)" % " == ".join(str(arg) for arg in (thing1, thing2) + args))
 
-def assert_greater_than(thing1, thing2):
+def assert_greater_than(thing1, thing2, err_msg=None):
     if thing1 <= thing2:
-        raise AssertionError("%s <= %s" % (str(thing1), str(thing2)))
+        prefix = "%s: " % err_msg if err_msg else ""
+        raise AssertionError("%s%s <= %s" % (prefix, str(thing1), str(thing2)))
 
 def assert_greater_than_or_equal(thing1, thing2):
     if thing1 < thing2:
         raise AssertionError("%s < %s" % (str(thing1), str(thing2)))
+
+def assert_approx(v, vexp, vspan=0.00001):
+    """Assert that `v` is within `vspan` of `vexp`"""
+    if v < vexp - vspan:
+        raise AssertionError("%s < [%s..%s]" % (str(v), str(vexp - vspan), str(vexp + vspan)))
+    if v > vexp + vspan:
+        raise AssertionError("%s > [%s..%s]" % (str(v), str(vexp - vspan), str(vexp + vspan)))
+
+def assert_happening(date_str, within_secs=120):
+    """Assert that date_str (an RPC date in UTC, e.g. '2019-11-07 17:50:06') is within within_secs of now."""
+    then = datetime.strptime(date_str, '%Y-%m-%d %H:%M:%S').replace(tzinfo=timezone.utc)
+    now = datetime.now(timezone.utc)
+    diff_secs = (now - then).total_seconds()
+    if abs(diff_secs) > within_secs:
+        raise AssertionError("More than expected %s second difference between %s and now(%s) (%ss)" % (within_secs, date_str, now, diff_secs))
 
 def assert_raises(exc, fun, *args, **kwds):
     assert_raises_message(exc, None, fun, *args, **kwds)
@@ -227,7 +244,8 @@ def str_to_b64str(string):
 def satoshi_round(amount):
     return Decimal(amount).quantize(Decimal('0.00000001'), rounding=ROUND_DOWN)
 
-def wait_until(predicate, *, attempts=float('inf'), timeout=float('inf'), lock=None):
+def wait_until(predicate, *, attempts=float('inf'), timeout=float('inf'), lock=None, err_msg=None):
+    """Wait until predicate() is true. err_msg, if given, names what was waited for in the error."""
     if attempts == float('inf') and timeout == float('inf'):
         timeout = 60
     attempt = 0
@@ -245,8 +263,9 @@ def wait_until(predicate, *, attempts=float('inf'), timeout=float('inf'), lock=N
         time.sleep(0.05)
 
     # Print the cause of the timeout
-    assert_greater_than(attempts, attempt)
-    assert_greater_than(timeout, time.time())
+    what = err_msg if err_msg else "wait_until"
+    assert_greater_than(attempts, attempt, what + " ~~ exceeded attempts")
+    assert_greater_than(timeout, time.time(), what + " ~~ exceeded timeout")
     raise RuntimeError('Unreachable')
 
 # RPC/P2P connection constants and functions
@@ -263,7 +282,7 @@ class PortSeed:
     # Must be initialized with a unique integer for each process
     n = None
 
-def get_rpc_proxy(url, node_number, timeout=None, coveragedir=None):
+def get_rpc_proxy(url, node_number, timeout=None, coveragedir=None, coverage_dir=None):
     """
     Args:
         url (str): URL of the RPC server to call
@@ -271,11 +290,14 @@ def get_rpc_proxy(url, node_number, timeout=None, coveragedir=None):
 
     Kwargs:
         timeout (int): HTTP timeout in seconds
+        coveragedir, coverage_dir (str): directory for the RPC coverage log (either name)
 
     Returns:
         AuthServiceProxy. convenience object for making RPC calls.
 
     """
+    if coveragedir is None:
+        coveragedir = coverage_dir
     proxy_kwargs = {}
     if timeout is not None:
         proxy_kwargs['timeout'] = timeout
@@ -324,8 +346,26 @@ def initialize_datadir(dirname, n):
         f.write("logratelimit=0\n")
     return datadir
 
+# The name of initialize_datadir in older tests
+initialize_data_dir = initialize_datadir
+
 def get_datadir_path(dirname, n):
     return os.path.join(dirname, "node" + str(n))
+
+def wallet_file(datadir, name="wallet.dat", chain="regtest"):
+    """The path of the database file of wallet `name` in a node's data directory.
+
+    The node keeps its wallets in <chain>/wallets when that directory exists, else in <chain>.
+    A wallet name that is an existing file there is used as it is (a wallet.dat file of an older
+    data directory); otherwise the wallet is a directory with the file wallet.dat in it, which is
+    also what a new default wallet "wallet.dat" is: <chain>/wallet.dat/wallet.dat."""
+    base = os.path.join(datadir, chain)
+    if os.path.isdir(os.path.join(base, "wallets")):
+        base = os.path.join(base, "wallets")
+    path = os.path.join(base, name)
+    if os.path.isfile(path):
+        return path
+    return os.path.join(path, "wallet.dat")
 
 def get_auth_cookie(datadir):
     user = None
@@ -360,6 +400,20 @@ def set_node_times(nodes, t):
     for node in nodes:
         node.setmocktime(t)
 
+def generate_with_clock(nodes, node, count, step=500):
+    """Mine count blocks on node, step at a time, and before each step set the clock of all
+    nodes to the time of the tip (or the real time when that is later). Returns the hashes.
+
+    A block must be later than the block before it and at most 10 minutes ahead of the clock of
+    a node (FutureDrift), so a test that mines more blocks than seconds pass ends up with blocks
+    that the nodes refuse as too far in the future. The clocks stay where this left them."""
+    hashes = []
+    while len(hashes) < count:
+        tip_time = node.getblock(node.getbestblockhash())['time']
+        set_node_times(nodes, max(tip_time, int(time.time())))
+        hashes += node.generate(min(step, count - len(hashes)))
+    return hashes
+
 def disconnect_nodes(from_connection, node_num):
     for peer_id in [peer['id'] for peer in from_connection.getpeerinfo() if "testnode%d" % node_num in peer['subver']]:
         from_connection.disconnectnode(nodeid=peer_id)
@@ -384,14 +438,22 @@ def connect_nodes(from_connection, node_num):
     while any(peer['version'] == 0 for peer in from_connection.getpeerinfo()):
         time.sleep(0.1)
 
-def connect_nodes_bi(nodes, a, b):
+def connect_nodes_bi(nodes, a, b, wait=False):
+    """Connect nodes a and b both ways. With wait, also wait until both have the same block count."""
     connect_nodes(nodes[a], b)
     connect_nodes(nodes[b], a)
+    if wait:
+        wait_for_block_sync(nodes, a, b)
 
-def connect_all_nodes_bi(nodes):
+def connect_all_nodes_bi(nodes, wait=False):
     for i in range(0, len(nodes)):
         for j in range(i+1, len(nodes)):
-            connect_nodes_bi(nodes, i, j)
+            connect_nodes_bi(nodes, i, j, wait)
+
+def wait_for_block_sync(nodes, a, b, timeout=60):
+    """Wait until nodes a and b have the same block count."""
+    wait_until(lambda: nodes[a].getblockcount() == nodes[b].getblockcount(), timeout=timeout,
+               err_msg="block count of node %d and node %d" % (a, b))
 
 def sync_blocks(rpc_connections, *, wait=1, timeout=60):
     """
@@ -577,6 +639,7 @@ def create_tx(node, coinbase, to_address, amount):
 # Create a spend of each passed-in utxo, splicing in "txouts" to each raw
 # transaction to make it large.  See gen_return_txouts() above.
 def create_lots_of_big_transactions(node, txouts, utxos, num, fee):
+    from .mininode import CTransaction, FromHex, ser_vector
     addr = node.getnewaddress()
     txids = []
     for _ in range(num):
@@ -586,9 +649,13 @@ def create_lots_of_big_transactions(node, txouts, utxos, num, fee):
         change = t['amount'] - fee
         outputs[addr] = satoshi_round(change)
         rawtx = node.createrawtransaction(inputs, outputs)
-        newtx = rawtx[0:92]
+        # Replace the output count (one byte, 01) by txouts: the count and outputs that come
+        # before the change output. It follows nVersion, nTime and the inputs.
+        vout_pos = 2 * (4 + 4 + len(ser_vector(FromHex(CTransaction(), rawtx).vin)))
+        assert_equal(rawtx[vout_pos:vout_pos + 2], "01")
+        newtx = rawtx[0:vout_pos]
         newtx = newtx + txouts
-        newtx = newtx + rawtx[94:]
+        newtx = newtx + rawtx[vout_pos + 2:]
         signresult = node.signrawtransaction(newtx, None, None, "NONE")
         txid = node.sendrawtransaction(signresult["hex"], True)
         txids.append(txid)

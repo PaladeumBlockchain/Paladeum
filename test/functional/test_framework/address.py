@@ -27,14 +27,15 @@ def byte_to_base58(b, version):
 
 # TODO: def base58_decode
 
+# Address versions (base58Prefixes in src/chainparams.cpp): main network, else regtest
 def keyhash_to_p2pkh(hash, main = False):
     assert (len(hash) == 20)
-    version = 0 if main else 111
+    version = 56 if main else 83
     return byte_to_base58(hash, version)
 
 def scripthash_to_p2sh(hash, main = False):
     assert (len(hash) == 20)
-    version = 5 if main else 196
+    version = 51 if main else 196
     return byte_to_base58(hash, version)
 
 def key_to_p2pkh(key, main = False):

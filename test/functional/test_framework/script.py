@@ -233,7 +233,8 @@ OP_NOP8 = CScriptOp(0xb7)
 OP_NOP9 = CScriptOp(0xb8)
 OP_NOP10 = CScriptOp(0xb9)
 
-OP_PLB_ASSET = CScriptOp(0xc0)
+OP_PLB_TOKEN = CScriptOp(0xc0)
+OP_PLB_ASSET = OP_PLB_TOKEN
 
 # template matching params
 OP_SMALLINTEGER = CScriptOp(0xfa)
@@ -355,7 +356,7 @@ OPCODE_NAMES.update({
     OP_NOP8 : 'OP_NOP8',
     OP_NOP9 : 'OP_NOP9',
     OP_NOP10 : 'OP_NOP10',
-    OP_PLB_ASSET : 'OP_PLB_ASSET',
+    OP_PLB_TOKEN : 'OP_PLB_TOKEN',
     OP_SMALLINTEGER : 'OP_SMALLINTEGER',
     OP_PUBKEYS : 'OP_PUBKEYS',
     OP_PUBKEYHASH : 'OP_PUBKEYHASH',
@@ -696,3 +697,10 @@ def SegwitVersion1SignatureHash(script, txTo, inIdx, hashtype, amount):
     ss += struct.pack("<I", hashtype)
 
     return hash256(ss)
+
+
+# The names of these functions in older tests
+CScript.get_sig_op_count = CScript.GetSigOpCount
+find_and_delete = FindAndDelete
+signature_hash = SignatureHash
+segwit_version1_signature_hash = SegwitVersion1SignatureHash

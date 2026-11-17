@@ -41,7 +41,9 @@ from test_framework.siphash import siphash256
 from test_framework.util import hex_str_to_bytes, bytes_to_hex_str, wait_until
 
 BIP0031_VERSION = 60000
-MY_VERSION = 70014  # past bip-31 for ping/pong
+# The node disconnects peers below MESSAGING_RESTRICTED_TOKENS_VERSION (70026), and below
+# OLD_PEER_CUTOFF_VERSION once a cutoff height is reached: announce PROTOCOL_VERSION (src/version.h).
+MY_VERSION = 70029
 MY_SUBVERSION = b"/python-mininode-tester:0.0.3/"
 MY_RELAY = 1 # from version 70001 onwards, fRelay should be appended to version messages (BIP37)
 
@@ -303,8 +305,9 @@ class CBlockLocator():
 
 
 class COutPoint():
-    def __init__(self, hash=0, n=0):
-        self.hash = hash
+    # hash_in: the name of hash in older tests
+    def __init__(self, hash=0, n=0, hash_in=None):
+        self.hash = hash if hash_in is None else hash_in
         self.n = n
 
     def deserialize(self, f):
@@ -322,13 +325,14 @@ class COutPoint():
 
 
 class CTxIn():
-    def __init__(self, outpoint=None, scriptSig=b"", nSequence=0):
+    # script_sig and n_sequence: the names of scriptSig and nSequence in older tests
+    def __init__(self, outpoint=None, scriptSig=b"", nSequence=0, script_sig=None, n_sequence=None):
         if outpoint is None:
             self.prevout = COutPoint()
         else:
             self.prevout = outpoint
-        self.scriptSig = scriptSig
-        self.nSequence = nSequence
+        self.scriptSig = scriptSig if script_sig is None else script_sig
+        self.nSequence = nSequence if n_sequence is None else n_sequence
 
     def deserialize(self, f):
         self.prevout = COutPoint()
@@ -350,9 +354,10 @@ class CTxIn():
 
 
 class CTxOut():
-    def __init__(self, nValue=0, scriptPubKey=b""):
-        self.nValue = nValue
-        self.scriptPubKey = scriptPubKey
+    # n_value and script_pub_key: the names of nValue and scriptPubKey in older tests
+    def __init__(self, nValue=0, scriptPubKey=b"", n_value=None, script_pub_key=None):
+        self.nValue = nValue if n_value is None else n_value
+        self.scriptPubKey = scriptPubKey if script_pub_key is None else script_pub_key
 
     def deserialize(self, f):
         self.nValue = struct.unpack("<q", f.read(8))[0]
@@ -613,6 +618,19 @@ class CTransaction():
         self.sha256 = None
         self.calc_sha256()
 
+    # The name of calc_sha256 in older tests
+    def calc_x16r(self, with_witness=False):
+        return self.calc_sha256(with_witness)
+
+    # The name of the txid (sha256) in older tests
+    @property
+    def x16r(self):
+        return self.sha256
+
+    @x16r.setter
+    def x16r(self, value):
+        self.sha256 = value
+
     # We will only cache the serialization without witness in
     # self.sha256 and self.hash -- those are expected to be the txid.
     def calc_sha256(self, with_witness=False):
@@ -696,6 +714,20 @@ class CBlockHeader():
         self.sha256 = None
         self.calc_sha256()
         return self.sha256
+
+    # The name of calc_sha256 in older tests
+    def calc_x16r(self):
+        self.calc_sha256()
+        return self.sha256
+
+    # The name of the block id (sha256) in older tests
+    @property
+    def x16r(self):
+        return self.sha256
+
+    @x16r.setter
+    def x16r(self, value):
+        self.sha256 = value
 
     def __repr__(self):
         return "CBlockHeader(nVersion=%i hashPrevBlock=%064x hashMerkleRoot=%064x nTime=%s nBits=%08x nNonce=%08x)" \
@@ -1382,6 +1414,22 @@ class msg_mempool():
     def __repr__(self):
         return "msg_mempool()"
 
+class msg_notfound():
+    command = b"notfound"
+
+    def __init__(self, vec=None):
+        self.vec = vec or []
+
+    def deserialize(self, f):
+        self.vec = deser_vector(f, CInv)
+
+    def serialize(self):
+        return ser_vector(self.vec)
+
+    def __repr__(self):
+        return "msg_notfound(vec=%s)" % (repr(self.vec))
+
+
 class msg_sendheaders():
     command = b"sendheaders"
 
@@ -1651,6 +1699,7 @@ class NodeConnCB():
     def on_getheaders(self, conn, message): pass
     def on_headers(self, conn, message): pass
     def on_mempool(self, conn): pass
+    def on_notfound(self, conn, message): pass
     def on_pong(self, conn, message): pass
     def on_reject(self, conn, message): pass
     def on_sendcmpct(self, conn, message): pass
@@ -1761,12 +1810,14 @@ class NodeConn(asyncore.dispatcher):
         b"sendcmpct": msg_sendcmpct,
         b"cmpctblock": msg_cmpctblock,
         b"getblocktxn": msg_getblocktxn,
-        b"blocktxn": msg_blocktxn
+        b"blocktxn": msg_blocktxn,
+        b"notfound": msg_notfound,
     }
+    # pchMessageStart of src/chainparams.cpp
     MAGIC_BYTES = {
-        "mainnet": b"\x52\x41\x56\x4e",   # mainnet
-        "testnet3": b"\x45\x50\x4f\x45",  # testnet3
-        "regtest": b"\x43\x52\x4f\x57",   # regtest
+        "mainnet": b"\x50\x4c\x42\x56",   # mainnet
+        "testnet3": b"\xbb\xab\xaa\xba",  # testnet
+        "regtest": b"\x80\x6a\x62\x52",   # regtest
     }
 
     def __init__(self, dstaddr, dstport, rpc, callback, net="regtest", services=NODE_NETWORK, send_version=True):
@@ -1968,3 +2019,36 @@ class EarlyDisconnectError(Exception):
 
     def __str__(self):
         return repr(self.value)
+
+
+# The names of the message classes and hex helpers in older tests
+to_hex = ToHex
+from_hex = FromHex
+MsgVersion = msg_version
+MsgVerack = msg_verack
+MsgAddr = msg_addr
+MsgAlert = msg_alert
+MsgInv = msg_inv
+MsgGetdata = msg_getdata
+MsgGetBlocks = msg_getblocks
+MsgTx = msg_tx
+MsgWitnessTx = msg_witness_tx
+MsgBlock = msg_block
+MsgGeneric = msg_generic
+MsgWitnessBlock = msg_witness_block
+MsgGetAddr = msg_getaddr
+MsgPingPreBip31 = msg_ping_prebip31
+MsgPing = msg_ping
+MsgPong = msg_pong
+MsgMempool = msg_mempool
+MsgNotFound = msg_notfound
+MsgSendHeaders = msg_sendheaders
+MsgGetHeaders = msg_getheaders
+MsgHeaders = msg_headers
+MsgReject = msg_reject
+MsgFeeFilter = msg_feefilter
+MsgSendCmpct = msg_sendcmpct
+MsgCmpctBlock = msg_cmpctblock
+MsgGetBlockTxn = msg_getblocktxn
+MsgBlockTxn = msg_blocktxn
+MsgWitnessBlocktxn = msg_witness_blocktxn

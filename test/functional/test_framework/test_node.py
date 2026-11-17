@@ -5,12 +5,14 @@
 # file COPYING or http://www.opensource.org/licenses/mit-license.php.
 """Class for paladeumd node under test"""
 
+import contextlib
 import decimal
 import errno
 import http.client
 import json
 import logging
 import os
+import re
 import subprocess
 import time
 
@@ -64,6 +66,8 @@ class TestNode():
         self.url = None
         self.log = logging.getLogger('TestFramework.node%d' % i)
         self.cleanup_on_exit = True # Whether to kill the node when this object goes away
+        self.chain = "regtest"
+        self.p2ps = []
 
     def __del__(self):
         # Ensure that we don't leave any paladeumd processes lying around after
@@ -153,7 +157,34 @@ class TestNode():
         return True
 
     def wait_until_stopped(self, timeout=PLBD_PROC_WAIT_TIMEOUT):
-        wait_until(self.is_node_stopped, timeout=timeout)
+        wait_until(self.is_node_stopped, timeout=timeout, err_msg="node %d stopped" % self.index)
+
+    @contextlib.contextmanager
+    def assert_debug_log(self, expected_msgs, timeout=2):
+        """Assert that each of expected_msgs appears in debug.log while the with-block runs."""
+        time_end = time.time() + timeout
+        debug_log = os.path.join(self.datadir, self.chain, 'debug.log')
+        with open(debug_log, encoding='utf-8') as dl:
+            dl.seek(0, 2)
+            prev_size = dl.tell()
+
+        yield
+
+        while True:
+            found = True
+            with open(debug_log, encoding='utf-8') as dl:
+                dl.seek(prev_size)
+                log = dl.read()
+            print_log = " - " + "\n - ".join(log.splitlines())
+            for expected_msg in expected_msgs:
+                if re.search(re.escape(expected_msg), log, flags=re.MULTILINE) is None:
+                    found = False
+            if found:
+                return
+            if time.time() >= time_end:
+                break
+            time.sleep(0.05)
+        raise AssertionError('Expected messages "{}" does not partially match log:\n\n{}\n\n'.format(str(expected_msgs), print_log))
 
     def node_encrypt_wallet(self, passphrase):
         """"Encrypts the wallet.
@@ -172,10 +203,10 @@ class TestNodeCLI():
         self.datadir = datadir
         self.input = None
 
-    def __call__(self, *args, input=None):
-        # TestNodeCLI is callable with paladeum-cli command-line args
+    def __call__(self, *args, input=None, input_data=None):
+        # TestNodeCLI is callable with paladeum-cli command-line args; input (or input_data) goes to stdin
         self.args = [str(arg) for arg in args]
-        self.input = input
+        self.input = input if input is not None else input_data
         return self
 
     def __getattr__(self, command):
