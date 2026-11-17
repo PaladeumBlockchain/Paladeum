@@ -18,11 +18,15 @@ node4 has the default limit. node3 later stakes on top of node2's block.
    download it again and again); node4 stores both
  - when node3 extends the second block, node0 fetches it with its child and
    reorganizes onto that chain
+
+Only authorized scripts stake: the nodes use the master address of the tests,
+which authorizes the addresses of the two coins during the proof-of-work phase.
 """
 
 import os
 import time
 
+from test_framework.governance import MASTER_ARGS, authorize_stakers, fund_master, import_master_key
 from test_framework.test_framework import PaladeumTestFramework
 from test_framework.util import (
     assert_equal,
@@ -41,7 +45,8 @@ class StakeVariantsTest(PaladeumTestFramework):
     def set_test_params(self):
         self.num_nodes = 5
         self.setup_clean_chain = True
-        pos = ["-lastpowblock=%d" % LAST_POW]
+        pos = MASTER_ARGS + ["-lastpowblock=%d" % LAST_POW]
+        self.pos = pos
         staker = pos + ["-staking=1", "-emergencystaking=1"]
         self.extra_args = [
             pos + ["-staking=0", "-maxblocksperstake=1"],
@@ -90,13 +95,19 @@ class StakeVariantsTest(PaladeumTestFramework):
         self.log.info("node1 and node2 share one key with one coin; node3 has a coin of its own")
         shared = n1.getnewaddress()
         n2.importprivkey(n1.dumpprivkey(shared))
+        import_master_key(n0)
         n0.generate(30)
+        fund_master(n0)
+        own = n3.getnewaddress()
         n0.sendtoaddress(shared, 100000)
-        n0.sendtoaddress(n3.getnewaddress(), 100000)
+        n0.sendtoaddress(own, 100000)
         # two coins of node0 for the transactions that make the two blocks different
         spare = [n0.getnewaddress(), n0.getnewaddress()]
         txid = n0.sendmany("", {spare[0]: 10, spare[1]: 10})
-        n0.generate(LAST_POW - 30)
+        n0.generate(LAST_POW - 31)
+        # the two coins stake, authorized in the last proof-of-work block
+        authorize_stakers(n0, [shared, own])
+        n0.generate(1)
         self.sync_all()
         assert_equal(n2.getbalance(), 100000)
         payments = []
@@ -145,7 +156,7 @@ class StakeVariantsTest(PaladeumTestFramework):
         connect_nodes_bi(self.nodes, 3, 2)
         wait_until(lambda: n3.getbestblockhash() == variant2, timeout=30)
         self.stop_node(3)
-        self.start_node(3, ["-lastpowblock=%d" % LAST_POW, "-staking=1", "-emergencystaking=1", "-mocktime=%d" % t])
+        self.start_node(3, self.pos + ["-staking=1", "-emergencystaking=1", "-mocktime=%d" % t])
         n3 = self.nodes[3]
         assert_equal(n3.getbestblockhash(), variant2)
         connect_nodes_bi(self.nodes, 3, 2)

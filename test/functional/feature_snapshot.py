@@ -21,6 +21,10 @@ with the values of getstatehashes as the accepted snapshot (-snapshotparams):
    has stored them, also across a restart in the middle; after that the node
    serves the whole chain to a new node;
  - a restored wallet that needs the past blocks is scanned once they are there.
+
+Only authorized scripts stake: the nodes use the master address of the tests,
+which authorizes the addresses of the coins that stake during the
+proof-of-work phase.
 """
 
 import json
@@ -33,6 +37,7 @@ import sys
 import zlib
 
 from feature_bootstrap import Server, sha256_of
+from test_framework.governance import MASTER_ARGS, authorize_stakers, coin_addresses, fund_master, import_master_key
 from test_framework.test_framework import PaladeumTestFramework
 from test_framework.util import assert_equal, assert_raises_rpc_error, connect_nodes, disconnect_nodes, sync_blocks, wait_until
 
@@ -40,7 +45,7 @@ LAST_POW = 260
 HEIGHT = 150
 SLOT = 16
 NODE_NETWORK = 1
-COMMON = ["-lastpowblock=%d" % LAST_POW, "-bootstrapminblocks=10"]
+COMMON = MASTER_ARGS + ["-lastpowblock=%d" % LAST_POW, "-bootstrapminblocks=10"]
 STAKING = ["-staking=1", "-emergencystaking=1"]
 NEEDS_PAST_BLOCKS = "This needs the past blocks"
 
@@ -140,7 +145,9 @@ class SnapshotTest(PaladeumTestFramework):
         contrib = os.path.join(os.path.dirname(os.path.realpath(__file__)), "..", "..", "contrib", "paladeum")
 
         self.log.info("A chain with transactions and a token")
+        import_master_key(node0)
         node0.generate(120)
+        fund_master(node0)
         node0.issue("SNAPTOKEN", 1000)
         for i in range(20):
             node0.sendtoaddress(node0.getnewaddress(), 1 + i)
@@ -380,6 +387,8 @@ class SnapshotTest(PaladeumTestFramework):
         assert_equal(node2.getblockheader(old_block)["height"], 141)
 
         self.log.info("Proof of stake: the node validates stakes of coins from before the snapshot, and stakes")
+        # the coins of node0 and of node2 stake, authorized in a proof-of-work block
+        authorize_stakers(node0, sorted(set(coin_addresses(node0) + addresses)))
         node0.generate(LAST_POW - node0.getblockcount())
         sync_blocks([node0, node2])
         t = node0.getblock(node0.getbestblockhash())["time"] + 2 * SLOT

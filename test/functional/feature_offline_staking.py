@@ -7,25 +7,33 @@
 An offline staking address is made of a staking address (of the staking node)
 and a spending address (of the owner). Coins sent to it
  - are staked by the staking node, which cannot spend them
- - stay at the same address when they are staked, with the reward
+ - stay at the same address when they are staked, with nine tenths of the
+   reward; the staking node gets the other tenth at its staking address
  - can be spent by the owner at any time
+
+Only authorized scripts stake: the nodes use the master address of the tests,
+which authorizes the offline staking address during the proof-of-work phase.
+The wallet does not list or spend the coins of an authorized script without
+-sendauthorized, which the owner uses.
 """
 
 from decimal import Decimal
 
+from test_framework.governance import MASTER_ARGS, authorize_stakers, fund_master, import_master_key
 from test_framework.test_framework import PaladeumTestFramework
 from test_framework.util import assert_equal, assert_raises_rpc_error, sync_blocks, wait_until
 
 LAST_POW = 100
 SLOT = 16
+REWARD = 10  # the block reward of a stake (no fees in these blocks)
 
 
 class OfflineStakingTest(PaladeumTestFramework):
     def set_test_params(self):
         self.num_nodes = 3
         self.setup_clean_chain = True
-        base = ["-lastpowblock=%d" % LAST_POW]
-        self.extra_args = [base, base + ["-staking=1", "-emergencystaking=1"], base]
+        base = MASTER_ARGS + ["-lastpowblock=%d" % LAST_POW]
+        self.extra_args = [base, base + ["-staking=1", "-emergencystaking=1"], base + ["-sendauthorized=1"]]
 
     def run_test(self):
         # (the coins come from a third wallet: the owner's wallet spends coins at its offline staking
@@ -37,7 +45,9 @@ class OfflineStakingTest(PaladeumTestFramework):
             node.setmocktime(t)
 
         self.log.info("The owner delegates 8 coins of 1000 to the staking key of the other node")
+        import_master_key(funder)
         funder.generate(30)
+        fund_master(funder)
         self.sync_all()
         staking_address = staker.getnewaddress()
         spending_address = owner.getnewaddress()
@@ -48,7 +58,10 @@ class OfflineStakingTest(PaladeumTestFramework):
         assert_equal(info["spendingaddress"], spending_address)
         assert_raises_rpc_error(-1, "should be different", owner.getofflinestakingaddress, staking_address, staking_address)
         txids = [funder.sendtoaddress(offline, 1000) for _ in range(8)]
-        funder.generate(LAST_POW - 30)
+        funder.generate(LAST_POW - 31)
+        # the offline staking address stakes, authorized in the last proof-of-work block
+        authorize_stakers(funder, [offline])
+        funder.generate(1)
         sync_blocks(self.nodes)
         assert_equal(owner.getbalance(), Decimal("8000"))
 
@@ -71,10 +84,12 @@ class OfflineStakingTest(PaladeumTestFramework):
         if signed["complete"]:
             assert_equal(staker.testmempoolaccept([signed["hex"]])[0]["allowed"], False)
 
-        self.log.info("The staking node stakes them; the coins and the reward stay at the address")
+        self.log.info("The staking node stakes them; the coins and most of the reward stay at the address")
         t = owner.getblock(owner.getbestblockhash())["time"] + 2 * SLOT
         t -= t % SLOT
         rewards = Decimal("0")
+        staked = Decimal("0")
+        staker_share = Decimal(REWARD) / 10
         for _ in range(3):
             t += SLOT
             height = staker.getblockcount()
@@ -87,13 +102,22 @@ class OfflineStakingTest(PaladeumTestFramework):
             stake = block["tx"][1]
             spent = sum(owner.getrawtransaction(vin["txid"], True)["vout"][vin["vout"]]["value"] for vin in stake["vin"])
             paid = [out for out in stake["vout"] if out["value"] > 0]
-            assert all(out["scriptPubKey"]["hex"] == script for out in paid), stake
-            rewards += sum(out["value"] for out in paid) - spent
-        assert_equal(rewards, Decimal("12"))
+            delegated = [out for out in paid if out["scriptPubKey"]["hex"] == script]
+            share = [out for out in paid if out["scriptPubKey"]["hex"] != script]
+            assert delegated, stake
+            # a tenth of the reward goes to the staking address of the staking node
+            assert_equal(len(share), 1)
+            assert_equal(share[0]["scriptPubKey"]["addresses"], [staking_address])
+            assert_equal(share[0]["value"], staker_share)
+            rewards += sum(out["value"] for out in delegated) - spent
+            staked += sum(out["value"] for out in paid)
+        assert_equal(rewards, 3 * (REWARD - staker_share))
+        # the staking node counts the stakes it made as immature, the delegated coins in them
+        # too (it cannot spend those), and has nothing to spend
         assert_equal(staker.getbalance(), 0)
-        assert_equal(staker.getwalletinfo()["immature_balance"], 0)
+        assert_equal(staker.getwalletinfo()["immature_balance"], staked)
         assert_equal(staker.getstakinginfo()["stakes_24h"], 3)
-        assert_equal(staker.scantxoutset("start", ["staking(%s)" % staking_address])["total_amount"], Decimal("8012"))
+        assert_equal(staker.scantxoutset("start", ["staking(%s)" % staking_address])["total_amount"], 8000 + rewards)
         assert_raises_rpc_error(-6, "Insufficient funds", staker.sendtoaddress, staker.getnewaddress(), 1)
 
         self.log.info("A payment of the owner does not take delegated coins on its own")
@@ -138,7 +162,8 @@ class OfflineStakingTest(PaladeumTestFramework):
         sync_blocks(self.nodes)
         assert owner.gettransaction(spend)["confirmations"] >= 1
         left = staker.scantxoutset("start", ["staking(%s)" % staking_address])
-        assert left["total_amount"] < Decimal("6030"), left["total_amount"]
+        # (8000 and nine tenths of five rewards, less the two coins)
+        assert left["total_amount"] < 6000 + 6 * REWARD, left["total_amount"]
         assert_equal(owner.scantxoutset("start", [target])["total_amount"], Decimal("1999.99"))
 
 

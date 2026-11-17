@@ -17,16 +17,24 @@ address only had to send a payment with a smaller fee than the freeze command.
  - the payment pays more: the block takes the payment, the freeze command waits
    for the next block
  - proof of stake: the staker keeps making blocks with the freeze command in them
+
+Only authorized scripts stake: the master address authorizes the addresses of the
+coins of node0 during the proof-of-work phase.
 """
 
 from decimal import Decimal
 
 from feature_governance import FREEZE, script_command
+from test_framework.governance import authorize_stakers
 from test_framework.test_framework import PaladeumTestFramework
 from test_framework.util import assert_equal, connect_nodes_bi, sync_blocks, wait_until
 
 LAST_POW = 110
 SLOT = 16
+# fees: the minimum relay fee is 0.01 PLB per kB; a payment is about 0.2 kB, a command 0.24 kB
+SMALL_FEE = Decimal("0.01")
+COMMAND_FEE = Decimal("1")
+LARGE_FEE = Decimal("5")
 
 
 class GovernanceMempoolTest(PaladeumTestFramework):
@@ -71,8 +79,9 @@ class GovernanceMempoolTest(PaladeumTestFramework):
             outputs[victim] = 1000
         n0.sendmany("", outputs)
         # coins of node0 at several addresses, to stake with
-        for _ in range(10):
-            n0.sendtoaddress(n0.getnewaddress(), 100000)
+        stakers = [n0.getnewaddress() for _ in range(10)]
+        for address in stakers:
+            n0.sendtoaddress(address, 100000)
         self.mine()
         self.stop_nodes()
         self.extra_args = [["-lastpowblock=%d" % LAST_POW, "-masteraddress=" + master]] * 2
@@ -82,8 +91,8 @@ class GovernanceMempoolTest(PaladeumTestFramework):
         self.mine()
 
         self.log.info("The freeze command pays more: the block takes it, the payment is left out")
-        spend = self.payment(victims[0], Decimal("0.0001"))
-        freeze = self.command(master, script_command(FREEZE, self.script_of(victims[0])), Decimal("0.01"))
+        spend = self.payment(victims[0], SMALL_FEE)
+        freeze = self.command(master, script_command(FREEZE, self.script_of(victims[0])), COMMAND_FEE)
         assert_equal(sorted(n0.getrawmempool()), sorted([spend, freeze]))
         self.mine()
         assert self.in_block(freeze)
@@ -94,8 +103,8 @@ class GovernanceMempoolTest(PaladeumTestFramework):
             assert_equal(node.getrawmempool(), [])
 
         self.log.info("The payment pays more: the block takes it, the freeze command comes in the next block")
-        spend = self.payment(victims[1], Decimal("0.05"))
-        freeze = self.command(master, script_command(FREEZE, self.script_of(victims[1])), Decimal("0.01"))
+        spend = self.payment(victims[1], LARGE_FEE)
+        freeze = self.command(master, script_command(FREEZE, self.script_of(victims[1])), COMMAND_FEE)
         self.mine()
         assert self.in_block(spend)
         assert not self.in_block(freeze)
@@ -106,6 +115,8 @@ class GovernanceMempoolTest(PaladeumTestFramework):
         assert_equal(n0.checkfreeze(victims[1]), True)
 
         self.log.info("Proof of stake: the staker goes on making blocks")
+        # the addresses of the coins of node0 stake, authorized in a proof-of-work block
+        authorize_stakers(n0, stakers, master)
         n0.generate(LAST_POW - n0.getblockcount())
         self.sync_all()
         assert_equal(n0.getblockcount(), LAST_POW)
@@ -118,8 +129,8 @@ class GovernanceMempoolTest(PaladeumTestFramework):
         t = n0.getblock(n0.getbestblockhash())["time"]
         for node in self.nodes:
             node.setmocktime(t)
-        spend = self.payment(victims[2], Decimal("0.0001"))
-        freeze = self.command(master, script_command(FREEZE, self.script_of(victims[2])), Decimal("0.01"))
+        spend = self.payment(victims[2], SMALL_FEE)
+        freeze = self.command(master, script_command(FREEZE, self.script_of(victims[2])), COMMAND_FEE)
         assert_equal(n0.getblockcount(), LAST_POW)
         t -= t % SLOT
         for _ in range(3):

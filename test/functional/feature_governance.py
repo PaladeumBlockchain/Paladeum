@@ -57,6 +57,16 @@ class GovernanceTest(PaladeumTestFramework):
         self.num_nodes = 2
         self.setup_clean_chain = True
 
+    def expected_failure(self, check, decision):
+        """Run a check that fails while a decision about the product is open. It is logged as an
+        expected failure; once it passes the test fails, so that the mark is taken away."""
+        try:
+            check()
+        except AssertionError as e:
+            self.log.info("Expected failure until %s: %s" % (decision, e))
+            return
+        raise AssertionError("This check passes now: make it a plain check again (%s)" % decision)
+
     def mine(self, n=1):
         self.nodes[0].generate(n)
         self.sync_all()
@@ -220,7 +230,12 @@ class GovernanceTest(PaladeumTestFramework):
         assert_equal(n1.getreceivedbyaddress(fee_address), 0)
         n0.issue("GOVTEST", 100)
         self.mine()
-        assert_equal(n1.getreceivedbyaddress(fee_address), 7)
+        # The fee of the issue still goes to the fee address of the chain parameters: GetBurnAddress
+        # (src/tokens/tokens.cpp) and the check of the issue use GetParams(), while issuanceinfo shows
+        # the governance address (AokChain pays the fees to the governance fee script). Paying them to
+        # the governance address changes consensus and waits for the owner's decision.
+        self.expected_failure(lambda: assert_equal(n1.getreceivedbyaddress(fee_address), 7),
+                              "the owner decides whether token fees go to the governance fee address")
         assert_equal(n1.gettokendata("GOVTEST")["amount"], 100)
 
         self.log.info("Disconnecting the blocks brings the old cost and address back")

@@ -7,8 +7,12 @@
 From a height that is not scheduled on the main network (-futuredriftheight on
 regtest) a proof-of-stake block may be at most 60 seconds ahead of the clock
 of the node that receives it, instead of 10 minutes.
+
+Only authorized scripts stake: the nodes use the master address of the tests,
+which authorizes the addresses of the staker during the proof-of-work phase.
 """
 
+from test_framework.governance import MASTER_ARGS, authorize_stakers, coin_addresses, fund_master, import_master_key
 from test_framework.test_framework import PaladeumTestFramework
 from test_framework.util import assert_equal, connect_nodes_bi, sync_blocks, wait_until
 
@@ -20,7 +24,8 @@ class FutureDriftTest(PaladeumTestFramework):
     def set_test_params(self):
         self.num_nodes = 3
         self.setup_clean_chain = True
-        base = ["-lastpowblock=%d" % LAST_POW]
+        base = MASTER_ARGS + ["-lastpowblock=%d" % LAST_POW]
+        self.base = base
         # node1 has the rule from the first proof-of-stake block, node2 does not have it
         self.extra_args = [base + ["-staking=1", "-emergencystaking=1"], base + ["-futuredriftheight=0"], base]
 
@@ -37,7 +42,13 @@ class FutureDriftTest(PaladeumTestFramework):
         for node in self.nodes:
             node.setmocktime(t)
         # the proof-of-work blocks are no concern of the rule, however fast they come
-        staker.generate(LAST_POW)
+        import_master_key(staker)
+        staker.generate(20)
+        fund_master(staker)
+        staker.generate(LAST_POW - 21)
+        # the addresses of the staker stake, authorized in the last proof-of-work block
+        authorize_stakers(staker, coin_addresses(staker))
+        staker.generate(1)
         sync_blocks(self.nodes)
 
         t = staker.getblock(staker.getbestblockhash())["time"] + 2 * SLOT
@@ -62,7 +73,7 @@ class FutureDriftTest(PaladeumTestFramework):
         strict.setmocktime(t)
         old.setmocktime(t)
         self.stop_node(1)
-        self.start_node(1, ["-lastpowblock=%d" % LAST_POW, "-futuredriftheight=0", "-mocktime=%d" % t])
+        self.start_node(1, self.base + ["-futuredriftheight=0", "-mocktime=%d" % t])
         connect_nodes_bi(self.nodes, 0, 1)
         connect_nodes_bi(self.nodes, 1, 2)
         sync_blocks(self.nodes)

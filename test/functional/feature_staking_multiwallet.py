@@ -16,11 +16,15 @@ at a time, and the node stakes one block in each slot.
    "walletpassphrase <passphrase> 0 true" opens it for staking only
  - getstakinginfo answers for the wallet of the request
  - without -staking no wallet stakes
+
+Only authorized scripts stake: the node uses the master address of the tests,
+which authorizes the addresses of both wallets during the proof-of-work phase.
 """
 
 import time
 
 from test_framework.authproxy import JSONRPCException
+from test_framework.governance import MASTER_ARGS, authorize_stakers, coin_addresses, fund_master, import_master_key
 from test_framework.test_framework import PaladeumTestFramework
 from test_framework.util import (
     assert_equal,
@@ -40,7 +44,7 @@ class StakingMultiWalletTest(PaladeumTestFramework):
     def set_test_params(self):
         self.num_nodes = 2
         self.setup_clean_chain = True
-        self.pos_args = ["-lastpowblock=%d" % LAST_POW, "-emergencystaking=1"]
+        self.pos_args = MASTER_ARGS + ["-lastpowblock=%d" % LAST_POW, "-emergencystaking=1"]
         self.extra_args = [self.pos_args + ["-staking=1"], self.pos_args]
 
     def set_time(self, t):
@@ -109,10 +113,16 @@ class StakingMultiWalletTest(PaladeumTestFramework):
         assert_equal(n0.createwallet("second")["name"], "second")
         w1, w2 = n0.get_wallet_rpc(first), n0.get_wallet_rpc("second")
         self.wallets = {"first": w1, "second": w2}
-        # a staked coin rests for 60 blocks, and the coins of one address make one stake
-        w1.sendmany("", {w1.getnewaddress(): 100000 for _ in range(COINS)})
-        w1.sendmany("", {w2.getnewaddress(): 100000 for _ in range(COINS)})
-        w1.generate(LAST_POW - 30)
+        import_master_key(w1)
+        fund_master(w1)
+        # a staked coin rests for 10 blocks, and the coins of one address make one stake
+        stakers = [w1.getnewaddress() for _ in range(COINS)] + [w2.getnewaddress() for _ in range(COINS)]
+        # (one transaction: a second payment could spend the new coins of the first wallet)
+        w1.sendmany("", {address: 100000 for address in stakers})
+        w1.generate(LAST_POW - 31)
+        # the addresses of both wallets stake, authorized in the last proof-of-work block
+        authorize_stakers(w1, sorted(set(stakers + coin_addresses(w1))))
+        w1.generate(1)
         sync_blocks(self.nodes)
         assert_equal(n0.getblockcount(), LAST_POW)
         assert_equal(w2.getbalance(), COINS * 100000)

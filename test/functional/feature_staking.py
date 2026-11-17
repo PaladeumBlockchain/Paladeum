@@ -6,7 +6,10 @@
 
 regtest switches to proof-of-stake after -lastpowblock. Blocks are staked by
 the wallet's staking thread; mocktime is advanced by one 16 second slot at a
-time to let it find the next block.
+time to let it find the next block. Only authorized scripts stake: the nodes
+use the master address of the tests, which authorizes the addresses that
+stake during the proof-of-work phase. -sendauthorized keeps the coins of those
+addresses in listunspent and spendable, as the test expects of every coin.
 
  - the staking thread produces valid proof-of-stake blocks that a peer accepts
  - a stake that loses against a competing chain is abandoned, its input can be
@@ -17,9 +20,9 @@ time to let it find the next block.
  - purgeorphanstakes deletes the orphaned stakes from the wallet
 """
 
-import os
 import shutil
 
+from test_framework.governance import MASTER_ARGS, authorize_stakers, coin_addresses, fund_master, import_master_key
 from test_framework.test_framework import PaladeumTestFramework
 from test_framework.util import (
     assert_equal,
@@ -28,17 +31,19 @@ from test_framework.util import (
     disconnect_nodes,
     sync_blocks,
     wait_until,
+    wallet_file,
 )
 
 LAST_POW = 100
 SLOT = 16
+REWARD = 10  # the block reward of a stake (no fees in these blocks)
 
 
 class StakingTest(PaladeumTestFramework):
     def set_test_params(self):
         self.num_nodes = 2
         self.setup_clean_chain = True
-        args = ["-lastpowblock=%d" % LAST_POW, "-staking=1", "-emergencystaking=1"]
+        args = MASTER_ARGS + ["-sendauthorized=1", "-lastpowblock=%d" % LAST_POW, "-staking=1", "-emergencystaking=1"]
         self.extra_args = [args, args]
 
     def snapshot(self, node):
@@ -96,12 +101,21 @@ class StakingTest(PaladeumTestFramework):
         self.set_time(self.nodes, t)
 
         self.log.info("Proof-of-work phase; give node1 coins that are old enough to stake")
+        import_master_key(n0)
         n0.generate(30)
-        # a staked coin cannot stake again for 60 blocks, and coins of one
+        fund_master(n0)
+        # a staked coin cannot stake again for 10 blocks, and coins of one
         # address are combined into one stake: use several addresses
-        for _ in range(10):
-            n0.sendtoaddress(n1.getnewaddress(), 100000)
-        n0.generate(LAST_POW - 30)
+        stakers = [n1.getnewaddress() for _ in range(10)]
+        for address in stakers:
+            n0.sendtoaddress(address, 100000)
+        n0.generate(LAST_POW - 31)
+        self.log.info("Authorize the addresses of both wallets to stake, in the last proof-of-work block")
+        authorize_stakers(n0, sorted(set(stakers + coin_addresses(n0))))
+        # (the master coin was locked against the payments above; a restart unlocks it, and
+        # the wallet snapshots below compare states across restarts)
+        n0.lockunspent(True)
+        n0.generate(1)
         self.sync_all()
         assert_equal(n0.getblockcount(), LAST_POW)
         # no more proof-of-work blocks after this height
@@ -126,7 +140,7 @@ class StakingTest(PaladeumTestFramework):
         # the last 24 hours: three stakes in the chain, each with the block reward, none lost
         assert_equal(info["stakes_24h"], 3)
         assert_equal(info["orphaned_24h"], 0)
-        assert_equal(info["reward_24h"], 3 * 4)
+        assert_equal(info["reward_24h"], 3 * REWARD)
 
         self.log.info("A stake that is disconnected and connected again on the same parent")
         # (the staking thread finds the same, now invalid, block again and gives up)
@@ -144,15 +158,15 @@ class StakingTest(PaladeumTestFramework):
         self.log.info("A wallet file that still has a stake confirmed which the chain lost")
         # (without the staking thread: a restarted wallet may pick another
         # coin and stake a different, valid block in place of the invalid one)
-        no_staking = ["-lastpowblock=%d" % LAST_POW, "-mocktime=%d" % t]
-        wallet_file = os.path.join(self.options.tmpdir, "node0", "regtest", "wallets", "wallet.dat")
+        no_staking = MASTER_ARGS + ["-sendauthorized=1", "-lastpowblock=%d" % LAST_POW, "-mocktime=%d" % t]
         self.stop_node(0)
-        shutil.copyfile(wallet_file, wallet_file + ".ahead")
+        wallet_path = wallet_file(n0.datadir)
+        shutil.copyfile(wallet_path, wallet_path + ".ahead")
         self.start_node(0, no_staking)
         n0.invalidateblock(tip)
         self.wait_snapshot(n0, below_tip)
         self.stop_node(0)
-        shutil.copyfile(wallet_file + ".ahead", wallet_file)
+        shutil.copyfile(wallet_path + ".ahead", wallet_path)
         self.start_node(0, no_staking)
         # abandoned at startup: same state as when the wallet saw the disconnect
         assert self.snapshot(n0) == below_tip
@@ -240,7 +254,7 @@ class StakingTest(PaladeumTestFramework):
         self.log.info("node0 keeps staking on the common chain and node1 follows")
         # two stakers that find a block in every slot would never converge
         self.stop_node(1)
-        self.start_node(1, ["-lastpowblock=%d" % LAST_POW, "-mocktime=%d" % t])
+        self.start_node(1, MASTER_ARGS + ["-sendauthorized=1", "-lastpowblock=%d" % LAST_POW, "-mocktime=%d" % t])
         connect_nodes_bi(self.nodes, 0, 1)
         for _ in range(3):
             t += SLOT

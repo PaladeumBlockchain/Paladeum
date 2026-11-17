@@ -18,10 +18,15 @@ staked again.
  - repaircoins finds the damaged coins and repairs them
  - a node without the transaction index (node0) reads the time from the block
    of the coin
+
+Only authorized scripts stake: the nodes use the master address of the tests,
+which authorizes the addresses of the coins that stake during the proof-of-work
+phase.
 """
 
 import os
 
+from test_framework.governance import MASTER_ARGS, authorize_stakers, coin_addresses, fund_master, import_master_key
 from test_framework.test_framework import PaladeumTestFramework
 from test_framework.util import (
     assert_equal,
@@ -33,7 +38,7 @@ from test_framework.util import (
 
 LAST_POW = 100
 SLOT = 16
-BASE = ["-lastpowblock=%d" % LAST_POW]
+BASE = MASTER_ARGS + ["-lastpowblock=%d" % LAST_POW]
 STAKING = ["-staking=1", "-emergencystaking=1"]
 OLD = ["-restorecointime=0"]
 NOINDEX = ["-txindex=0"]
@@ -87,12 +92,16 @@ class StakeCoinTimeTest(PaladeumTestFramework):
             node.setmocktime(t)
 
         self.log.info("Proof-of-work phase; node1 gets several coins, node2 exactly two")
+        import_master_key(n0)
         n0.generate(30)
-        for _ in range(8):
-            n0.sendtoaddress(n1.getnewaddress(), 100000)
-        for _ in range(2):
-            n0.sendtoaddress(n2.getnewaddress(), 100000)
-        n0.generate(LAST_POW - 30)
+        fund_master(n0)
+        stakers = [n1.getnewaddress() for _ in range(8)] + [n2.getnewaddress() for _ in range(2)]
+        for address in stakers:
+            n0.sendtoaddress(address, 100000)
+        n0.generate(LAST_POW - 31)
+        # the addresses of all coins stake, authorized in the last proof-of-work block
+        authorize_stakers(n0, sorted(set(stakers + coin_addresses(n0))))
+        n0.generate(1)
         self.sync_all()
         assert_equal(n2.getblockcount(), LAST_POW)
 
