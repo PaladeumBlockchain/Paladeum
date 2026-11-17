@@ -17,7 +17,7 @@
 BOOST_FIXTURE_TEST_SUITE(txmessage_tests, BasicTestingSetup)
 
 // The message of a version 2 transaction is part of the transaction and of its id, and is not
-// part of what the signatures sign (doc/paladeum/04-security-audit.md, SEC-27). This test states
+// part of what the signatures sign. This test states
 // how it is; it is to be turned round when a fork makes the signatures cover the message.
 BOOST_AUTO_TEST_CASE(message_is_not_signed)
 {

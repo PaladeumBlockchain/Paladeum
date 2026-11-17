@@ -18,7 +18,7 @@
 
 BOOST_FIXTURE_TEST_SUITE(token_tx_tests, BasicTestingSetup)
 
-    // SEC-02: output amounts that wrap around INT64_MAX must not be able to
+    // output amounts that wrap around INT64_MAX must not be able to
     // match the input amount (this used to mint tokens).
     BOOST_AUTO_TEST_CASE(token_tx_overflow_test)
     {

@@ -80,8 +80,8 @@ uint256 static SignatureHashOld(CScript scriptCode, const CTransaction &txTo, un
 
     // Serialize and hash
     // A Paladeum transaction is signed as: version, time, inputs, outputs, lock time. The message
-    // of a version 2 transaction is NOT part of what is signed (see doc/paladeum/04-security-audit.md,
-    // SEC-27), so the whole transaction cannot be hashed here as the Bitcoin test does.
+    // of a version 2 transaction is NOT part of what is signed, so the whole
+    // transaction cannot be hashed here as the Bitcoin test does.
     CHashWriter ss(SER_GETHASH, SERIALIZE_TRANSACTION_NO_WITNESS);
     ss << txTmp.nVersion << txTmp.nTime << txTmp.vin << txTmp.vout << txTmp.nLockTime << nHashType;
     return ss.GetHash();

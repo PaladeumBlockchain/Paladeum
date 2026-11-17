@@ -48,7 +48,7 @@ MANIFEST = "snapshot.json"
 DIRECTORIES = ["chainstate", "blocks/index", "tokens", "governance"]
 # files of LevelDB that a copy does not need
 SKIP = {"LOCK", "LOG", "LOG.old"}
-SUBDIRS = {"main": "", "test": "testnet3", "regtest": "regtest"}
+SUBDIRS = {"main": "", "test": "testnet", "regtest": "regtest"}
 
 
 class PartWriter:

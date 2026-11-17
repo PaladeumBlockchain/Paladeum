@@ -3626,9 +3626,9 @@ UniValue listunspenttoken(const JSONRPCRequest& request)
             "1. name             (string) Name of the token\n"
             "2. minconf          (numeric, optional, default=1) The minimum confirmations to filter\n"
             "3. maxconf          (numeric, optional, default=9999999) The maximum confirmations to filter\n"
-            "4. \"addresses\"      (string) A json array of aokchain addresses to filter\n"
+            "4. \"addresses\"      (string) A json array of paladeum addresses to filter\n"
             "    [\n"
-            "      \"address\"     (string) aokchain address\n"
+            "      \"address\"     (string) paladeum address\n"
             "      ,...\n"
             "    ]\n"
             "5. include_unsafe (bool, optional, default=true) Include outputs that are not safe to spend\n"
@@ -3645,7 +3645,7 @@ UniValue listunspenttoken(const JSONRPCRequest& request)
             "  {\n"
             "    \"txid\" : \"txid\",          (string) the transaction id \n"
             "    \"vout\" : n,               (numeric) the vout value\n"
-            "    \"address\" : \"address\",    (string) the aokchain address\n"
+            "    \"address\" : \"address\",    (string) the paladeum address\n"
             "    \"label\" : \"label\",        (string) The associated label, or \"\" for the default label\n"
             "    \"account\" : \"account\",    (string) DEPRECATED. Backwards compatible alias for label.\n"
             "    \"scriptPubKey\" : \"key\",   (string) the script key\n"
@@ -3703,7 +3703,7 @@ UniValue listunspenttoken(const JSONRPCRequest& request)
 
             CTxDestination dest = DecodeDestination(address);
             if (!IsValidDestination(dest)) {
-                throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, std::string("Invalid AokChain address: ") + input.get_str());
+                throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, std::string("Invalid Paladeum address: ") + input.get_str());
             }
 
             if (!destinations.insert(input.get_str()).second) {

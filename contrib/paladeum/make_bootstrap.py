@@ -26,7 +26,7 @@ listed in the manifest are never written again.
 
 Examples:
   make_bootstrap.py --datadir ~/.paladeum --out /srv/www/bootstrap
-  make_bootstrap.py --rpcurl http://user:pass@127.0.0.1:33440 --out out --chunk-blocks 100000
+  make_bootstrap.py --rpcurl http://user:pass@127.0.0.1:7575 --out out --chunk-blocks 100000
 """
 
 import argparse
@@ -44,9 +44,9 @@ import urllib.parse
 FORMAT_VERSION = 1
 # message start bytes and default RPC ports, as in src/chainparams.cpp
 NETWORKS = {
-    "main": {"magic": bytes([0x3b, 0xee, 0xe0, 0x02]), "rpcport": 33440, "subdir": ""},
-    "test": {"magic": bytes([0x44, 0x4b, 0x52, 0x04]), "rpcport": 44550, "subdir": "testnet3"},
-    "regtest": {"magic": bytes([0x43, 0x52, 0x4f, 0x57]), "rpcport": 44550, "subdir": "regtest"},
+    "main": {"magic": bytes([0x50, 0x4c, 0x42, 0x56]), "rpcport": 7575, "subdir": ""},
+    "test": {"magic": bytes([0xbb, 0xab, 0xaa, 0xba]), "rpcport": 16464, "subdir": "testnet"},
+    "regtest": {"magic": bytes([0x80, 0x6a, 0x62, 0x52]), "rpcport": 26464, "subdir": "regtest"},
 }
 BATCH = 250
 

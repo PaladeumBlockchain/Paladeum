@@ -3,8 +3,7 @@
 ## make_bootstrap.py — block archives for the fast first synchronization
 
 Writes the blocks of a synced node as archives that other nodes fetch with
-`-bootstrapurl=<address>` or import with `-bootstrapdir=<folder>`
-(see `doc/paladeum/12-bootstrap.md`).
+`-bootstrapurl=<address>` or import with `-bootstrapdir=<folder>`.
 
 ```
 contrib/paladeum/make_bootstrap.py --datadir ~/.paladeum --out /srv/www/bootstrap
@@ -18,7 +17,7 @@ contrib/paladeum/make_bootstrap.py --datadir ~/.paladeum --out /srv/www/bootstra
 - Run it again later: chunks that are listed in the manifest are never rewritten, only new ones are
   added, and `manifest.json` and `SHA256SUMS` are replaced.
 - The folder is ready to publish as it is: serve it over HTTP, copy it to mirrors, upload the files as
-  release assets (`publish_bootstrap_github.md`), or make a torrent of the folder.
+  release assets, or make a torrent of the folder.
 
 The host of the files does not have to be trusted: a node validates every block of an archive like a
 block from a peer. The SHA-256 of the manifest only detects damaged downloads early.
@@ -28,7 +27,7 @@ block from a peer. The SHA-256 of the manifest only detects damaged downloads ea
 Packages the databases of a stopped node (chainstate, block index, tokens, governance) as
 `snapshot-<height>.partNN` files of 190 MB at most plus `snapshot.json`, into the folder of the
 block archives, and prints the values that `src/chainparams.cpp` must hold for a program to
-accept this snapshot (see `doc/paladeum/15-snapshot.md`).
+accept this snapshot.
 
 ```
 paladeum-cli getstatehashes > hashes.json && paladeum-cli stop
@@ -42,34 +41,14 @@ contrib/paladeum/make_snapshot.py --datadir ~/snapshot-node --hashes hashes.json
   them with the values of its program. Publishing a snapshot therefore always goes with a program
   release that has its values.
 
-## publish_bootstrap_github.md
+## history_scan.py — candidate rules against the whole chain
 
-How to publish the folder as GitHub release assets (Korean).
+Reads every block of a synced node with -txindex through RPC and lists the blocks and
+transactions that a candidate soft-fork rule would reject (proof-of-stake block times
+not in multiples of 16 seconds, token amounts and supplies out of range, token outputs
+with a PLB value, token amounts not in their units, tokens in a coinbase or coinstake).
+Read only.
 
-## upgrade.sh — install or upgrade a Linux node with one command
-
-```bash
-curl -fsSL <base url>/upgrade.sh | bash
 ```
-
-Downloads the release archive, checks its SHA256 against the value written into the
-script, stops the node (the systemd unit `paladeumd` if there is one, else
-`paladeum-cli stop`), keeps the old programs and the wallet file under
-`<datadir>/upgrade-backup/<time>/`, installs the new programs where the old ones are and
-starts the node the way it was running. An existing `paladeum.conf` is never changed; one
-with a random RPC password is written only when there is none. The wallet is not
-encrypted or changed (its copy in the backup is as unencrypted as the wallet; the newest
-three backups are kept). A new installation can start from the chain state snapshot
-(`PLB_SNAPSHOT=http://…`). After an upgrade from 3.0.x it runs `repaircoins`
-(`doc/paladeum/16-stake-coin-time.md`). Settings are environment variables, listed at
-the top of the script. The script finds the program and the data directory of the node from
-the running process (or the systemd unit), keeps the options of its command line when it starts
-it again, and refuses to guess when several nodes run on the machine (set `PLB_DATADIR`). It is
-run as the user that runs the node.
-
-The file in the source tree has three placeholders. To publish it for a release:
-
-```bash
-sed -e 's|@VERSION@|4.0.0|' -e "s|@SHA256@|$(sha256sum paladeum-4.0.0-linux-x86_64.tar.gz | cut -d' ' -f1)|" \
-    -e 's|@BASE@|https://example.org/download|' contrib/paladeum/upgrade.sh > upgrade.sh
+contrib/paladeum/history_scan.py --datadir ~/.paladeum --out scan.json
 ```

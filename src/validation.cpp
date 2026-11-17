@@ -5244,7 +5244,7 @@ static bool CheckBlockStakeBeforeStorage(const CBlock& block, const CBlockIndex*
  * the best chain of headers: the chain that the network extends is always followed,
  * whichever of the blocks it started with.
  *
- * (Before 4.0.1 any header that built on the block was enough, and finding one meant a
+ * (Before, any header that built on the block was enough, and finding one meant a
  * walk over the whole block index under cs_main for every such block: a staker could
  * keep a node busy with a stream of them. A header costs nothing to make on proof of
  * stake, so that exception did not hold back the storing either. Now a block beyond the

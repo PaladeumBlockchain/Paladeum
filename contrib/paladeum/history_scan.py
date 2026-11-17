@@ -4,7 +4,7 @@
 # file COPYING or http://www.opensource.org/licenses/mit-license.php.
 """
 Scan the whole chain of a synced node for blocks/transactions that would
-violate candidate soft-fork rules (doc/paladeum/07-upstream-backports.md, B).
+violate candidate soft-fork rules.
 
 Run against a fully validating node (-txindex). Example:
 
@@ -34,10 +34,10 @@ import threading
 import time
 
 COIN = 100000000
-MAX_MONEY_TOKENS = 25000000000 * COIN
+MAX_MONEY_TOKENS = 2**63 - 1            # src/amount.h
 STAKE_TIMESTAMP_MASK = 15
-LAST_POW_BLOCK = 1440          # mainnet consensus.nLastPOWBlock
-TOKENS_HEIGHT = 159500         # mainnet token activation
+LAST_POW_BLOCK = 150           # mainnet consensus.nLastPOWBlock
+TOKENS_HEIGHT = 0              # tokens are active from the start
 
 
 class RPC:
@@ -139,7 +139,7 @@ def scan_range(rpc, start, end, batch_size):
 def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--datadir", required=True)
-    ap.add_argument("--rpcport", type=int, default=33440)
+    ap.add_argument("--rpcport", type=int, default=7575)
     ap.add_argument("--start", type=int, default=0)
     ap.add_argument("--end", type=int, default=None, help="exclusive; default: tip+1")
     ap.add_argument("--threads", type=int, default=6)

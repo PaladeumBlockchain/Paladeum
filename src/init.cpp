@@ -665,7 +665,7 @@ std::string HelpMessage(HelpMessageMode mode)
 
 std::string LicenseInfo()
 {
-    const std::string URL_SOURCE_CODE = "<https://github.com/PaladeumProject/Paladeum>";
+    const std::string URL_SOURCE_CODE = "<https://github.com/PaladeumBlockchain/Paladeum>";
     const std::string URL_WEBSITE = "<https://paladeum.io>";
 
     return CopyrightHolders(strprintf(_("Copyright (C) %i-%i"), 2009, COPYRIGHT_YEAR) + " ") + "\n" +
@@ -1740,7 +1740,7 @@ bool AppInitMain(boost::thread_group& threadGroup, CScheduler& scheduler)
 
                     if (!ptokensdb->ReadReissuedMempoolState())
                         LogPrintf(
-                                "Database failed to load last Reissued Mempool State. Will have to start from empty state");
+                                "Database failed to load last Reissued Mempool State. Will have to start from empty state\n");
 
                     LogPrintf("Successfully loaded tokens from database.\nCache of tokens size: %d\n",
                               ptokensCache->Size());
