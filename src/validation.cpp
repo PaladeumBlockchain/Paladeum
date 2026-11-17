@@ -5961,6 +5961,19 @@ bool CVerifyDB::VerifyDB(const CChainParams& chainparams, CCoinsView *coinsview,
 
     // check level 4: try reconnecting blocks
     if (nCheckLevel >= 4) {
+        // The restricted token checks (verifier strings, qualifier tags) read the state of the
+        // connected tip from the global token cache and the database, not from the cache of the
+        // block being connected (CheckForAddressQualifier with fSkipTempCache). Here the tip is
+        // the one of this check: the copy, at the state after the disconnects. So the copy
+        // stands in for the global cache meanwhile, and each block is connected on a cache of
+        // its own over it, as ConnectTip does. (Connected on the copy itself against the real
+        // tip, a block whose verifier needs a tag that a later block removed was found
+        // unconnectable, and the node stopped with "Corrupted block database detected".)
+        struct RestoreTipTokens {
+            CTokensCache* const tip;
+            ~RestoreTipTokens() { ptokens = tip; }
+        } restoreTipTokens{ptokens};
+        ptokens = &tokenCache;
         CBlockIndex *pindex = pindexState;
         while (pindex != chainActive.Tip()) {
             boost::this_thread::interruption_point();
@@ -5969,8 +5982,10 @@ bool CVerifyDB::VerifyDB(const CChainParams& chainparams, CCoinsView *coinsview,
             CBlock block;
             if (!ReadBlockFromDisk(block, pindex, chainparams.GetConsensus()))
                 return error("VerifyDB(): *** ReadBlockFromDisk failed at %d, hash=%s", pindex->nHeight, pindex->GetIndexHash().ToString());
-            if (!ConnectBlock(block, state, pindex, coins, chainparams, &tokenCache, false, true))
+            CTokensCache blockTokenCache;
+            if (!ConnectBlock(block, state, pindex, coins, chainparams, &blockTokenCache, false, true))
                 return error("VerifyDB(): *** found unconnectable block at %d, hash=%s", pindex->nHeight, pindex->GetIndexHash().ToString());
+            blockTokenCache.Flush(); // into the copy
         }
     }
 
