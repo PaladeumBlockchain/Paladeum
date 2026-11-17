@@ -66,6 +66,8 @@ EXTENDED_SCRIPTS = [
     'feature_fee_estimation.py',
     # vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv Tests less than 5m vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
     'feature_dbcrash.py',
+    # needs PLBD_PREVIOUS, the paladeumd of 0.1.7 (skipped without it)
+    'feature_compat_017.py',
 ]
 
 BASE_SCRIPTS= [
