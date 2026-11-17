@@ -473,7 +473,9 @@ std::string HelpMessage(HelpMessageMode mode)
     if (showDebug)
         strUsage += HelpMessageOpt("-feefilter", strprintf("Tell other nodes to filter invs to us by our mempool min fee (default: %u)", DEFAULT_FEEFILTER));
     strUsage += HelpMessageOpt("-loadblock=<file>", _("Imports blocks from external blk000??.dat file on startup"));
-    strUsage += HelpMessageOpt("-bootstrapurl=<url>", strprintf(_("Fetch the blocks as archives from this address when the node is far behind, instead of from peers. Every block is validated as usual. Can be given several times: mirrors, tried in this order. (default: none; on the main network the GUI wallet uses %s)"), DEFAULT_BOOTSTRAP_URL_MAIN));
+    strUsage += HelpMessageOpt("-bootstrapurl=<url>", _("Fetch the blocks as archives from this address when the node is far behind, instead of from peers. Every block is validated as usual. Can be given several times: mirrors, tried in this order.") + (DEFAULT_BOOTSTRAP_URL_MAIN[0] != '\0'
+        ? strprintf(_(" (default: none; on the main network the GUI wallet uses %s)"), DEFAULT_BOOTSTRAP_URL_MAIN)
+        : std::string(_(" (default: none)"))));
     strUsage += HelpMessageOpt("-bootstrapdir=<dir>", _("Import the block archives (manifest.json and the files it lists) from this folder, which is only read. Every block is validated as usual."));
     strUsage += HelpMessageOpt("-bootstrap", strprintf(_("Use the block archives of -bootstrapurl or -bootstrapdir (default: %u)"), DEFAULT_BOOTSTRAP));
     strUsage += HelpMessageOpt("-snapshot", strprintf(_("In a new data directory, start from the chain state snapshot that this program accepts instead of validating every block from the first one. The snapshot is taken from -bootstrapurl or -bootstrapdir and is used only when its content has the hashes that are compiled into this program. (default: %u)"), DEFAULT_SNAPSHOT));

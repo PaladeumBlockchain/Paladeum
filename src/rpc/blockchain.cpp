@@ -1917,7 +1917,7 @@ UniValue checkfreeze(const JSONRPCRequest& request) {
     if (request.fHelp || request.params.size() != 1) {
         throw std::runtime_error(
             "checkfreeze \"address\"\n"
-            "\nReturns freze status for address.\n"
+            "\nReturns the freeze status of an address.\n"
         );
     }
 

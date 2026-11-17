@@ -358,7 +358,7 @@ bool IsTypeCheckNameValid(const KnownTokenType type, const std::string& name, st
         boost::split(parts, name, boost::is_any_of(MSG_CHANNEL_TAG_DELIMITER));
         bool valid = IsNameValidBeforeTag(parts.front()) && IsMsgChannelTagValid(parts.back());
         if (parts.back().size() > MAX_CHANNEL_NAME_LENGTH) { error = "Channel name is greater than max length of " + std::to_string(MAX_CHANNEL_NAME_LENGTH); return false; }
-        if (!valid) { error = "Message Channel name contains invalid characters (Valid characters are: A-Z 0-9 _ .) (special characters can't be the first or last characters)";  return false; }
+        if (!valid) { error = "Message channel name contains invalid characters (the token part takes A-Z 0-9 _ ., the channel after ~ takes A-Z a-z 0-9 _; special characters can't be the first or last characters)";  return false; }
         return true;
     } else if (type == KnownTokenType::OWNER) {
         if (name.size() > MAX_NAME_LENGTH) { error = "Name is greater than max length of " + std::to_string(MAX_NAME_LENGTH); return false; }
@@ -5634,7 +5634,7 @@ bool CheckNewToken(const CNewToken& token, std::string& strError)
             return false;
         }
         if (token.nAmount < QUALIFIER_TOKEN_MIN_AMOUNT || token.nAmount > QUALIFIER_TOKEN_MAX_AMOUNT) {
-            strError = _("Invalid parameter: amount must be between ") + std::to_string(QUALIFIER_TOKEN_MIN_AMOUNT) + " - " + std::to_string(QUALIFIER_TOKEN_MAX_AMOUNT);
+            strError = _("Invalid parameter: amount must be between ") + std::to_string(QUALIFIER_TOKEN_MIN_AMOUNT / COIN) + " and " + std::to_string(QUALIFIER_TOKEN_MAX_AMOUNT / COIN);
             return false;
         }
         if (token.nReissuable != 0) {

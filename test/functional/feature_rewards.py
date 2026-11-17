@@ -272,7 +272,7 @@ class RewardsTest(PaladeumTestFramework):
         self.log.info("Requesting snapshot of STOCK2 ownership in 100 blocks")
         n0.requestsnapshot(token_name="STOCK2", block_height=tgt_block_height)
 
-        # Mine 60 blocks to make sure the -minrewardsheight is met
+        # Mine 60 blocks to make sure the -minrewardheight is met
         self.generate(n0, 61)
 
         self.log.info("Retrieving snapshot request")
@@ -461,7 +461,7 @@ class RewardsTest(PaladeumTestFramework):
         self.log.info(
             "Initiating failing reward payout because we are only 15 block ahead of the snapshot instead of 60")
         assert_raises_rpc_error(-32600,
-                                "For security of the rewards payout, it is recommended to wait until chain is 60 blocks ahead of the snapshot height. You can modify this by using the -minrewardsheight.",
+                                "For security of the rewards payout, it is recommended to wait until chain is 60 blocks ahead of the snapshot height. You can modify this by using -minrewardheight.",
                                 n0.distributereward, "STOCK6", tgt_block_height, "PLB", 2000, "", owner_addr0)
 
     # Attempts a payout using a custom rewards height of 15, and they have low paladeum balance
