@@ -110,6 +110,29 @@ BOOST_AUTO_TEST_CASE(mnemonic_asset_raven_token)
     }
 }
 
+// Paladeum 0.1.x made its phrases with a list that had "token" for "asset" (109) and
+// "paladeum" for "raven" (1427). Those phrases are still accepted, so that such a wallet can
+// be restored; the seed comes from the words as written, so the keys are the same as before.
+BOOST_AUTO_TEST_CASE(mnemonic_old_paladeum_words)
+{
+    // "asset ... absurd" and "raven ... absurd" written with the old words
+    BOOST_CHECK(CMnemonic::Check(SecureString("token abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon absurd")));
+    BOOST_CHECK(CMnemonic::Check(SecureString("paladeum abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon absurd")));
+    // the real "token" (1823) still works, and so do both meanings in one phrase
+    BOOST_CHECK(CMnemonic::Check(SecureString("token abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon absurd")));
+    // a wrong last word fails with the old words as well
+    BOOST_CHECK(!CMnemonic::Check(SecureString("paladeum abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon")));
+    BOOST_CHECK(!CMnemonic::Check(SecureString("paladeum paladeum")));
+    // the seed is that of the words as written
+    SecureVector seedOld, seedOld2;
+    CMnemonic::ToSeed(SecureString("paladeum abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon absurd"), SecureString(""), seedOld);
+    CMnemonic::ToSeed(SecureString("paladeum abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon absurd"), SecureString(""), seedOld2);
+    BOOST_CHECK(seedOld == seedOld2);
+    SecureVector seedStandard;
+    CMnemonic::ToSeed(SecureString("raven abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon absurd"), SecureString(""), seedStandard);
+    BOOST_CHECK(seedOld != seedStandard);
+}
+
 // Generate() gives 12 words for 128 bits, and they pass the check.
 BOOST_AUTO_TEST_CASE(mnemonic_generate)
 {

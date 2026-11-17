@@ -30,6 +30,8 @@
 
 #include <openssl/evp.h>
 
+#include <vector>
+
 SecureString CMnemonic::Generate(int strength)
 {
     if (strength % 32 || strength < 128 || strength > 256) {
@@ -76,75 +78,84 @@ SecureString CMnemonic::FromData(const SecureVector& data, int len)
     return mnemonic;
 }
 
+// The index of a word of the list, -1 if it is not in it.
+static int WordIndex(const SecureString& word)
+{
+    for (int i = 0; wordlist[i]; i++) {
+        if (word == wordlist[i])
+            return i;
+    }
+    return -1;
+}
+
+// Whether the indexes of the words (11 bits each) carry their checksum: the first
+// (number of words / 3) bits of SHA256 of the entropy.
+static bool ChecksumMatches(const std::vector<int>& indexes)
+{
+    const size_t nWordCount = indexes.size();
+    const size_t nEntropyBytes = nWordCount * 4 / 3;
+    SecureVector bits(33, 0);
+    size_t nBit = 0;
+    for (int index : indexes) {
+        for (int k = 10; k >= 0; k--, nBit++) {
+            if (index & (1 << k))
+                bits[nBit / 8] |= 1 << (7 - (nBit % 8));
+        }
+    }
+    const unsigned char checksum = bits[nEntropyBytes];
+    unsigned char hash[CSHA256::OUTPUT_SIZE];
+    CSHA256().Write(&bits[0], nEntropyBytes).Finalize(hash);
+    const unsigned char mask = static_cast<unsigned char>(0xFF << (8 - nWordCount / 3));
+    return (hash[0] & mask) == (checksum & mask);
+}
+
 bool CMnemonic::Check(SecureString mnemonic)
 {
     if (mnemonic.empty()) {
         return false;
     }
 
-    uint32_t nWordCount{};
-
-    for (size_t i = 0; i < mnemonic.size(); ++i) {
-        if (mnemonic[i] == ' ') {
-            nWordCount++;
-        }
+    // the words, separated by single spaces
+    std::vector<SecureString> words(1);
+    for (char c : mnemonic) {
+        if (c == ' ')
+            words.emplace_back();
+        else
+            words.back() += c;
     }
-    nWordCount++;
-    // check number of words
+    const size_t nWordCount = words.size();
     if (nWordCount != 12 && nWordCount != 18 && nWordCount != 24) {
         return false;
     }
 
-    SecureString ssCurrentWord;
-    SecureVector bits(32 + 1);
-
-    uint32_t nWordIndex, ki, nBitsCount{};
-
-    for (size_t i = 0; i < mnemonic.size(); ++i)
-    {
-        ssCurrentWord = "";
-        while (i + ssCurrentWord.size() < mnemonic.size() && mnemonic[i + ssCurrentWord.size()] != ' ') {
-            if (ssCurrentWord.size() >= 9) {
-                return false;
-            }
-            ssCurrentWord += mnemonic[i + ssCurrentWord.size()];
-        }
-        i += ssCurrentWord.size();
-        nWordIndex = 0;
-        for (;;) {
-            if (!wordlist[nWordIndex]) { // word not found
-                return false;
-            }
-            if (ssCurrentWord == wordlist[nWordIndex]) { // word found on index nWordIndex
-                for (ki = 0; ki < 11; ki++) {
-                    if (nWordIndex & (1 << (10 - ki))) {
-                        bits[nBitsCount / 8] |= 1 << (7 - (nBitsCount % 8));
-                    }
-                    nBitsCount++;
-                }
-                break;
-            }
-            nWordIndex++;
-        }
+    // The words of Paladeum 0.1.x, whose list had "token" in place of "asset" (109) and
+    // "paladeum" in place of "raven" (1427): "paladeum" is word 1427, and a "token" is
+    // word 1823 or word 109, whichever makes the checksum match.
+    static const int RAVEN = 1427, ASSET = 109;
+    std::vector<int> indexes;
+    std::vector<size_t> tokenPositions;
+    for (size_t i = 0; i < nWordCount; i++) {
+        int index = WordIndex(words[i]);
+        if (index < 0 && words[i] == "paladeum")
+            index = RAVEN;
+        if (index < 0)
+            return false;
+        if (words[i] == "token")
+            tokenPositions.push_back(i);
+        indexes.push_back(index);
     }
-    if (nBitsCount != nWordCount * 11) {
+    if (tokenPositions.size() > 8) // 2^8 combinations at most
         return false;
+    for (unsigned int choice = 0; choice < (1u << tokenPositions.size()); choice++) {
+        std::vector<int> candidate = indexes;
+        for (size_t t = 0; t < tokenPositions.size(); t++) {
+            if (choice & (1u << t))
+                candidate[tokenPositions[t]] = ASSET;
+        }
+        if (ChecksumMatches(candidate))
+            return true;
     }
-    bits[32] = bits[nWordCount * 4 / 3];
-    CSHA256().Write(&bits[0], nWordCount * 4 / 3).Finalize(&bits[0]);
-
-    bool fResult = 0;
-    if (nWordCount == 12) {
-        fResult = (bits[0] & 0xF0) == (bits[32] & 0xF0); // compare first 4 bits
-    } else
-    if (nWordCount == 18) {
-        fResult = (bits[0] & 0xFC) == (bits[32] & 0xFC); // compare first 6 bits
-    } else
-    if (nWordCount == 24) {
-        fResult = bits[0] == bits[32]; // compare 8 bits
-    }
-
-    return fResult;
+    return false;
 }
 
 void CMnemonic::ToSeed(SecureString mnemonic, SecureString passphrase, SecureVector& seedRet)
