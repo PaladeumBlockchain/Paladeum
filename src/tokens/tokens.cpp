@@ -517,10 +517,11 @@ std::string CNewToken::ToString()
     ss << "units : " << std::to_string(units) << "\n";
     ss << "reissuable : " << std::to_string(nReissuable) << "\n";
 
-    ss << "has_royalties : " << nHasRoyalties;
+    // nHasRoyalties is a byte: print it as a number, each field on its line
+    ss << "has_royalties : " << std::to_string(nHasRoyalties) << "\n";
     if (nHasRoyalties) {
-        ss << "royalties_address : " << nRoyaltiesAddress;
-        ss << "royalties_amount : " << nRoyaltiesAmount;
+        ss << "royalties_address : " << nRoyaltiesAddress << "\n";
+        ss << "royalties_amount : " << nRoyaltiesAmount << "\n";
     }
 
     ss << "has_ipfs : " << std::to_string(nHasIPFS) << "\n";
