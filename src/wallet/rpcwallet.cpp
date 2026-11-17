@@ -1285,7 +1285,7 @@ UniValue sendmany(const JSONRPCRequest& request)
 
     // Message
     std::string message;
-    if (!request.params[2].get_str().empty()) {
+    if (!request.params[2].isNull() && !request.params[2].get_str().empty()) {
         message = request.params[2].get_str();
 
         if (message.length() > MAX_MESSAGE_LEN)
@@ -2602,7 +2602,7 @@ UniValue walletpassphrase(const JSONRPCRequest& request)
         return NullUniValue;
     }
 
-    if (pwallet->IsCrypted() && (request.fHelp || request.params.size() != 2)) {
+    if (pwallet->IsCrypted() && (request.fHelp || request.params.size() < 2 || request.params.size() > 3)) {
         throw std::runtime_error(
             "walletpassphrase \"passphrase\" timeout\n"
             "\nStores the wallet decryption key in memory for 'timeout' seconds.\n"
@@ -3204,6 +3204,38 @@ UniValue getwalletinfo(const JSONRPCRequest& request)
         obj.pushKV("hdmasterkeyid", seed_id.GetHex());
     }
     return obj;
+}
+
+UniValue listwalletdir(const JSONRPCRequest& request)
+{
+    if (request.fHelp || request.params.size() != 0) {
+        throw std::runtime_error(
+            "listwalletdir\n"
+            "Returns a list of wallets in the wallet directory.\n"
+            "{\n"
+            "  \"wallets\" : [                (json array of objects)\n"
+            "    {\n"
+            "      \"name\" : \"name\"          (string) The wallet name\n"
+            "    }\n"
+            "    ,...\n"
+            "  ]\n"
+            "}\n"
+            "\nExamples:\n"
+            + HelpExampleCli("listwalletdir", "")
+            + HelpExampleRpc("listwalletdir", "")
+        );
+    }
+
+    UniValue wallets(UniValue::VARR);
+    for (const auto& path : ListWalletDir()) {
+        UniValue wallet(UniValue::VOBJ);
+        wallet.pushKV("name", path.string());
+        wallets.push_back(wallet);
+    }
+
+    UniValue result(UniValue::VOBJ);
+    result.pushKV("wallets", wallets);
+    return result;
 }
 
 UniValue listwallets(const JSONRPCRequest& request)
@@ -4237,6 +4269,7 @@ extern UniValue dumpwallet(const JSONRPCRequest& request);
 extern UniValue getmasterkeyinfo(const JSONRPCRequest& request);
 extern UniValue importwallet(const JSONRPCRequest& request);
 extern UniValue importprunedfunds(const JSONRPCRequest& request);
+extern UniValue removeaddress(const JSONRPCRequest& request);
 extern UniValue removeprunedfunds(const JSONRPCRequest& request);
 extern UniValue importmulti(const JSONRPCRequest& request);
 extern UniValue rescanblockchain(const JSONRPCRequest& request);
@@ -4277,6 +4310,7 @@ static const CRPCCommand commands[] =
     { "wallet",             "importwallet",             &importwallet,             {"filename"} },
     { "wallet",             "importaddress",            &importaddress,            {"address","label","rescan","p2sh"} },
     { "wallet",             "importprunedfunds",        &importprunedfunds,        {"rawtransaction","txoutproof"} },
+    { "wallet",             "removeaddress",            &removeaddress,            {"address"} },
     { "wallet",             "importpubkey",             &importpubkey,             {"pubkey","label","rescan"} },
     { "wallet",             "keypoolrefill",            &keypoolrefill,            {"newsize"} },
     { "wallet",             "listaccounts",             &listaccounts,             {"minconf","include_watchonly"} },
@@ -4289,6 +4323,7 @@ static const CRPCCommand commands[] =
     { "wallet",             "listunspent",              &listunspent,              {"minconf","maxconf","addresses","include_unsafe","query_options"} },
     { "wallet",             "listunspenttoken",         &listunspenttoken,         {"token_name", "minconf","maxconf","addresses","include_unsafe","query_options"} },
     { "wallet",             "listwallets",              &listwallets,              {} },
+    { "wallet",             "listwalletdir",            &listwalletdir,            {} },
     { "wallet",             "loadwallet",               &loadwallet,               {"filename"} },
     { "wallet",             "unloadwallet",             &unloadwallet,             {"wallet_name"} },
     { "wallet",             "restorewallet",            &restorewallet,            {"wallet_name","backup_file"} },

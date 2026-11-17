@@ -160,7 +160,7 @@ UniValue UpdateAddressTag(const JSONRPCRequest &request, const int8_t &flag)
 
     // Get the optional change address
     std::string change_address = "";
-    if (request.params.size() > 2) {
+    if (request.params.size() > 2 && !request.params[2].isNull()) {
         change_address = request.params[2].get_str();
         if (!change_address.empty()) {
            CTxDestination change_dest = DecodeDestination(change_address);
@@ -172,7 +172,7 @@ UniValue UpdateAddressTag(const JSONRPCRequest &request, const int8_t &flag)
 
     // Get the optional token data
     std::string token_data = "";
-    if (request.params.size() > 3) {
+    if (request.params.size() > 3 && !request.params[3].isNull()) {
         token_data = request.params[3].get_str();
         token_data = DecodeTokenData(token_data);
 
@@ -181,7 +181,7 @@ UniValue UpdateAddressTag(const JSONRPCRequest &request, const int8_t &flag)
     }
 
     std::string message;
-    if (request.params.size() > 4) {
+    if (request.params.size() > 4 && !request.params[4].isNull()) {
         message = request.params[4].get_str();
 
         if (message.length() > MAX_MESSAGE_LEN)
@@ -269,7 +269,7 @@ UniValue UpdateAddressRestriction(const JSONRPCRequest &request, const int8_t &f
 
     // Get the optional change address
     std::string change_address = "";
-    if (request.params.size() > 2) {
+    if (request.params.size() > 2 && !request.params[2].isNull()) {
         change_address = request.params[2].get_str();
         if (!change_address.empty()) {
            CTxDestination change_dest = DecodeDestination(change_address);
@@ -281,7 +281,7 @@ UniValue UpdateAddressRestriction(const JSONRPCRequest &request, const int8_t &f
 
     // Get the optional token data
     std::string token_data = "";
-    if (request.params.size() > 3) {
+    if (request.params.size() > 3 && !request.params[3].isNull()) {
         token_data = request.params[3].get_str();
         token_data = DecodeTokenData(token_data);
 
@@ -290,7 +290,7 @@ UniValue UpdateAddressRestriction(const JSONRPCRequest &request, const int8_t &f
     }
 
     std::string message;
-    if (request.params.size() > 4) {
+    if (request.params.size() > 4 && !request.params[4].isNull()) {
         message = request.params[4].get_str();
 
         if (message.length() > MAX_MESSAGE_LEN)
@@ -375,7 +375,7 @@ UniValue UpdateGlobalRestrictedToken(const JSONRPCRequest &request, const int8_t
 
     // Get the optional change address
     std::string change_address = "";
-    if (request.params.size() > 1) {
+    if (request.params.size() > 1 && !request.params[1].isNull()) {
         change_address = request.params[1].get_str();
         if (!change_address.empty()) {
            CTxDestination change_dest = DecodeDestination(change_address);
@@ -387,7 +387,7 @@ UniValue UpdateGlobalRestrictedToken(const JSONRPCRequest &request, const int8_t
 
     // Get the optional token data
     std::string token_data = "";
-    if (request.params.size() > 2) {
+    if (request.params.size() > 2 && !request.params[2].isNull()) {
         token_data = request.params[2].get_str();
         token_data = DecodeTokenData(token_data);
 
@@ -396,7 +396,7 @@ UniValue UpdateGlobalRestrictedToken(const JSONRPCRequest &request, const int8_t
     }
 
     std::string message;
-    if (request.params.size() > 3) {
+    if (request.params.size() > 3 && !request.params[3].isNull()) {
         message = request.params[3].get_str();
 
         if (message.length() > MAX_MESSAGE_LEN)
@@ -547,7 +547,7 @@ UniValue issue(const JSONRPCRequest& request)
     }
 
     std::string change_address = "";
-    if (request.params.size() > 3) {
+    if (request.params.size() > 3 && !request.params[3].isNull()) {
         change_address = request.params[3].get_str();
         if (!change_address.empty()) {
             CTxDestination destination = DecodeDestination(change_address);
@@ -941,7 +941,7 @@ UniValue listtokenbalancesbyaddress(const JSONRPCRequest& request)
     }
 
     long start = 0;
-    if (request.params.size() > 3) {
+    if (request.params.size() > 3 && !request.params[3].isNull()) {
         start = request.params[3].get_int();
     }
 
@@ -1117,12 +1117,12 @@ UniValue listmytokens(const JSONRPCRequest &request)
     }
 
     long start = 0;
-    if (request.params.size() > 3) {
+    if (request.params.size() > 3 && !request.params[3].isNull()) {
         start = request.params[3].get_int();
     }
 
     int confs = 0;
-    if (request.params.size() > 4) {
+    if (request.params.size() > 4 && !request.params[4].isNull()) {
         confs = request.params[4].get_int();
     }
 
@@ -1297,7 +1297,7 @@ UniValue listmylockedtokens(const JSONRPCRequest &request)
     }
 
     long start = 0;
-    if (request.params.size() > 3) {
+    if (request.params.size() > 3 && !request.params[3].isNull()) {
         start = request.params[3].get_int();
     }
 
@@ -1447,7 +1447,7 @@ UniValue listaddressesbytoken(const JSONRPCRequest &request)
     }
 
     long start = 0;
-    if (request.params.size() > 3) {
+    if (request.params.size() > 3 && !request.params[3].isNull()) {
         start = request.params[3].get_int();
     }
 
@@ -1542,7 +1542,7 @@ UniValue transfer(const JSONRPCRequest& request)
     }
 
     std::string message;
-    if (request.params.size() > 4) {
+    if (request.params.size() > 4 && !request.params[4].isNull()) {
         message = request.params[4].get_str();
 
         if (message.length() > MAX_MESSAGE_LEN)
@@ -1552,7 +1552,7 @@ UniValue transfer(const JSONRPCRequest& request)
 
     bool fMessageCheck = false;
     std::string token_message = "";
-    if (request.params.size() > 5) {
+    if (request.params.size() > 5 && !request.params[5].isNull()) {
         token_message = request.params[5].get_str();
         if (!token_message.empty())
             fMessageCheck = true;
@@ -1560,7 +1560,7 @@ UniValue transfer(const JSONRPCRequest& request)
 
     int64_t expireTime = 0;
     if (!token_message.empty()) {
-        if (request.params.size() > 6) {
+        if (request.params.size() > 6 && !request.params[6].isNull()) {
             expireTime = request.params[6].get_int64();
         }
     }
@@ -1575,12 +1575,12 @@ UniValue transfer(const JSONRPCRequest& request)
         CheckIPFSTxidMessage(token_message, expireTime);
 
     std::string paladeum_change_address = "";
-    if (request.params.size() > 7) {
+    if (request.params.size() > 7 && !request.params[7].isNull()) {
         paladeum_change_address = request.params[7].get_str();
     }
 
     std::string token_change_address = "";
-    if (request.params.size() > 8) {
+    if (request.params.size() > 8 && !request.params[8].isNull()) {
         token_change_address = request.params[8].get_str();
     }
 
@@ -1703,7 +1703,7 @@ UniValue transferfromaddresses(const JSONRPCRequest& request)
         timeLock = request.params[4].get_int();
 
     std::string message;
-    if (request.params.size() > 5) {
+    if (request.params.size() > 5 && !request.params[5].isNull()) {
         message = request.params[5].get_str();
 
         if (message.length() > MAX_MESSAGE_LEN)
@@ -1713,7 +1713,7 @@ UniValue transferfromaddresses(const JSONRPCRequest& request)
 
     bool fMessageCheck = false;
     std::string token_message = "";
-    if (request.params.size() > 6) {
+    if (request.params.size() > 6 && !request.params[6].isNull()) {
         token_message = request.params[6].get_str();
         if (!token_message.empty())
             fMessageCheck = true;
@@ -1721,7 +1721,7 @@ UniValue transferfromaddresses(const JSONRPCRequest& request)
 
     int64_t expireTime = 0;
     if (!token_message.empty()) {
-        if (request.params.size() > 7) {
+        if (request.params.size() > 7 && !request.params[7].isNull()) {
             expireTime = request.params[7].get_int64();
         }
     }
@@ -1730,12 +1730,12 @@ UniValue transferfromaddresses(const JSONRPCRequest& request)
         CheckIPFSTxidMessage(token_message, expireTime);
 
     std::string paladeum_change_address = "";
-    if (request.params.size() > 8) {
+    if (request.params.size() > 8 && !request.params[8].isNull()) {
         paladeum_change_address = request.params[8].get_str();
     }
 
     std::string token_change_address = "";
-    if (request.params.size() > 9) {
+    if (request.params.size() > 9 && !request.params[9].isNull()) {
         token_change_address = request.params[9].get_str();
     }
 
@@ -1861,7 +1861,7 @@ UniValue transferfromaddress(const JSONRPCRequest& request)
         timeLock = request.params[4].get_int();
 
     std::string message;
-    if (request.params.size() > 5) {
+    if (request.params.size() > 5 && !request.params[5].isNull()) {
         message = request.params[5].get_str();
 
         if (message.length() > MAX_MESSAGE_LEN)
@@ -1871,7 +1871,7 @@ UniValue transferfromaddress(const JSONRPCRequest& request)
 
     bool fMessageCheck = false;
     std::string token_message = "";
-    if (request.params.size() > 6) {
+    if (request.params.size() > 6 && !request.params[6].isNull()) {
         token_message = request.params[6].get_str();
         if (!token_message.empty())
             fMessageCheck = true;
@@ -1879,7 +1879,7 @@ UniValue transferfromaddress(const JSONRPCRequest& request)
 
     int64_t expireTime = 0;
     if (!token_message.empty()) {
-        if (request.params.size() > 7) {
+        if (request.params.size() > 7 && !request.params[7].isNull()) {
             expireTime = request.params[7].get_int64();
         }
     }
@@ -1888,12 +1888,12 @@ UniValue transferfromaddress(const JSONRPCRequest& request)
         CheckIPFSTxidMessage(token_message, expireTime);
 
     std::string paladeum_change_address = "";
-    if (request.params.size() > 8) {
+    if (request.params.size() > 8 && !request.params[8].isNull()) {
         paladeum_change_address = request.params[8].get_str();
     }
 
     std::string token_change_address = "";
-    if (request.params.size() > 9) {
+    if (request.params.size() > 9 && !request.params[9].isNull()) {
         token_change_address = request.params[9].get_str();
     }
 
@@ -2009,12 +2009,12 @@ UniValue reissue(const JSONRPCRequest& request)
         changeAddress = request.params[3].get_str();
 
     bool reissuable = true;
-    if (request.params.size() > 4) {
+    if (request.params.size() > 4 && !request.params[4].isNull()) {
         reissuable = request.params[4].get_bool();
     }
 
     int newUnits = -1;
-    if (request.params.size() > 5) {
+    if (request.params.size() > 5 && !request.params[5].isNull()) {
         newUnits = request.params[5].get_int();
     }
 
@@ -2509,7 +2509,7 @@ UniValue listtokens(const JSONRPCRequest& request)
     }
 
     long start = 0;
-    if (request.params.size() > 3) {
+    if (request.params.size() > 3 && !request.params[3].isNull()) {
         start = request.params[3].get_int();
     }
 
@@ -3234,7 +3234,7 @@ UniValue issuequalifiertoken(const JSONRPCRequest& request)
     }
 
     std::string change_address = "";
-    if (request.params.size() > 3) {
+    if (request.params.size() > 3 && !request.params[3].isNull()) {
         change_address = request.params[3].get_str();
         if (!change_address.empty()) {
             CTxDestination destination = DecodeDestination(change_address);
@@ -3419,7 +3419,7 @@ UniValue issuerestrictedtoken(const JSONRPCRequest& request)
     }
 
     std::string message;
-    if (request.params.size() > 9) {
+    if (request.params.size() > 9 && !request.params[9].isNull()) {
         message = request.params[9].get_str();
 
         if (message.length() > MAX_MESSAGE_LEN)
@@ -3545,7 +3545,7 @@ UniValue reissuerestrictedtoken(const JSONRPCRequest& request)
         verifier_string = request.params[4].get_str();
 
     std::string change_address = "";
-    if (request.params.size() > 5) {
+    if (request.params.size() > 5 && !request.params[5].isNull()) {
         change_address = request.params[5].get_str();
         CTxDestination change_dest = DecodeDestination(change_address);
         if (!IsValidDestination(change_dest)) {
@@ -3574,7 +3574,7 @@ UniValue reissuerestrictedtoken(const JSONRPCRequest& request)
     }
 
     std::string message;
-    if (request.params.size() > 9) {
+    if (request.params.size() > 9 && !request.params[9].isNull()) {
         message = request.params[9].get_str();
 
         if (message.length() > MAX_MESSAGE_LEN)
@@ -3694,7 +3694,7 @@ UniValue transferqualifier(const JSONRPCRequest& request)
     }
 
     std::string message;
-    if (request.params.size() > 4) {
+    if (request.params.size() > 4 && !request.params[4].isNull()) {
         message = request.params[4].get_str();
 
         if (message.length() > MAX_MESSAGE_LEN)
@@ -3711,7 +3711,7 @@ UniValue transferqualifier(const JSONRPCRequest& request)
 
     int64_t expireTime = 0;
     if (!token_message.empty()) {
-        if (request.params.size() > 6) {
+        if (request.params.size() > 6 && !request.params[6].isNull()) {
             expireTime = request.params[6].get_int64();
         }
     }
