@@ -242,6 +242,27 @@ BOOST_AUTO_TEST_CASE(bip39_check_words)
     BOOST_CHECK(!bip39::CheckMnemonicWords("abandon about", language, error, fChecksumOk));
 }
 
+BOOST_AUTO_TEST_CASE(bip39_paladeum_old_words)
+{
+    // Paladeum 0.1.x showed "paladeum" for the BIP39 word 1427 ("raven") and "token" for 109
+    // ("asset"). A made-up phrase (word indices 1427 109 5 900 1500 33 77 2000 1024 640 1999 and
+    // the checksum word) in the words of 0.1.x and in BIP39's
+    const std::string old_words = "paladeum token absent identify romance aerobic answer wheel length exotic wheat festival";
+    const std::string bip39_words = "raven asset absent identify romance aerobic answer wheel length exotic wheat festival";
+    std::string language, error;
+    BOOST_CHECK_MESSAGE(bip39::CheckMnemonic(old_words, language, error), error);
+    BOOST_CHECK_EQUAL(language, "english");
+    BOOST_CHECK_MESSAGE(bip39::CheckMnemonic(bip39_words, language, error), error);
+    // the seed comes from the words as written: 0.1.x made its wallet from its own words
+    BOOST_CHECK(bip39::MnemonicToSeed(old_words, "") != bip39::MnemonicToSeed(bip39_words, ""));
+    // "token" as the BIP39 word 1823 is still that word (made-up phrase: 1823 1 2 ... 10, checksum)
+    BOOST_CHECK_MESSAGE(bip39::CheckMnemonic("token ability able about above absent absorb abstract absurd abuse access crisp", language, error), error);
+    // "paladeum" in a wrong place still fails the checksum
+    std::string moved = old_words;
+    moved.replace(0, std::string("paladeum").size(), "abandon");
+    BOOST_CHECK(!bip39::CheckMnemonic(moved, language, error));
+}
+
 BOOST_AUTO_TEST_CASE(bip39_path)
 {
     std::vector<uint32_t> path;

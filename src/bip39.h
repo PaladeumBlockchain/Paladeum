@@ -10,9 +10,10 @@
 #include <vector>
 
 /**
- * BIP39 mnemonic sentences (recovery words), as used by wallets other than
- * this one. Paladeum Core does not create its own keys from a mnemonic; this
- * is for getting at keys that such a wallet created.
+ * BIP39 mnemonic sentences (recovery words) for restoring keys: importmnemonic
+ * and the restore dialog. They take the words of this wallet (its own words
+ * are kept by CMnemonic, src/wallet/bip39.cpp), of Paladeum 0.1.x wallets and
+ * of other BIP39 wallets.
  */
 namespace bip39 {
 

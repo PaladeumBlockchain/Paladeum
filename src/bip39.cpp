@@ -142,6 +142,18 @@ bool CheckMnemonicWords(const std::string& mnemonic, std::string& language, std:
         return false;
     }
 
+    // Paladeum 0.1.x showed two words of its own in place of BIP39 words: "paladeum" for 1427
+    // ("raven") and "token" for 109 ("asset"); "token" is also the BIP39 word 1823, so a "token"
+    // of such a phrase may be either. The words are only matched here: the seed comes from the
+    // words as written (MnemonicToSeed), as in 0.1.x, so its phrases restore its wallets.
+    std::vector<size_t> vTokenWords;
+    for (size_t i = 0; i < words.size(); i++) {
+        if (words[i] == "paladeum")
+            words[i] = "raven";
+        else if (words[i] == "token")
+            vTokenWords.push_back(i);
+    }
+
     static const struct { const char* name; const char* const* list; } lists[] = {
         {"english", bip39_wordlist_english},
         {"korean", bip39_wordlist_korean},
@@ -172,23 +184,44 @@ bool CheckMnemonicWords(const std::string& mnemonic, std::string& language, std:
     }
 
     // 11 bits per word: entropy followed by the first ENT/32 bits of its SHA256
-    std::vector<unsigned char> bits((words.size() * 11 + 7) / 8, 0);
-    for (size_t i = 0; i < indexes.size(); i++) {
-        for (int b = 0; b < 11; b++) {
-            if (indexes[i] & (1 << (10 - b))) {
-                const size_t n = i * 11 + b;
-                bits[n / 8] |= 1 << (7 - n % 8);
+    const auto checksumMatches = [&words](const std::vector<int>& idx) {
+        std::vector<unsigned char> bits((words.size() * 11 + 7) / 8, 0);
+        for (size_t i = 0; i < idx.size(); i++) {
+            for (int b = 0; b < 11; b++) {
+                if (idx[i] & (1 << (10 - b))) {
+                    const size_t n = i * 11 + b;
+                    bits[n / 8] |= 1 << (7 - n % 8);
+                }
             }
         }
+        const size_t nChecksumBits = words.size() / 3;
+        const size_t nEntropyBytes = (words.size() * 11 - nChecksumBits) / 8;
+        unsigned char hash[CSHA256::OUTPUT_SIZE];
+        CSHA256().Write(bits.data(), nEntropyBytes).Finalize(hash);
+        const unsigned char mask = 0xFF << (8 - nChecksumBits);
+        const bool fMatch = (bits[nEntropyBytes] & mask) == (hash[0] & mask);
+        memory_cleanse(bits.data(), bits.size());
+        memory_cleanse(hash, sizeof(hash));
+        return fMatch;
+    };
+    fChecksumOk = checksumMatches(indexes);
+    // a "token" of a Paladeum 0.1.x phrase may stand for 109 (a phrase has a handful at most)
+    if (!fChecksumOk && language == "english" && !vTokenWords.empty() && vTokenWords.size() <= 10) {
+        std::vector<int> alt;
+        for (uint32_t combo = 1; combo < (1u << vTokenWords.size()) && !fChecksumOk; combo++) {
+            alt = indexes;
+            for (size_t k = 0; k < vTokenWords.size(); k++) {
+                if (combo & (1u << k))
+                    alt[vTokenWords[k]] = 109;
+            }
+            fChecksumOk = checksumMatches(alt);
+        }
+        if (!alt.empty())
+            memory_cleanse(alt.data(), alt.size() * sizeof(int));
     }
-    const size_t nChecksumBits = words.size() / 3;
-    const size_t nEntropyBytes = (words.size() * 11 - nChecksumBits) / 8;
-    unsigned char hash[CSHA256::OUTPUT_SIZE];
-    CSHA256().Write(bits.data(), nEntropyBytes).Finalize(hash);
-    const unsigned char mask = 0xFF << (8 - nChecksumBits);
-    fChecksumOk = (bits[nEntropyBytes] & mask) == (hash[0] & mask);
-    memory_cleanse(bits.data(), bits.size());
-    memory_cleanse(hash, sizeof(hash));
+    memory_cleanse(indexes.data(), indexes.size() * sizeof(int));
+    for (std::string& word : words)
+        memory_cleanse(&word[0], word.size());
     return true;
 }
 
