@@ -74,6 +74,15 @@ Node
 - `-dbcache` defaults to 1024 MiB on 64-bit computers with 4 GiB of memory or
   more (450 MiB otherwise). A full reindex of the main chain takes a few
   minutes.
+- A new installation gets its history faster. The blocks of the main network
+  are published as archives, and the state of the chain after block 715,913
+  as a snapshot, at <https://github.com/PaladeumBlockchain/plb_bootstrap>.
+  The desktop wallet fetches them by itself on its first start; a server
+  takes a downloaded folder with `-bootstrapdir`, or an `http://` mirror with
+  `-bootstrapurl`. Every block of an archive is validated like a block from
+  another node, and the snapshot is used only when its content has the hashes
+  that are compiled into this program. `-bootstrap=0` turns both off,
+  `-snapshot=0` the snapshot alone.
 - Main network checkpoints, `assumevalid` and chain statistics are updated.
 - Changing `-tokenindex` now asks for `-reindex` instead of leaving an
   incomplete index.

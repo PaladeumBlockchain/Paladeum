@@ -37,10 +37,9 @@ static const int64_t BOOTSTRAP_MIN_TIP_AGE = 3 * 24 * 60 * 60;
 /**
  * Where the block archives of the main network are published: used when neither -bootstrapurl nor
  * -bootstrapdir is given. Release assets, https with a redirect, so only a fetcher that does https
- * (the GUI) uses it. The other networks have no built-in address. Empty: no built-in address
- * (no archives of the main network have been published yet).
+ * (the GUI) uses it. The other networks have no built-in address. Empty: no built-in address.
  */
-static const char* const DEFAULT_BOOTSTRAP_URL_MAIN = "";
+static const char* const DEFAULT_BOOTSTRAP_URL_MAIN = "https://github.com/PaladeumBlockchain/plb_bootstrap/releases/download/mainnet/";
 
 struct BootstrapInfo
 {

@@ -15,10 +15,13 @@ removed again by the node that fetched it.
 How to make one:
 
   1. Synchronize a node from the block archives only, to the height at which
-     they end (paladeum.conf: connect=0, bootstrapdir=<the archives>). No peer
-     must have sent it blocks: the block index may hold the active chain only,
-     and the blocks must lie in the block files in the order of their heights.
-     Keep the default index options (txindex=1, tokenindex=1).
+     they end (paladeum.conf: connect=0, txindex=0, bootstrapdir=<the
+     archives>). No peer must have sent it blocks: the block index may hold
+     the active chain only, and the blocks must lie in the block files in the
+     order of their heights. No transaction index and no other optional index
+     (addressindex, timestampindex, spentindex): a snapshot does not bring
+     one, and a node refuses a snapshot that does. The token index stays on,
+     as it is by default.
   2. paladeum-cli getstatehashes > hashes.json
   3. paladeum-cli stop, and wait until the node is gone.
   4. make_snapshot.py --datadir <its data directory> --hashes hashes.json --out <directory of the archives>
@@ -60,6 +63,7 @@ class PartWriter:
         self.file = None
         self.hash = None
         self.size = 0
+        self.stream = hashlib.sha256()  # the parts in order, as one stream
 
     def _open(self):
         name = "%s.part%02d" % (self.prefix, len(self.parts) + 1)
@@ -81,6 +85,7 @@ class PartWriter:
             piece = data[: self.max_bytes - self.size]
             self.file.write(piece)
             self.hash.update(piece)
+            self.stream.update(piece)
             self.size += len(piece)
             data = data[len(piece):]
             if self.size == self.max_bytes:
@@ -207,9 +212,12 @@ def main():
     print("        snapshot.height = %d;" % hashes["height"])
     for key in ("block", "utxo", "tokens", "governance", "index"):
         print("        snapshot.%s = uint256S(\"%s\");" % (key, hashes[key]))
+    # SHA-256 of the parts in order, as one stream: the files that the program unpacks
+    archive = writer.stream.hexdigest()
+    print("        snapshot.archive = \"%s\";" % archive)
     print()
     print("For a test on regtest: -snapshotparams=%s" % ":".join(
-        [str(hashes["height"])] + [hashes[key] for key in ("block", "utxo", "tokens", "governance", "index")]))
+        [str(hashes["height"])] + [hashes[key] for key in ("block", "utxo", "tokens", "governance", "index")] + [archive]))
 
 
 if __name__ == "__main__":

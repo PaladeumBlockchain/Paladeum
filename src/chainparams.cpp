@@ -254,6 +254,18 @@ public:
             0.0026      // transactions per second in the 4096 blocks before it
         };
 
+        // The chain state snapshot that this program accepts (see snapshot.h): the state after
+        // block 715,913, the last block of the published block archives. The values are the
+        // output of getstatehashes of a node that validated every block of the archives
+        // (contrib/paladeum/make_snapshot.py prints them).
+        snapshot.height = 715913;
+        snapshot.block = uint256S("f990001f1fe2ef8aa403dec0d54568bf0f5b128512cf367b939f5bf1c593bd19");
+        snapshot.utxo = uint256S("901c6ff11f6330db39c8c40ea940de887ac1936ce65ae715bb7b6d84d389c4ca");
+        snapshot.tokens = uint256S("46c5c567049b12e5f69cedf8970da5e1d75a0ad343498c24e814005eb7205923");
+        snapshot.governance = uint256S("656a8ff77c016efbc548a9f10a9f499481fdd5e8553ee547aca1994c9cfd6823");
+        snapshot.index = uint256S("26edfe068e6ac1acfcab0d86962d7ad0116871808778699ed56ac05604292fd8");
+        snapshot.archive = "81cdcb9b4c1d0c112a127551b39e1447c22e89c60feb203197b402c74c880fe7";
+
         /** PLB Start **/
         // Fee Amounts
         nIssueTokenFeeAmount = 10 * COIN;
