@@ -245,8 +245,15 @@ bool IsPastBlockMissing(const CBlockIndex* pindex)
 
 std::string PastBlocksMessage()
 {
+    // The size of the block archives, when the program knows it
+    const uint64_t bytes = GetParams().Snapshot().blocksSize;
+    std::string size;
+    if (bytes >= 1000000000ULL)
+        size = strprintf(" (about %.1f GB)", bytes / 1e9);
+    else if (bytes > 0)
+        size = strprintf(" (about %d MB)", (int)((bytes + 500000) / 1000000));
     return "This needs the past blocks, which this node does not have: it started from a chain state snapshot. "
-           "Download them (about 1.4 GB) with the RPC \"fetchblocks\", the option -fetchblocks=1, or in the wallet under Settings.";
+           "Download them" + size + " with the RPC \"fetchblocks\", the option -fetchblocks=1, or in the wallet under Settings.";
 }
 
 PastBlocksInfo GetPastBlocksInfo()

@@ -26,11 +26,14 @@ bool PastBlocks::missing()
 
 QString PastBlocks::sizeText()
 {
-    const PastBlocksInfo info = GetPastBlocksInfo();
-    if (info.bytesTotal > 0)
-        return tr("about %1 GB").arg(QString::number(info.bytesTotal / 1e9, 'f', 1));
-    if (GetParams().NetworkIDString() == "main")
-        return tr("about %1 GB").arg("1.4");
+    // What the manifest of the archives says; before it is read, what the program knows
+    uint64_t bytes = GetPastBlocksInfo().bytesTotal;
+    if (bytes == 0)
+        bytes = GetParams().Snapshot().blocksSize;
+    if (bytes >= 1000000000ULL)
+        return tr("about %1 GB").arg(QString::number(bytes / 1e9, 'f', 1));
+    if (bytes > 0)
+        return tr("about %1 MB").arg(QString::number((bytes + 500000) / 1000000));
     return QString();
 }
 

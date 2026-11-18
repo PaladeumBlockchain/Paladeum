@@ -252,8 +252,10 @@ Intro::Intro(QWidget *parent) :
     try {
         const std::unique_ptr<CChainParams> params = CreateChainParams(ChainNameFromCommandLine());
         if (params->Snapshot().height > 0 && gArgs.GetBoolArg("-snapshot", true) && gArgs.GetBoolArg("-bootstrap", true)) {
-            ui->lblExplanation1->setText(tr("When you continue, %1 downloads a snapshot of the state of the block chain at block %2 (about 1 GB), checks it against the values that are built into the program, and follows the chain from there. This takes a few minutes. The blocks before the snapshot are downloaded later, and only if you need them.")
-                .arg(tr(PACKAGE_NAME), GUIUtil::withThousands(QString::number(params->Snapshot().height))));
+            const uint64_t bytes = params->Snapshot().archiveSize;
+            const QString size = bytes >= GB_BYTES ? QString("%1 GB").arg(bytes / 1e9, 0, 'f', 1) : QString("%1 MB").arg((bytes + 500000) / 1000000);
+            ui->lblExplanation1->setText(tr("When you continue, %1 downloads a snapshot of the state of the block chain at block %2 (about %3), checks it against the values that are built into the program, and follows the chain from there. This takes a few minutes. The blocks before the snapshot are downloaded later, and only if you need them.")
+                .arg(tr(PACKAGE_NAME), GUIUtil::withThousands(QString::number(params->Snapshot().height)), size));
         }
     } catch (const std::exception&) {
     }

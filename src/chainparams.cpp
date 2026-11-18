@@ -265,6 +265,8 @@ public:
         snapshot.governance = uint256S("656a8ff77c016efbc548a9f10a9f499481fdd5e8553ee547aca1994c9cfd6823");
         snapshot.index = uint256S("26edfe068e6ac1acfcab0d86962d7ad0116871808778699ed56ac05604292fd8");
         snapshot.archive = "81cdcb9b4c1d0c112a127551b39e1447c22e89c60feb203197b402c74c880fe7";
+        snapshot.archiveSize = 190321191;
+        snapshot.blocksSize = 200114642;
 
         /** PLB Start **/
         // Fee Amounts

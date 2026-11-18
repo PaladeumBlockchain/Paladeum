@@ -87,6 +87,11 @@ public:
          *  database code, which reads them before the hashes above can be compared. Empty: not
          *  checked. */
         std::string archive;
+        /** Sizes of the published files in bytes, for messages only: the snapshot, and the block
+         *  archives up to its height (the past blocks of a node that started from it). 0: not
+         *  known. */
+        uint64_t archiveSize = 0;
+        uint64_t blocksSize = 0;
     };
     const SnapshotParams& Snapshot() const { return snapshot; }
     void SetSnapshot(const SnapshotParams& params) { snapshot = params; }

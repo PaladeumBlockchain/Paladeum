@@ -215,6 +215,12 @@ def main():
     # SHA-256 of the parts in order, as one stream: the files that the program unpacks
     archive = writer.stream.hexdigest()
     print("        snapshot.archive = \"%s\";" % archive)
+    # sizes for the messages of the program: the snapshot, and the block archives next to it
+    print("        snapshot.archiveSize = %d;" % manifest["compressed_size"])
+    blocks_manifest = os.path.join(args.out, "manifest.json")
+    if os.path.exists(blocks_manifest):
+        with open(blocks_manifest) as f:
+            print("        snapshot.blocksSize = %d;" % json.load(f)["total_compressed_size"])
     print()
     print("For a test on regtest: -snapshotparams=%s" % ":".join(
         [str(hashes["height"])] + [hashes[key] for key in ("block", "utxo", "tokens", "governance", "index")] + [archive]))
