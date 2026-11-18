@@ -15,8 +15,9 @@ class TokenMempoolTest(PaladeumTestFramework):
         self.num_nodes = 2
 
 
-    def activate_tokens(self):
-        self.log.info("Generating PLB and activating tokens...")
+    def generate_coins(self):
+        # Tokens are always active in Paladeum: there is no deployment to wait for.
+        self.log.info("Generating PLB for both nodes...")
         n0, n1 = self.nodes[0], self.nodes[1]
 
         n0.generate(1)
@@ -25,7 +26,6 @@ class TokenMempoolTest(PaladeumTestFramework):
         self.sync_all()
         n1.generate(216)
         self.sync_all()
-        assert_equal("active", n0.getblockchaininfo()['bip9_softforks']['tokens']['status'])
 
 
     def issue_mempool_test(self):
@@ -144,7 +144,7 @@ class TokenMempoolTest(PaladeumTestFramework):
         assert_equal(0, n0.getmempoolinfo()['size'])
 
     def run_test(self):
-        self.activate_tokens()
+        self.generate_coins()
         self.issue_mempool_test()
         self.issue_mempool_test_extended()
         self.issue_mempool_test_extended_sub()

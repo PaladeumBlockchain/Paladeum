@@ -248,7 +248,19 @@ static UniValue getstakinginfo(const JSONRPCRequest& request)
     if (request.fHelp || request.params.size() != 0)
         throw std::runtime_error(
             "getstakinginfo\n"
-            "Returns an object containing staking-related information.");
+            "Returns an object containing staking-related information.\n"
+            "\nResult (the fields about the wallet are there when a wallet is loaded):\n"
+            "{\n"
+            "  \"enabled\": true|false,     (boolean) staking is switched on (-staking)\n"
+            "  \"staking\": true|false,     (boolean) the wallet is looking for stakes now\n"
+            "  \"weight\": n,               (numeric) the coins of the wallet that can stake, in satoshis\n"
+            "  \"netstakeweight\": n,       (numeric) estimate of the coins that stake in the network, in satoshis\n"
+            "  \"expectedtime\": n,         (numeric) expected seconds between two stakes of this wallet\n"
+            "  \"stakes_24h\": n,           (numeric) stakes of this wallet in the chain in the last 24 hours\n"
+            "  \"orphaned_24h\": n,         (numeric) stakes of the last 24 hours that lost against another block; they earn nothing\n"
+            "  \"reward_24h\": x.xxx,       (numeric) what the stakes of the last 24 hours brought, in " + CURRENCY_UNIT + "\n"
+            "  ...\n"
+            "}\n");
 
     LOCK(cs_main);
 
@@ -262,6 +274,11 @@ static UniValue getstakinginfo(const JSONRPCRequest& request)
     {
         nWeight = pwallet->GetStakeWeight();
         lastCoinStakeSearchInterval = pwallet->m_last_coin_stake_search_interval;
+    }
+    CWallet::StakeStats stats;
+    if (pwallet) {
+        LOCK(pwallet->cs_wallet);
+        stats = pwallet->GetStakeStats(GetTime() - 24 * 60 * 60);
     }
 #endif
 
@@ -287,6 +304,14 @@ static UniValue getstakinginfo(const JSONRPCRequest& request)
     obj.pushKV("netstakeweight", (uint64_t)nNetworkWeight);
 
     obj.pushKV("expectedtime", nExpectedTime);
+#ifdef ENABLE_WALLET
+    if (pwallet) {
+        // the last 24 hours of this wallet
+        obj.pushKV("stakes_24h", stats.nStakes);
+        obj.pushKV("orphaned_24h", stats.nOrphaned);
+        obj.pushKV("reward_24h", ValueFromAmount(stats.nReward));
+    }
+#endif
 
     return obj;
 }
@@ -362,10 +387,10 @@ UniValue getblocktemplate(const JSONRPCRequest& request)
             "\nIf the request parameters include a 'mode' key, that is used to explicitly select between the default 'template' request or a 'proposal'.\n"
             "It returns data needed to construct a block to work on.\n"
             "For full specification, see BIPs 22, 23, 9, and 145:\n"
-            "    https://github.com/paladeum/bips/blob/master/bip-0022.mediawiki\n"
-            "    https://github.com/paladeum/bips/blob/master/bip-0023.mediawiki\n"
-            "    https://github.com/paladeum/bips/blob/master/bip-0009.mediawiki#getblocktemplate_changes\n"
-            "    https://github.com/paladeum/bips/blob/master/bip-0145.mediawiki\n"
+            "    https://github.com/bitcoin/bips/blob/master/bip-0022.mediawiki\n"
+            "    https://github.com/bitcoin/bips/blob/master/bip-0023.mediawiki\n"
+            "    https://github.com/bitcoin/bips/blob/master/bip-0009.mediawiki#getblocktemplate_changes\n"
+            "    https://github.com/bitcoin/bips/blob/master/bip-0145.mediawiki\n"
 
             "\nArguments:\n"
             "1. template_request         (json object, optional) A json object in the following spec\n"
@@ -584,6 +609,9 @@ UniValue getblocktemplate(const JSONRPCRequest& request)
         nStart = GetTime();
         fLastTemplateSupportsSegwit = fSupportsSegwit;
 
+        if (pindexPrevNew->nHeight + 1 > GetParams().GetConsensus().nLastPOWBlock)
+            throw JSONRPCError(RPC_MISC_ERROR, strprintf("The next block (height %d) is a proof-of-stake block: those are made by the staking of a wallet, there is no template for them", pindexPrevNew->nHeight + 1));
+
         // Create new block
         // Get mining address if it is set
         CScript script;
@@ -600,8 +628,11 @@ UniValue getblocktemplate(const JSONRPCRequest& request)
             script = CScript() << OP_TRUE;
         }
 
-        pblocktemplate = BlockAssembler(GetParams()).CreateNewBlock(script, fSupportsSegwit);
-
+        // (the second argument is fProofOfStake: fSupportsSegwit was passed there, so a template
+        // for a client that supports segwit was assembled as a proof-of-stake one, without the
+        // check of the block and with the difficulty of proof of stake. A template is for proof
+        // of work.)
+        pblocktemplate = BlockAssembler(GetParams()).CreateNewBlock(script, false);
         if (!pblocktemplate)
             throw JSONRPCError(RPC_OUT_OF_MEMORY, "Out of memory");
 
@@ -784,7 +815,7 @@ UniValue submitblock(const JSONRPCRequest& request)
         throw std::runtime_error(
             "submitblock \"hexdata\"  ( \"dummy\" )\n"
             "\nAttempts to submit new block to network.\n"
-            "See https://en.bitcoin.it/wiki/BIP_0022 for full specification.\n"
+            "See https://github.com/bitcoin/bips/blob/master/bip-0022.mediawiki for full specification.\n"
 
             "\nArguments\n"
             "1. \"hexdata\"        (string, required) the hex-encoded block data to submit\n"
@@ -1080,11 +1111,11 @@ UniValue setgenerate(const JSONRPCRequest& request)
 
 
     bool fGenerate = true;
-    if (request.params.size() > 0)
+    if (request.params.size() > 0 && !request.params[0].isNull())
         fGenerate = request.params[0].get_bool();
 
     int nGenProcLimit = gArgs.GetArg("-genproclimit", DEFAULT_GENERATE_THREADS);
-    if (request.params.size() > 1)
+    if (request.params.size() > 1 && !request.params[1].isNull())
     {
         nGenProcLimit = request.params[1].get_int();
         if (nGenProcLimit == 0)

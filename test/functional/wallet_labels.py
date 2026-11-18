@@ -18,6 +18,9 @@ RPCs tested are:
 from test_framework.test_framework import PaladeumTestFramework
 from test_framework.util import assert_equal
 
+# A coinbase output can be spent once it has COINBASE_MATURITY + 1 confirmations
+COINBASE_MATURITY = 10
+
 class WalletAccountsTest(PaladeumTestFramework):
     def set_test_params(self):
         self.setup_clean_chain = True
@@ -30,13 +33,14 @@ class WalletAccountsTest(PaladeumTestFramework):
         assert_equal(len(node.listunspent()), 0)
 
         # Note each time we call generate, all generated coins go into
-        # the same address, so we call twice to get two addresses w/50 each
+        # the same address, so we call twice to get two addresses with a
+        # mature reward each: 1,000,000,000 PLB of block 1, 10 PLB of block 2
         node.generate(1)
-        node.generate(101)
-        assert_equal(node.getbalance(), 10000)
+        node.generate(COINBASE_MATURITY + 1)
+        assert_equal(node.getbalance(), 1000000010)
 
         # there should be 2 address groups
-        # each with 1 address with a balance of 50 Paladeums
+        # each with 1 address with the balance of its block
         address_groups = node.listaddressgroupings()
         assert_equal(len(address_groups), 2)
         # the addresses aren't linked now, but will be after we send to the
@@ -45,16 +49,17 @@ class WalletAccountsTest(PaladeumTestFramework):
         for address_group in address_groups:
             assert_equal(len(address_group), 1)
             assert_equal(len(address_group[0]), 2)
-            assert_equal(address_group[0][1], 5000)
             linked_addresses.add(address_group[0][0])
+        assert_equal(sorted(address_group[0][1] for address_group in address_groups), [10, 1000000000])
 
-        # send 50 from each address to a third address not in this wallet
+        # send the reward of each address to a third address not in this wallet
+        # (a regtest address of a key that this wallet does not have)
         # There's some fee that will come back to us when the miner reward
         # matures.
-        common_address = "msf4WtN1YQKXvNtvdFYt9JBnUD2FB41kjr"
+        common_address = "aRZAhLKRtnEhzcWBfS7k5TJVbRc9uhXEeA"
         txid = node.sendmany(
             fromaccount="",
-            amounts={common_address: 10000},
+            amounts={common_address: 1000000010},
             subtractfeefrom=[common_address],
             minconf=1,
         )
@@ -72,7 +77,7 @@ class WalletAccountsTest(PaladeumTestFramework):
 
         # we want to reset so that the "" account has what's expected.
         # otherwise we're off by exactly the fee amount as that's mined
-        # and matures in the next 100 blocks
+        # and matures in the next 10 blocks
         node.sendfrom("", common_address, fee)
         accounts = ["a", "b", "c", "d", "e"]
         amount_to_send = 1.0
@@ -103,15 +108,19 @@ class WalletAccountsTest(PaladeumTestFramework):
             assert_equal(node.getreceivedbyaccount(account), 2)
             node.move(account, "", node.getbalance(account))
 
-        node.generate(101)
+        node.generate(COINBASE_MATURITY + 1)
 
-        expected_account_balances = {"": 520000}
+        # The rewards of the mature blocks (10 PLB each) but those of blocks 1 and 2,
+        # which went to the common address; all fees paid have matured as rewards.
+        expected_balance = 10 * (node.getblockcount() - COINBASE_MATURITY - 2)
+        assert_equal(expected_balance, 140)
+        expected_account_balances = {"": expected_balance}
         for account in accounts:
             expected_account_balances[account] = 0
         
         assert_equal(node.listaccounts(), expected_account_balances)
         
-        assert_equal(node.getbalance(""), 520000)
+        assert_equal(node.getbalance(""), expected_balance)
         
         for account in accounts:
             address = node.getaccountaddress("")
@@ -124,12 +133,12 @@ class WalletAccountsTest(PaladeumTestFramework):
             for x in range(10):
                 addresses.append(node.getnewaddress())
             multisig_address = node.addmultisigaddress(5, addresses, account)
-            node.sendfrom("", multisig_address, 50)
+            node.sendfrom("", multisig_address, 10)
         
-        node.generate(101)
+        node.generate(1)
         
         for account in accounts:
-            assert_equal(node.getbalance(account), 50)
+            assert_equal(node.getbalance(account), 10)
 
 if __name__ == '__main__':
     WalletAccountsTest().main()

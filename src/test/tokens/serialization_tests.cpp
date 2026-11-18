@@ -11,6 +11,8 @@
 #include <amount.h>
 #include <base58.h>
 #include <chainparams.h>
+#include <uint256.h>
+#include <utilstrencodings.h>
 
 BOOST_FIXTURE_TEST_SUITE(serialization_tests, BasicTestingSetup)
 
@@ -21,10 +23,10 @@ BOOST_FIXTURE_TEST_SUITE(serialization_tests, BasicTestingSetup)
         SelectParams("test");
 
         // Create token
-        CNewToken token("SERIALIZATION", 100000000, 0, 0, 1, DecodeTokenData("QmacSRmrkVmvJfbCpmU6pK72furJ8E8fbKHindrLxmYMQo"));
+        CNewToken token("SERIALIZATION", 100000000, 0, 0, 1, DecodeTokenData("QmacSRmrkVmvJfbCpmU6pK72furJ8E8fbKHindrLxmYMQo"), 0, "", 0);
 
         // Create destination
-        CTxDestination dest = DecodeDestination("mfe7MqgYZgBuXzrT2QTFqZwBXwRDqagHTp"); // Testnet Address
+        CTxDestination dest = DecodeDestination("aQBDnoLUgdDNdrx2Lf8LG4K9upCouBhHiC"); // Testnet Address
 
         BOOST_CHECK(IsValidDestination(dest));
 
@@ -35,7 +37,7 @@ BOOST_FIXTURE_TEST_SUITE(serialization_tests, BasicTestingSetup)
         CNewToken serializedToken;
         std::string address;
         BOOST_CHECK_MESSAGE(TokenFromScript(scriptPubKey, serializedToken, address), "Failed to get token from script");
-        BOOST_CHECK_MESSAGE(address == "mfe7MqgYZgBuXzrT2QTFqZwBXwRDqagHTp", "Addresses weren't equal");
+        BOOST_CHECK_MESSAGE(address == "aQBDnoLUgdDNdrx2Lf8LG4K9upCouBhHiC", "Addresses weren't equal");
         BOOST_CHECK_MESSAGE(serializedToken.strName == "SERIALIZATION", "Token names weren't equal");
         BOOST_CHECK_MESSAGE(serializedToken.nAmount == 100000000, "Amount weren't equal");
         BOOST_CHECK_MESSAGE(serializedToken.units == 0, "Units weren't equal");
@@ -49,7 +51,7 @@ BOOST_FIXTURE_TEST_SUITE(serialization_tests, BasicTestingSetup)
         token2.ConstructTransaction(scriptPubKey);
         CNewToken serializedToken2;
         BOOST_CHECK_MESSAGE(TokenFromScript(scriptPubKey, serializedToken2, address), "Failed to get token from script");
-        BOOST_CHECK_MESSAGE(address == "mfe7MqgYZgBuXzrT2QTFqZwBXwRDqagHTp", "Addresses weren't equal");
+        BOOST_CHECK_MESSAGE(address == "aQBDnoLUgdDNdrx2Lf8LG4K9upCouBhHiC", "Addresses weren't equal");
         BOOST_CHECK_MESSAGE(serializedToken2.strName == "SERIALIZATION", "Token names weren't equal");
         BOOST_CHECK_MESSAGE(serializedToken2.nAmount == 100000000, "Amount weren't equal");
         BOOST_CHECK_MESSAGE(serializedToken2.units == 0, "Units weren't equal");
@@ -59,12 +61,12 @@ BOOST_FIXTURE_TEST_SUITE(serialization_tests, BasicTestingSetup)
 
 
         // Token with txid hash instead of ipfs hash
-        CNewToken token3("SERIALIZATION", 100000000, 0, 1, 1, DecodeTokenData("9c2c8e121a0139ba39bffd3ca97267bca9d4c0c1e84ac0c34a883c28e7a912ca"));
+        CNewToken token3("SERIALIZATION", 100000000, 0, 1, 1, DecodeTokenData("9c2c8e121a0139ba39bffd3ca97267bca9d4c0c1e84ac0c34a883c28e7a912ca"), 0, "", 0);
         scriptPubKey = GetScriptForDestination(dest);
         token3.ConstructTransaction(scriptPubKey);
         CNewToken serializedToken3;
         BOOST_CHECK_MESSAGE(TokenFromScript(scriptPubKey, serializedToken3, address), "Failed to get token from script");
-        BOOST_CHECK_MESSAGE(address == "mfe7MqgYZgBuXzrT2QTFqZwBXwRDqagHTp", "Addresses weren't equal");
+        BOOST_CHECK_MESSAGE(address == "aQBDnoLUgdDNdrx2Lf8LG4K9upCouBhHiC", "Addresses weren't equal");
         BOOST_CHECK_MESSAGE(serializedToken3.strName == "SERIALIZATION", "Token names weren't equal");
         BOOST_CHECK_MESSAGE(serializedToken3.nAmount == 100000000, "Amount weren't equal");
         BOOST_CHECK_MESSAGE(serializedToken3.units == 0, "Units weren't equal");
@@ -81,10 +83,10 @@ BOOST_FIXTURE_TEST_SUITE(serialization_tests, BasicTestingSetup)
 
         // Create token
         std::string name = "SERIALIZATION";
-        CReissueToken reissue(name, 100000000, 0, 0, DecodeTokenData("QmacSRmrkVmvJfbCpmU6pK72furJ8E8fbKHindrLxmYMQo"));
+        CReissueToken reissue(name, 100000000, 0, 0, DecodeTokenData("QmacSRmrkVmvJfbCpmU6pK72furJ8E8fbKHindrLxmYMQo"), 0, "", 0);
 
         // Create destination
-        CTxDestination dest = DecodeDestination("mfe7MqgYZgBuXzrT2QTFqZwBXwRDqagHTp"); // Testnet Address
+        CTxDestination dest = DecodeDestination("aQBDnoLUgdDNdrx2Lf8LG4K9upCouBhHiC"); // Testnet Address
 
         BOOST_CHECK(IsValidDestination(dest));
 
@@ -95,29 +97,29 @@ BOOST_FIXTURE_TEST_SUITE(serialization_tests, BasicTestingSetup)
         CReissueToken serializedToken;
         std::string address;
         BOOST_CHECK_MESSAGE(ReissueTokenFromScript(scriptPubKey, serializedToken, address), "Failed to get token from script");
-        BOOST_CHECK_MESSAGE(address == "mfe7MqgYZgBuXzrT2QTFqZwBXwRDqagHTp", "Addresses weren't equal");
+        BOOST_CHECK_MESSAGE(address == "aQBDnoLUgdDNdrx2Lf8LG4K9upCouBhHiC", "Addresses weren't equal");
         BOOST_CHECK_MESSAGE(serializedToken.strName == "SERIALIZATION", "Token names weren't equal");
         BOOST_CHECK_MESSAGE(serializedToken.nAmount == 100000000, "Amount weren't equal");
         BOOST_CHECK_MESSAGE(EncodeTokenData(serializedToken.strIPFSHash) == "QmacSRmrkVmvJfbCpmU6pK72furJ8E8fbKHindrLxmYMQo", "IPFSHash wasn't equal");
 
         // Empty IPFS
-        CReissueToken reissue2(name, 100000000, 0, 0, "");
+        CReissueToken reissue2(name, 100000000, 0, 0, "", 0, "", 0);
         scriptPubKey = GetScriptForDestination(dest);
         reissue2.ConstructTransaction(scriptPubKey);
         CReissueToken serializedToken2;
         BOOST_CHECK_MESSAGE(ReissueTokenFromScript(scriptPubKey, serializedToken2, address), "Failed to get token from script");
-        BOOST_CHECK_MESSAGE(address == "mfe7MqgYZgBuXzrT2QTFqZwBXwRDqagHTp", "Addresses weren't equal");
+        BOOST_CHECK_MESSAGE(address == "aQBDnoLUgdDNdrx2Lf8LG4K9upCouBhHiC", "Addresses weren't equal");
         BOOST_CHECK_MESSAGE(serializedToken2.strName == "SERIALIZATION", "Token names weren't equal");
         BOOST_CHECK_MESSAGE(serializedToken2.nAmount == 100000000, "Amount weren't equal");
         BOOST_CHECK_MESSAGE(serializedToken2.strIPFSHash == "", "IPFSHash wasn't equal");
 
         // Txid Hash instead of IPFS
-        CReissueToken reissue3(name, 100000000, 0, 0, DecodeTokenData("9c2c8e121a0139ba39bffd3ca97267bca9d4c0c1e84ac0c34a883c28e7a912ca"));
+        CReissueToken reissue3(name, 100000000, 0, 0, DecodeTokenData("9c2c8e121a0139ba39bffd3ca97267bca9d4c0c1e84ac0c34a883c28e7a912ca"), 0, "", 0);
         scriptPubKey = GetScriptForDestination(dest);
         reissue3.ConstructTransaction(scriptPubKey);
         CReissueToken serializedToken3;
         BOOST_CHECK_MESSAGE(ReissueTokenFromScript(scriptPubKey, serializedToken3, address), "Failed to get token from script");
-        BOOST_CHECK_MESSAGE(address == "mfe7MqgYZgBuXzrT2QTFqZwBXwRDqagHTp", "Addresses weren't equal");
+        BOOST_CHECK_MESSAGE(address == "aQBDnoLUgdDNdrx2Lf8LG4K9upCouBhHiC", "Addresses weren't equal");
         BOOST_CHECK_MESSAGE(serializedToken3.strName == "SERIALIZATION", "Token names weren't equal");
         BOOST_CHECK_MESSAGE(serializedToken3.nAmount == 100000000, "Amount weren't equal");
         BOOST_CHECK_MESSAGE(EncodeTokenData(serializedToken3.strIPFSHash) == "9c2c8e121a0139ba39bffd3ca97267bca9d4c0c1e84ac0c34a883c28e7a912ca", "IPFSHash wasn't equal");
@@ -134,7 +136,8 @@ BOOST_FIXTURE_TEST_SUITE(serialization_tests, BasicTestingSetup)
         CNewToken token(name, 100000000);
 
         // Create destination
-        CTxDestination dest = DecodeDestination("mfe7MqgYZgBuXzrT2QTFqZwBXwRDqagHTp"); // Testnet Address
+        CTxDestination dest = CKeyID(uint160(ParseHex("0102030405060708090a0b0c0d0e0f1011121314")));
+        std::string expected_address = EncodeDestination(dest); // Testnet Address
 
         BOOST_CHECK(IsValidDestination(dest));
 
@@ -147,7 +150,7 @@ BOOST_FIXTURE_TEST_SUITE(serialization_tests, BasicTestingSetup)
         std::stringstream ownerName;
         ownerName << name << OWNER_TAG;
         BOOST_CHECK_MESSAGE(OwnerTokenFromScript(scriptPubKey, strOwnerName, address), "Failed to get token from script");
-        BOOST_CHECK_MESSAGE(address == "mfe7MqgYZgBuXzrT2QTFqZwBXwRDqagHTp", "Addresses weren't equal");
+        BOOST_CHECK_MESSAGE(address == expected_address, "Addresses weren't equal");
         BOOST_CHECK_MESSAGE(strOwnerName == ownerName.str(), "Token names weren't equal");
     }
 
@@ -155,7 +158,7 @@ BOOST_FIXTURE_TEST_SUITE(serialization_tests, BasicTestingSetup)
     {
         SelectParams(CBaseChainParams::MAIN);
 
-        CNewToken restricted_token("$RESTRICTED", 1000, 8, 0, 1, "QmRAQB6YaCyidP37UdDnjFY5vQuiBrcqdyoW1CuDgwxkD4");
+        CNewToken restricted_token("$RESTRICTED", 1000, 8, 0, 1, "QmRAQB6YaCyidP37UdDnjFY5vQuiBrcqdyoW1CuDgwxkD4", 0, "", 0);
 
         CScript scriptPubKey = GetScriptForDestination(DecodeDestination(GetParams().GlobalFeeAddress()));
         restricted_token.ConstructTransaction(scriptPubKey);
@@ -167,7 +170,7 @@ BOOST_FIXTURE_TEST_SUITE(serialization_tests, BasicTestingSetup)
     {
         SelectParams(CBaseChainParams::MAIN);
 
-        CNewToken message_channel("RESTRICTED~CHANNEL", 1000, 0, 0, 1, "QmRAQB6YaCyidP37UdDnjFY5vQuiBrcqdyoW1CuDgwxkD4");
+        CNewToken message_channel("RESTRICTED~CHANNEL", 1000, 0, 0, 1, "QmRAQB6YaCyidP37UdDnjFY5vQuiBrcqdyoW1CuDgwxkD4", 0, "", 0);
 
         CScript scriptPubKey = GetScriptForDestination(DecodeDestination(GetParams().GlobalFeeAddress()));
         message_channel.ConstructTransaction(scriptPubKey);

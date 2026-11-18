@@ -46,7 +46,7 @@ class FeatureSweepTest(PaladeumTestFramework):
         self.sync_all()
         src_node.generate(431)
         self.sync_all()
-        assert_equal("active", src_node.getblockchaininfo()['bip9_softforks']['tokens']['status'])
+        # (tokens are always active in Paladeum: there is no deployment to wait for)
 
         # Issue 3 different tokens
         self.log.info("> Generating 4 different tokens...")

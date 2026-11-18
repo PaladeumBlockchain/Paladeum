@@ -4,15 +4,19 @@
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
 #include "overviewpage.h"
-#include "ui_overviewpage.h"
 
 #include "paladeumunits.h"
 #include "clientmodel.h"
 #include "guiconstants.h"
 #include "guiutil.h"
 #include "optionsmodel.h"
+#include "explorerpage.h"
+#include "pagenav.h"
+#include "pagewidgets.h"
+#include "tokenlists.h"
 #include "platformstyle.h"
 #include "transactionfilterproxy.h"
+#include "transactionrecord.h"
 #include "transactiontablemodel.h"
 #include "tokenfilterproxy.h"
 #include "tokentablemodel.h"
@@ -20,27 +24,31 @@
 #include "tokenrecord.h"
 
 #include <QAbstractItemDelegate>
-#include <QDateTime>
-#include <QPainter>
 #include <QDesktopServices>
-#include <QMouseEvent>
+#include <QAbstractItemView>
+#include <QFrame>
+#include <QHash>
+#include <QHBoxLayout>
+#include <QHelpEvent>
+#include <QLabel>
+#include <QLineEdit>
+#include <QListView>
+#include <QPainter>
+#include <QPainterPath>
+#include <QPushButton>
+#include <QTimer>
+#include <QUrl>
+#include <QToolTip>
+#include <QVBoxLayout>
+
+#include <chainparams.h>
 #include <validation.h>
 #include <utiltime.h>
 
-#define DECORATION_SIZE 54
+#define ROW_HEIGHT 52
 #define NUM_ITEMS 8
 
-#include <QDebug>
-#include <QTimer>
-#include <QPainterPath>
-#include <QGraphicsDropShadowEffect>
-#include <QScrollBar>
-#include <QUrl>
-
-#if QT_VERSION < QT_VERSION_CHECK(5, 11, 0)
-#define QTversionPreFiveEleven
-#endif
-
+/** One recent transaction: direction tile, title, address and date, amount and asset. */
 class TxViewDelegate : public QAbstractItemDelegate
 {
     Q_OBJECT
@@ -49,100 +57,106 @@ public:
         QAbstractItemDelegate(parent), unit(PaladeumUnits::PLB),
         platformStyle(_platformStyle)
     {
+    }
 
+    /** Second line: abbreviated address (or label) and the date */
+    static QString subLine(const QModelIndex &index, bool *mono)
+    {
+        const QDateTime date = index.data(TransactionTableModel::DateRole).toDateTime();
+        const QString address = index.data(TransactionTableModel::AddressRole).toString();
+        const QString label = index.data(TransactionTableModel::LabelRole).toString();
+        const int type = index.data(TransactionTableModel::TypeRole).toInt();
+        *mono = false;
+        if (type == TransactionRecord::SendToSelf || address.isEmpty())
+            return GUIUtil::isoDateTime(date);
+        if (!label.isEmpty())
+            return label + QString::fromUtf8(" · ") + date.toString("yyyy-MM-dd");
+        *mono = true;
+        return GUIUtil::shortAddress(address) + QString::fromUtf8(" · ") + date.toString("yyyy-MM-dd");
     }
 
     inline void paint(QPainter *painter, const QStyleOptionViewItem &option,
                       const QModelIndex &index ) const
     {
         painter->save();
+        painter->setRenderHint(QPainter::Antialiasing, true);
+        const GUIUtil::Theme& theme = GUIUtil::theme();
+        const QRect r = option.rect;
 
-        QIcon icon = qvariant_cast<QIcon>(index.data(TransactionTableModel::RawDecorationRole));
-        QRect mainRect = option.rect;
-        QRect decorationRect(mainRect.topLeft(), QSize(DECORATION_SIZE, DECORATION_SIZE));
-        int xspace = DECORATION_SIZE + 8;
-        int ypad = 6;
-        int halfheight = (mainRect.height() - 2*ypad)/2;
-        QRect amountRect(mainRect.left() + xspace, mainRect.top()+ypad, mainRect.width() - xspace, halfheight);
-        QRect addressRect(mainRect.left() + xspace, mainRect.top()+ypad+halfheight, mainRect.width() - xspace, halfheight);
+        // separator above each row
+        painter->setPen(theme.line);
+        painter->drawLine(r.left(), r.top(), r.right(), r.top());
 
-        if (darkModeEnabled)
-            icon = platformStyle->SingleColorIcon(icon, COLOR_TOOLBAR_NOT_SELECTED_TEXT);
-        else
-            icon = platformStyle->SingleColorIcon(icon, COLOR_LABELS);
-        icon.paint(painter, decorationRect);
+        const qint64 amount = index.data(TransactionTableModel::AmountRole).toLongLong();
+        const int type = index.data(TransactionTableModel::TypeRole).toInt();
+        const bool confirmed = index.data(TransactionTableModel::ConfirmedRole).toBool();
+        const bool outgoing = amount < 0 || type == TransactionRecord::SendToSelf || type == TransactionRecord::TransferTo;
+        const QString asset = index.data(TransactionTableModel::TokenNameRole).toString();
+        // the hexagon bullet of a list row: blue for PLB, grey for a token
+        GUIUtil::paintHexBullet(painter, QRect(r.left(), r.top(), 16, r.height()), !asset.isEmpty() && asset != "PLB");
 
-        QDateTime date = index.data(TransactionTableModel::DateRole).toDateTime();
-        QString address = index.data(Qt::DisplayRole).toString();
-        qint64 amount = index.data(TransactionTableModel::AmountRole).toLongLong();
-        bool confirmed = index.data(TransactionTableModel::ConfirmedRole).toBool();
-        QVariant value = index.data(Qt::ForegroundRole);
-        QColor foreground = platformStyle->TextColor();
-        if(value.canConvert<QBrush>())
-        {
-            QBrush brush = qvariant_cast<QBrush>(value);
-            foreground = brush.color();
-        }
+        const int left = r.left() + 28;
+        const QRect topRect(left, r.top() + 7, r.width() - 28, 20);
+        const QRect bottomRect(left, r.top() + 27, r.width() - 28, 18);
 
-        QString amountText = index.data(TransactionTableModel::FormattedAmountRole).toString();
-        if(!confirmed)
-        {
-            amountText = QString("[") + amountText + QString("]");
-        }
+        // amount and asset, right-aligned
+        const QString amountText = index.data(TransactionTableModel::DisplayAmountRole).toString();
+        QColor amountColor = outgoing ? theme.negative : theme.positive;
+        if (!confirmed)
+            amountColor = theme.textDisabled;
+        const int amountWidth = GUIUtil::paintAmount(painter, topRect, amountText, GUIUtil::monoFont(14, QFont::Medium), amountColor);
+        painter->setFont(GUIUtil::appFont(12));
+        painter->setPen(theme.muted);
+        painter->drawText(bottomRect, Qt::AlignRight | Qt::AlignVCenter, asset);
+        const int assetWidth = painter->fontMetrics().horizontalAdvance(asset);
 
-        painter->setFont(GUIUtil::getSubLabelFont());
-        // Concatenate the strings if needed before painting
-        #ifndef QTversionPreFiveEleven
-    		GUIUtil::concatenate(painter, address, painter->fontMetrics().horizontalAdvance(amountText), addressRect.left(), addressRect.right());
-		#else
-    		GUIUtil::concatenate(painter, address, painter->fontMetrics().width(amountText), addressRect.left(), addressRect.right());
-		#endif
-        painter->setPen(foreground);
-        QRect boundingRect;
-        painter->drawText(addressRect, Qt::AlignLeft|Qt::AlignVCenter, address, &boundingRect);
+        // title and chip
+        painter->setFont(GUIUtil::appFont(14, QFont::Medium));
+        painter->setPen(theme.text);
+        const bool owner = index.data(TransactionTableModel::OwnerTokenRole).toBool();
+        const QString chip = owner ? tr("Owner") : QString();
+        int titleSpace = topRect.width() - amountWidth - 12;
+        if (owner)
+            titleSpace -= 70;
+        const QString title = painter->fontMetrics().elidedText(index.data(TransactionTableModel::TitleRole).toString(), Qt::ElideRight, qMax(40, titleSpace));
+        painter->drawText(topRect, Qt::AlignLeft | Qt::AlignVCenter, title);
+        if (owner)
+            GUIUtil::paintChip(painter, left + painter->fontMetrics().horizontalAdvance(title) + 8, topRect.center().y() + 1, chip);
+
+        // address and date
+        bool mono = false;
+        QString sub = subLine(index, &mono);
+        painter->setFont(mono ? GUIUtil::monoFont(12) : GUIUtil::appFont(12));
+        painter->setPen(theme.muted);
+        sub = painter->fontMetrics().elidedText(sub, Qt::ElideRight, qMax(40, bottomRect.width() - assetWidth - 12));
+        painter->drawText(bottomRect, Qt::AlignLeft | Qt::AlignVCenter, sub);
 
         if (index.data(TransactionTableModel::WatchonlyRole).toBool())
         {
             QIcon iconWatchonly = qvariant_cast<QIcon>(index.data(TransactionTableModel::WatchonlyDecorationRole));
-            QRect watchonlyRect(boundingRect.right() + 5, mainRect.top()+ypad+halfheight, 16, halfheight);
-            iconWatchonly.paint(painter, watchonlyRect);
+            iconWatchonly.paint(painter, QRect(left + painter->fontMetrics().horizontalAdvance(sub) + 6, bottomRect.top() + 1, 16, 16));
         }
-
-        if(amount < 0)
-        {
-            foreground = COLOR_NEGATIVE;
-        }
-        else if(!confirmed)
-        {
-            foreground = COLOR_UNCONFIRMED;
-        }
-        else
-        {
-            foreground = platformStyle->TextColor();
-        }
-
-        painter->setPen(foreground);
-        painter->drawText(addressRect, Qt::AlignRight|Qt::AlignVCenter, amountText);
-
-        QString tokenName = index.data(TransactionTableModel::TokenNameRole).toString();
-
-        // Concatenate the strings if needed before painting
-        #ifndef QTversionPreFiveEleven
-    		GUIUtil::concatenate(painter, tokenName, painter->fontMetrics().horizontalAdvance(GUIUtil::dateTimeStr(date)), amountRect.left(), amountRect.right());
-    	#else
-    		GUIUtil::concatenate(painter, tokenName, painter->fontMetrics().width(GUIUtil::dateTimeStr(date)), amountRect.left(), amountRect.right());
-    	#endif
-    	painter->drawText(amountRect, Qt::AlignRight|Qt::AlignVCenter, tokenName);
-
-        painter->setPen(platformStyle->TextColor());
-        painter->drawText(amountRect, Qt::AlignLeft|Qt::AlignVCenter, GUIUtil::dateTimeStr(date));
 
         painter->restore();
     }
 
     inline QSize sizeHint(const QStyleOptionViewItem &option, const QModelIndex &index) const
     {
-        return QSize(DECORATION_SIZE, DECORATION_SIZE);
+        return QSize(ROW_HEIGHT, ROW_HEIGHT);
+    }
+
+    /** The full address of an abbreviated one */
+    bool helpEvent(QHelpEvent *event, QAbstractItemView *view, const QStyleOptionViewItem &option, const QModelIndex &index)
+    {
+        if (event->type() == QEvent::ToolTip && index.isValid()) {
+            const QString address = index.data(TransactionTableModel::AddressRole).toString();
+            if (!address.isEmpty()) {
+                const QString label = index.data(TransactionTableModel::LabelRole).toString();
+                QToolTip::showText(event->globalPos(), GUIUtil::monoToolTip(address, label), view);
+                return true;
+            }
+        }
+        return QAbstractItemDelegate::helpEvent(event, view, option, index);
     }
 
     int unit;
@@ -150,6 +164,15 @@ public:
 
 };
 
+namespace OverviewRootRoles {
+    enum { HeldRole = Qt::UserRole + 200, ChildrenRole, RootNameRole };
+}
+
+/**
+ * One token: logo, name, chips, amount. The owner token ("NAME!") is not a row
+ * of its own; it shows as a chip on the row of the token. Sub tokens and unique
+ * tokens are indented under their parent.
+ */
 class TokenViewDelegate : public QAbstractItemDelegate
 {
 Q_OBJECT
@@ -158,149 +181,191 @@ public:
             QAbstractItemDelegate(parent), unit(PaladeumUnits::PLB),
             platformStyle(_platformStyle)
     {
-
     }
 
     inline void paint(QPainter *painter, const QStyleOptionViewItem &option,
                       const QModelIndex &index ) const
     {
         painter->save();
+        painter->setRenderHint(QPainter::Antialiasing, true);
+        const GUIUtil::Theme& theme = GUIUtil::theme();
+        // room for the scroll bar on the right
+        const QRect r = option.rect.adjusted(0, 0, -12, 0);
 
-        /** Get the icon for the administrator of the token */
-        QPixmap pixmap = qvariant_cast<QPixmap>(index.data(Qt::DecorationRole));
-        QPixmap ipfspixmap = qvariant_cast<QPixmap>(index.data(TokenTableModel::TokenIPFSHashDecorationRole));
+        painter->setPen(theme.line);
+        painter->drawLine(r.left(), r.top(), r.right(), r.top());
+
         QString name = index.data(TokenTableModel::TokenNameRole).toString();
+        const bool admin = index.data(TokenTableModel::AdministratorRole).toBool();
+        const bool locked = index.data(TokenTableModel::IsLockedRole).toBool();
+        // only the owner token, or only tokens below the root, are held
+        const bool ownerOnly = !index.data(OverviewRootRoles::HeldRole).toBool();
+        if (name.endsWith('!'))
+            name.chop(1);
+        const int children = index.data(OverviewRootRoles::ChildrenRole).toInt();
+        const bool sub = false, unique = false;
 
-        bool admin = index.data(TokenTableModel::AdministratorRole).toBool();
-        bool username = name.toStdString().rfind("@", 0) == 0;
-        bool locked = index.data(TokenTableModel::IsLockedRole).toBool();
+        const int indent = 0;
+        const int logoSize = 32;
+        painter->drawPixmap(r.left() + indent, r.top() + (r.height() - logoSize) / 2, GUIUtil::tokenLogo(name, logoSize));
 
-        /** Need to know the heigh to the pixmap. If it is 0 we don't we dont own this token so dont have room for the icon */
-        int nIconSize = admin ? 25 : 0;
-        int nIPFSIconSize = ipfspixmap.height();
-        int extraNameSpacing = 12;
-        if (nIconSize)
-            extraNameSpacing = 0;
-
-        /** Get basic padding and half height */
-        QRect mainRect = option.rect;
-        int xspace = nIconSize + (admin ? 15 : 25);
-        int ypad = 1;
-
-        // Create the gradient rect to draw the gradient over
-        QRect gradientRect = mainRect;
-        gradientRect.setTop(gradientRect.top() + 2);
-        gradientRect.setBottom(gradientRect.bottom() - 2);
-        gradientRect.setRight(gradientRect.right() - 20);
-
-        int halfheight = (gradientRect.height() - 2*ypad)/2;
-
-        /** Create the three main rectangles  (Icon, Name, Amount) */
-        QRect tokenAdministratorRect(QPoint(10, gradientRect.top() + halfheight/2 - 3*ypad), QSize(nIconSize, nIconSize));
-        QRect tokenNameRect(gradientRect.left() + xspace - extraNameSpacing, gradientRect.top()+ypad+(halfheight/2), gradientRect.width() - xspace, halfheight + ypad);
-        QRect amountRect(gradientRect.left() + xspace, gradientRect.top()+ypad+(halfheight/2), gradientRect.width() - xspace - 16, halfheight);
-        QRect ipfsLinkRect(QPoint(gradientRect.right() - nIconSize/2, gradientRect.top() + halfheight/1.5), QSize(nIconSize/2, nIconSize/2));
-
-        // Create the gradient for the token items
-        QLinearGradient gradient(mainRect.topLeft(), mainRect.bottomRight());
-
-        // Select the color of the gradient
-        if (username) {
-            gradient.setColorAt(0, QColor("#1c57b3"));
-            gradient.setColorAt(1, QColor("#154287"));
-        } else if (locked) {
-            gradient.setColorAt(0, QColor("#5d5d5d"));
-            gradient.setColorAt(1, QColor("#777777"));
+        // amount
+        QString amountText = GUIUtil::withThousands(index.data(TokenTableModel::FormattedAmountRole).toString());
+        int amountWidth;
+        if (ownerOnly) {
+            amountText = tr("None held");
+            painter->setFont(GUIUtil::appFont(13));
+            painter->setPen(theme.textSecondary);
+            painter->drawText(r, Qt::AlignRight | Qt::AlignVCenter, amountText);
+            amountWidth = painter->fontMetrics().horizontalAdvance(amountText);
         } else {
-            gradient.setColorAt(0, QColor("#4c9d19"));
-            gradient.setColorAt(1, QColor("#377112"));
+            amountWidth = GUIUtil::paintAmount(painter, r, amountText, GUIUtil::monoFont(15, QFont::DemiBold), theme.text);
         }
 
-        // Using 4 are the radius because the pixels are solid
-        QPainterPath path;
-        path.addRoundedRect(gradientRect, 4, 4);
+        // name and chips
+        QStringList chips;
+        if (unique)
+            chips << tr("Unique token");
+        else if (sub)
+            chips << tr("Sub token");
+        if (admin)
+            chips << tr("Owner");
+        if (locked)
+            chips << tr("Locked");
+        // sub and unique tokens are not rows: the root says how many are held below it
+        if (children > 0)
+            chips << tr("%1 below").arg(children);
+        painter->setFont(GUIUtil::appFont(11, QFont::DemiBold));
+        int chipsWidth = 0;
+        for (const QString& chip : chips)
+            chipsWidth += painter->fontMetrics().horizontalAdvance(chip) + 16 + 8;
 
-        // Paint the gradient
-        painter->setRenderHint(QPainter::Antialiasing);
-        painter->fillPath(path, gradient);
-
-        /** Draw token administrator icon */
-        if (nIconSize)
-            painter->drawPixmap(tokenAdministratorRect, pixmap);
-
-        if (nIPFSIconSize)
-            painter->drawPixmap(ipfsLinkRect, ipfspixmap);
-
-        /** Create the font that is used for painting the token name */
-        QFont nameFont;
-#if !defined(Q_OS_MAC)
-        nameFont.setFamily("Open Sans");
-#endif
-        nameFont.setPixelSize(18);
-        nameFont.setWeight(QFont::Weight::Normal);
-        nameFont.setLetterSpacing(QFont::SpacingType::AbsoluteSpacing, -0.4);
-
-        /** Create the font that is used for painting the token amount */
-        QFont amountFont;
-#if !defined(Q_OS_MAC)
-        amountFont.setFamily("Open Sans");
-#endif
-        amountFont.setPixelSize(14);
-        amountFont.setWeight(QFont::Weight::Normal);
-        amountFont.setLetterSpacing(QFont::SpacingType::AbsoluteSpacing, -0.3);
-
-        /** Get the name and formatted amount from the data */
-        // QString name = index.data(TokenTableModel::TokenNameRole).toString();
-        QString amountText = index.data(TokenTableModel::FormattedAmountRole).toString();
-
-        // Setup the pens
-        QColor textColor = COLOR_WHITE;
-        if (darkModeEnabled)
-            textColor = COLOR_TOOLBAR_SELECTED_TEXT_DARK_MODE;
-
-        QPen penName(textColor);
-
-        /** Start Concatenation of Token Name */
-        // Get the width in pixels that the amount takes up (because they are different font,
-        // we need to do this before we call the concatenate function
-        painter->setFont(amountFont);
-        #ifndef QTversionPreFiveEleven
-        	int amount_width = painter->fontMetrics().horizontalAdvance(amountText);
-		#else
-			int amount_width = painter->fontMetrics().width(amountText);
-		#endif
-        // Set the painter for the font used for the token name, so that the concatenate function estimated width correctly
-        painter->setFont(nameFont);
-
-        GUIUtil::concatenate(painter, name, amount_width, tokenNameRect.left(), amountRect.right());
-
-        /** Paint the token name */
-        painter->setPen(penName);
-        painter->drawText(tokenNameRect, Qt::AlignLeft|Qt::AlignVCenter, name);
-
-        /** Paint the amount */
-        painter->setFont(amountFont);
-        painter->drawText(amountRect, Qt::AlignRight|Qt::AlignVCenter, amountText);
+        const int left = r.left() + indent + logoSize + 12;
+        painter->setFont(GUIUtil::appFont(14, QFont::DemiBold));
+        painter->setPen(theme.text);
+        const QString shown = painter->fontMetrics().elidedText(name, Qt::ElideRight, qMax(40, r.right() - left - amountWidth - chipsWidth - 12));
+        painter->drawText(QRect(left, r.top(), r.width(), r.height()), Qt::AlignLeft | Qt::AlignVCenter, shown);
+        int x = left + painter->fontMetrics().horizontalAdvance(shown) + 8;
+        childChips.remove(index.row());
+        for (const QString& chip : chips) {
+            const int w = GUIUtil::paintChip(painter, x, r.center().y() + 1, chip);
+            // the last chip of a root with tokens below it opens their list
+            if (children > 0 && &chip == &chips.last())
+                childChips.insert(index.row(), QRect(x, r.center().y() - 12, w, 24));
+            x += w + 6;
+        }
 
         painter->restore();
     }
 
     inline QSize sizeHint(const QStyleOptionViewItem &option, const QModelIndex &index) const
     {
-        return QSize(42, 42);
+        return QSize(ROW_HEIGHT, ROW_HEIGHT);
     }
 
     int unit;
     const PlatformStyle *platformStyle;
-
+    /** Where the "N below" chips were painted, by row */
+    mutable QHash<int, QRect> childChips;
 };
+
+/**
+ * The root tokens of the wallet for the list of the overview. A wallet can hold
+ * tens of thousands of sub and unique tokens; they are not rows here. The rows
+ * answer to the roles of the token table model, so that what is connected to a
+ * click on a token works as before.
+ */
+class OverviewRootModel : public QAbstractListModel
+{
+public:
+    explicit OverviewRootModel(HeldTokenIndex *_index, QObject *parent = nullptr) : QAbstractListModel(parent), index(_index)
+    {
+        connect(index, &HeldTokenIndex::changed, this, [this] { refill(); });
+        refill();
+    }
+
+    void setFilter(const QString& text)
+    {
+        filter = text;
+        refill();
+    }
+
+    int rowCount(const QModelIndex& parent = QModelIndex()) const override { return parent.isValid() ? 0 : rows.size(); }
+
+    QVariant data(const QModelIndex& idx, int role) const override
+    {
+        if (!idx.isValid() || idx.row() >= rows.size())
+            return QVariant();
+        const RootToken& root = rows[idx.row()];
+        switch (role) {
+        case TokenTableModel::TokenNameRole:
+            // as the table model names it: "NAME!" when only the owner token is held
+            return !root.held && root.admin ? root.name + "!" : root.name;
+        case TokenTableModel::FormattedAmountRole: return root.amount;
+        case TokenTableModel::AdministratorRole: return root.admin;
+        case TokenTableModel::IsLockedRole: return false;
+        case OverviewRootRoles::HeldRole: return root.held;
+        case OverviewRootRoles::ChildrenRole: return root.children;
+        case OverviewRootRoles::RootNameRole: return root.name;
+        }
+        return QVariant();
+    }
+
+private:
+    void refill()
+    {
+        beginResetModel();
+        rows.clear();
+        for (const RootToken& root : index->roots()) {
+            if (filter.isEmpty() || root.name.contains(filter, Qt::CaseInsensitive))
+                rows.push_back(root);
+        }
+        endResetModel();
+    }
+
+    HeldTokenIndex *index;
+    QString filter;
+    QVector<RootToken> rows;
+};
+
 #include "overviewpage.moc"
-#include "paladeumgui.h"
-#include <QFontDatabase>
+
+static QLabel *captionLabel(const QString& text)
+{
+    QLabel *label = new QLabel(text);
+    label->setProperty("role", "caption");
+    label->setFont(GUIUtil::appFont(12));
+    return label;
+}
+
+static AmountLabel *amountLabel()
+{
+    AmountLabel *label = new AmountLabel(17, QFont::DemiBold);
+    label->setMinimumPixelSize(14);
+    return label;
+}
+
+static QWidget *statBlock(const QString& caption, QWidget *value)
+{
+    QWidget *block = new QWidget();
+    QVBoxLayout *layout = new QVBoxLayout(block);
+    layout->setContentsMargins(0, 0, 0, 0);
+    layout->setSpacing(2);
+    layout->addWidget(captionLabel(caption));
+    layout->addWidget(value);
+    return block;
+}
+
+static QFrame *hline()
+{
+    QFrame *line = new QFrame();
+    line->setProperty("role", "hline");
+    line->setFixedHeight(1);
+    return line;
+}
 
 OverviewPage::OverviewPage(const PlatformStyle *platformStyle, QWidget *parent) :
     QWidget(parent),
-    ui(new Ui::OverviewPage),
     clientModel(0),
     walletModel(0),
     currentBalance(-1),
@@ -313,122 +378,283 @@ OverviewPage::OverviewPage(const PlatformStyle *platformStyle, QWidget *parent) 
     currentWatchImmatureBalance(-1),
     currentWatchOnlyStake(-1),
     currentLockedBalance(-1),
+    outOfSync(true),
+    statsPending(false),
+    heldTokens(nullptr),
+    rootModel(nullptr),
+    transactionLimit(NUM_ITEMS),
     txdelegate(new TxViewDelegate(platformStyle, this)),
     tokendelegate(new TokenViewDelegate(platformStyle, this))
 {
-    ui->setupUi(this);
+    const GUIUtil::Theme& theme = GUIUtil::theme();
 
-    // use a SingleColorIcon for the "out of sync warning" icon
-    QIcon icon = platformStyle->SingleColorIcon(":/icons/warning");
-    icon.addPixmap(icon.pixmap(QSize(64,64), QIcon::Normal), QIcon::Disabled); // also set the disabled icon because we are using a disabled QPushButton to work around missing HiDPI support of QLabel (https://bugreports.qt.io/browse/QTBUG-42503)
-    ui->labelTransactionsStatus->setIcon(icon);
-    ui->labelWalletStatus->setIcon(icon);
-    ui->labelTokenStatus->setIcon(icon);
+    QVBoxLayout *pageLayout = new QVBoxLayout(this);
+    pageLayout->setContentsMargins(0, 0, 0, 0);
+    pageLayout->setSpacing(14);
 
-    // Recent transactions
-    ui->listTransactions->setItemDelegate(txdelegate);
-    ui->listTransactions->setIconSize(QSize(DECORATION_SIZE, DECORATION_SIZE));
-    ui->listTransactions->setMinimumHeight(NUM_ITEMS * (DECORATION_SIZE + 2));
-    ui->listTransactions->setAttribute(Qt::WA_MacShowFocusRect, false);
+    // Page header: a small hint while synchronizing and the chain status, which leads to the explorer
+    QWidget *header = new QWidget();
+    QHBoxLayout *headerLayout = new QHBoxLayout(header);
+    headerLayout->setContentsMargins(0, 0, 0, 0);
+    headerLayout->setSpacing(12);
+    GUIUtil::ClickableLabel *hint = new GUIUtil::ClickableLabel();
+    hint->setText(tr("Balances may differ from the real ones while synchronizing"));
+    hint->setFont(GUIUtil::appFont(12));
+    hint->setStyleSheet(QString("QLabel { color: %1; }").arg(theme.warnText.name()));
+    hint->setCursor(Qt::PointingHandCursor);
+    hint->setToolTip(tr("The displayed information may be out of date. Your wallet automatically synchronizes with the Paladeum network after a connection is established, but this process has not completed yet."));
+    connect(hint, SIGNAL(clicked(QPoint)), this, SLOT(handleOutOfSyncWarningClicks()));
+    syncHint = hint;
+    headerLayout->addWidget(syncHint);
+    syncPill = header;
 
-    /** Create the list of tokens */
-    ui->listTokens->setItemDelegate(tokendelegate);
-    ui->listTokens->setIconSize(QSize(42, 42));
-    ui->listTokens->setMinimumHeight(5 * (42 + 2));
-    ui->listTokens->viewport()->setAutoFillBackground(false);
+    // Search that continues in the explorer, and the state of the chain as at the top of the explorer
+    QHBoxLayout *searchRow = new QHBoxLayout();
+    searchRow->setSpacing(10);
+    searchEdit = new QLineEdit();
+    searchEdit->setProperty("look", "search");
+    searchEdit->setFont(GUIUtil::monoFont(13));
+    searchEdit->setPlaceholderText(tr("Search a transaction ID, an address or a block height"));
+    searchEdit->setFixedHeight(40);
+    searchEdit->addAction(QIcon(GUIUtil::lineIcon("search", 16, theme.textSecondary, 2.2)), QLineEdit::LeadingPosition);
+    searchEdit->setClearButtonEnabled(true);
+    // the one primary action of the page is Send; looking up is the secondary filled one
+    QPushButton *searchButton = new QPushButton(tr("Look up"));
+    searchButton->setProperty("look", "secondary");
+    searchButton->setFixedHeight(40);
+    searchButton->setCursor(Qt::PointingHandCursor);
+    searchRow->addWidget(searchEdit, 1);
+    searchRow->addWidget(searchButton);
+    pageLayout->addLayout(searchRow);
+    connect(searchButton, SIGNAL(clicked()), this, SLOT(searchSubmitted()));
+    connect(searchEdit, SIGNAL(returnPressed()), this, SLOT(searchSubmitted()));
 
-    // Delay before filtering tokenes in ms
+    chainStats = new StatsStrip();
+    chainStats->addCell(tr("Block height"));
+    chainStats->addCell(tr("Difficulty"));
+    chainStats->addCell(tr("Network weight"));
+    chainStats->addCell(tr("Peers"));
+    chainStats->addCell(tr("Memory pool"), true);
+    chainStats->setCompact(true);
+    chainStats->setToolTip(tr("State of the chain as this node sees it. The memory pool opens the explorer."));
+    pageLayout->addWidget(chainStats);
+    connect(chainStats, SIGNAL(cellClicked(int)), this, SIGNAL(explorerClicked()));
+
+    // the figures are read off the GUI thread, as in the explorer
+    ExplorerWorker *worker = new ExplorerWorker();
+    worker->moveToThread(&statsThread);
+    connect(&statsThread, SIGNAL(finished()), worker, SLOT(deleteLater()));
+    connect(this, SIGNAL(requestChainStatus()), worker, SLOT(chainStatus()));
+    connect(worker, SIGNAL(statusDone(QString)), this, SLOT(chainStatusDone(QString)));
+    statsThread.start();
+    statsTimer = new QTimer(this);
+    statsTimer->setInterval(10000);
+    connect(statsTimer, SIGNAL(timeout()), this, SLOT(updateChainStrip()));
+
+    // balance card: the total and the two actions on top, the parts of the total in a row below
+    QFrame *balanceCard = new QFrame();
+    balanceCard->setProperty("role", "card");
+    QVBoxLayout *balanceLeft = new QVBoxLayout(balanceCard);
+    balanceLeft->setContentsMargins(28, 20, 28, 20);
+    balanceLeft->setSpacing(4);
+    QHBoxLayout *balanceTop = new QHBoxLayout();
+    balanceTop->setSpacing(24);
+    QVBoxLayout *totalBox = new QVBoxLayout();
+    totalBox->setSpacing(4);
+    QLabel *totalCaption = new QLabel(tr("Total balance"));
+    totalCaption->setProperty("role", "caption");
+    totalCaption->setStyleSheet("QLabel { font-size: 13px; }");
+    totalBox->addWidget(totalCaption);
+    labelTotal = new AmountLabel(40, QFont::Normal);
+    labelTotal->setUnitColor(theme.textSecondary);
+    // a large total in a narrow window gets smaller instead of being cut off
+    labelTotal->setMinimumPixelSize(22);
+    totalBox->addWidget(labelTotal);
+    balanceTop->addLayout(totalBox, 1);
+    balanceLeft->addLayout(balanceTop);
+    balanceLeft->addSpacing(12);
+
+    QHBoxLayout *stats = new QHBoxLayout();
+    stats->setSpacing(32);
+    labelBalance = amountLabel();
+    labelBalance->setToolTip(tr("Your current spendable balance"));
+    labelUnconfirmed = amountLabel();
+    labelUnconfirmed->setToolTip(tr("Total of transactions that have yet to be confirmed, and do not yet count toward the spendable balance"));
+    labelImmature = amountLabel();
+    labelImmature->setToolTip(tr("Staking rewards that have not yet matured"));
+    labelStake = amountLabel();
+    labelStake->setToolTip(tr("Coins that are staked at the moment"));
+    stats->addWidget(statBlock(tr("Available"), labelBalance));
+    stats->addWidget(statBlock(tr("Pending"), labelUnconfirmed));
+    QWidget *immatureBlock = statBlock(tr("Immature"), labelImmature);
+    immatureBlock->setToolTip(labelImmature->toolTip());
+    stats->addWidget(immatureBlock);
+    stakeBlock = statBlock(tr("Staked"), labelStake);
+    stats->addWidget(stakeBlock);
+    labelOffline = amountLabel();
+    labelOffline->setToolTip(tr("Coins of this wallet that a staker stakes for it (offline staking)"));
+    offlineBlock = statBlock(tr("Offline staking"), labelOffline);
+    stats->addWidget(offlineBlock);
+    stats->addStretch();
+    balanceLeft->addLayout(stats);
+
+    // balances of watch-only addresses, shown only when the wallet has such addresses
+    labelWatchOnly = new QWidget();
+    labelWatchOnly->setToolTip(tr("Balances in watch-only addresses"));
+    QHBoxLayout *watchLayout = new QHBoxLayout(labelWatchOnly);
+    watchLayout->setContentsMargins(0, 0, 0, 0);
+    watchLayout->setSpacing(6);
+    const QString watchCaptions[4] = {tr("Watch-only: available"), tr("pending"), tr("immature"), tr("total")};
+    for (int i = 0; i < 4; ++i) {
+        watchLayout->addWidget(captionLabel(watchCaptions[i]));
+        watchAmounts[i] = new AmountLabel(14, QFont::DemiBold);
+        watchAmounts[i]->setColor(theme.textSecondary);
+        watchLayout->addWidget(watchAmounts[i]);
+        watchLayout->addSpacing(8);
+    }
+    watchLayout->addStretch();
+    labelWatchOnly->setVisible(false);
+    balanceLeft->addSpacing(6);
+    balanceLeft->addWidget(labelWatchOnly);
+
+    QPushButton *sendButton = new QPushButton(tr("Send"));
+    sendButton->setProperty("primary", true);
+    sendButton->setProperty("look", "large");
+    sendButton->setIcon(QIcon(GUIUtil::lineIcon("send", 16, theme.onAction, 2.0)));
+    sendButton->setCursor(Qt::PointingHandCursor);
+    QPushButton *receiveButton = new QPushButton(tr("Receive"));
+    receiveButton->setProperty("look", "large");
+    receiveButton->setIcon(QIcon(GUIUtil::lineIcon("receive", 16, theme.text, 2.0)));
+    receiveButton->setCursor(Qt::PointingHandCursor);
+    for (QPushButton *button : {sendButton, receiveButton}) {
+        button->setFont(GUIUtil::appFont(14, QFont::Medium));
+        button->setIconSize(QSize(16, 16));
+        button->setFixedHeight(44);
+        button->setMinimumWidth(116);
+    }
+    QHBoxLayout *buttons = new QHBoxLayout();
+    buttons->setSpacing(8);
+    buttons->addWidget(sendButton);
+    buttons->addWidget(receiveButton);
+    balanceTop->addLayout(buttons);
+    balanceTop->setAlignment(buttons, Qt::AlignBottom);
+
+    // the balance and, next to it on the ground, the assets as hexagon cells (PLB, then tokens);
+    // in a narrow window the cells go below the balance
+    QBoxLayout *heroRow = new QBoxLayout(QBoxLayout::LeftToRight);
+    heroRow->setSpacing(20);
+    heroRow->addWidget(balanceCard, 1);
+    assetCells = new HexCells(HexCells::Assets);
+    assetCells->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Fixed);
+    assetCells->setMinimumCells(2);
+    heroRow->addWidget(assetCells, 0, Qt::AlignVCenter);
+    pageLayout->addLayout(heroRow);
+    new BoxDirectionFollower(this, heroRow, 860);
+    // a token cell leads to the tokens
+    connect(assetCells, &HexCells::cellClicked, this, [this](const QString&) { Q_EMIT allTokensClicked(); });
+    connect(sendButton, SIGNAL(clicked()), this, SIGNAL(sendClicked()));
+    connect(receiveButton, SIGNAL(clicked()), this, SIGNAL(receiveClicked()));
+
+    // tokens and recent transactions
+    QHBoxLayout *cards = new QHBoxLayout();
+    cards->setSpacing(14);
+
+    tokenFrame = new QFrame();
+    tokenFrame->setProperty("role", "card");
+    QVBoxLayout *tokenLayout = new QVBoxLayout(tokenFrame);
+    tokenLayout->setContentsMargins(22, 14, 22, 10);
+    tokenLayout->setSpacing(0);
+    QHBoxLayout *tokenHeader = new QHBoxLayout();
+    tokenHeader->setSpacing(8);
+    QLabel *tokenTitle = new QLabel(tr("Tokens"));
+    tokenTitle->setProperty("role", "title");
+    tokenTitle->setFont(GUIUtil::appFont(15, QFont::DemiBold));
+    tokenCount = new QLabel();
+    tokenCount->setProperty("role", "secondary");
+    tokenCount->setFont(GUIUtil::appFont(13, QFont::DemiBold));
+    tokenSearch = new QLineEdit();
+    tokenSearch->setPlaceholderText(tr("Search tokens"));
+    tokenSearch->setFixedSize(176, 40);
+    tokenSearch->addAction(QIcon(GUIUtil::lineIcon("search", 14, theme.textSecondary, 2.4)), QLineEdit::LeadingPosition);
+    tokenSearch->setClearButtonEnabled(true);
+    tokenHeader->addWidget(tokenTitle);
+    tokenHeader->addWidget(tokenCount);
+    tokenHeader->addStretch();
+    tokenHeader->addWidget(tokenSearch);
+    tokenLayout->addLayout(tokenHeader);
+    tokenLayout->addSpacing(8);
+    listTokens = new QListView();
+    tokenLayout->addWidget(listTokens, 1);
+    tokenLayout->addWidget(hline());
+    QHBoxLayout *tokenFooter = new QHBoxLayout();
+    tokenFooter->setContentsMargins(0, 8, 0, 0);
+    QLabel *tokenHint = captionLabel(tr("Click a token to send it or to copy its name"));
+    QPushButton *allTokens = new QPushButton(tr("Show all"));
+    allTokens->setProperty("look", "link");
+    allTokens->setCursor(Qt::PointingHandCursor);
+    tokenFooter->addWidget(tokenHint);
+    tokenFooter->addStretch();
+    tokenFooter->addWidget(allTokens);
+    tokenLayout->addLayout(tokenFooter);
+    connect(allTokens, SIGNAL(clicked()), this, SIGNAL(allTokensClicked()));
+    cards->addWidget(tokenFrame, 1);
+
+    QFrame *txFrame = new QFrame();
+    txFrame->setProperty("role", "card");
+    QVBoxLayout *txLayout = new QVBoxLayout(txFrame);
+    txLayout->setContentsMargins(22, 14, 22, 10);
+    txLayout->setSpacing(0);
+    QHBoxLayout *txHeader = new QHBoxLayout();
+    QLabel *txTitle = new QLabel(tr("Recent transactions"));
+    txTitle->setProperty("role", "title");
+    txTitle->setFont(GUIUtil::appFont(15, QFont::DemiBold));
+    QPushButton *allTransactions = new QPushButton(tr("Show all"));
+    allTransactions->setProperty("look", "link");
+    allTransactions->setCursor(Qt::PointingHandCursor);
+    txHeader->addWidget(txTitle);
+    txHeader->addStretch();
+    txHeader->addWidget(allTransactions);
+    QWidget *txHeaderBox = new QWidget();
+    txHeaderBox->setLayout(txHeader);
+    txHeader->setContentsMargins(0, 0, 0, 0);
+    txHeaderBox->setFixedHeight(40);
+    txLayout->addWidget(txHeaderBox);
+    txLayout->addSpacing(8);
+    listTransactions = new QListView();
+    txLayout->addWidget(listTransactions, 1);
+    connect(allTransactions, SIGNAL(clicked()), this, SIGNAL(allTransactionsClicked()));
+    cards->addWidget(txFrame, 1);
+    pageLayout->addLayout(cards, 1);
+
+    for (QListView *list : {listTransactions, listTokens}) {
+        list->setFrameShape(QFrame::NoFrame);
+        list->setStyleSheet("QListView { background: transparent; border: none; }");
+        list->setSelectionMode(QAbstractItemView::NoSelection);
+        list->setFocusPolicy(Qt::NoFocus);
+        list->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+        list->setVerticalScrollMode(QAbstractItemView::ScrollPerPixel);
+        list->setMouseTracking(true);
+        list->setCursor(Qt::PointingHandCursor);
+        list->setMinimumHeight(3 * ROW_HEIGHT);
+    }
+    listTransactions->setItemDelegate(txdelegate);
+    listTransactions->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+    listTransactions->setAttribute(Qt::WA_MacShowFocusRect, false);
+    listTokens->setItemDelegate(tokendelegate);
+
+    // Delay before filtering tokens in ms
     static const int input_filter_delay = 200;
-
-    QTimer *token_typing_delay;
-    token_typing_delay = new QTimer(this);
+    QTimer *token_typing_delay = new QTimer(this);
     token_typing_delay->setSingleShot(true);
     token_typing_delay->setInterval(input_filter_delay);
-    connect(ui->tokenSearch, SIGNAL(textChanged(QString)), token_typing_delay, SLOT(start()));
+    connect(tokenSearch, SIGNAL(textChanged(QString)), token_typing_delay, SLOT(start()));
     connect(token_typing_delay, SIGNAL(timeout()), this, SLOT(tokenSearchChanged()));
 
-    connect(ui->listTransactions, SIGNAL(clicked(QModelIndex)), this, SLOT(handleTransactionClicked(QModelIndex)));
-    ui->listTokens->viewport()->installEventFilter(this);
+    connect(listTransactions, SIGNAL(clicked(QModelIndex)), this, SLOT(handleTransactionClicked(QModelIndex)));
+    connect(listTokens, SIGNAL(clicked(QModelIndex)), this, SLOT(handleTokenClicked(QModelIndex)));
 
     // start with displaying the "out of sync" warnings
     showOutOfSyncWarning(true);
-    connect(ui->labelWalletStatus, SIGNAL(clicked()), this, SLOT(handleOutOfSyncWarningClicks()));
-    connect(ui->labelTokenStatus, SIGNAL(clicked()), this, SLOT(handleOutOfSyncWarningClicks()));
-    connect(ui->labelTransactionsStatus, SIGNAL(clicked()), this, SLOT(handleOutOfSyncWarningClicks()));
-
-    /** Set the overview page background colors, and the frames colors and padding */
-    ui->tokenFrame->setStyleSheet(QString(".QFrame {background-color: %1; padding-top: 10px; padding-right: 5px;}").arg(platformStyle->WidgetBackGroundColor().name()));
-    ui->frame->setStyleSheet(QString(".QFrame {background-color: %1; padding-bottom: 10px; padding-right: 5px;}").arg(platformStyle->WidgetBackGroundColor().name()));
-    ui->frame_2->setStyleSheet(QString(".QFrame {background-color: %1; padding-left: 5px;}").arg(platformStyle->WidgetBackGroundColor().name()));
-
-    /** Create the shadow effects on the frames */
-    ui->tokenFrame->setGraphicsEffect(GUIUtil::getShadowEffect());
-    ui->frame->setGraphicsEffect(GUIUtil::getShadowEffect());
-    ui->frame_2->setGraphicsEffect(GUIUtil::getShadowEffect());
-
-    /** Update the labels colors */
-    ui->tokenBalanceLabel->setStyleSheet(STRING_LABEL_COLOR);
-    ui->paladeumBalancesLabel->setStyleSheet(STRING_LABEL_COLOR);
-    ui->labelBalance->setStyleSheet(STRING_LABEL_COLOR);
-    ui->labelUnconfirmed->setStyleSheet(STRING_LABEL_COLOR);
-    ui->labelImmature->setStyleSheet(STRING_LABEL_COLOR);
-    ui->labelOffline->setStyleSheet(STRING_LABEL_COLOR);
-    ui->labelStake->setStyleSheet(STRING_LABEL_COLOR);
-    ui->labelWatchAvailable->setStyleSheet(STRING_LABEL_COLOR);
-    ui->labelWatchPending->setStyleSheet(STRING_LABEL_COLOR);
-    ui->labelWatchImmature->setStyleSheet(STRING_LABEL_COLOR);
-    ui->labelTotal->setStyleSheet(STRING_LABEL_COLOR);
-    ui->labelWatchTotal->setStyleSheet(STRING_LABEL_COLOR);
-
-    ui->labelStakeText->setStyleSheet(STRING_LABEL_COLOR);
-    ui->labelOfflineText->setStyleSheet(STRING_LABEL_COLOR);
-    ui->labelBalanceText->setStyleSheet(STRING_LABEL_COLOR);
-    ui->labelPendingText->setStyleSheet(STRING_LABEL_COLOR);
-    ui->labelImmatureText->setStyleSheet(STRING_LABEL_COLOR);
-    ui->labelTotalText->setStyleSheet(STRING_LABEL_COLOR);
-    ui->labelSpendable->setStyleSheet(STRING_LABEL_COLOR);
-    ui->labelWatchonly->setStyleSheet(STRING_LABEL_COLOR);
-    ui->recentTransactionsLabel->setStyleSheet(STRING_LABEL_COLOR);
-
-    /** Update the labels font */
-    ui->paladeumBalancesLabel->setFont(GUIUtil::getTopLabelFont());
-    ui->tokenBalanceLabel->setFont(GUIUtil::getTopLabelFont());
-    ui->recentTransactionsLabel->setFont(GUIUtil::getTopLabelFont());
-
-    /** Update the sub labels font */
-    ui->labelBalanceText->setFont(GUIUtil::getSubLabelFont());
-    ui->labelPendingText->setFont(GUIUtil::getSubLabelFont());
-    ui->labelImmatureText->setFont(GUIUtil::getSubLabelFont());
-    ui->labelSpendable->setFont(GUIUtil::getSubLabelFont());
-    ui->labelWatchonly->setFont(GUIUtil::getSubLabelFont());
-    ui->labelBalance->setFont(GUIUtil::getSubLabelFont());
-    ui->labelUnconfirmed->setFont(GUIUtil::getSubLabelFont());
-    ui->labelImmature->setFont(GUIUtil::getSubLabelFont());
-    ui->labelWatchAvailable->setFont(GUIUtil::getSubLabelFont());
-    ui->labelWatchPending->setFont(GUIUtil::getSubLabelFont());
-    ui->labelWatchImmature->setFont(GUIUtil::getSubLabelFont());
-    ui->labelTotalText->setFont(GUIUtil::getSubLabelFont());
-    // ui->labelTotal->setFont(GUIUtil::getTopLabelFontBolded());
-    // ui->labelWatchTotal->setFont(GUIUtil::getTopLabelFontBolded());
-
-    ui->labelTotal->setFont(GUIUtil::getSubLabelFont());
-    ui->labelWatchTotal->setFont(GUIUtil::getSubLabelFont());
-
-    ui->labelStakeText->setFont(GUIUtil::getSubLabelFont());
-    ui->labelOfflineText->setFont(GUIUtil::getSubLabelFont());
-    ui->labelStake->setFont(GUIUtil::getSubLabelFont());
-    ui->labelOffline->setFont(GUIUtil::getSubLabelFont());
-
-    /** Create the search bar for tokens */
-    ui->tokenSearch->setAttribute(Qt::WA_MacShowFocusRect, 0);
-    ui->tokenSearch->setStyleSheet(QString(".QLineEdit {border: 1px solid %1; border-radius: 5px;}").arg(COLOR_LABELS.name()));
-    ui->tokenSearch->setAlignment(Qt::AlignVCenter);
-    QFont font = ui->tokenSearch->font();
-    font.setPointSize(12);
-    ui->tokenSearch->setFont(font);
-
-    QFontMetrics fm = QFontMetrics(ui->tokenSearch->font());
-    ui->tokenSearch->setFixedHeight(fm.height()+ 5);
 
     // Trigger the call to show the tokens table if tokens are active
     showTokens();
@@ -438,10 +664,10 @@ OverviewPage::OverviewPage(const PlatformStyle *platformStyle, QWidget *parent) 
     QAction *copyAmountAction = new QAction(tr("Copy Amount"), this);
     QAction *copyNameAction = new QAction(tr("Copy Name"), this);
     copyHashAction = new QAction(tr("Copy Hash"), this);
+    openURL = new QAction(tr("Open IPFS in Browser"), this);
     issueSub = new QAction(tr("Issue Sub Token"), this);
     issueUnique = new QAction(tr("Issue Unique Token"), this);
     reissue = new QAction(tr("Reissue Token"), this);
-    openURL = new QAction(tr("Open IPFS in Browser"), this);
 
     sendAction->setObjectName("Send");
     issueSub->setObjectName("Sub");
@@ -454,7 +680,9 @@ OverviewPage::OverviewPage(const PlatformStyle *platformStyle, QWidget *parent) 
 
     // context menu
     contextMenu = new QMenu(this);
+    belowAction = new QAction(this);
     contextMenu->addAction(sendAction);
+    contextMenu->addAction(belowAction);
     contextMenu->addAction(issueSub);
     contextMenu->addAction(issueUnique);
     contextMenu->addAction(reissue);
@@ -464,29 +692,6 @@ OverviewPage::OverviewPage(const PlatformStyle *platformStyle, QWidget *parent) 
     contextMenu->addSeparator();
     contextMenu->addAction(copyNameAction);
     contextMenu->addAction(copyAmountAction);
-    // context menu signals
-}
-
-bool OverviewPage::eventFilter(QObject *object, QEvent *event)
-{
-    // If the token viewport is being clicked
-    if (object == ui->listTokens->viewport() && event->type() == QEvent::MouseButtonPress) {
-
-        // Grab the mouse event
-        QMouseEvent * mouseEv = static_cast<QMouseEvent*>(event);
-
-        // Select the current index at the mouse location
-        QModelIndex currentIndex = ui->listTokens->indexAt(mouseEv->pos());
-
-        // Open the menu on right click, direct url on left click
-        if (mouseEv->buttons() & Qt::RightButton ) {
-            handleTokenRightClicked(currentIndex);
-        } else if (mouseEv->buttons() & Qt::LeftButton) {
-            openIPFSForToken(currentIndex);
-        }
-    }
-
-    return QWidget::eventFilter(object, event);
 }
 
 void OverviewPage::handleTransactionClicked(const QModelIndex &index)
@@ -495,10 +700,19 @@ void OverviewPage::handleTransactionClicked(const QModelIndex &index)
         Q_EMIT transactionClicked(filter->mapToSource(index));
 }
 
-void OverviewPage::handleTokenRightClicked(const QModelIndex &index)
+void OverviewPage::handleTokenClicked(const QModelIndex &index)
 {
-    if(tokenFilter) {
-        // Grab the data elements from the index that we need to disable and enable menu items
+    if(rootModel) {
+        const int children = index.data(OverviewRootRoles::ChildrenRole).toInt();
+        const QString rootName = index.data(OverviewRootRoles::RootNameRole).toString();
+        // a click on the "N below" chip opens the list of the sub and unique tokens
+        if (children > 0 && tokendelegate->childChips.value(index.row()).contains(listTokens->viewport()->mapFromGlobal(QCursor::pos()))) {
+            showTokensBelow(rootName);
+            return;
+        }
+        belowAction->setVisible(children > 0);
+        belowAction->setText(tr("Show the %1 sub tokens").arg(children));
+
         QString name = index.data(TokenTableModel::TokenNameRole).toString();
         QString ipfshash = index.data(TokenTableModel::TokenIPFSHashRole).toString();
         QString ipfsbrowser = walletModel->getOptionsModel()->getIpfsUrl();
@@ -507,7 +721,8 @@ void OverviewPage::handleTokenRightClicked(const QModelIndex &index)
             name = name.left(name.size() - 1);
             sendAction->setDisabled(true);
         } else {
-            sendAction->setDisabled(false);
+            // a root of which only sub tokens are held cannot be sent itself
+            sendAction->setDisabled(!index.data(OverviewRootRoles::HeldRole).toBool());
         }
 
         // If the ipfs hash isn't there or doesn't start with Qm, disable the action item
@@ -532,10 +747,14 @@ void OverviewPage::handleTokenRightClicked(const QModelIndex &index)
             issueUnique->setDisabled(false);
             reissue->setDisabled(true);
             CNewToken token;
-            auto currentActiveTokenCache = GetCurrentTokenCache();
-            if (currentActiveTokenCache && currentActiveTokenCache->GetTokenMetaDataIfExists(name.toStdString(), token))
-                if (token.nReissuable)
-                    reissue->setDisabled(false);
+            {
+                // The token metadata belongs to cs_main
+                LOCK(cs_main);
+                auto currentActiveTokenCache = GetCurrentTokenCache();
+                if (currentActiveTokenCache && currentActiveTokenCache->GetTokenMetaDataIfExists(name.toStdString(), token))
+                    if (token.nReissuable)
+                        reissue->setDisabled(false);
+            }
 
         }
 
@@ -543,13 +762,15 @@ void OverviewPage::handleTokenRightClicked(const QModelIndex &index)
 
         if (action) {
             if (action->objectName() == "Send")
-                Q_EMIT tokenSendClicked(tokenFilter->mapToSource(index));
+                    Q_EMIT tokenSendClicked(index);
             else if (action->objectName() == "Sub")
-                Q_EMIT tokenIssueSubClicked(tokenFilter->mapToSource(index));
+                    Q_EMIT tokenIssueSubClicked(index);
             else if (action->objectName() == "Unique")
-                Q_EMIT tokenIssueUniqueClicked(tokenFilter->mapToSource(index));
+                    Q_EMIT tokenIssueUniqueClicked(index);
             else if (action->objectName() == "Reissue")
-                Q_EMIT tokenReissueClicked(tokenFilter->mapToSource(index));
+                    Q_EMIT tokenReissueClicked(index);
+            else if (action == belowAction)
+                showTokensBelow(rootName);
             else if (action->objectName() == "Copy Name")
                 GUIUtil::setClipboard(index.data(TokenTableModel::TokenNameRole).toString());
             else if (action->objectName() == "Copy Amount")
@@ -570,7 +791,16 @@ void OverviewPage::handleOutOfSyncWarningClicks()
 
 OverviewPage::~OverviewPage()
 {
-    delete ui;
+    // the header widget may have been given to the page shell
+    statsThread.quit();
+    statsThread.wait();
+    if (syncPill && !syncPill->parent())
+        delete syncPill;
+}
+
+static QString displayAmount(int unit, const CAmount& amount)
+{
+    return GUIUtil::withThousands(PaladeumUnits::format(unit, amount, false, PaladeumUnits::separatorNever));
 }
 
 void OverviewPage::setBalance(const CAmount& balance, const CAmount& unconfirmedBalance, const CAmount& immatureBalance, const CAmount& stake, const CAmount& watchOnlyBalance, const CAmount& watchUnconfBalance, const CAmount& watchImmatureBalance, const CAmount& watchOnlyStake, const CAmount& lockedBalance, const CAmount& offline)
@@ -587,53 +817,83 @@ void OverviewPage::setBalance(const CAmount& balance, const CAmount& unconfirmed
     currentWatchOnlyStake = watchOnlyStake;
     currentLockedBalance = lockedBalance;
 
-    ui->labelBalance->setText(PaladeumUnits::formatWithUnit(unit, balance, false, PaladeumUnits::separatorAlways));
-    ui->labelUnconfirmed->setText(PaladeumUnits::formatWithUnit(unit, unconfirmedBalance + lockedBalance, false, PaladeumUnits::separatorAlways));
-    ui->labelImmature->setText(PaladeumUnits::formatWithUnit(unit, immatureBalance, false, PaladeumUnits::separatorAlways));
-    ui->labelTotal->setText(PaladeumUnits::formatWithUnit(unit, balance + unconfirmedBalance + immatureBalance, false, PaladeumUnits::separatorAlways));
-    ui->labelStake->setText(PaladeumUnits::formatWithUnit(unit, stake, false, PaladeumUnits::separatorAlways));
-    ui->labelOffline->setText(PaladeumUnits::formatWithUnit(unit, offline, false, PaladeumUnits::separatorAlways));
-    ui->labelTotal->setText(PaladeumUnits::formatWithUnit(unit, balance + unconfirmedBalance + immatureBalance + lockedBalance, false, PaladeumUnits::separatorAlways));
-    ui->labelWatchAvailable->setText(PaladeumUnits::formatWithUnit(unit, watchOnlyBalance, false, PaladeumUnits::separatorAlways));
-    ui->labelWatchPending->setText(PaladeumUnits::formatWithUnit(unit, watchUnconfBalance, false, PaladeumUnits::separatorAlways));
-    ui->labelWatchImmature->setText(PaladeumUnits::formatWithUnit(unit, watchImmatureBalance, false, PaladeumUnits::separatorAlways));
-    ui->labelWatchTotal->setText(PaladeumUnits::formatWithUnit(unit, watchOnlyBalance + watchUnconfBalance + watchImmatureBalance + watchOnlyStake, false, PaladeumUnits::separatorAlways));
+    labelTotal->setAmount(displayAmount(unit, balance + unconfirmedBalance + immatureBalance + lockedBalance), PaladeumUnits::name(unit));
+    labelBalance->setAmount(displayAmount(unit, balance));
+    labelUnconfirmed->setAmount(displayAmount(unit, unconfirmedBalance + lockedBalance));
+    labelImmature->setAmount(displayAmount(unit, immatureBalance));
+    labelStake->setAmount(displayAmount(unit, stake));
+    // the staked amount is only shown when there is one
+    stakeBlock->setVisible(stake != 0 || watchOnlyStake != 0);
+    labelOffline->setAmount(displayAmount(unit, offline));
+    // the coins given to a staker are only shown when there are some, and only on a network on
+    // which offline staking is active (not on the main network)
+    bool offlineActive = false;
+    {
+        TRY_LOCK(cs_main, lockMain);
+        if (lockMain)
+            offlineActive = IsOfflineStakingEnabled(chainActive.Tip(), GetParams().GetConsensus());
+    }
+    offlineBlock->setVisible(offline != 0 && offlineActive);
 
-    // only show immature (newly mined) balance if it's non-zero, so as not to complicate things
-    // for the non-mining users
-    bool showImmature = immatureBalance != 0;
-    bool showStake = stake != 0;
-    bool showOffline = offline != 0;
-    bool showUnconfirmed = (unconfirmedBalance + lockedBalance + watchUnconfBalance) != 0;
-    bool showWatchOnlyImmature = watchImmatureBalance != 0;
-    bool showWatchOnlyStake = watchOnlyStake != 0;
+    watchAmounts[0]->setAmount(displayAmount(unit, watchOnlyBalance));
+    watchAmounts[1]->setAmount(displayAmount(unit, watchUnconfBalance));
+    watchAmounts[2]->setAmount(displayAmount(unit, watchImmatureBalance));
+    watchAmounts[3]->setAmount(displayAmount(unit, watchOnlyBalance + watchUnconfBalance + watchImmatureBalance + watchOnlyStake));
+    updateAssetCells();
+}
 
-    // for symmetry reasons also show immature label when the watch-only one is shown
-    ui->labelImmature->setVisible(showImmature || showWatchOnlyImmature);
-    ui->labelImmatureText->setVisible(showImmature || showWatchOnlyImmature);
-    ui->labelWatchImmature->setVisible(showWatchOnlyImmature); // show watch-only immature balance
-    ui->labelStake->setVisible(showStake || showWatchOnlyStake);
-    ui->labelStakeText->setVisible(showStake || showWatchOnlyStake);
-    ui->labelOfflineText->setVisible(showOffline);
-    ui->labelOffline->setVisible(showOffline);
-
-    ui->labelPendingText->setVisible(showUnconfirmed);
-    ui->labelUnconfirmed->setVisible(showUnconfirmed);
-    ui->labelWatchPending->setVisible(showUnconfirmed);
+void OverviewPage::updateAssetCells()
+{
+    if (!walletModel || !walletModel->getOptionsModel() || currentBalance == -1)
+        return;
+    const int unit = walletModel->getOptionsModel()->getDisplayUnit();
+    const CAmount total = currentBalance + currentUnconfirmedBalance + currentImmatureBalance + currentLockedBalance;
+    QList<HexCells::Cell> cells;
+    // PLB in mark blue, with the total in few characters; the exact amount in the tool tip
+    HexCells::Cell plb;
+    plb.top = PaladeumUnits::name(unit);
+    plb.bottom = GUIUtil::compactNumber(double(total) / PaladeumUnits::factor(unit));
+    plb.toolTip = GUIUtil::monoToolTip(displayAmount(unit, total) + " " + PaladeumUnits::name(unit), tr("Total balance"));
+    plb.kind = HexCells::Recent;
+    cells << plb;
+    // then the root tokens that the wallet holds, and how many more there are
+    static const int TOKEN_CELLS = 4;
+    int more = 0;
+    if (heldTokens) {
+        for (const RootToken& root : heldTokens->roots()) {
+            if (!root.held)
+                continue;
+            if (cells.size() > TOKEN_CELLS) {
+                ++more;
+                continue;
+            }
+            HexCells::Cell cell;
+            cell.top = root.name;
+            bool ok = false;
+            const double amount = QString(root.amount).remove(',').remove(QChar(0x2009)).toDouble(&ok);
+            cell.bottom = ok ? GUIUtil::compactNumber(amount) : root.amount;
+            cell.toolTip = GUIUtil::monoToolTip(GUIUtil::withThousands(root.amount) + " " + root.name);
+            cell.kind = HexCells::Settled;
+            cell.key = root.name;
+            cells << cell;
+        }
+    }
+    if (more > 0) {
+        HexCells::Cell cell;
+        cell.top = QString("+%1").arg(more);
+        cell.bottom = tr("more");
+        cell.toolTip = tr("Show all tokens");
+        cell.kind = HexCells::Old;
+        cell.key = "more";
+        cells << cell;
+    }
+    assetCells->setCells(cells);
 }
 
 // show/hide watch-only labels
 void OverviewPage::updateWatchOnlyLabels(bool showWatchOnly)
 {
-    ui->labelSpendable->setVisible(showWatchOnly);      // show spendable label (only when watch-only is active)
-    ui->labelWatchonly->setVisible(showWatchOnly);      // show watch-only label
-    ui->lineWatchBalance->setVisible(showWatchOnly);    // show watch-only balance separator line
-    ui->labelWatchAvailable->setVisible(showWatchOnly); // show watch-only available balance
-    ui->labelWatchPending->setVisible(showWatchOnly);   // show watch-only pending balance
-    ui->labelWatchTotal->setVisible(showWatchOnly);     // show watch-only total balance
-
-    if (!showWatchOnly)
-        ui->labelWatchImmature->hide();
+    labelWatchOnly->setVisible(showWatchOnly);
 }
 
 void OverviewPage::setClientModel(ClientModel *model)
@@ -641,9 +901,10 @@ void OverviewPage::setClientModel(ClientModel *model)
     this->clientModel = model;
     if(model)
     {
-        // Show warning if this is a prerelease version
-        connect(model, SIGNAL(alertsChanged(QString)), this, SLOT(updateAlerts(QString)));
-        updateAlerts(model->getStatusBarWarnings());
+        // The warnings of the node are shown at the bottom of the side bar.
+        // Chain status for the page header
+        connect(model, SIGNAL(numBlocksChanged(int,QDateTime,double,bool)), this, SLOT(updateChainStrip()));
+        connect(model, SIGNAL(numConnectionsChanged(int)), this, SLOT(updateChainStrip()));
     }
 }
 
@@ -661,17 +922,15 @@ void OverviewPage::setWalletModel(WalletModel *model)
         filter->setShowInactive(false);
         filter->sort(TransactionTableModel::Date, Qt::DescendingOrder);
 
-        ui->listTransactions->setModel(filter.get());
-        ui->listTransactions->setModelColumn(TransactionTableModel::ToAddress);
+        listTransactions->setModel(filter.get());
+        listTransactions->setModelColumn(TransactionTableModel::ToAddress);
 
-        tokenFilter.reset(new TokenFilterProxy());
-        tokenFilter->setSourceModel(model->getTokenTableModel());
-        tokenFilter->sort(TokenTableModel::TokenNameRole, Qt::DescendingOrder);
-        ui->listTokens->setModel(tokenFilter.get());
-        ui->listTokens->setAutoFillBackground(false);
-
-        ui->tokenVerticalSpaceWidget->setStyleSheet("background-color: transparent");
-        ui->tokenVerticalSpaceWidget2->setStyleSheet("background-color: transparent");
+        heldTokens = HeldTokenIndex::forModel(model->getTokenTableModel());
+        rootModel = new OverviewRootModel(heldTokens, this);
+        listTokens->setModel(rootModel);
+        connect(rootModel, SIGNAL(modelReset()), this, SLOT(updateTokenCount()));
+        connect(heldTokens, &HeldTokenIndex::changed, this, [this] { updateAssetCells(); });
+        updateTokenCount();
 
         // Keep up to date with wallet
         setBalance(model->getBalance(), model->getUnconfirmedBalance(), model->getImmatureBalance(), model->getStake(),
@@ -682,6 +941,7 @@ void OverviewPage::setWalletModel(WalletModel *model)
 
         updateWatchOnlyLabels(model->haveWatchOnly());
         connect(model, SIGNAL(notifyWatchonlyChanged(bool)), this, SLOT(updateWatchOnlyLabels(bool)));
+        updateTransactionLimit();
     }
 
     // update the display unit, to not use the default ("PLB")
@@ -699,72 +959,130 @@ void OverviewPage::updateDisplayUnit()
         // Update txdelegate->unit with the current unit
         txdelegate->unit = walletModel->getOptionsModel()->getDisplayUnit();
 
-        ui->listTransactions->update();
+        listTransactions->update();
     }
 }
 
 void OverviewPage::updateAlerts(const QString &warnings)
 {
-    this->ui->labelAlerts->setVisible(!warnings.isEmpty());
-    this->ui->labelAlerts->setText(warnings);
+    Q_UNUSED(warnings);
+}
+
+/** Ask for the figures of the chain status strip; nothing while the page is not shown. */
+void OverviewPage::updateChainStrip()
+{
+    if (!clientModel || !isVisible() || statsPending)
+        return;
+    statsPending = true;
+    Q_EMIT requestChainStatus();
+}
+
+void OverviewPage::chainStatusDone(const QString &json)
+{
+    statsPending = false;
+    ExplorerPage::fillChainStats(chainStats, json);
+    if (activity)
+        activity->touch();
+}
+
+void OverviewPage::setActivity(PageActivity *_activity)
+{
+    activity = _activity;
+    if (activity)
+        activity->setRefreshable(true);
+}
+
+void OverviewPage::refreshPage()
+{
+    if (walletModel) {
+        // as after a new transaction: balances, confirmations and tokens are read at the next poll
+        walletModel->updateTransaction();
+        walletModel->pollBalanceChanged();
+    }
+    updateChainStrip();
+}
+
+/** The search of the overview is answered by the explorer. */
+void OverviewPage::searchSubmitted()
+{
+    const QString query = searchEdit->text().trimmed();
+    if (query.isEmpty())
+        return;
+    searchEdit->clear();
+    Q_EMIT explorerRequested(query);
+}
+
+/** The window with the sub and unique tokens of a root. "Send" there leads to the send page. */
+void OverviewPage::showTokensBelow(const QString &root)
+{
+    if (!heldTokens)
+        return;
+    TokenListDialog dialog(heldTokens, root, TokenListDialog::Browse, this);
+    if (dialog.exec() == QDialog::Accepted && !dialog.chosen().isEmpty())
+        Q_EMIT sendTokenRequested(dialog.chosen());
 }
 
 void OverviewPage::showOutOfSyncWarning(bool fShow)
 {
-    ui->labelWalletStatus->setVisible(fShow);
-    ui->labelTransactionsStatus->setVisible(fShow);
-    if (AreTokensDeployed()) {
-        ui->labelTokenStatus->setVisible(fShow);
-    }
+    outOfSync = fShow;
+    syncHint->setVisible(fShow);
 }
 
 void OverviewPage::showTokens()
 {
-    if (AreTokensDeployed()) {
-        ui->tokenFrame->show();
-        ui->tokenBalanceLabel->show();
-        ui->labelTokenStatus->show();
-
-        // Disable the vertical space so that listTokens goes to the bottom of the screen
-        ui->tokenVerticalSpaceWidget->hide();
-        ui->tokenVerticalSpaceWidget2->hide();
-    } else {
-        ui->tokenFrame->hide();
-        ui->tokenBalanceLabel->hide();
-        ui->labelTokenStatus->hide();
-
-        // This keeps the PLB balance grid from expanding and looking terrible when token balance is hidden
-        ui->tokenVerticalSpaceWidget->show();
-        ui->tokenVerticalSpaceWidget2->show();
-    }
+    tokenFrame->setVisible(AreTokensDeployed());
 }
 
 void OverviewPage::tokenSearchChanged()
 {
-    if (!tokenFilter)
+    if (!rootModel)
         return;
-    tokenFilter->setTokenNamePrefix(ui->tokenSearch->text());
+    rootModel->setFilter(tokenSearch->text().trimmed());
+    updateTokenCount();
 }
 
-void OverviewPage::openIPFSForToken(const QModelIndex &index)
+void OverviewPage::updateTokenCount()
 {
-    // Get the ipfs hash of the token clicked
-    QString ipfshash = index.data(TokenTableModel::TokenIPFSHashRole).toString();
-    QString ipfsbrowser = walletModel->getOptionsModel()->getIpfsUrl();
+    if (!rootModel)
+        return;
+    tokenCount->setText(tr("%n kind(s)", "", rootModel->rowCount()));
+}
 
-    // If the ipfs hash isn't there or doesn't start with Qm, disable the action item
-    if (ipfshash.count() > 0 && ipfshash.indexOf("Qm") == 0 && ipfsbrowser.indexOf("http") == 0)
-    {
-        QUrl ipfsurl = QUrl::fromUserInput(ipfsbrowser.replace("%s", ipfshash));
-
-        // Create the box with everything.
-        if(QMessageBox::Yes == QMessageBox::question(this,
-                                                        tr("Open IPFS content?"),
-                                                        tr("Open the following IPFS content in your default browser?\n")
-                                                        + ipfsurl.toString()
-                                                    ))
-        {
-        QDesktopServices::openUrl(ipfsurl);
-        }
+/** Show as many recent transactions as fit into the card. */
+void OverviewPage::updateTransactionLimit()
+{
+    if (!filter)
+        return;
+    const int rows = qBound(3, listTransactions->viewport()->height() / ROW_HEIGHT, 20);
+    if (rows != transactionLimit) {
+        transactionLimit = rows;
+        filter->setLimit(rows);
+        filter->invalidate();
     }
 }
+
+void OverviewPage::resizeEvent(QResizeEvent *event)
+{
+    QWidget::resizeEvent(event);
+    QTimer::singleShot(0, this, [this] { updateTransactionLimit(); });
+}
+
+void OverviewPage::hideEvent(QHideEvent *event)
+{
+    statsTimer->stop();
+    QWidget::hideEvent(event);
+}
+
+void OverviewPage::showEvent(QShowEvent *event)
+{
+    QWidget::showEvent(event);
+    statsTimer->start();
+    QTimer::singleShot(0, this, [this] { updateChainStrip(); });
+    QTimer::singleShot(0, this, [this] { updateTransactionLimit(); });
+}
+
+QWidget *OverviewPage::headerWidget() const
+{
+    return syncPill;
+}
+

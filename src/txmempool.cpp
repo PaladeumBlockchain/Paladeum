@@ -687,9 +687,15 @@ void CTxMemPool::removeUnchecked(txiter it, MemPoolRemovalReason reason)
         }
     }
 
-    // Erase from the token mempool maps if they match txid
+    // Erase from the token mempool maps if they match txid. A transaction that issues several
+    // unique tokens has all of their names here (only the last one was kept, and the others
+    // stayed reserved in the mempool after the transaction had left it).
     if (mapHashToToken.count(hash)) {
-        mapTokenToHash.erase(mapHashToToken.at(hash));
+        for (const std::string& name : mapHashToToken.at(hash)) {
+            auto it = mapTokenToHash.find(name);
+            if (it != mapTokenToHash.end() && it->second == hash)
+                mapTokenToHash.erase(it);
+        }
         mapHashToToken.erase(hash);
     }
 
@@ -843,7 +849,10 @@ void CTxMemPool::removeForReorg(const CCoinsViewCache *pcoins, unsigned int nMem
                     continue;
                 const Coin &coin = pcoins->AccessCoin(txin.prevout);
                 if (nCheckFrequency != 0) assert(!coin.IsSpent());
-                if (coin.IsSpent() || (coin.IsCoinBase() || (coin.IsCoinStake() && ((signed long)nMemPoolHeight) - coin.nHeight < COINBASE_MATURITY))) {
+                // (the same maturities as CheckTxInputs; the condition dropped every spend of a
+                // coinbase, however mature, because of its parentheses)
+                const int nDepth = ((signed long)nMemPoolHeight) - coin.nHeight;
+                if (coin.IsSpent() || (coin.IsCoinBase() && nDepth < COINBASE_MATURITY) || (coin.IsCoinStake() && nDepth < COINSTAKE_MATURITY)) {
                     txToRemove.insert(it);
                     break;
                 }
@@ -890,7 +899,7 @@ void CTxMemPool::removeForBlock(const std::vector<CTransactionRef>& vtx, unsigne
 /**
  * Called when a block is connected. Removes from mempool and updates the miner fee estimator.
  */
-void CTxMemPool::removeForBlock(const std::vector<CTransactionRef>& vtx, unsigned int nBlockHeight, ConnectedBlockTokenData& connectedBlockData)
+void CTxMemPool::removeForBlock(const std::vector<CTransactionRef>& vtx, unsigned int nBlockHeight, ConnectedBlockTokenData& connectedBlockData, bool fUpdateEstimates)
 {
     LOCK(cs);
     std::set<uint256> setAlreadyRemoving;
@@ -1019,7 +1028,10 @@ void CTxMemPool::removeForBlock(const std::vector<CTransactionRef>& vtx, unsigne
     /** TOKENS END */
 
     // Before the txs in the new block have been removed from the mempool, update policy estimates
-    if (minerPolicyEstimator) {minerPolicyEstimator->processBlock(nBlockHeight, entries);}
+    // (the caller turns this off during the first synchronization: there is nothing to
+    // estimate from, and aging the statistics for every block took a noticeable part of
+    // the time of each block)
+    if (minerPolicyEstimator && fUpdateEstimates) {minerPolicyEstimator->processBlock(nBlockHeight, entries);}
     for (const auto& tx : vtx)
     {
         txiter it = mapTx.find(tx->GetHash());

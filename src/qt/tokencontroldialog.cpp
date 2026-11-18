@@ -132,6 +132,8 @@ TokenControlDialog::TokenControlDialog(const PlatformStyle *_platformStyle, QWid
     // change coin control first column label due Qt4 bug.
     // see https://github.com/bitcoin/bitcoin/issues/5716
     ui->treeWidget->headerItem()->setText(COLUMN_CHECKBOX, QString());
+    // amounts, addresses and dates in the fixed-width font
+    ui->treeWidget->setItemDelegate(new GUIUtil::MonoColumnDelegate({COLUMN_ADDRESS, COLUMN_DATE, COLUMN_CONFIRMATIONS}, this, {COLUMN_AMOUNT}));
 
     ui->treeWidget->setColumnWidth(COLUMN_CHECKBOX, 84);
     ui->treeWidget->setColumnWidth(COLUMN_AMOUNT, 110);
@@ -165,7 +167,7 @@ TokenControlDialog::TokenControlDialog(const PlatformStyle *_platformStyle, QWid
 
     ui->tokenList->setModel(proxy);
     ui->tokenList->setEditable(true);
-    ui->tokenList->lineEdit()->setPlaceholderText("Select an token");
+    ui->tokenList->lineEdit()->setPlaceholderText("Select a token");
 
     completer = new QCompleter(proxy,this);
     completer->setCompletionMode(QCompleter::PopupCompletion);
@@ -593,7 +595,7 @@ void TokenControlDialog::updateLabels(WalletModel *model, QDialog* dialog)
     }
 
     // turn label red when dust
-    l7->setStyleSheet((fDust) ? "color:red;" : "");
+    l7->setStyleSheet(fDust ? GUIUtil::warningLabelColorStyle() : QString());
 
     // tool tips
     QString toolTipDust = tr("This label turns red if any recipient receives an amount smaller than the current dust threshold.");

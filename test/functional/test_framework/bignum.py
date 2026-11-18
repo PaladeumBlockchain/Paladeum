@@ -1,14 +1,14 @@
 #!/usr/bin/env python3
-# Copyright (c) 2017-2020 The Paladeum developers
+#
 # Distributed under the MIT software license, see the accompanying
 # file COPYING or http://www.opensource.org/licenses/mit-license.php.
+"""Big number routines.
 
-"""
-Big number routines.
 This file is copied from python-paladeumlib.
 """
 
 import struct
+
 
 # generic big endian MPI format
 

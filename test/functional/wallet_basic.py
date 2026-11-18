@@ -9,6 +9,12 @@
 from test_framework.test_framework import PaladeumTestFramework
 from test_framework.util import connect_nodes_bi, assert_fee_amount, assert_equal, assert_raises_rpc_error, Decimal, count_bytes, sync_mempools, sync_blocks, time, assert_array_result
 
+# A coinbase output can be spent once it has COINBASE_MATURITY + 1 confirmations
+COINBASE_MATURITY = 10
+# The reward of block 1, and of every other block
+FIRST_BLOCK_REWARD = 1000000000
+BLOCK_REWARD = 10
+
 class WalletTest(PaladeumTestFramework):
     def set_test_params(self):
         self.num_nodes = 4
@@ -42,15 +48,15 @@ class WalletTest(PaladeumTestFramework):
         self.nodes[0].generate(1)
 
         wallet_info = self.nodes[0].getwalletinfo()
-        assert_equal(wallet_info['immature_balance'], 5000)
+        assert_equal(wallet_info['immature_balance'], FIRST_BLOCK_REWARD)
         assert_equal(wallet_info['balance'], 0)
 
         self.sync_all([self.nodes[0:3]])
-        self.nodes[1].generate(101)
+        self.nodes[1].generate(COINBASE_MATURITY + 1)
         self.sync_all([self.nodes[0:3]])
 
-        assert_equal(self.nodes[0].getbalance(), 5000)
-        assert_equal(self.nodes[1].getbalance(), 5000)
+        assert_equal(self.nodes[0].getbalance(), FIRST_BLOCK_REWARD)
+        assert_equal(self.nodes[1].getbalance(), BLOCK_REWARD)
         assert_equal(self.nodes[2].getbalance(), 0)
 
         # Check that only first and second nodes have UTXOs
@@ -64,9 +70,9 @@ class WalletTest(PaladeumTestFramework):
         # First, outputs that are unspent both in the chain and in the
         # mempool should appear with or without include_mempool
         txout = self.nodes[0].gettxout(txid=confirmed_txid, n=confirmed_index, include_mempool=False)
-        assert_equal(txout['value'], 5000)
+        assert_equal(txout['value'], FIRST_BLOCK_REWARD)
         txout = self.nodes[0].gettxout(txid=confirmed_txid, n=confirmed_index, include_mempool=True)
-        assert_equal(txout['value'], 5000)
+        assert_equal(txout['value'], FIRST_BLOCK_REWARD)
         
         # Send 21 PLB from 0 to 2 using sendtoaddress call.
         # Locked memory should use at least 32 bytes to sign each transaction
@@ -81,7 +87,7 @@ class WalletTest(PaladeumTestFramework):
         # utxo spent in mempool should be visible if you exclude mempool
         # but invisible if you include mempool
         txout = self.nodes[0].gettxout(confirmed_txid, confirmed_index, False)
-        assert_equal(txout['value'], 5000)
+        assert_equal(txout['value'], FIRST_BLOCK_REWARD)
         txout = self.nodes[0].gettxout(confirmed_txid, confirmed_index, True)
         assert txout is None
         # new utxo from mempool should be invisible if you exclude mempool
@@ -110,13 +116,13 @@ class WalletTest(PaladeumTestFramework):
         self.nodes[2].lockunspent(True, [unspent_0])
         assert_equal(len(self.nodes[2].listlockunspent()), 0)
 
-        # Have node1 generate 100 blocks (so node0 can recover the fee)
-        self.nodes[1].generate(100)
+        # Have node1 generate 10 blocks (so node0 can recover the fee)
+        self.nodes[1].generate(COINBASE_MATURITY)
         self.sync_all([self.nodes[0:3]])
 
-        # node0 should end up with 100 btc in block rewards plus fees, but
+        # node0 should end up with its two block rewards plus fees, but
         # minus the 21 plus fees sent to node2
-        assert_equal(self.nodes[0].getbalance(), 10000-21)
+        assert_equal(self.nodes[0].getbalance(), FIRST_BLOCK_REWARD + BLOCK_REWARD - 21)
         assert_equal(self.nodes[2].getbalance(), 21)
 
         # Node0 should have two unspent outputs.
@@ -143,22 +149,24 @@ class WalletTest(PaladeumTestFramework):
         self.nodes[1].generate(1)
         self.sync_all([self.nodes[0:3]])
 
+        node_2_bal = FIRST_BLOCK_REWARD + BLOCK_REWARD - 6
         assert_equal(self.nodes[0].getbalance(), 0)
-        assert_equal(self.nodes[2].getbalance(), 9994)
-        assert_equal(self.nodes[2].getbalance("from1"), 9994-21)
+        assert_equal(self.nodes[2].getbalance(), node_2_bal)
+        assert_equal(self.nodes[2].getbalance("from1"), node_2_bal - 21)
 
         # Send 10 PLB normal
+        # (sendtoaddress address amount timelock message comment comment_to subtractfeefromamount)
         address = self.nodes[0].getnewaddress("test")
         fee_per_byte = Decimal('0.001') / 1000
         self.nodes[2].settxfee(fee_per_byte * 1000)
-        txid = self.nodes[2].sendtoaddress(address, 10, "", "", False)
+        txid = self.nodes[2].sendtoaddress(address, 10, 0, "", "", "", False)
         self.nodes[2].generate(1)
         self.sync_all([self.nodes[0:3]])
-        node_2_bal = self.check_fee_amount(self.nodes[2].getbalance(), Decimal('9984'), fee_per_byte, count_bytes(self.nodes[2].getrawtransaction(txid)))
+        node_2_bal = self.check_fee_amount(self.nodes[2].getbalance(), node_2_bal - 10, fee_per_byte, count_bytes(self.nodes[2].getrawtransaction(txid)))
         assert_equal(self.nodes[0].getbalance(), Decimal('10'))
 
         # Send 10 PLB with subtract fee from amount
-        txid = self.nodes[2].sendtoaddress(address, 10, "", "", True)
+        txid = self.nodes[2].sendtoaddress(address, 10, 0, "", "", "", True)
         self.nodes[2].generate(1)
         self.sync_all([self.nodes[0:3]])
         node_2_bal -= Decimal('10')
@@ -166,7 +174,8 @@ class WalletTest(PaladeumTestFramework):
         node_0_bal = self.check_fee_amount(self.nodes[0].getbalance(), Decimal('20'), fee_per_byte, count_bytes(self.nodes[2].getrawtransaction(txid)))
 
         # Sendmany 10 PLB
-        txid = self.nodes[2].sendmany('from1', {address: 10}, 0, "", [])
+        # (sendmany fromaccount amounts message minconf comment subtractfeefrom)
+        txid = self.nodes[2].sendmany('from1', {address: 10}, "", 0, "", [])
         self.nodes[2].generate(1)
         self.sync_all([self.nodes[0:3]])
         node_0_bal += Decimal('10')
@@ -174,7 +183,7 @@ class WalletTest(PaladeumTestFramework):
         assert_equal(self.nodes[0].getbalance(), node_0_bal)
 
         # Sendmany 10 PLB with subtract fee from amount
-        txid = self.nodes[2].sendmany('from1', {address: 10}, 0, "", [address])
+        txid = self.nodes[2].sendmany('from1', {address: 10}, "", 0, "", [address])
         self.nodes[2].generate(1)
         self.sync_all([self.nodes[0:3]])
         node_2_bal -= Decimal('10')
@@ -210,7 +219,7 @@ class WalletTest(PaladeumTestFramework):
         #4. check if recipient (node0) can list the zero value tx
         usp = self.nodes[1].listunspent()
         inputs = [{"txid":usp[0]['txid'], "vout":usp[0]['vout']}]
-        outputs = {self.nodes[1].getnewaddress(): 4999.998, self.nodes[0].getnewaddress(): 1111.11}
+        outputs = {self.nodes[1].getnewaddress(): usp[0]['amount'] - Decimal('0.01'), self.nodes[0].getnewaddress(): 1111.11}
 
         raw_tx = self.nodes[1].createrawtransaction(inputs, outputs)
         raw_tx = raw_tx.replace("c04fbbde19", "0000000000") #replace 1111.11 with 0.0 (int32)
@@ -374,7 +383,7 @@ class WalletTest(PaladeumTestFramework):
 
         # Get all non-zero utxos together
         chain_addrs = [self.nodes[0].getnewaddress(), self.nodes[0].getnewaddress()]
-        single_tx_id = self.nodes[0].sendtoaddress(chain_addrs[0], self.nodes[0].getbalance(), "", "", True)
+        single_tx_id = self.nodes[0].sendtoaddress(chain_addrs[0], self.nodes[0].getbalance(), 0, "", "", "", True)
         self.nodes[0].generate(1)
         node0_balance = self.nodes[0].getbalance()
         # Split into two chains

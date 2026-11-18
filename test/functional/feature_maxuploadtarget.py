@@ -39,7 +39,8 @@ class MaxUploadTest(PaladeumTestFramework):
     def set_test_params(self):
         self.setup_clean_chain = True
         self.num_nodes = 1
-        self.maxuploadtarget = 11200
+        # (MiB) about 214 MiB more than the buffer the node keeps for relaying new blocks (see below)
+        self.maxuploadtarget = 8454
         self.extra_args = [["-maxuploadtarget=%s" % self.maxuploadtarget, "-blockmaxsize=999000"]]
 
         # Cache for utxos, as the listunspent may take a long time later in the test
@@ -97,14 +98,14 @@ class MaxUploadTest(PaladeumTestFramework):
 
         block_rate_minutes = 1
         blocks_per_day = 24 * 60 / block_rate_minutes
-        max_block_serialized_size = 8000000  # This is MAX_BLOCK_SERIALIZED_SIZE_RIP2
+        max_block_serialized_size = 6000000  # This is MAX_BLOCK_SERIALIZED_SIZE (src/consensus/consensus.h)
         max_bytes_per_day = self.maxuploadtarget * 1024 * 1024
         daily_buffer = blocks_per_day * max_block_serialized_size
         max_bytes_available = max_bytes_per_day - daily_buffer
         success_count = max_bytes_available // old_block_size
 
-        # 224051200B will be reserved for relaying new blocks, so expect this to
-        # succeed for ~236 tries.
+        # 8640000000B will be reserved for relaying new blocks (one block of the
+        # largest size per minute), so expect this to succeed for ~240 tries.
         for i in range(int(success_count)):
             test_nodes[0].send_message(getdata_request)
             test_nodes[0].sync_with_ping()

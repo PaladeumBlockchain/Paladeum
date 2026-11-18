@@ -128,7 +128,9 @@ class ImportRescanTest(PaladeumTestFramework):
         extra_args = [[] for _ in range(self.num_nodes)]
         for i, import_node in enumerate(IMPORT_NODES, 2):
             if import_node.prune:
-                extra_args[i] += ["-prune=1"]
+                # The transaction index (on by default) does not go with pruning, and the cached
+                # chain has one: these nodes rebuild their block index without it.
+                extra_args[i] += ["-prune=1", "-txindex=0", "-reindex"]
 
         self.add_nodes(self.num_nodes, extra_args)
         self.start_nodes()

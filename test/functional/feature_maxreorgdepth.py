@@ -6,6 +6,14 @@
 
 """
 Max Reorg Test
+
+A node does not follow a fork that begins -maxreorg (here 60) or more blocks below its tip
+(ContextualCheckBlockHeader, "bad-fork-prior-to-maxreorgdepth"). Paladeum applies this limit
+whatever the number of peers and the age of the tip (Raven also allowed deep reorgs with few
+peers or an old tip: -minreorgpeers and -minreorgage, which Paladeum does not have).
+
+The runner passes the number of nodes, --height (blocks of the good branch after the fork),
+--tip_age and --should_reorg (1 if the node should follow the longer fork: height < 60).
 """
 
 import sys
@@ -23,9 +31,7 @@ class MaxReorgTest(PaladeumTestFramework):
         if len(sys.argv) > 1:
             self.num_nodes = int(sys.argv[1])
         self.max_reorg_depth = 60
-        self.min_reorg_peers = 4
-        self.min_reorg_age = 60 * 60 * 12
-        # self.extra_args = [[f"-maxreorg={self.max_reorg_depth}", f"-minreorgpeers={self.min_reorg_peers}", f"-minreorgage={self.min_reorg_age}"] for i in range(self.num_nodes)]
+        self.extra_args = [[f"-maxreorg={self.max_reorg_depth}"] for _ in range(self.num_nodes)]
 
     def add_options(self, parser):
         parser.add_option("--height", dest="height", default=65, help="The height of good branch when adversary surprises.")
@@ -56,7 +62,7 @@ class MaxReorgTest(PaladeumTestFramework):
         adversary = self.nodes[0]
         subject = self.nodes[-1]
 
-        # enough to activate tokens
+        # coins for the nodes (tokens are always active in Paladeum)
         start = 432
 
         self.log.info(f"Setting all node times to {tip_age} seconds ago...")
@@ -82,14 +88,22 @@ class MaxReorgTest(PaladeumTestFramework):
 
         self.log.info("Restarting adversary node...")
         self.start_node(0)
+        # The restarted node has the real time again: give it the time of the others, or its
+        # transaction would be later than the blocks it mines next (transactions carry a time,
+        # and a block must not be earlier than its transactions).
+        set_node_times([adversary], now - tip_age)
 
         self.log.info(f"Adversary is issuing token: {token_name}...")
         adversary.issue(token_name)
 
         self.log.info(f"Adversary is mining {height*2} (2 x {height}) blocks over the next ~{tip_age} seconds...")
+        # Each block is at least a second later than the one before it, so the tip of the subject
+        # is later than the clock of the nodes by about a second per block: the adversary mines
+        # from the time of that tip.
+        subject_tip_time = subject.getblock(subject.getbestblockhash())['time']
         interval = round(tip_age / (height * 2)) + 1
         for i in range(0, height*2):
-            set_node_times(self.nodes, (now - tip_age) + ((i+1) * interval))
+            set_node_times(self.nodes, subject_tip_time + ((i+1) * interval))
             adversary.generate(1)
         assert(adversary.getblockcount() - start == (subject.getblockcount() - start) * 2)
         besttimes = [n.getblock(n.getbestblockhash())['time'] for n in self.nodes]
@@ -128,9 +142,7 @@ class MaxReorgTest(PaladeumTestFramework):
 
     def run_test(self):
         self.log.info(f"Number of peers: {self.num_nodes}")
-        self.log.info(f"Chain params: max_reorg_depth: {self.max_reorg_depth}, " + \
-                      f"max_reorg_peers: {self.min_reorg_peers}, " + \
-                      f"min_reorg_age: {self.min_reorg_age}.")
+        self.log.info(f"Chain params: max_reorg_depth: {self.max_reorg_depth}.")
         self.reorg_test()
 
 

@@ -1,0 +1,160 @@
+/* Paladeum Core theme ("Cell" of the Paladeum design guide). @tokens are replaced with the colors
+   of the theme, light or dark, by GUIUtil::applyTheme().
+
+   No corner is rounded. Buttons, fields, cards, tiles, the chosen tab and tables have their corners
+   cut at 45 degrees (top left and bottom right): CellStyle (cellstyle.cpp) paints their fills, so
+   here they have no background and no border of their own. Their borders stay as transparent lines
+   of 1 px, which keeps the sizes of the forms. */
+
+/* Text colors come from the palette. A "color" rule for all widgets would
+   also replace the placeholder color of input fields. */
+QMainWindow, QDialog { background-color: @bg; }
+QMessageBox { background-color: @surface; }
+QToolTip { background-color: @text; color: @surface; border: none; padding: 6px 8px; }
+
+/* Menus (the font is named here because Windows otherwise uses its own menu font) */
+QMenuBar, QMenu, QToolTip { font-family: "Inter"; font-size: 13px; font-weight: 400; }
+QMenuBar { background-color: @surface; border-bottom: 1px solid @line; padding: 2px 4px; }
+QMenuBar::item { background: transparent; padding: 4px 10px; }
+QMenuBar::item:selected { background-color: @surfaceAlt; color: @text; }
+QMenu { background-color: @surface; border: 1px solid @border; padding: 4px; }
+QMenu::item { padding: 8px 28px 8px 24px; }
+QMenu::item:selected { background-color: @surfaceAlt; color: @text; }
+QMenu::item:disabled { color: @textDisabled; }
+QMenu::separator { height: 1px; background: @line; margin: 4px 6px; }
+
+/* Status bar (hidden in the wallet window, the rail shows the status) */
+QStatusBar { background-color: @surface; border-top: 1px solid @line; color: @textSecondary; }
+QStatusBar::item { border: none; }
+QStatusBar QLabel { color: @textSecondary; }
+
+/* Buttons: the fill is painted. Yellow for the one primary action of a page (primary=true), mark
+   blue for the secondary filled action (look=secondary), the cell color on the ground and raised on
+   a panel for the quiet ones. */
+QPushButton { background: transparent; color: @text; border: 1px solid transparent; padding: 6px 16px; min-height: 20px; font-weight: 500; outline: none; }
+QPushButton:disabled { color: @textDisabled; }
+QPushButton[primary="true"] { color: @onAction; font-weight: 500; }
+QPushButton[primary="true"]:disabled { color: @textDisabled; }
+QPushButton[look="secondary"] { color: @onFill; }
+QPushButton[look="secondary"]:disabled { color: @textDisabled; }
+QPushButton[look="large"] { min-height: 30px; padding: 6px 20px; font-size: 14px; }
+QPushButton[look="send"] { min-height: 34px; font-size: 14px; }
+QPushButton[look="ghost"] { color: @label; font-size: 14px; min-height: 28px; }
+QPushButton[look="ghost"]:hover { color: @text; }
+QPushButton[look="dashed"] { color: @label; min-height: 28px; font-size: 13px; }
+QPushButton[look="dashed"]:hover { color: @text; }
+QPushButton[look="soft"] { color: @accent; padding: 6px 16px; }
+QPushButton[look="soft"]:hover { color: @accentHover; }
+QPushButton[look="soft"]:disabled { color: @textDisabled; }
+QPushButton[look="link"] { color: @accent; padding: 2px 0; min-height: 16px; border: none; }
+QPushButton[look="link"]:hover { color: @accentHover; }
+QPushButton[look="link"]:disabled { color: @textDisabled; }
+QPushButton[look="seg"] { color: @label; padding: 6px 16px; min-height: 26px; font-size: 13px; }
+QPushButton[look="seg"]:hover, QPushButton[look="seg"]:checked { color: @text; }
+QPushButton[look="strip"] { padding: 4px 16px; min-height: 16px; color: @label; font-size: 12px; }
+QPushButton[look="strip"]:hover { color: @text; }
+QPushButton[look="chipButton"] { padding: 4px 12px; min-height: 18px; color: @label; font-size: 12px; }
+QPushButton[look="chipButton"]:hover { color: @text; }
+QPushButton[look="pend"] { color: @warnText; padding: 4px 12px; min-height: 18px; font-size: 12px; }
+QPushButton[look="wait"] { color: @chipText; padding: 4px 12px; min-height: 18px; font-size: 12px; }
+QPushButton[look="fee"] { color: @label; min-height: 40px; padding: 4px 8px; font-size: 13px; }
+QPushButton[look="fee"]:checked { color: @text; }
+QPushButton[look="icon"], QToolButton[look="icon"] { padding: 0; min-height: 0; border: none; }
+QToolButton { background: transparent; border: 1px solid transparent; padding: 6px; color: @text; }
+/* Back and forward in the page headers */
+QToolButton[look="nav"] { padding: 0; }
+/* The page above the current one in a page title ("Sign › Prove my address") */
+QPushButton[look="crumb"] { color: @textSecondary; padding: 0; min-height: 40px; border: none; font-family: "Space Grotesk"; font-size: 28px; font-weight: 400; }
+QPushButton[look="crumb"]:hover { color: @accent; }
+QLabel[role="crumbSep"] { color: @textDisabled; }
+QDialogButtonBox QPushButton { min-width: 72px; }
+QDialogButtonBox { dialogbuttonbox-buttons-have-icons: 0; }
+QMessageBox QPushButton { min-width: 72px; }
+
+/* Fields: the fill (the cell color on the ground, raised on a panel) and the ring of the focus are painted */
+QLineEdit, QAbstractSpinBox, QComboBox, QDateTimeEdit, QPlainTextEdit, QTextEdit {
+    background: transparent; border: 1px solid transparent; padding: 8px 12px; color: @text;
+    selection-background-color: @fill; selection-color: @onFill;
+}
+QLineEdit:disabled, QAbstractSpinBox:disabled, QComboBox:disabled, QDateTimeEdit:disabled { color: @textDisabled; }
+QLineEdit[look="field"], QAbstractSpinBox[look="field"], QComboBox[look="field"] { padding: 12px 16px; font-size: 14px; }
+QLineEdit[look="search"] { padding: 10px 16px; }
+QLineEdit[look="bare"], QAbstractSpinBox[look="bare"] { border: none; background: transparent; padding: 0; }
+QAbstractSpinBox[look="bare"] { font-family: "JetBrains Mono"; font-size: 24px; font-weight: 500; }
+QComboBox::drop-down, QDateTimeEdit::drop-down { border: none; width: 28px; background: transparent; }
+QComboBox::down-arrow, QDateTimeEdit::down-arrow { image: url(:/icons/chevron_down); width: 12px; height: 12px; }
+QComboBox QAbstractItemView { background-color: @surface; border: 1px solid @border; selection-background-color: @surfaceAlt; selection-color: @text; outline: none; padding: 4px; }
+QAbstractSpinBox::up-button, QAbstractSpinBox::down-button { border: none; background: transparent; width: 16px; }
+
+QCheckBox, QRadioButton { spacing: 8px; color: @label; }
+QCheckBox::indicator, QTreeView::indicator, QTableView::indicator { width: 14px; height: 14px; border: 1px solid @borderStrong; background-color: @surface; }
+QRadioButton::indicator { width: 14px; height: 14px; border: 1px solid @borderStrong; background-color: @surface; }
+QCheckBox::indicator:hover, QRadioButton::indicator:hover, QTreeView::indicator:hover { border-color: @accent; }
+QCheckBox::indicator:checked, QTreeView::indicator:checked, QTableView::indicator:checked { background-color: @fill; border-color: @fill; image: url(:/icons/check_white); }
+QCheckBox::indicator:indeterminate, QTreeView::indicator:indeterminate { background-color: @accentSoft; border-color: @accent; }
+QRadioButton::indicator:checked { background-color: @fill; border-color: @fill; image: url(:/icons/radio_white); }
+QCheckBox::indicator:disabled, QRadioButton::indicator:disabled { background-color: @surfaceAlt; border-color: @border; }
+QCheckBox:disabled, QRadioButton:disabled { color: @textDisabled; }
+
+/* Group boxes are plain sections with a title */
+QGroupBox { background: transparent; border: none; border-top: 1px solid @line; margin-top: 12px; padding: 12px 10px 10px 10px; font-weight: 500; }
+QGroupBox::title { subcontrol-origin: margin; subcontrol-position: top left; left: 0; padding: 0 4px 0 0; color: @textSecondary; }
+
+/* Tables and lists: a table on the ground is a panel (painted), in a card it is part of the card */
+QTableView, QTreeView, QTreeWidget, QListView, QTableWidget {
+    background: transparent; alternate-background-color: transparent; border: none;
+    gridline-color: @line; selection-background-color: @accentSoft; selection-color: @text; outline: none;
+}
+QTableView::item, QTreeView::item, QTableWidget::item { padding: 4px 6px; border-bottom: 1px solid @line; }
+QTableView::item:selected, QTreeView::item:selected, QListView::item:selected, QTableWidget::item:selected { background-color: @accentSoft; color: @text; }
+QHeaderView { background: transparent; }
+QHeaderView::section { background: transparent; color: @muted; border: none; border-bottom: 1px solid @line; padding: 8px 8px; font-size: 12px; font-weight: 500; }
+QTableCornerButton::section { background: transparent; border: none; }
+
+/* Tab widgets (debug window, restricted tokens): the pane is a panel and the chosen tab a fill with a cut of 6 (painted) */
+QTabWidget::pane { border: none; background: transparent; top: 0; }
+QTabBar::tab { background: transparent; color: @textSecondary; padding: 8px 14px; margin-right: 4px; border: none; }
+QTabBar::tab:hover { color: @text; }
+/* (no bolder text for the chosen tab: the width of a tab is measured with the normal text,
+   and a bolder one was cut off at both ends, as in "ssign/Remove Qualifie") */
+QTabBar::tab:selected { color: @text; }
+
+/* Scroll bars */
+QScrollBar:vertical { background: transparent; width: 10px; margin: 2px; }
+QScrollBar:horizontal { background: transparent; height: 10px; margin: 2px; }
+QScrollBar::handle { background: @borderStrong; min-height: 28px; min-width: 28px; }
+QScrollBar::handle:hover { background: @muted; }
+QScrollBar::add-line, QScrollBar::sub-line { width: 0; height: 0; }
+QScrollBar::add-page, QScrollBar::sub-page { background: transparent; }
+QScrollArea { border: none; background: transparent; }
+
+/* Progress */
+QProgressBar { background-color: @surfaceAlt; border: none; text-align: center; color: @text; min-height: 14px; font-size: 12px; }
+QProgressBar::chunk { background-color: @fill; }
+
+QSplitter::handle { background: @line; }
+
+/* Named pieces */
+QWidget#mainWalletWidget, QWidget#pageShell { background-color: @bg; }
+QLabel[role="pageTitle"] { font-family: "Space Grotesk"; font-size: 28px; font-weight: 500; color: @text; }
+QLabel[role="title"] { font-family: "Space Grotesk"; font-size: 17px; font-weight: 500; color: @text; }
+QLabel[role="secondary"] { color: @textSecondary; }
+QLabel[role="caption"] { color: @muted; font-size: 12px; }
+QLabel[role="fieldLabel"] { color: @label; font-size: 13px; font-weight: 500; }
+QLabel[role="ok"] { color: @ok; font-size: 12px; }
+QLabel[role="error"] { color: @error; font-size: 12px; }
+QLabel[role="caution"] { color: @warnText; font-size: 12px; }
+/* labels on a fill of their own (painted) */
+QLabel[role="tag"] { background: transparent; color: @chipText; border: none; padding: 2px 8px; font-size: 11px; font-weight: 500; }
+QLabel[role="resultOk"] { background: transparent; color: @ok; border: none; padding: 8px 16px; font-size: 13px; font-weight: 500; }
+QLabel[role="resultError"] { background: transparent; color: @error; border: none; padding: 8px 16px; font-size: 13px; font-weight: 500; }
+QLabel[role="warning"] { background: transparent; color: @warnText; border: none; padding: 10px 16px; font-size: 12px; }
+QLabel[role="pill"] { background: transparent; color: @warnText; border: none; padding: 6px 12px; font-size: 12px; }
+QLabel[role="notice"] { background: transparent; color: @label; border: none; padding: 12px 16px; }
+/* panels: no borders, the fill is painted */
+QFrame[role="card"], QFrame[role="tokenCard"], QFrame[role="tile"], QFrame[role="segGroup"] { background: transparent; border: none; }
+QFrame[role="recipient"] { background-color: transparent; border: none; border-top: 1px solid @line; }
+QFrame[role="amountBox"] { background: transparent; border: 1px solid transparent; }
+QFrame[role="hline"] { background-color: @line; border: none; max-height: 1px; min-height: 1px; }
+QFrame[role="vline"] { background-color: @line; border: none; max-width: 1px; min-width: 1px; }
+QFrame[role="plain"] { background: transparent; border: none; }

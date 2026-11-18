@@ -207,17 +207,19 @@ QVariant AddressTableModel::data(const QModelIndex &index, int role) const
             }
         case Address:
             return rec->address;
-        } // no default case, so the compiler can warn about missing cases
-        assert(false);
-    } else if (role == Qt::FontRole) {
-        switch (column) {
-        case Label:
-            return QFont();
-        case Address:
-            return GUIUtil::fixedPitchFont();
-        } // no default case, so the compiler can warn about missing cases
-        assert(false);
-    } else if (role == TypeRole) {
+        }
+    }
+    else if (role == Qt::FontRole)
+    {
+        QFont font;
+        if(index.column() == Address)
+        {
+            font = GUIUtil::monoFont(13);
+        }
+        return font;
+    }
+    else if (role == TypeRole)
+    {
         switch(rec->type)
         {
         case AddressTableEntry::Sending:

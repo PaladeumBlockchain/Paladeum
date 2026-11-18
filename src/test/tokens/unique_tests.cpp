@@ -20,7 +20,7 @@ BOOST_FIXTURE_TEST_SUITE(unique_tests, BasicTestingSetup)
 
         CScript newUniqueScript = GetScriptForDestination(DecodeDestination(GetParams().GlobalFeeAddress()));
 
-        CNewToken unique_token("ROOT#UNIQUE1", 1 , 0 , 0, 0, "");
+        CNewToken unique_token("ROOT#UNIQUE1", 1 , 0 , 0, 0, "", 0, "", 0);
         unique_token.ConstructTransaction(newUniqueScript);
 
         CTxOut out(0, newUniqueScript);
@@ -46,7 +46,7 @@ BOOST_FIXTURE_TEST_SUITE(unique_tests, BasicTestingSetup)
 
         CScript newUniqueScript = GetScriptForDestination(DecodeDestination(GetParams().GlobalFeeAddress()));
 
-        CNewToken unique_token("$NOT_UNIQUE", 1 , 0 , 0, 0, "");
+        CNewToken unique_token("$NOT_UNIQUE", 1 , 0 , 0, 0, "", 0, "", 0);
         unique_token.ConstructTransaction(newUniqueScript);
 
         CTxOut out(0, newUniqueScript);

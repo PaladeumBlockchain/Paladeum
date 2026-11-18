@@ -5,6 +5,7 @@
 
 #include "trafficgraphwidget.h"
 #include "clientmodel.h"
+#include "guiutil.h"
 
 #include <QPainter>
 #include <QPainterPath>
@@ -65,12 +66,14 @@ void TrafficGraphWidget::paintPath(QPainterPath &path, QQueue<float> &samples)
 
 void TrafficGraphWidget::paintEvent(QPaintEvent *)
 {
+    // the colors of the theme: the received series in the color of chart series, the sent one grey
+    const GUIUtil::Theme& t = GUIUtil::theme();
     QPainter painter(this);
-    painter.fillRect(rect(), Qt::black);
+    painter.fillRect(rect(), t.surface);
 
     if(fMax <= 0.0f) return;
 
-    QColor axisCol(Qt::gray);
+    QColor axisCol(t.muted);
     int h = height() - YMARGIN * 2;
     painter.setPen(axisCol);
     painter.drawLine(XMARGIN, YMARGIN + h, width() - XMARGIN, YMARGIN + h);
@@ -108,15 +111,19 @@ void TrafficGraphWidget::paintEvent(QPaintEvent *)
     if(!vSamplesIn.empty()) {
         QPainterPath p;
         paintPath(p, vSamplesIn);
-        painter.fillPath(p, QColor(0, 255, 0, 128));
-        painter.setPen(Qt::green);
+        QColor fill = t.accent;
+        fill.setAlpha(64);
+        painter.fillPath(p, fill);
+        painter.setPen(t.accent);
         painter.drawPath(p);
     }
     if(!vSamplesOut.empty()) {
         QPainterPath p;
         paintPath(p, vSamplesOut);
-        painter.fillPath(p, QColor(255, 0, 0, 128));
-        painter.setPen(Qt::red);
+        QColor fill = t.textSecondary;
+        fill.setAlpha(48);
+        painter.fillPath(p, fill);
+        painter.setPen(t.textSecondary);
         painter.drawPath(p);
     }
 }

@@ -18,7 +18,7 @@ from decimal import Decimal
 import os
 import shutil
 from test_framework.test_framework import PaladeumTestFramework
-from test_framework.util import assert_equal, connect_nodes, disconnect_nodes, sync_blocks
+from test_framework.util import assert_equal, connect_nodes, disconnect_nodes, sync_blocks, wallet_file
 
 class ReorgsRestoreTest(PaladeumTestFramework):
     def set_test_params(self):
@@ -80,9 +80,10 @@ class ReorgsRestoreTest(PaladeumTestFramework):
         self.nodes[1].generate(1)
 
         # Node0 wallet file is loaded on longest sync'ed node1
+        node1_wallet = wallet_file(self.nodes[1].datadir)
         self.stop_node(1)
         self.nodes[0].backupwallet(os.path.join(self.nodes[0].datadir, 'wallet.bak'))
-        shutil.copyfile(os.path.join(self.nodes[0].datadir, 'wallet.bak'), os.path.join(self.nodes[1].datadir, 'regtest', 'wallet.dat'))
+        shutil.copyfile(os.path.join(self.nodes[0].datadir, 'wallet.bak'), node1_wallet)
         self.start_node(1)
         tx_after_reorg = self.nodes[1].gettransaction(txid)
         # Check that normal confirmed tx is confirmed again but with different blockhash

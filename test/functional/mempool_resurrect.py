@@ -6,10 +6,14 @@
 
 """Test resurrection of mined transactions when the blockchain is re-organized."""
 
+from decimal import Decimal
+
 from test_framework.test_framework import PaladeumTestFramework
 from test_framework.util import create_tx, assert_equal
 
-# Create one-input, one-output, no-fee transaction:
+FEE = Decimal("0.01")
+
+# Create one-input, one-output transactions that pay FEE:
 class MempoolCoinbaseTest(PaladeumTestFramework):
     def set_test_params(self):
         self.num_nodes = 1
@@ -29,13 +33,15 @@ class MempoolCoinbaseTest(PaladeumTestFramework):
 
         b = [ self.nodes[0].getblockhash(n) for n in range(1, 4) ]
         coinbase_txids = [ self.nodes[0].getblock(h)['tx'][0] for h in b ]
-        spends1_raw = [ create_tx(self.nodes[0], txid, node0_address, 4999.99) for txid in coinbase_txids ]
+        # (block 1 pays 1,000,000,000 PLB, the others 10 PLB)
+        values = [ self.nodes[0].gettxout(txid, 0)["value"] for txid in coinbase_txids ]
+        spends1_raw = [ create_tx(self.nodes[0], txid, node0_address, value - FEE) for txid, value in zip(coinbase_txids, values) ]
         spends1_id = [ self.nodes[0].sendrawtransaction(tx) for tx in spends1_raw ]
 
         blocks = []
         blocks.extend(self.nodes[0].generate(1))
 
-        spends2_raw = [ create_tx(self.nodes[0], txid, node0_address, 4999.98) for txid in spends1_id ]
+        spends2_raw = [ create_tx(self.nodes[0], txid, node0_address, value - 2 * FEE) for txid, value in zip(spends1_id, values) ]
         spends2_id = [ self.nodes[0].sendrawtransaction(tx) for tx in spends2_raw ]
 
         blocks.extend(self.nodes[0].generate(1))

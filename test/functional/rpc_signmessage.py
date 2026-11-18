@@ -19,8 +19,11 @@ class SignMessagesTest(PaladeumTestFramework):
 
         self.log.info('test signing with priv_key')
         priv_key = 'cUeKHd5orzT3mz8P9pxyREHfsWtVfgsfDjiZZBcjUBAaGk1BTj7N'
-        address = 'mpLQjfK79b7CCV4VMJWEWAj5Mpx8Up5zxB'
-        expected_signature = 'H5vCbG+WhOeOPJ3jf6oux/1oSjkuIGZigCw4NW+A0/fSDlgdO4fMq0SWSfx7gUMB9kuG+t/0BQxtXaTCr7v9fGM='
+        address = 'aYsXAcy3GY8fJMA4fZBJvf73jhjicf3ror'
+        # The RFC 6979 signature of the message hashed after the magic "Paladeum Signed Message:\n".
+        # (With "Bitcoin Signed Message:\n" the same key and message give INbVnW4e..., the
+        # signature in the test of Bitcoin Core.)
+        expected_signature = 'H8tYFuy9ZVb3NxiGIk97SpZublasa67kk4C7U9M3+gWdZrl762R3uOa48oQHhsg0giE+SLutChW3hP3XKsUV/pM='
         signature = self.nodes[0].signmessagewithprivkey(priv_key, message)
         assert_equal(expected_signature, signature)
         assert(self.nodes[0].verifymessage(address, signature, message))

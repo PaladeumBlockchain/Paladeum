@@ -16,7 +16,7 @@ Two nodes. Node1 is under test. Node0 is providing transactions and generating b
 
 import shutil
 from test_framework.test_framework import PaladeumTestFramework
-from test_framework.util import assert_equal, connect_nodes_bi, sync_blocks
+from test_framework.util import assert_equal, connect_nodes_bi, sync_blocks, wallet_file
 
 class KeypoolRestoreTest(PaladeumTestFramework):
     def set_test_params(self):
@@ -27,12 +27,14 @@ class KeypoolRestoreTest(PaladeumTestFramework):
     def run_test(self):
         self.tmpdir = self.options.tmpdir
         self.nodes[0].generate(101)
+        # the database file of the wallet of node1
+        node1_wallet = wallet_file(self.nodes[1].datadir)
 
         self.log.info("Make backup of wallet")
 
         self.stop_node(1)
 
-        shutil.copyfile(self.tmpdir + "/node1/regtest/wallet.dat", self.tmpdir + "/wallet.bak")
+        shutil.copyfile(node1_wallet, self.tmpdir + "/wallet.bak")
         self.start_node(1, self.extra_args[1])
         connect_nodes_bi(self.nodes, 0, 1)
 
@@ -57,7 +59,7 @@ class KeypoolRestoreTest(PaladeumTestFramework):
 
         self.stop_node(1)
 
-        shutil.copyfile(self.tmpdir + "/wallet.bak", self.tmpdir + "/node1/regtest/wallet.dat")
+        shutil.copyfile(self.tmpdir + "/wallet.bak", node1_wallet)
 
         self.log.info("Verify keypool is restored and balance is correct")
 

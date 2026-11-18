@@ -16,7 +16,8 @@ class UacommentTest(PaladeumTestFramework):
 
     def run_test(self):
         self.log.info("test multiple -uacomment")
-        test_uacomment = self.nodes[0].getnetworkinfo()["subversion"][-12:-1]
+        subversion = self.nodes[0].getnetworkinfo()["subversion"]
+        test_uacomment = subversion[-12:-1]
         assert_equal(test_uacomment, "(testnode0)")
 
         self.restart_node(0, ["-uacomment=foo"])
@@ -25,7 +26,9 @@ class UacommentTest(PaladeumTestFramework):
 
         self.log.info("test -uacomment max length")
         self.stop_node(0)
-        expected = "Total length of network version string (286) exceeds maximum length (256). Reduce the number or size of uacomments."
+        # the version string with the comments "testnode0" and 256 times "a": "; " and the comment longer
+        too_long = len(subversion) + len("; ") + 256
+        expected = "Total length of network version string (%d) exceeds maximum length (256). Reduce the number or size of uacomments." % too_long
         self.assert_start_raises_init_error(0, ["-uacomment=" + 'a' * 256], expected)
 
         self.log.info("test -uacomment unsafe characters")

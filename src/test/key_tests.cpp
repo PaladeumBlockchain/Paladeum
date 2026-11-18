@@ -17,14 +17,16 @@
 
 #include <boost/test/unit_test.hpp>
 
-static const std::string strSecret1 = "5HxWvvfubhXpYYpS3tJkw6fq9jE9j18THftkZjHHfmFiWtmAbrj";
-static const std::string strSecret2 = "5KC4ejrDjv152FGwP386VD1i2NYc5KkfSMyv1nGy1VGDxGHqVY3";
-static const std::string strSecret1C = "Kwr371tjA9u2rFSMZjTNun2PXXP3WPZu2afRHTcta6KxEUdm1vEw";
-static const std::string strSecret2C = "L3Hq7a8FEQwJkW1M2GNKDW28546Vp5miewcCzSqUD9kCAXrJdS3g";
-static const std::string addr1 = "RYY2usMVfuN47PfRmjshQjCcXzo3oPicoh"; //1QFqqMUD55ZV3PJEJZtaKCsQmjLT6JkjvJ";
-static const std::string addr2 = "RPNA9jxXxRt84dg5eKgTfzyFoXgYsXYrGu"; //1F5y5E5FMc5YzdJtB9hLaUe43GDxEKXENJ";
-static const std::string addr1C = "RX5VwKmAZCytjCf6mhSBP6xWcnspqFiSfK"; //1NoJrossxPBKfCHuJXT4HadJrXRE9Fxiqs";
-static const std::string addr2C = "RLhv6ordc2L64HXioasqMsJtSdukCn2Tcg"; //"1CRj2HyM1CXWzHAXLQtiGLyggNT9WQqsDs";
+// The keys of the Bitcoin test, in the encoding of the Paladeum main network (secret prefix 89,
+// address prefix 56)
+static const std::string strSecret1 = "3z9V3tAfN79zHZ9vhH6njbHdSHD9NYGJbk8Z3tTKuCzbGdsCvqf";
+static const std::string strSecret2 = "41P2mhLyWKdEmFcS2Rv8HhdWJvXbirtWkSDiVwT1Ew16hxYojjd";
+static const std::string strSecret1C = "EBESoiqeLAAfr4vPzn4YrzLPpaYbx4zYgMNLTk7CRRwCFZuKPK84";
+static const std::string strSecret2C = "EGgEpH5AQRCwkKVPTJyVAiL8N7G4FmCNJiK8AjKn4VMSBd6n5L9D";
+static const std::string addr1 = "PwBcySALqBWYqf75g4YRUE7U1ymGvbuThA"; //1QFqqMUD55ZV3PJEJZtaKCsQmjLT6JkjvJ";
+static const std::string addr2 = "Pn1kDJmP7i2cnu7jYeMBjVt7HWen2AvWFc"; //1F5y5E5FMc5YzdJtB9hLaUe43GDxEKXENJ";
+static const std::string addr1C = "Puj5zta1iV8PTU6kg26uSbsN6mr3xSfmrt"; //1NoJrossxPBKfCHuJXT4HadJrXRE9Fxiqs";
+static const std::string addr2C = "PjMWANfUmJUanYyNhuYZRNDjvcsyMAfXy6"; //"1CRj2HyM1CXWzHAXLQtiGLyggNT9WQqsDs";
 
 static const std::string strAddressBad = "1HV9Lc3sNHZxwj4Zk6fB38tEmBryq2cBiF";
 

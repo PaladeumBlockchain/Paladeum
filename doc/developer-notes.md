@@ -212,7 +212,7 @@ Threads
 
 - ThreadMapPort : Universal plug-and-play startup/shutdown
 
-- ThreadSocketHandler : Sends/Receives data from peers on port 8767.
+- ThreadSocketHandler : Sends/Receives data from peers on port 7576.
 
 - ThreadOpenAddedConnections : Opens network connections to added nodes.
 
@@ -224,7 +224,7 @@ Threads
 
 - ThreadFlushWalletDB : Close the wallet.dat file if it hasn't been used in 500ms.
 
-- ThreadRPCServer : Remote procedure call handler, listens on port 8766 for connections and services them.
+- ThreadRPCServer : Remote procedure call handler, listens on port 7575 for connections and services them.
 
 - PaladeumMiner : Generates paladeums (if wallet is enabled).
 
@@ -604,7 +604,7 @@ Git and GitHub tips
 
         [remote "upstream-pull"]
                 fetch = +refs/pull/*:refs/remotes/upstream-pull/*
-                url = git@github.com:paladeum/paladeum.git
+                url = git@github.com:PaladeumBlockchain/Paladeum.git
 
   This will add an `upstream-pull` remote to your git repository, which can be fetched using `git fetch --all`
   or `git fetch upstream-pull`. Afterwards, you can use `upstream-pull/NUMBER/head` in arguments to `git show`,

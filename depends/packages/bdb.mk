@@ -9,8 +9,9 @@ define $(package)_set_vars
 $(package)_config_opts=--disable-shared --enable-cxx --disable-replication
 $(package)_config_opts_mingw32=--enable-mingw
 $(package)_config_opts_linux=--with-pic
-$(package)_cflags+=-Wno-error=implicit-function-declaration -Wno-error=format-security -Wno-error=implicit-int
 $(package)_cxxflags=-std=c++11
+# BDB 4.8 predates C99 strictness in modern compilers (gcc >= 14 errors).
+$(package)_cflags+=-Wno-error=implicit-function-declaration -Wno-error=format-security -Wno-error=implicit-int -Wno-error=int-conversion
 endef
 
 define $(package)_preprocess_cmds

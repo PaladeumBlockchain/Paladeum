@@ -10,7 +10,11 @@
 
 #include "chainparams.h"
 
+#include <QPainter>
 #include <QResizeEvent>
+#include <QVBoxLayout>
+#include <QPushButton>
+#include <QLabel>
 #include <QPropertyAnimation>
 
 ModalOverlay::ModalOverlay(QWidget *parent) :
@@ -22,7 +26,55 @@ layerIsVisible(false),
 userClosed(false)
 {
     ui->setupUi(this);
+    // colors of the active theme (the form has fixed light colors)
+    // a panel with cut corners (painted from cellFill); what is on it is on a panel
+    ui->contentWidget->setProperty("cellFill", GUIUtil::theme().surface);
+    ui->contentWidget->setProperty("cellCut", 12);
+    ui->contentWidget->setProperty("cellSurface", true);
+    ui->contentWidget->setStyleSheet("#contentWidget { background: transparent; border: none; }");
+    ui->bgWidget->setStyleSheet("#bgWidget { background: rgba(10,14,18,150); }");
+    ui->warningIcon->setFlat(true);
+    ui->warningIcon->setStyleSheet("QPushButton { border: none; background: transparent; }");
+    // the sign in the color of secondary text (the image is black), also on the disabled button
+    {
+        QPixmap sign(":/icons/warning");
+        QPainter painter(&sign);
+        painter.setCompositionMode(QPainter::CompositionMode_SourceIn);
+        painter.fillRect(sign.rect(), GUIUtil::theme().textSecondary);
+        painter.end();
+        QIcon icon;
+        icon.addPixmap(sign, QIcon::Normal);
+        icon.addPixmap(sign, QIcon::Disabled);
+        ui->warningIcon->setIcon(icon);
+    }
     connect(ui->closeButton, SIGNAL(clicked()), this, SLOT(closeClicked()));
+
+    // Block bootstrap: what it does, how far it is, and the way out. Above the buttons.
+    bootstrapBox = new QWidget(ui->contentWidget);
+    bootstrapBox->setObjectName("bootstrapBox");
+    bootstrapBox->setProperty("cellFill", GUIUtil::theme().accentSoft);
+    bootstrapBox->setStyleSheet("#bootstrapBox { background: transparent; }");
+    QVBoxLayout *boxLayout = new QVBoxLayout(bootstrapBox);
+    boxLayout->setContentsMargins(16, 12, 16, 12);
+    boxLayout->setSpacing(4);
+    bootstrapStatus = new QLabel(bootstrapBox);
+    bootstrapStatus->setFont(GUIUtil::appFont(14, QFont::DemiBold));
+    bootstrapDetail = new QLabel(bootstrapBox);
+    bootstrapDetail->setWordWrap(true);
+    bootstrapDetail->setProperty("role", "caption");
+    boxLayout->addWidget(bootstrapStatus);
+    boxLayout->addWidget(bootstrapDetail);
+    bootstrapBox->hide();
+    ui->verticalLayoutSub->insertWidget(ui->verticalLayoutSub->count() - 1, bootstrapBox);
+    bootstrapSkip = new QPushButton(tr("Skip and get the blocks from peers"), this);
+    bootstrapSkip->setToolTip(tr("Stop fetching the block archives and synchronize the usual way, from other nodes"));
+    bootstrapSkip->hide();
+    QPushButton *folder = new QPushButton(tr("Choose a folder with block archives..."), this);
+    folder->setToolTip(tr("Import block archives that you fetched yourself (the files and manifest.json in one folder). Every block is validated."));
+    ui->horizontalLayoutButtons->insertWidget(0, folder);
+    ui->horizontalLayoutButtons->insertWidget(1, bootstrapSkip);
+    connect(bootstrapSkip, SIGNAL(clicked()), this, SIGNAL(bootstrapSkipRequested()));
+    connect(folder, SIGNAL(clicked()), this, SIGNAL(bootstrapFolderRequested()));
     if (parent) {
         parent->installEventFilter(this);
         raise();
@@ -41,10 +93,14 @@ bool ModalOverlay::eventFilter(QObject * obj, QEvent * ev) {
     if (obj == parent()) {
         if (ev->type() == QEvent::Resize) {
             QResizeEvent * rev = static_cast<QResizeEvent*>(ev);
+            // the window changes its size while the layer slides (at the start): the layer
+            // ends where it belongs for the new size, not half way
+            if (animation)
+                animation->stop();
             resize(rev->size());
+            setGeometry(0, layerIsVisible ? 0 : height(), width(), height());
             if (!layerIsVisible)
-                setGeometry(0, height(), width(), height());
-
+                setVisible(false);
         }
         else if (ev->type() == QEvent::ChildAdded) {
             raise();
@@ -73,6 +129,14 @@ void ModalOverlay::setKnownBestHeight(int count, const QDateTime& blockDate)
         bestHeaderHeight = count;
         bestHeaderDate = blockDate;
     }
+}
+
+void ModalOverlay::setBootstrapState(bool active, const QString& status, const QString& detail)
+{
+    bootstrapBox->setVisible(active || !status.isEmpty());
+    bootstrapSkip->setVisible(active);
+    bootstrapStatus->setText(status);
+    bootstrapDetail->setText(detail);
 }
 
 void ModalOverlay::tipUpdate(int count, const QDateTime& blockDate, double nVerificationProgress)
@@ -159,11 +223,18 @@ void ModalOverlay::showHide(bool hide, bool userRequested)
 
     setGeometry(0, hide ? 0 : height(), width(), height());
 
-    QPropertyAnimation* animation = new QPropertyAnimation(this, "pos");
+    if (animation)
+        animation->stop();
+    animation = new QPropertyAnimation(this, "pos");
     animation->setDuration(300);
     animation->setStartValue(QPoint(0, hide ? 0 : this->height()));
     animation->setEndValue(QPoint(0, hide ? this->height() : 0));
     animation->setEasingCurve(QEasingCurve::OutQuad);
+    // a hidden layer is not shown at all, so that no part of it can stay in sight
+    connect(animation, &QPropertyAnimation::finished, this, [this] {
+        if (!layerIsVisible)
+            setVisible(false);
+    });
     animation->start(QAbstractAnimation::DeleteWhenStopped);
     layerIsVisible = !hide;
 }

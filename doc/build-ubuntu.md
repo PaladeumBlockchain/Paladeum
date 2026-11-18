@@ -107,7 +107,7 @@ Make the directory for sources and go into it.
 
 __Download Paladeum source.__
 
-`git clone https://github.com/PaladeumProject/Paladeum`
+`git clone https://github.com/PaladeumBlockchain/Paladeum`
 
 `cd Paladeum`
 

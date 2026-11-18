@@ -469,7 +469,8 @@ public:
     indexed_transaction_set mapTx;
 
     std::map<std::string, uint256> mapTokenToHash;
-    std::map<uint256, std::string> mapHashToToken;
+    //! the new token names of a transaction (several for a transaction that issues unique tokens)
+    std::map<uint256, std::set<std::string>> mapHashToToken;
 
     /** Restricted tokens maps */
     // Helper maps for when addresses are marked as frozen
@@ -581,7 +582,8 @@ public:
     void removeRecursive(const CTransaction &tx, MemPoolRemovalReason reason = MemPoolRemovalReason::UNKNOWN);
     void removeForReorg(const CCoinsViewCache *pcoins, unsigned int nMemPoolHeight, int flags);
     void removeConflicts(const CTransaction &tx);
-    void removeForBlock(const std::vector<CTransactionRef>& vtx, unsigned int nBlockHeight, ConnectedBlockTokenData& connectedBlockData );
+    /** fUpdateEstimates: false leaves the fee estimator alone (the first synchronization). */
+    void removeForBlock(const std::vector<CTransactionRef>& vtx, unsigned int nBlockHeight, ConnectedBlockTokenData& connectedBlockData, bool fUpdateEstimates = true);
     void removeForBlock(const std::vector<CTransactionRef>& vtx, unsigned int nBlockHeight);
 
     void clear();

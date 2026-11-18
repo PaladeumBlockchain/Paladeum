@@ -102,12 +102,12 @@
               </property>
               <property name="font">
                <font>
-                <weight>75</weight>
-                <bold>true</bold>
+                <weight>57</weight>
+                <bold>false</bold>
                </font>
               </property>
               <property name="styleSheet">
-               <string notr="true">font-weight:bold;</string>
+               <string notr="true">font-weight:500;</string>
               </property>
               <property name="text">
                <string>Coin Control Features</string>
@@ -151,12 +151,12 @@
              <widget class="QLabel" name="labelCoinControlInsuffFunds">
               <property name="font">
                <font>
-                <weight>75</weight>
-                <bold>true</bold>
+                <weight>57</weight>
+                <bold>false</bold>
                </font>
               </property>
               <property name="styleSheet">
-               <string notr="true">color:red;font-weight:bold;</string>
+               <string notr="true">font-weight:500;</string>
               </property>
               <property name="text">
                <string>Insufficient funds!</string>
@@ -243,8 +243,8 @@
                   <widget class="QLabel" name="labelCoinControlQuantityText">
                    <property name="font">
                     <font>
-                     <weight>75</weight>
-                     <bold>true</bold>
+                     <weight>57</weight>
+                     <bold>false</bold>
                     </font>
                    </property>
                    <property name="text">
@@ -278,8 +278,8 @@
                   <widget class="QLabel" name="labelCoinControlBytesText">
                    <property name="font">
                     <font>
-                     <weight>75</weight>
-                     <bold>true</bold>
+                     <weight>57</weight>
+                     <bold>false</bold>
                     </font>
                    </property>
                    <property name="text">
@@ -326,8 +326,8 @@
                   <widget class="QLabel" name="labelCoinControlAmountText">
                    <property name="font">
                     <font>
-                     <weight>75</weight>
-                     <bold>true</bold>
+                     <weight>57</weight>
+                     <bold>false</bold>
                     </font>
                    </property>
                    <property name="text">
@@ -358,8 +358,8 @@
                   <widget class="QLabel" name="labelCoinControlLowOutputText">
                    <property name="font">
                     <font>
-                     <weight>75</weight>
-                     <bold>true</bold>
+                     <weight>57</weight>
+                     <bold>false</bold>
                     </font>
                    </property>
                    <property name="text">
@@ -406,8 +406,8 @@
                   <widget class="QLabel" name="labelCoinControlFeeText">
                    <property name="font">
                     <font>
-                     <weight>75</weight>
-                     <bold>true</bold>
+                     <weight>57</weight>
+                     <bold>false</bold>
                     </font>
                    </property>
                    <property name="text">
@@ -457,8 +457,8 @@
                   <widget class="QLabel" name="labelCoinControlAfterFeeText">
                    <property name="font">
                     <font>
-                     <weight>75</weight>
-                     <bold>true</bold>
+                     <weight>57</weight>
+                     <bold>false</bold>
                     </font>
                    </property>
                    <property name="text">
@@ -489,8 +489,8 @@
                   <widget class="QLabel" name="labelCoinControlChangeText">
                    <property name="font">
                     <font>
-                     <weight>75</weight>
-                     <bold>true</bold>
+                     <weight>57</weight>
+                     <bold>false</bold>
                     </font>
                    </property>
                    <property name="text">
@@ -679,7 +679,7 @@
             <item>
              <widget class="QPushButton" name="availabilityButton">
               <property name="text">
-               <string>Check Availabilty</string>
+               <string>Check Availability</string>
               </property>
              </widget>
             </item>
@@ -752,7 +752,7 @@
                <double>1.000000000000000</double>
               </property>
               <property name="maximum">
-               <double>21000000000.000000000000000</double>
+               <double>25000000000.000000000000000</double>
               </property>
               <property name="value">
                <double>1.000000000000000</double>
@@ -771,7 +771,7 @@
               <item>
                <widget class="QSpinBox" name="unitBox">
                 <property name="toolTip">
-                 <string>How divisble the tokens will be (e.g. 8 = 1.00000000, 2 = 1.00)</string>
+                 <string>How divisible the tokens will be (e.g. 8 = 1.00000000, 2 = 1.00)</string>
                 </property>
                 <property name="maximum">
                  <number>8</number>
@@ -846,7 +846,7 @@
           <item>
            <widget class="QLabel" name="messageLabel">
             <property name="styleSheet">
-             <string notr="true">color: red</string>
+             <string notr="true"/>
             </property>
             <property name="text">
              <string>ERROR TEXT</string>
@@ -953,12 +953,12 @@
                   </property>
                   <property name="font">
                    <font>
-                    <weight>75</weight>
-                    <bold>true</bold>
+                    <weight>57</weight>
+                    <bold>false</bold>
                    </font>
                   </property>
                   <property name="styleSheet">
-                   <string notr="true">font-weight:bold;</string>
+                   <string notr="true">font-weight:500;</string>
                   </property>
                   <property name="text">
                    <string>Transaction Fee:</string>
@@ -1000,8 +1000,8 @@
              <widget class="QLabel" name="fallbackFeeWarningLabel">
               <property name="font">
                <font>
-                <weight>75</weight>
-                <bold>true</bold>
+                <weight>57</weight>
+                <bold>false</bold>
                </font>
               </property>
               <property name="toolTip">
@@ -1115,7 +1115,7 @@
                    <item>
                     <widget class="QCheckBox" name="checkBoxMinimumFee">
                      <property name="toolTip">
-                      <string>Paying only the minimum fee is just fine as long as there is less transaction volume than space in the blocks. But be aware that this can end up in a never confirming transaction once there is more demand for paladeum transactions than the network can process.</string>
+                      <string>Paying only the minimum fee is just fine as long as there is less transaction volume than space in the blocks. But be aware that this can end up in a never confirming transaction once there is more demand for Paladeum transactions than the network can process.</string>
                      </property>
                      <property name="text">
                       <string/>
@@ -1128,7 +1128,7 @@
                       <bool>true</bool>
                      </property>
                      <property name="toolTip">
-                      <string>Paying only the minimum fee is just fine as long as there is less transaction volume than space in the blocks. But be aware that this can end up in a never confirming transaction once there is more demand for paladeum transactions than the network can process.</string>
+                      <string>Paying only the minimum fee is just fine as long as there is less transaction volume than space in the blocks. But be aware that this can end up in a never confirming transaction once there is more demand for Paladeum transactions than the network can process.</string>
                      </property>
                      <property name="text">
                       <string>(read the tooltip)</string>

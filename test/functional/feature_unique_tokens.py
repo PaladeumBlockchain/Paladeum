@@ -36,12 +36,12 @@ class UniqueTokenTest(PaladeumTestFramework):
         self.num_nodes = 3
         self.extra_args = [['-tokenindex'], ['-tokenindex'], ['-tokenindex']]
 
-    def activate_tokens(self):
-        self.log.info("Generating PLB for node[0] and activating tokens...")
+    def generate_coins(self):
+        # Tokens are always active in Paladeum: there is no deployment to wait for.
+        self.log.info("Generating PLB for node[0]...")
         n0 = self.nodes[0]
         n0.generate(432)
         self.sync_all()
-        assert_equal("active", n0.getblockchaininfo()['bip9_softforks']['tokens']['status'])
 
     def issue_one(self):
         self.log.info("Issuing a unique token...")
@@ -134,7 +134,7 @@ class UniqueTokenTest(PaladeumTestFramework):
         assert_raises_rpc_error(-32600, f"Wallet doesn't have token: {missing_token}!", n0.issueunique, missing_token, token_tags)
 
     def run_test(self):
-        self.activate_tokens()
+        self.generate_coins()
         self.issue_unique_test()
         self.issue_one()
         self.issue_invalid()

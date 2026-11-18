@@ -8,7 +8,7 @@
 
 import os
 from test_framework.test_framework import PaladeumTestFramework
-from test_framework.util import assert_equal, assert_does_not_contain, assert_contains, assert_raises_rpc_error
+from test_framework.util import assert_equal, assert_does_not_contain, assert_contains, assert_raises_rpc_error, wallet_file
 from test_framework.wallet_util import bip39_english
 
 MNEMONIC_0 = 'climb imitate repair vacant moral analyst barely night enemy fault report funny'
@@ -34,6 +34,7 @@ class Bip44Test(PaladeumTestFramework):
 
         # BIP39 list should contain 2048 words
         assert_equal(len(bip39_english), 2048)
+        assert_equal(len(set(bip39_english)), 2048)  # no word twice
 
         # Node 0 has 12 words and a passphrase
         self.log.info("Testing BIP-44 Word-Lists and passphrases")
@@ -106,13 +107,13 @@ class Bip44Test(PaladeumTestFramework):
             assert_does_not_contain(mnemonic_3, f.read())
 
         # But words are readable in a non-encrypted wallet
-        with open(os.path.join(self.options.tmpdir+"/node0/regtest/", "wallet.dat"), 'rb') as f:
+        with open(wallet_file(nodes[0].datadir), 'rb') as f:
             assert_contains(MNEMONIC_0, str(f.read()))
-        with open(os.path.join(self.options.tmpdir+"/node1/regtest/", "wallet.dat"), 'rb') as f:
+        with open(wallet_file(nodes[1].datadir), 'rb') as f:
             assert_contains(MNEMONIC_1, str(f.read()))
-        with open(os.path.join(self.options.tmpdir+"/node2/regtest/", "wallet.dat"), 'rb') as f:
+        with open(wallet_file(nodes[2].datadir), 'rb') as f:
             assert_contains(mnemonic_2, str(f.read()))
-        with open(os.path.join(self.options.tmpdir+"/node3/regtest/", "wallet.dat"), 'rb') as f:
+        with open(wallet_file(nodes[3].datadir), 'rb') as f:
             assert_contains(mnemonic_3, str(f.read()))
 
         # After encryption the words are no longer readable
@@ -124,13 +125,13 @@ class Bip44Test(PaladeumTestFramework):
         nodes[3].node_encrypt_wallet("password3")
         self.stop_nodes()
         # But words are not readable in an encrypted wallet
-        with open(os.path.join(self.options.tmpdir+"/node0/regtest/", "wallet.dat"), 'rb') as f:
+        with open(wallet_file(nodes[0].datadir), 'rb') as f:
             assert_does_not_contain(MNEMONIC_0, str(f.read()))
-        with open(os.path.join(self.options.tmpdir+"/node1/regtest/", "wallet.dat"), 'rb') as f:
+        with open(wallet_file(nodes[1].datadir), 'rb') as f:
             assert_does_not_contain(MNEMONIC_1, str(f.read()))
-        with open(os.path.join(self.options.tmpdir+"/node2/regtest/", "wallet.dat"), 'rb') as f:
+        with open(wallet_file(nodes[2].datadir), 'rb') as f:
             assert_does_not_contain(mnemonic_2, str(f.read()))
-        with open(os.path.join(self.options.tmpdir+"/node3/regtest/", "wallet.dat"), 'rb') as f:
+        with open(wallet_file(nodes[3].datadir), 'rb') as f:
             assert_does_not_contain(mnemonic_3, str(f.read()))
 
         # But the words are still available using getmywords after entering the passphrase

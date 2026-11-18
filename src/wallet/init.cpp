@@ -7,11 +7,14 @@
 #include "wallet/init.h"
 
 #include "net.h"
+#include "scheduler.h"
+#include "snapshot.h"
 #include "util.h"
 #include "utilmoneystr.h"
 #include "validation.h"
 #include "wallet/wallet.h"
 #include "wallet/rpcwallet.h"
+#include "wallet/walletutil.h"
 #include <miner.h>
 
 std::string GetWalletHelpString(bool showDebug)
@@ -35,6 +38,11 @@ std::string GetWalletHelpString(bool showDebug)
     strUsage += HelpMessageOpt("-rescan", _("Rescan the block chain for missing wallet transactions on startup"));
     strUsage += HelpMessageOpt("-salvagewallet", _("Attempt to recover private keys from a corrupt wallet on startup"));
     strUsage += HelpMessageOpt("-spendzeroconfchange", strprintf(_("Spend unconfirmed change when sending transactions (default: %u)"), DEFAULT_SPEND_ZEROCONF_CHANGE));
+    strUsage += HelpMessageOpt("-spendofflinestaking", strprintf(_("Let a payment take coins at an offline staking address on its own. Otherwise they are spent only when they are selected, with coin control or in a raw transaction (default: %u)"), DEFAULT_SPEND_OFFLINE_STAKING));
+    strUsage += HelpMessageOpt("-staking", strprintf("Stake with the coins of every wallet while it is unlocked; the desktop wallet has a switch for it (default: %u)", DEFAULT_STAKE));
+    strUsage += HelpMessageOpt("-stakingwallet=<name>", "With -staking, stake with this wallet only, by its name as listwallets shows it; may be given several times. A wallet that is not named does not stake, whether it is opened at the start or later (default: every wallet stakes)");
+    strUsage += HelpMessageOpt("-stakecombinethreshold=<amt>", strprintf(_("A stake gathers the coins of its address that are smaller than this amount (in %s) and is split in two when it reaches twice the amount, so the staking coins end up between one and two times this size (default: %s)"),
+                                                            CURRENCY_UNIT, FormatMoney(DEFAULT_STAKE_COMBINE_THRESHOLD)));
     strUsage += HelpMessageOpt("-txconfirmtarget=<n>", strprintf(_("If paytxfee is not set, include enough fee so transactions begin confirmation on average within n blocks (default: %u)"), DEFAULT_TX_CONFIRM_TARGET));
     strUsage += HelpMessageOpt("-upgradewallet", _("Upgrade wallet to latest format on startup"));
     strUsage += HelpMessageOpt("-walletrbf", strprintf(_("Send transactions with full-RBF opt-in enabled (default: %u)"), DEFAULT_WALLET_RBF));
@@ -49,6 +57,7 @@ std::string GetWalletHelpString(bool showDebug)
     {
         strUsage += HelpMessageGroup(_("Wallet debugging/testing options:"));
 
+        strUsage += HelpMessageOpt("-checkwalletlive", "Verify the wallet's index of unspent transactions against a full scan on every use; slow, for tests (default: 0)");
         strUsage += HelpMessageOpt("-dblogsize=<n>", strprintf("Flush wallet database activity from memory to disk log every <n> megabytes (default: %u)", DEFAULT_WALLET_DBLOGSIZE));
         strUsage += HelpMessageOpt("-flushwallet", strprintf("Run a thread to flush wallet periodically (default: %u)", DEFAULT_FLUSHWALLET));
         strUsage += HelpMessageOpt("-privdb", strprintf("Sets the DB_PRIVATE flag in the wallet db environment (default: %u)", DEFAULT_WALLET_PRIVDB));
@@ -144,6 +153,13 @@ bool WalletParameterInteraction()
                         _("This is the transaction fee you may discard if change is smaller than dust at this level"));
         CWallet::m_discard_rate = CFeeRate(nFeePerK);
     }
+    if (gArgs.IsArgSet("-stakecombinethreshold"))
+    {
+        CAmount nThreshold = 0;
+        if (!ParseMoney(gArgs.GetArg("-stakecombinethreshold", ""), nThreshold) || nThreshold < COIN)
+            return InitError(strprintf(_("Invalid amount for -stakecombinethreshold=<amount>: '%s' (must be at least %s)"), gArgs.GetArg("-stakecombinethreshold", ""), FormatMoney(COIN)));
+        nStakeCombineThreshold = nThreshold;
+    }
     if (gArgs.IsArgSet("-paytxfee"))
     {
         CAmount nFeePerK = 0;
@@ -176,6 +192,7 @@ bool WalletParameterInteraction()
     }
     nTxConfirmTarget = gArgs.GetArg("-txconfirmtarget", DEFAULT_TX_CONFIRM_TARGET);
     bSpendZeroConfChange = gArgs.GetBoolArg("-spendzeroconfchange", DEFAULT_SPEND_ZEROCONF_CHANGE);
+    fSpendOfflineStaking = gArgs.GetBoolArg("-spendofflinestaking", DEFAULT_SPEND_OFFLINE_STAKING);
     fWalletRbf = gArgs.GetBoolArg("-walletrbf", DEFAULT_WALLET_RBF);
 
     return true;
@@ -190,56 +207,62 @@ void RegisterWalletRPC(CRPCTable &t)
 
 bool VerifyWallets()
 {
-    if (gArgs.GetBoolArg("-disablewallet", DEFAULT_DISABLE_WALLET))
+    if (gArgs.GetBoolArg("-disablewallet", DEFAULT_DISABLE_WALLET)) {
         return true;
+    }
+
+    if (gArgs.IsArgSet("-walletdir")) {
+        fs::path wallet_dir = gArgs.GetArg("-walletdir", "");
+        boost::system::error_code error;
+        // The canonical path cleans the path, preventing >1 Berkeley environment instances for the same directory
+        fs::path canonical_wallet_dir = fs::canonical(wallet_dir, error);
+        if (error || !fs::exists(wallet_dir)) {
+            return InitError(strprintf(_("Specified -walletdir \"%s\" does not exist"), wallet_dir.string()));
+        } else if (!fs::is_directory(wallet_dir)) {
+            return InitError(strprintf(_("Specified -walletdir \"%s\" is not a directory"), wallet_dir.string()));
+        // The canonical path transforms relative paths into absolute ones, so we check the non-canonical version
+        } else if (!wallet_dir.is_absolute()) {
+            return InitError(strprintf(_("Specified -walletdir \"%s\" is a relative path"), wallet_dir.string()));
+        }
+        gArgs.ForceSetArg("-walletdir", canonical_wallet_dir.string());
+    }
+
+    LogPrintf("Using wallet directory %s\n", GetWalletDir().string());
 
     uiInterface.InitMessage(_("Verifying wallet(s)..."));
+
+    std::vector<std::string> wallet_files = gArgs.GetArgs("-wallet");
+
+    // Parameter interaction code should have thrown an error if -salvagewallet
+    // was enabled with more than wallet file, so the wallet_files size check
+    // here should have no effect.
+    bool salvage_wallet = gArgs.GetBoolArg("-salvagewallet", false) && wallet_files.size() <= 1;
 
     // Keep track of each wallet absolute path to detect duplicates.
     std::set<fs::path> wallet_paths;
 
-    for (const std::string& walletFile : gArgs.GetArgs("-wallet")) {
-        if (boost::filesystem::path(walletFile).filename() != walletFile) {
-            return InitError(strprintf(_("Error loading wallet %s. -wallet parameter must only specify a filename (not a path)."), walletFile));
-        }
-
-        if (SanitizeString(walletFile, SAFE_CHARS_FILENAME) != walletFile) {
-            return InitError(strprintf(_("Error loading wallet %s. Invalid characters in -wallet filename."), walletFile));
-        }
-
-        fs::path wallet_path = fs::absolute(walletFile, GetDataDir());
-
-        if (fs::exists(wallet_path) && (!fs::is_regular_file(wallet_path) || fs::is_symlink(wallet_path))) {
-            return InitError(strprintf(_("Error loading wallet %s. -wallet filename must be a regular file."), walletFile));
-        }
+    for (const auto wallet_file : wallet_files) {
+        fs::path wallet_path = fs::absolute(wallet_file, GetWalletDir());
 
         if (!wallet_paths.insert(wallet_path).second) {
-            return InitError(strprintf(_("Error loading wallet %s. Duplicate -wallet filename specified."), walletFile));
-        }
-
-        std::string strError;
-        if (!CWalletDB::VerifyEnvironment(walletFile, GetDataDir().string(), strError)) {
-            return InitError(strError);
+            return InitError(strprintf(_("Error loading wallet %s. Duplicate -wallet filename specified."), wallet_file));
         }
 
         if (gArgs.GetBoolArg("-salvagewallet", false)) {
             // Recover readable keypairs:
-            CWallet dummyWallet;
+            CWallet dummyWallet("dummy", CWalletDBWrapper::CreateDummy());
             std::string backup_filename;
-            if (!CWalletDB::Recover(walletFile, (void *)&dummyWallet, CWalletDB::RecoverKeysOnlyFilter, backup_filename)) {
+            if (!CWalletDB::Recover(wallet_path, (void *)&dummyWallet, CWalletDB::RecoverKeysOnlyFilter, backup_filename)) {
                 return false;
             }
         }
 
-        std::string strWarning;
-        bool dbV = CWalletDB::VerifyDatabaseFile(walletFile, GetDataDir().string(), strWarning, strError);
-        if (!strWarning.empty()) {
-            InitWarning(strWarning);
-        }
-        if (!dbV) {
-            InitError(strError);
-            return false;
-        }
+        std::string error_string;
+        std::string warning_string;
+        bool verify_success = CWallet::Verify(wallet_file, salvage_wallet, error_string, warning_string);
+        if (!error_string.empty()) InitError(error_string);
+        if (!warning_string.empty()) InitWarning(warning_string);
+        if (!verify_success) return false;
     }
 
     return true;
@@ -253,47 +276,80 @@ bool OpenWallets()
     }
 
     for (const std::string& walletFile : gArgs.GetArgs("-wallet")) {
-        CWallet * const pwallet = CWallet::CreateWalletFromFile(walletFile);
+        CWallet * const pwallet = CWallet::CreateWalletFromFile(walletFile, fs::absolute(walletFile, GetWalletDir()));
         if (!pwallet) {
             return false;
         }
-        vpwallets.push_back(pwallet);
+        AddWallet(pwallet);
     }
+
+    // A node that started from a chain state snapshot: wallets that wait for the past blocks.
+    if (WalletRescanPending() && !PastBlocksMissing())
+        SetWalletRescanPending(false); // they were scanned from the beginning just now
+    SetPastBlocksRescanHook([] {
+        // in steps, so that the node is not locked for the whole scan
+        const int step = 2000;
+        for (int height = 0; ; height += step) {
+            boost::this_thread::interruption_point();
+            CBlockIndex *pindexStart, *pindexStop;
+            {
+                LOCK(cs_main);
+                pindexStart = chainActive[height];
+                if (!pindexStart)
+                    break;
+                pindexStop = chainActive[std::min(height + step - 1, chainActive.Height())];
+            }
+            for (CWallet* pwallet : GetWallets())
+                pwallet->ScanForWalletTransactions(pindexStart, pindexStop, true, true);
+        }
+        for (CWallet* pwallet : GetWallets())
+            pwallet->ReacceptWalletTransactions();
+    });
 
     return true;
 }
 
 void StartWallets(CScheduler& scheduler) {
-    for (CWalletRef pwallet : vpwallets) {
-        pwallet->postInitProcess(scheduler);
+    for (CWallet* pwallet : GetWallets()) {
+        pwallet->postInitProcess();
     }
+
+    // Run a thread to flush wallet periodically
+    scheduler.scheduleEvery(MaybeCompactWalletDB, 500);
 
     // Mine proof-of-stake blocks in the background
     if (!gArgs.GetBoolArg("-staking", DEFAULT_STAKE)) {
         LogPrintf("Staking disabled\n");
     } else {
-        for (CWallet* pwallet : vpwallets) {
-            pwallet->StartStake();
+        for (CWallet* pwallet : GetWallets()) {
+            if (StakingStartsForWallet(pwallet->GetName()))
+                pwallet->StartStake();
         }
     }
 }
 
 void FlushWallets() {
-    for (CWalletRef pwallet : vpwallets) {
+    for (CWallet* pwallet : GetWallets()) {
         pwallet->StopStake();
         pwallet->Flush(false);
     }
 }
 
 void StopWallets() {
-    for (CWalletRef pwallet : vpwallets) {
+    for (CWallet* pwallet : GetWallets()) {
         pwallet->Flush(true);
     }
 }
 
 void CloseWallets() {
-    for (CWalletRef pwallet : vpwallets) {
+    std::vector<CWallet*> wallets;
+    {
+        LOCK(cs_wallets);
+        wallets.swap(vpwallets);
+        wallets.insert(wallets.end(), vpwalletsUnloaded.begin(), vpwalletsUnloaded.end());
+        vpwalletsUnloaded.clear();
+    }
+    for (CWallet* pwallet : wallets) {
         delete pwallet;
     }
-    vpwallets.clear();
 }

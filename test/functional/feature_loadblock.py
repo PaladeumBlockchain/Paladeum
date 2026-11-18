@@ -27,6 +27,17 @@ class LoadblockTest(PaladeumTestFramework):
         self.setup_clean_chain = True
         self.num_nodes = 2
 
+    def run_script(self, script, cfg_file, stdout=None):
+        """Run a script of contrib/linearize. What it writes to stderr goes to the test log:
+        newer Python versions warn there about escape sequences in its regular expressions,
+        and the test runner counts any output on stderr as a failure."""
+        result = subprocess.run([sys.executable, script, cfg_file], stdout=stdout,
+                                stderr=subprocess.PIPE, universal_newlines=True)
+        for line in result.stderr.splitlines():
+            self.log.debug("%s: %s" % (os.path.basename(script), line))
+        if result.returncode != 0:
+            raise AssertionError("%s exited with %d:\n%s" % (script, result.returncode, result.stderr))
+
     def run_test(self):
         self.nodes[1].setnetworkactive(state=False)
         self.nodes[0].generate(100)
@@ -52,7 +63,7 @@ class LoadblockTest(PaladeumTestFramework):
             cfg.write("host={}\n".format(node_url.hostname))
             cfg.write("output_file={}\n".format(bootstrap_file))
             cfg.write("max_height=100\n")
-            cfg.write("netmagic=43524f57\n")
+            cfg.write("netmagic=806a6252\n")  # pchMessageStart of regtest
             cfg.write("input={}\n".format(blocks_dir))
             cfg.write("genesis={}\n".format(genesis_block))
             cfg.write("hashlist={}\n".format(hash_list.name))
@@ -67,14 +78,11 @@ class LoadblockTest(PaladeumTestFramework):
 
         self.log.info("Run linearization of block hashes")
         linearize_hashes_file = os.path.join(linearize_dir, "linearize-hashes.py")
-        subprocess.run([sys.executable, linearize_hashes_file, cfg_file],
-                       stdout=hash_list,
-                       check=True)
+        self.run_script(linearize_hashes_file, cfg_file, stdout=hash_list)
 
         self.log.info("Run linearization of block data")
         linearize_data_file = os.path.join(linearize_dir, "linearize-data.py")
-        subprocess.run([sys.executable, linearize_data_file, cfg_file],
-                       check=True)
+        self.run_script(linearize_data_file, cfg_file)
 
         self.log.info("Restart second, unsynced node with bootstrap file")
         self.stop_node(1)

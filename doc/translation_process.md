@@ -1,15 +1,13 @@
 Translations
 ============
 
-The Paladeum project has been designed to support multiple localisations. This makes adding new phrases, and completely new languages easily achievable. For managing all application translations, Paladeum makes use of the Transifex online translation management tool.
+The desktop wallet of Paladeum Core can be shown in several languages. The translation files are
+kept in this repository, in `src/qt/locale/`.
 
-### Helping to translate (using Transifex)
-Currently updating strings in Transifex requires a manual upload of the updated src/qt/locale/paladeum_en.ts.
-This can easily be automated in the future.
-
-Multiple language support is critical in assisting Paladeums global adoption, and growth. One of Paladeums greatest strengths is cross-border money transfers, any help making that easier is greatly appreciated.
-
-See the [Transifex Paladeum project](https://www.transifex.com/paladeumcoin) to assist in translations. You can also join the #translations in [Paladeum Discord](https://discord.gg/jn6uhur).
+### Helping to translate
+Edit the `.ts` file of your language in `src/qt/locale/`, for example with Qt Linguist (included
+in the Qt SDK), and send the change as a pull request to
+[the repository](https://github.com/PaladeumBlockchain/Paladeum).
 
 ### Writing code with translations
 We use automated scripts to help extract translations in both Qt, and non-Qt source files. It is rarely necessary to manually edit the files in `src/qt/locale/`. The translation source files must adhere to the following format:
@@ -31,52 +29,8 @@ QToolBar *toolbar = addToolBar(tr("Tabs toolbar"));
 ```
 
 ### Creating a pull-request
-For general PRs, you shouldn’t include any updates to the translation source files. They will be updated periodically, primarily around pre-releases, allowing time for any new phrases to be translated before public releases. This is also important in avoiding translation related merge conflicts.
-
-When an updated source file is uploaded to Transifex the new strings will show up as "Remaining" in the Transifex web interface and are ready for translators.
-
-
-### Creating a Transifex account
-Visit the [Transifex Signup](https://www.transifex.com/signup/) page to create an account. Take note of your username and password, as they will be required to configure the command-line tool.
-
-You can find the Paladeum translation project at [https://www.transifex.com/paladeumcoin](https://www.transifex.com/paladeumcoin).
-
-### Installing the Transifex client command-line tool
-The client it used to fetch updated translations. If you are having problems, or need more details, see [http://docs.transifex.com/developer/client/setup](http://docs.transifex.com/developer/client/setup)
-
-**For Linux and Mac**
-
-`pip install transifex-client`
-
-Setup your transifex client config as follows. Please *ignore the token field*.
-
-```ini
-nano ~/.transifexrc
-
-[https://www.transifex.com]
-hostname = https://www.transifex.com
-password = PASSWORD
-token =
-username = USERNAME
-```
-
-**For Windows**
-
-Please see [http://docs.transifex.com/developer/client/setup#windows](http://docs.transifex.com/developer/client/setup#windows) for details on installation.
-
-The Transifex Paladeum project config file is included as part of the repo. It can be found at `.tx/config`, however you shouldn’t need change anything.
-
-### Synchronising translations
-To assist in updating translations, we have created a script to help.
-
-1. `python contrib/devtools/update-translations.py`
-2. Update `src/qt/paladeum_locale.qrc` manually or via
-   `ls src/qt/locale/*ts|xargs -n1 basename|sed 's/\(paladeum_\(.*\)\).ts/<file alias="\2">locale\/\1.qm<\/file>/'`
-3. Update `src/Makefile.qt.include` manually or via
-   `ls src/qt/locale/*ts|xargs -n1 basename|sed 's/\(paladeum_\(.*\)\).ts/  qt\/locale\/\1.ts \\/'`
-4. `git add` new translations from `src/qt/locale/`
-
-**Do not directly download translations** one by one from the Transifex website, as we do a few post-processing steps before committing the translations.
+A pull request that changes code should not include updates to the translation source files.
+They are updated before releases, which also avoids merge conflicts in these files.
 
 ### Handling Plurals (in source files)
 When new plurals are added to the source file, it's important to do the following steps:
@@ -94,16 +48,12 @@ To create a new language template, you will need to edit the languages manifest 
 
 ```xml
 <qresource prefix="/translations">
-    <file alias="en">locale/paladeum_en.qm</filer
+    <file alias="en">locale/paladeum_en.qm</file>
     ...
 </qresource>
 ```
 
 **Note:** that the language translation file **must end in `.qm`** (the compiled extension), and not `.ts`.
 
-This process can be automated by a [script](https://github.com/fdoving/paladeumcoin-maintainer-tools/blob/master/update-translations.py) in [paladeumcoin-maintainer-tools](https://github.com/fdoving/paladeumcoin-maintainer-tools/).
-
-### Questions and general assistance
-The Paladeum translation maintainers include *fdov and pocal*. You can find them, and others, in #translations in [Paladeum Discord](https://discord.gg/jn6uhur).
-
-Announcements will be posten in Discord and on the transifex.com [announcements page](https://www.transifex.com/paladeumcoin/qt-translation/announcements/).
+Add the new `.ts` file to `src/Makefile.qt.include` as well, in the list of the other
+translation files.

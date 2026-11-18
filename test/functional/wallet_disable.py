@@ -25,12 +25,13 @@ class DisableWalletTest (PaladeumTestFramework):
         assert_raises_rpc_error(-32601, 'Method not found', self.nodes[0].getwalletinfo)
         x = self.nodes[0].validateaddress('3J98t1WpEZ73CNmQviecrnyiWrnqRhWNLy')
         assert(x['isvalid'] == False)
-        x = self.nodes[0].validateaddress('mneYUmWYsuk7kySiURxCi3AGxrAqZxLgPZ')
+        # a regtest address (version 83)
+        x = self.nodes[0].validateaddress('aRZAhLKRtnEhzcWBfS7k5TJVbRc9uhXEeA')
         assert(x['isvalid'] == True)
 
         # Checking mining to an address without a wallet. Generating to a valid address should succeed
         # but generating to an invalid address will fail.
-        self.nodes[0].generatetoaddress(1, 'mneYUmWYsuk7kySiURxCi3AGxrAqZxLgPZ')
+        self.nodes[0].generatetoaddress(1, 'aRZAhLKRtnEhzcWBfS7k5TJVbRc9uhXEeA')
         assert_raises_rpc_error(-5, "Invalid address", self.nodes[0].generatetoaddress, 1, '3J98t1WpEZ73CNmQviecrnyiWrnqRhWNLy')
 
 if __name__ == '__main__':

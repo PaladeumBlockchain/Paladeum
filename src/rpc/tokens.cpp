@@ -66,7 +66,7 @@ void CheckRestrictedTokenTransferInputs(const CWalletTx& transaction, const std:
 
 std::string TokenActivationWarning()
 {
-    return AreTokensDeployed() ? "" : "\nTHIS COMMAND IS NOT YET ACTIVE!\nhttps://github.com/PaladeumProject/rips/blob/master/rip-0002.mediawiki\n";
+    return AreTokensDeployed() ? "" : "\nTHIS COMMAND IS NOT YET ACTIVE!\n";
 }
 
 std::string RestrictedActivationWarning()
@@ -94,8 +94,12 @@ std::string KnownTokenTypeToString(KnownTokenType& tokenType)
     }
 }
 
+/** An amount of a token in that token's units. The units are looked up in the token
+ *  metadata cache, which belongs to cs_main: the caller holds it. */
 UniValue UnitValueFromAmount(const CAmount& amount, const std::string token_name)
 {
+    // the token cache and its metadata cache belong to cs_main
+    AssertLockHeld(cs_main);
 
     auto currentActiveTokenCache = GetCurrentTokenCache();
     if (!currentActiveTokenCache)
@@ -158,7 +162,7 @@ UniValue UpdateAddressTag(const JSONRPCRequest &request, const int8_t &flag)
 
     // Get the optional change address
     std::string change_address = "";
-    if (request.params.size() > 2) {
+    if (request.params.size() > 2 && !request.params[2].isNull()) {
         change_address = request.params[2].get_str();
         if (!change_address.empty()) {
            CTxDestination change_dest = DecodeDestination(change_address);
@@ -170,7 +174,7 @@ UniValue UpdateAddressTag(const JSONRPCRequest &request, const int8_t &flag)
 
     // Get the optional token data
     std::string token_data = "";
-    if (request.params.size() > 3) {
+    if (request.params.size() > 3 && !request.params[3].isNull()) {
         token_data = request.params[3].get_str();
         token_data = DecodeTokenData(token_data);
 
@@ -179,7 +183,7 @@ UniValue UpdateAddressTag(const JSONRPCRequest &request, const int8_t &flag)
     }
 
     std::string message;
-    if (request.params.size() > 4) {
+    if (request.params.size() > 4 && !request.params[4].isNull()) {
         message = request.params[4].get_str();
 
         if (message.length() > MAX_MESSAGE_LEN)
@@ -267,7 +271,7 @@ UniValue UpdateAddressRestriction(const JSONRPCRequest &request, const int8_t &f
 
     // Get the optional change address
     std::string change_address = "";
-    if (request.params.size() > 2) {
+    if (request.params.size() > 2 && !request.params[2].isNull()) {
         change_address = request.params[2].get_str();
         if (!change_address.empty()) {
            CTxDestination change_dest = DecodeDestination(change_address);
@@ -279,7 +283,7 @@ UniValue UpdateAddressRestriction(const JSONRPCRequest &request, const int8_t &f
 
     // Get the optional token data
     std::string token_data = "";
-    if (request.params.size() > 3) {
+    if (request.params.size() > 3 && !request.params[3].isNull()) {
         token_data = request.params[3].get_str();
         token_data = DecodeTokenData(token_data);
 
@@ -288,7 +292,7 @@ UniValue UpdateAddressRestriction(const JSONRPCRequest &request, const int8_t &f
     }
 
     std::string message;
-    if (request.params.size() > 4) {
+    if (request.params.size() > 4 && !request.params[4].isNull()) {
         message = request.params[4].get_str();
 
         if (message.length() > MAX_MESSAGE_LEN)
@@ -373,7 +377,7 @@ UniValue UpdateGlobalRestrictedToken(const JSONRPCRequest &request, const int8_t
 
     // Get the optional change address
     std::string change_address = "";
-    if (request.params.size() > 1) {
+    if (request.params.size() > 1 && !request.params[1].isNull()) {
         change_address = request.params[1].get_str();
         if (!change_address.empty()) {
            CTxDestination change_dest = DecodeDestination(change_address);
@@ -385,7 +389,7 @@ UniValue UpdateGlobalRestrictedToken(const JSONRPCRequest &request, const int8_t
 
     // Get the optional token data
     std::string token_data = "";
-    if (request.params.size() > 2) {
+    if (request.params.size() > 2 && !request.params[2].isNull()) {
         token_data = request.params[2].get_str();
         token_data = DecodeTokenData(token_data);
 
@@ -394,7 +398,7 @@ UniValue UpdateGlobalRestrictedToken(const JSONRPCRequest &request, const int8_t
     }
 
     std::string message;
-    if (request.params.size() > 3) {
+    if (request.params.size() > 3 && !request.params[3].isNull()) {
         message = request.params[3].get_str();
 
         if (message.length() > MAX_MESSAGE_LEN)
@@ -449,7 +453,7 @@ UniValue issue(const JSONRPCRequest& request)
         throw std::runtime_error(
             "issue \"token_name\" qty \"( to_address )\" \"( change_address )\" ( units ) ( reissuable ) ( has_ipfs ) \"( ipfs_hash )\"\n"
             + TokenActivationWarning() +
-            "\nIssue an token, subtoken or unique token.\n"
+            "\nIssue a token, a sub token or a unique token.\n"
             "Token name must not conflict with any existing token.\n"
             "Unit as the number of decimals precision for the token (0 for whole units (\"1\"), 8 for max precision (\"1.00000000\")\n"
             "Reissuable is true/false for whether additional units can be issued by the original issuer.\n"
@@ -459,10 +463,10 @@ UniValue issue(const JSONRPCRequest& request)
             "1. \"token_name\"            (string, required) a unique name\n"
             "2. \"qty\"                   (numeric, optional, default=1) the number of units to be issued\n"
             "3. \"to_address\"            (string), optional, default=\"\"), address token will be sent to, if it is empty, address will be generated for you\n"
-            "4. \"change_address\"        (string), optional, default=\"\"), address the the paladeum change will be sent to, if it is empty, change address will be generated for you\n"
+            "4. \"change_address\"        (string), optional, default=\"\"), address the PLB change will be sent to, if it is empty, change address will be generated for you\n"
             "5. \"units\"                 (integer, optional, default=0, min=0, max=8), the number of decimals precision for the token (0 for whole units (\"1\"), 8 for max precision (\"1.00000000\")\n"
             "6. \"reissuable\"            (boolean, optional, default=true (false for unique tokens)), whether future reissuance is allowed\n"
-            "7. \"has_ipfs\"              (boolean, optional, default=false), whether ipfs hash is going to be added to the token\n"
+            "7. \"has_ipfs\"              (boolean, optional, default=false), whether an IPFS hash is going to be added to the token\n"
             "8. \"ipfs_hash\"             (string, optional but required if has_ipfs = 1), an ipfs hash or a txid hash once messaging is activated\n"
 
             "\nResult:\n"
@@ -498,7 +502,7 @@ UniValue issue(const JSONRPCRequest& request)
 
     // Push the user to use the issue restrictd rpc call if they are trying to issue a restricted token
     if (tokenType == KnownTokenType::RESTRICTED) {
-        throw (JSONRPCError(RPC_INVALID_PARAMETER, std::string("Use the rpc call issuerestricted to issue a restricted token")));
+        throw (JSONRPCError(RPC_INVALID_PARAMETER, std::string("Use the rpc call issuerestrictedtoken to issue a restricted token")));
     }
 
     // Push the user to use the issue restrictd rpc call if they are trying to issue a restricted token
@@ -516,7 +520,7 @@ UniValue issue(const JSONRPCRequest& request)
         nAmount = AmountFromValue(request.params[1]);
 
     std::string address = "";
-    if (request.params.size() > 2)
+    if (request.params.size() > 2 && !request.params[2].isNull())
         address = request.params[2].get_str();
 
     if (!address.empty()) {
@@ -545,7 +549,7 @@ UniValue issue(const JSONRPCRequest& request)
     }
 
     std::string change_address = "";
-    if (request.params.size() > 3) {
+    if (request.params.size() > 3 && !request.params[3].isNull()) {
         change_address = request.params[3].get_str();
         if (!change_address.empty()) {
             CTxDestination destination = DecodeDestination(change_address);
@@ -557,15 +561,15 @@ UniValue issue(const JSONRPCRequest& request)
     }
 
     int units = 0;
-    if (request.params.size() > 4)
+    if (request.params.size() > 4 && !request.params[4].isNull())
         units = request.params[4].get_int();
 
     bool reissuable = tokenType != KnownTokenType::UNIQUE && tokenType != KnownTokenType::USERNAME && tokenType != KnownTokenType::MSGCHANNEL && tokenType != KnownTokenType::QUALIFIER && tokenType != KnownTokenType::SUB_QUALIFIER;
-    if (request.params.size() > 5)
+    if (request.params.size() > 5 && !request.params[5].isNull())
         reissuable = request.params[5].get_bool();
 
     bool has_ipfs = false;
-    if (request.params.size() > 6)
+    if (request.params.size() > 6 && !request.params[6].isNull())
         has_ipfs = request.params[6].get_bool();
 
     // Check the ipfs
@@ -632,17 +636,18 @@ UniValue issueunique(const JSONRPCRequest& request)
                 "issueunique \"root_name\" [token_tags] ( [ipfs_hashes] ) \"( to_address )\" \"( change_address )\"\n"
                 + TokenActivationWarning() +
                 "\nIssue unique token(s).\n"
-                "root_name must be an token you own.\n"
-                "An token will be created for each element of token_tags.\n"
+                "root_name is a token or a sub token whose owner token (root_name!) is in the wallet.\n"
+                "A token root_name#tag will be created for each element of token_tags.\n"
                 "If provided ipfs_hashes must be the same length as token_tags.\n"
-                "Five (5) PLB will be burned for each token created.\n"
+                "Each unique token costs the fee for a unique token in PLB, paid to the token fee address\n"
+                "(issuanceinfo shows the fee and the address).\n"
 
                 "\nArguments:\n"
-                "1. \"root_name\"             (string, required) name of the token the unique token(s) are being issued under\n"
+                "1. \"root_name\"             (string, required) name of the token or sub token the unique token(s) are being issued under\n"
                 "2. \"token_tags\"            (array, required) the unique tag for each token which is to be issued\n"
                 "3. \"ipfs_hashes\"           (array, optional) ipfs hashes or txid hashes corresponding to each supplied tag (should be same size as \"token_tags\")\n"
                 "4. \"to_address\"            (string, optional, default=\"\"), address tokens will be sent to, if it is empty, address will be generated for you\n"
-                "5. \"change_address\"        (string, optional, default=\"\"), address the the paladeum change will be sent to, if it is empty, change address will be generated for you\n"
+                "5. \"change_address\"        (string, optional, default=\"\"), address the PLB change will be sent to, if it is empty, change address will be generated for you\n"
 
                 "\nResult:\n"
                 "\"txid\"                     (string) The transaction id\n"
@@ -650,6 +655,7 @@ UniValue issueunique(const JSONRPCRequest& request)
                 "\nExamples:\n"
                 + HelpExampleCli("issueunique", "\"MY_TOKEN\" \'[\"primo\",\"secundo\"]\'")
                 + HelpExampleCli("issueunique", "\"MY_TOKEN\" \'[\"primo\",\"secundo\"]\' \'[\"first_hash\",\"second_hash\"]\'")
+                + HelpExampleCli("issueunique", "\"MY_TOKEN/SUB_TOKEN\" \'[\"primo\"]\'")
         );
 
     CWallet * const pwallet = GetWalletForJSONRPCRequest(request);
@@ -686,7 +692,7 @@ UniValue issueunique(const JSONRPCRequest& request)
     }
 
     std::string address = "";
-    if (request.params.size() > 3)
+    if (request.params.size() > 3 && !request.params[3].isNull())
         address = request.params[3].get_str();
 
     if (!address.empty()) {
@@ -715,7 +721,7 @@ UniValue issueunique(const JSONRPCRequest& request)
     }
 
     std::string changeAddress = "";
-    if (request.params.size() > 4)
+    if (request.params.size() > 4 && !request.params[4].isNull())
         changeAddress = request.params[4].get_str();
     if (!changeAddress.empty()) {
         CTxDestination destination = DecodeDestination(changeAddress);
@@ -733,7 +739,14 @@ UniValue issueunique(const JSONRPCRequest& request)
             throw JSONRPCError(RPC_INVALID_PARAMETER, std::string("Unique token tag is invalid: " + tag));
         }
 
-        std::string tokenName = GetUniqueTokenName(rootName, tag);
+        // The name itself, not GetUniqueTokenName(), which gives "" for an invalid name and so
+        // hid the reason (a name below a sub token reaches the length limit sooner)
+        std::string tokenName = rootName + "#" + tag;
+        KnownTokenType uniqueType;
+        std::string nameError;
+        if (!IsTokenNameValid(tokenName, uniqueType, nameError) || uniqueType != KnownTokenType::UNIQUE) {
+            throw JSONRPCError(RPC_INVALID_PARAMETER, std::string("Invalid unique token name: ") + tokenName + std::string("\nError: ") + nameError);
+        }
         CNewToken token;
 
         if (ipfsHashes.isNull())
@@ -807,21 +820,18 @@ UniValue registerusername(const JSONRPCRequest& request)
 
     EnsureWalletIsUnlocked(pwallet);
 
-    // Check token name and infer tokenType
+    // Check that the name is a username. A name that is not one was checked as another kind of
+    // token name, whose error does not apply here: the error gives the rules of a username.
     std::string tokenName = request.params[0].get_str();
     KnownTokenType tokenType;
     std::string tokenError = "";
-    if (!IsTokenNameValid(tokenName, tokenType, tokenError)) {
-        throw JSONRPCError(RPC_INVALID_PARAMETER, std::string("Invalid token name: ") + tokenName + std::string("\nError: ") + tokenError);
-    }
-
-    // Check tokenType supported
-    if (tokenType != KnownTokenType::USERNAME) {
-        throw JSONRPCError(RPC_INVALID_PARAMETER, std::string("Usename is invalid"));
+    if (!IsTokenNameValid(tokenName, tokenType, tokenError) || tokenType != KnownTokenType::USERNAME) {
+        IsTypeCheckNameValid(KnownTokenType::USERNAME, tokenName, tokenError);
+        throw JSONRPCError(RPC_INVALID_PARAMETER, std::string("Invalid username: ") + tokenName + std::string("\nError: ") + tokenError);
     }
 
     std::string address = "";
-    if (request.params.size() > 1)
+    if (request.params.size() > 1 && !request.params[1].isNull())
         address = request.params[1].get_str();
 
     if (!address.empty()) {
@@ -893,7 +903,7 @@ UniValue listtokenbalancesbyaddress(const JSONRPCRequest& request)
             "\nReturns a list of all token balances for an address.\n"
 
             "\nArguments:\n"
-            "1. \"address\"                  (string, required) a paladeum address\n"
+            "1. \"address\"                  (string, required) an paladeum address\n"
             "2. \"onlytotal\"                (boolean, optional, default=false) when false result is just a list of tokens balances -- when true the result is just a single number representing the number of tokens\n"
             "3. \"count\"                    (integer, optional, default=50000, MAX=50000) truncates results to include only the first _count_ tokens found\n"
             "4. \"start\"                    (integer, optional, default=0) results skip over the first _start_ tokens found (if negative it skips back from the end)\n"
@@ -920,18 +930,18 @@ UniValue listtokenbalancesbyaddress(const JSONRPCRequest& request)
     }
 
     bool fOnlyTotal = false;
-    if (request.params.size() > 1)
+    if (request.params.size() > 1 && !request.params[1].isNull())
         fOnlyTotal = request.params[1].get_bool();
 
     size_t count = INT_MAX;
-    if (request.params.size() > 2) {
+    if (request.params.size() > 2 && !request.params[2].isNull()) {
         if (request.params[2].get_int() < 1)
             throw JSONRPCError(RPC_INVALID_PARAMETER, "count must be greater than 1.");
         count = request.params[2].get_int();
     }
 
     long start = 0;
-    if (request.params.size() > 3) {
+    if (request.params.size() > 3 && !request.params[3].isNull()) {
         start = request.params[3].get_int();
     }
 
@@ -1043,7 +1053,7 @@ UniValue listmytokens(const JSONRPCRequest &request)
                 "\nReturns a list of all token that are owned by this wallet\n"
 
                 "\nArguments:\n"
-                "1. \"token\"                    (string, optional, default=\"*\") filters results -- must be an token name or a partial token name followed by '*' ('*' matches all trailing characters)\n"
+                "1. \"token\"                    (string, optional, default=\"*\") filters results -- must be a token name or a partial token name followed by '*' ('*' matches all trailing characters)\n"
                 "2. \"verbose\"                  (boolean, optional, default=false) when false results only contain balances -- when true results include outpoints\n"
                 "3. \"count\"                    (integer, optional, default=ALL) truncates results to include only the first _count_ tokens found\n"
                 "4. \"start\"                    (integer, optional, default=0) results skip over the first _start_ tokens found (if negative it skips back from the end)\n"
@@ -1089,30 +1099,30 @@ UniValue listmytokens(const JSONRPCRequest &request)
     LOCK2(cs_main, pwallet->cs_wallet);
 
     std::string filter = "*";
-    if (request.params.size() > 0)
+    if (request.params.size() > 0 && !request.params[0].isNull())
         filter = request.params[0].get_str();
 
     if (filter == "")
         filter = "*";
 
     bool verbose = false;
-    if (request.params.size() > 1)
+    if (request.params.size() > 1 && !request.params[1].isNull())
         verbose = request.params[1].get_bool();
 
     size_t count = INT_MAX;
-    if (request.params.size() > 2) {
+    if (request.params.size() > 2 && !request.params[2].isNull()) {
         if (request.params[2].get_int() < 1)
             throw JSONRPCError(RPC_INVALID_PARAMETER, "count must be greater than 1.");
         count = request.params[2].get_int();
     }
 
     long start = 0;
-    if (request.params.size() > 3) {
+    if (request.params.size() > 3 && !request.params[3].isNull()) {
         start = request.params[3].get_int();
     }
 
     int confs = 0;
-    if (request.params.size() > 4) {
+    if (request.params.size() > 4 && !request.params[4].isNull()) {
         confs = request.params[4].get_int();
     }
 
@@ -1225,7 +1235,7 @@ UniValue listmylockedtokens(const JSONRPCRequest &request)
                 "\nReturns a list of all locked token that are owned by this wallet\n"
 
                 "\nArguments:\n"
-                "1. \"token\"                    (string, optional, default=\"*\") filters results -- must be an token name or a partial token name followed by '*' ('*' matches all trailing characters)\n"
+                "1. \"token\"                    (string, optional, default=\"*\") filters results -- must be a token name or a partial token name followed by '*' ('*' matches all trailing characters)\n"
                 "2. \"verbose\"                  (boolean, optional, default=false) when false results only contain balances -- when true results include outpoints\n"
                 "3. \"count\"                    (integer, optional, default=ALL) truncates results to include only the first _count_ tokens found\n"
                 "4. \"start\"                    (integer, optional, default=0) results skip over the first _start_ tokens found (if negative it skips back from the end)\n"
@@ -1269,25 +1279,25 @@ UniValue listmylockedtokens(const JSONRPCRequest &request)
     LOCK2(cs_main, pwallet->cs_wallet);
 
     std::string filter = "*";
-    if (request.params.size() > 0)
+    if (request.params.size() > 0 && !request.params[0].isNull())
         filter = request.params[0].get_str();
 
     if (filter == "")
         filter = "*";
 
     bool verbose = false;
-    if (request.params.size() > 1)
+    if (request.params.size() > 1 && !request.params[1].isNull())
         verbose = request.params[1].get_bool();
 
     size_t count = INT_MAX;
-    if (request.params.size() > 2) {
+    if (request.params.size() > 2 && !request.params[2].isNull()) {
         if (request.params[2].get_int() < 1)
             throw JSONRPCError(RPC_INVALID_PARAMETER, "count must be greater than 1.");
         count = request.params[2].get_int();
     }
 
     long start = 0;
-    if (request.params.size() > 3) {
+    if (request.params.size() > 3 && !request.params[3].isNull()) {
         start = request.params[3].get_int();
     }
 
@@ -1426,18 +1436,18 @@ UniValue listaddressesbytoken(const JSONRPCRequest &request)
 
     std::string token_name = request.params[0].get_str();
     bool fOnlyTotal = false;
-    if (request.params.size() > 1)
+    if (request.params.size() > 1 && !request.params[1].isNull())
         fOnlyTotal = request.params[1].get_bool();
 
     size_t count = INT_MAX;
-    if (request.params.size() > 2) {
+    if (request.params.size() > 2 && !request.params[2].isNull()) {
         if (request.params[2].get_int() < 1)
             throw JSONRPCError(RPC_INVALID_PARAMETER, "count must be greater than 1.");
         count = request.params[2].get_int();
     }
 
     long start = 0;
-    if (request.params.size() > 3) {
+    if (request.params.size() > 3 && !request.params[3].isNull()) {
         start = request.params[3].get_int();
     }
 
@@ -1508,7 +1518,7 @@ UniValue transfer(const JSONRPCRequest& request)
     std::string token_name = request.params[0].get_str();
 
     if (IsTokenNameAQualifier(token_name))
-        throw JSONRPCError(RPC_INVALID_PARAMETER, "Please use the rpc call transferqualifiertoken to send qualifier tokens from this wallet.");
+        throw JSONRPCError(RPC_INVALID_PARAMETER, "Please use the rpc call transferqualifier to send qualifier tokens from this wallet.");
 
     CAmount nAmount = AmountFromValue(request.params[1]);
 
@@ -1532,7 +1542,7 @@ UniValue transfer(const JSONRPCRequest& request)
     }
 
     std::string message;
-    if (request.params.size() > 4) {
+    if (request.params.size() > 4 && !request.params[4].isNull()) {
         message = request.params[4].get_str();
 
         if (message.length() > MAX_MESSAGE_LEN)
@@ -1542,7 +1552,7 @@ UniValue transfer(const JSONRPCRequest& request)
 
     bool fMessageCheck = false;
     std::string token_message = "";
-    if (request.params.size() > 5) {
+    if (request.params.size() > 5 && !request.params[5].isNull()) {
         token_message = request.params[5].get_str();
         if (!token_message.empty())
             fMessageCheck = true;
@@ -1550,7 +1560,7 @@ UniValue transfer(const JSONRPCRequest& request)
 
     int64_t expireTime = 0;
     if (!token_message.empty()) {
-        if (request.params.size() > 6) {
+        if (request.params.size() > 6 && !request.params[6].isNull()) {
             expireTime = request.params[6].get_int64();
         }
     }
@@ -1565,12 +1575,12 @@ UniValue transfer(const JSONRPCRequest& request)
         CheckIPFSTxidMessage(token_message, expireTime);
 
     std::string paladeum_change_address = "";
-    if (request.params.size() > 7) {
+    if (request.params.size() > 7 && !request.params[7].isNull()) {
         paladeum_change_address = request.params[7].get_str();
     }
 
     std::string token_change_address = "";
-    if (request.params.size() > 8) {
+    if (request.params.size() > 8 && !request.params[8].isNull()) {
         token_change_address = request.params[8].get_str();
     }
 
@@ -1693,7 +1703,7 @@ UniValue transferfromaddresses(const JSONRPCRequest& request)
         timeLock = request.params[4].get_int();
 
     std::string message;
-    if (request.params.size() > 5) {
+    if (request.params.size() > 5 && !request.params[5].isNull()) {
         message = request.params[5].get_str();
 
         if (message.length() > MAX_MESSAGE_LEN)
@@ -1703,7 +1713,7 @@ UniValue transferfromaddresses(const JSONRPCRequest& request)
 
     bool fMessageCheck = false;
     std::string token_message = "";
-    if (request.params.size() > 6) {
+    if (request.params.size() > 6 && !request.params[6].isNull()) {
         token_message = request.params[6].get_str();
         if (!token_message.empty())
             fMessageCheck = true;
@@ -1711,7 +1721,7 @@ UniValue transferfromaddresses(const JSONRPCRequest& request)
 
     int64_t expireTime = 0;
     if (!token_message.empty()) {
-        if (request.params.size() > 7) {
+        if (request.params.size() > 7 && !request.params[7].isNull()) {
             expireTime = request.params[7].get_int64();
         }
     }
@@ -1720,12 +1730,12 @@ UniValue transferfromaddresses(const JSONRPCRequest& request)
         CheckIPFSTxidMessage(token_message, expireTime);
 
     std::string paladeum_change_address = "";
-    if (request.params.size() > 8) {
+    if (request.params.size() > 8 && !request.params[8].isNull()) {
         paladeum_change_address = request.params[8].get_str();
     }
 
     std::string token_change_address = "";
-    if (request.params.size() > 9) {
+    if (request.params.size() > 9 && !request.params[9].isNull()) {
         token_change_address = request.params[9].get_str();
     }
 
@@ -1851,7 +1861,7 @@ UniValue transferfromaddress(const JSONRPCRequest& request)
         timeLock = request.params[4].get_int();
 
     std::string message;
-    if (request.params.size() > 5) {
+    if (request.params.size() > 5 && !request.params[5].isNull()) {
         message = request.params[5].get_str();
 
         if (message.length() > MAX_MESSAGE_LEN)
@@ -1861,7 +1871,7 @@ UniValue transferfromaddress(const JSONRPCRequest& request)
 
     bool fMessageCheck = false;
     std::string token_message = "";
-    if (request.params.size() > 6) {
+    if (request.params.size() > 6 && !request.params[6].isNull()) {
         token_message = request.params[6].get_str();
         if (!token_message.empty())
             fMessageCheck = true;
@@ -1869,7 +1879,7 @@ UniValue transferfromaddress(const JSONRPCRequest& request)
 
     int64_t expireTime = 0;
     if (!token_message.empty()) {
-        if (request.params.size() > 7) {
+        if (request.params.size() > 7 && !request.params[7].isNull()) {
             expireTime = request.params[7].get_int64();
         }
     }
@@ -1878,12 +1888,12 @@ UniValue transferfromaddress(const JSONRPCRequest& request)
         CheckIPFSTxidMessage(token_message, expireTime);
 
     std::string paladeum_change_address = "";
-    if (request.params.size() > 8) {
+    if (request.params.size() > 8 && !request.params[8].isNull()) {
         paladeum_change_address = request.params[8].get_str();
     }
 
     std::string token_change_address = "";
-    if (request.params.size() > 9) {
+    if (request.params.size() > 9 && !request.params[9].isNull()) {
         token_change_address = request.params[9].get_str();
     }
 
@@ -1957,7 +1967,7 @@ UniValue reissue(const JSONRPCRequest& request)
         throw std::runtime_error(
                 "reissue \"token_name\" qty \"to_address\" \"change_address\" ( reissuable ) ( new_units) \"( new_ipfs )\" \n"
                 + TokenActivationWarning() +
-                "\nReissues a quantity of an token to an owned address if you own the Owner Token"
+                "\nReissues a quantity of a token to an owned address if you own the Owner Token"
                 "\nCan change the reissuable flag during reissuance"
                 "\nCan change the ipfs hash during reissuance"
 
@@ -1995,16 +2005,16 @@ UniValue reissue(const JSONRPCRequest& request)
     std::string address = request.params[2].get_str();
 
     std::string changeAddress =  "";
-    if (request.params.size() > 3)
+    if (request.params.size() > 3 && !request.params[3].isNull())
         changeAddress = request.params[3].get_str();
 
     bool reissuable = true;
-    if (request.params.size() > 4) {
+    if (request.params.size() > 4 && !request.params[4].isNull()) {
         reissuable = request.params[4].get_bool();
     }
 
     int newUnits = -1;
-    if (request.params.size() > 5) {
+    if (request.params.size() > 5 && !request.params[5].isNull()) {
         newUnits = request.params[5].get_int();
     }
 
@@ -2177,7 +2187,7 @@ UniValue sweep(const JSONRPCRequest& request)
     std::string dest_paladeum_str = CallRPC("getnewaddress", UniValue(UniValue::VOBJ)).getValStr();
 
     // Request the unspent transactions
-    // TODO: Should this be replaced with a call to the api.paladeumcoin.network?
+    // TODO: Should this be replaced with a call to an API server?
     // Format of params is as follows:
     // {
     //    addresses: ["PUB ADDR"],
@@ -2236,7 +2246,8 @@ UniValue sweep(const JSONRPCRequest& request)
             UniValue current_input = UniValue(UniValue::VOBJ);
 
             const UniValue& current = unspent[i];
-            std::string curr_token_name = current["tokenName"].getValStr();
+            // (getaddressutxos names the token of an output "token_name")
+            std::string curr_token_name = current["token_name"].getValStr();
             CAmount curr_amount;
 
             // Parse the amount safely
@@ -2444,7 +2455,7 @@ UniValue listtokens(const JSONRPCRequest& request)
                 "\nThis could be a slow/expensive operation as it reads from the database\n"
 
                 "\nArguments:\n"
-                "1. \"token\"                    (string, optional, default=\"*\") filters results -- must be an token name or a partial token name followed by '*' ('*' matches all trailing characters)\n"
+                "1. \"token\"                    (string, optional, default=\"*\") filters results -- must be a token name or a partial token name followed by '*' ('*' matches all trailing characters)\n"
                 "2. \"verbose\"                  (boolean, optional, default=false) when false result is just a list of token names -- when true results are token name mapped to metadata\n"
                 "3. \"count\"                    (integer, optional, default=ALL) truncates results to include only the first _count_ tokens found\n"
                 "4. \"start\"                    (integer, optional, default=0) results skip over the first _start_ tokens found (if negative it skips back from the end)\n"
@@ -2481,25 +2492,25 @@ UniValue listtokens(const JSONRPCRequest& request)
         throw JSONRPCError(RPC_INTERNAL_ERROR, "token db unavailable.");
 
     std::string filter = "*";
-    if (request.params.size() > 0)
+    if (request.params.size() > 0 && !request.params[0].isNull())
         filter = request.params[0].get_str();
 
     if (filter == "")
         filter = "*";
 
     bool verbose = false;
-    if (request.params.size() > 1)
+    if (request.params.size() > 1 && !request.params[1].isNull())
         verbose = request.params[1].get_bool();
 
     size_t count = INT_MAX;
-    if (request.params.size() > 2) {
+    if (request.params.size() > 2 && !request.params[2].isNull()) {
         if (request.params[2].get_int() < 1)
             throw JSONRPCError(RPC_INVALID_PARAMETER, "count must be greater than 1.");
         count = request.params[2].get_int();
     }
 
     long start = 0;
-    if (request.params.size() > 3) {
+    if (request.params.size() > 3 && !request.params[3].isNull()) {
         start = request.params[3].get_int();
     }
 
@@ -2515,7 +2526,9 @@ UniValue listtokens(const JSONRPCRequest& request)
         if (verbose) {
             UniValue detail(UniValue::VOBJ);
             detail.push_back(Pair("name", token.strName));
-            detail.push_back(Pair("amount", UnitValueFromAmount(token.nAmount, token.strName)));
+            // The amount in the units of the record that was just read, without another
+            // lookup of the same token in the metadata cache (which belongs to cs_main).
+            detail.push_back(Pair("amount", ValueFromAmount(token.nAmount, IsTokenNameAnOwner(token.strName) ? OWNER_UNITS : token.units)));
             detail.push_back(Pair("units", token.units));
             detail.push_back(Pair("reissuable", token.nReissuable));
             detail.push_back(Pair("has_ipfs", token.nHasIPFS));
@@ -2563,6 +2576,8 @@ UniValue getcacheinfo(const JSONRPCRequest& request)
                 + HelpExampleRpc("getcacheinfo", "")
                 + HelpExampleCli("getcacheinfo", "")
         );
+
+    LOCK(cs_main);
 
     auto currentActiveTokenCache = GetCurrentTokenCache();
     if (!currentActiveTokenCache)
@@ -3138,7 +3153,7 @@ UniValue issuequalifiertoken(const JSONRPCRequest& request)
                 "2. \"qty\"                   (numeric, optional, default=1) the number of units to be issued\n"
                 "3. \"to_address\"            (string), optional, default=\"\"), address token will be sent to, if it is empty, address will be generated for you\n"
                 "4. \"change_address\"        (string), optional, default=\"\"), address the the paladeum change will be sent to, if it is empty, change address will be generated for you\n"
-                "5. \"has_ipfs\"              (boolean, optional, default=false), whether ipfs hash is going to be added to the token\n"
+                "5. \"has_ipfs\"              (boolean, optional, default=false), whether an IPFS hash is going to be added to the token\n"
                 "6. \"ipfs_hash\"             (string, optional but required if has_ipfs = 1), an ipfs hash or a txid hash once messaging is activated\n"
 
                 "\nResult:\n"
@@ -3191,7 +3206,7 @@ UniValue issuequalifiertoken(const JSONRPCRequest& request)
     }
 
     std::string address = "";
-    if (request.params.size() > 2)
+    if (request.params.size() > 2 && !request.params[2].isNull())
         address = request.params[2].get_str();
 
     if (!address.empty()) {
@@ -3220,7 +3235,7 @@ UniValue issuequalifiertoken(const JSONRPCRequest& request)
     }
 
     std::string change_address = "";
-    if (request.params.size() > 3) {
+    if (request.params.size() > 3 && !request.params[3].isNull()) {
         change_address = request.params[3].get_str();
         if (!change_address.empty()) {
             CTxDestination destination = DecodeDestination(change_address);
@@ -3235,7 +3250,7 @@ UniValue issuequalifiertoken(const JSONRPCRequest& request)
     bool reissuable = false;
 
     bool has_ipfs = false;
-    if (request.params.size() > 4)
+    if (request.params.size() > 4 && !request.params[4].isNull())
         has_ipfs = request.params[4].get_bool();
 
     // Check the ipfs
@@ -3370,7 +3385,7 @@ UniValue issuerestrictedtoken(const JSONRPCRequest& request)
 
     // Get the change address if one was given
     std::string change_address = "";
-    if (request.params.size() > 4)
+    if (request.params.size() > 4 && !request.params[4].isNull())
         change_address = request.params[4].get_str();
     if (!change_address.empty()) {
         CTxDestination destination = DecodeDestination(change_address);
@@ -3381,7 +3396,7 @@ UniValue issuerestrictedtoken(const JSONRPCRequest& request)
     }
 
     int units = MIN_UNIT;
-    if (request.params.size() > 5)
+    if (request.params.size() > 5 && !request.params[5].isNull())
         units = request.params[5].get_int();
 
     if (units < MIN_UNIT || units > MAX_UNIT)
@@ -3389,11 +3404,11 @@ UniValue issuerestrictedtoken(const JSONRPCRequest& request)
 
     // Restristed tokens are reissuable by default
     bool reissuable = true;
-    if (request.params.size() > 6)
+    if (request.params.size() > 6 && !request.params[6].isNull())
         reissuable = request.params[6].get_bool();
 
     bool has_ipfs = false;
-    if (request.params.size() > 7)
+    if (request.params.size() > 7 && !request.params[7].isNull())
         has_ipfs = request.params[7].get_bool();
 
     // Check the ipfs
@@ -3405,7 +3420,7 @@ UniValue issuerestrictedtoken(const JSONRPCRequest& request)
     }
 
     std::string message;
-    if (request.params.size() > 9) {
+    if (request.params.size() > 9 && !request.params[9].isNull()) {
         message = request.params[9].get_str();
 
         if (message.length() > MAX_MESSAGE_LEN)
@@ -3523,15 +3538,15 @@ UniValue reissuerestrictedtoken(const JSONRPCRequest& request)
     }
 
     bool fChangeVerifier = false;
-    if (request.params.size() > 3)
+    if (request.params.size() > 3 && !request.params[3].isNull())
         fChangeVerifier = request.params[3].get_bool();
 
     std::string verifier_string = "";
-    if (request.params.size() > 4)
+    if (request.params.size() > 4 && !request.params[4].isNull())
         verifier_string = request.params[4].get_str();
 
     std::string change_address = "";
-    if (request.params.size() > 5) {
+    if (request.params.size() > 5 && !request.params[5].isNull()) {
         change_address = request.params[5].get_str();
         CTxDestination change_dest = DecodeDestination(change_address);
         if (!IsValidDestination(change_dest)) {
@@ -3541,14 +3556,14 @@ UniValue reissuerestrictedtoken(const JSONRPCRequest& request)
     }
 
     int newUnits = -1;
-    if (request.params.size() > 6)
+    if (request.params.size() > 6 && !request.params[6].isNull())
         newUnits = request.params[6].get_int();
 
     if (newUnits < -1 || newUnits > MAX_UNIT)
         throw JSONRPCError(RPC_INVALID_PARAMETER, "Units must be between -1 and 8, -1 means don't change the current units");
 
     bool reissuable = true;
-    if (request.params.size() > 7)
+    if (request.params.size() > 7 && !request.params[7].isNull())
         reissuable = request.params[7].get_bool();
 
     std::string new_ipfs_data = "";
@@ -3560,7 +3575,7 @@ UniValue reissuerestrictedtoken(const JSONRPCRequest& request)
     }
 
     std::string message;
-    if (request.params.size() > 9) {
+    if (request.params.size() > 9 && !request.params[9].isNull()) {
         message = request.params[9].get_str();
 
         if (message.length() > MAX_MESSAGE_LEN)
@@ -3616,7 +3631,7 @@ UniValue transferqualifier(const JSONRPCRequest& request)
 {
     if (request.fHelp || !AreTokensDeployed() || request.params.size() < 3 || request.params.size() > 7)
         throw std::runtime_error(
-                "transferqualifier \"qualifier_name\" qty \"to_address\" (\"change_address\") (\"token_message\") (\"token_message\") (expire_time) \n"
+                "transferqualifier \"qualifier_name\" qty \"to_address\" (\"change_address\") (\"message\") (\"token_message\") (expire_time) \n"
                 + RestrictedActivationWarning() +
                 "\nTransfer a qualifier token owned by this wallet to the given address"
 
@@ -3664,7 +3679,7 @@ UniValue transferqualifier(const JSONRPCRequest& request)
     }
 
     std::string change_address = "";
-    if(request.params.size() > 3) {
+    if (request.params.size() > 3 && !request.params[3].isNull()) {
         change_address = request.params[3].get_str();
 
         CTxDestination change_dest = DecodeDestination(change_address);
@@ -3680,7 +3695,7 @@ UniValue transferqualifier(const JSONRPCRequest& request)
     }
 
     std::string message;
-    if (request.params.size() > 4) {
+    if (request.params.size() > 4 && !request.params[4].isNull()) {
         message = request.params[4].get_str();
 
         if (message.length() > MAX_MESSAGE_LEN)
@@ -3697,7 +3712,7 @@ UniValue transferqualifier(const JSONRPCRequest& request)
 
     int64_t expireTime = 0;
     if (!token_message.empty()) {
-        if (request.params.size() > 6) {
+        if (request.params.size() > 6 && !request.params[6].isNull()) {
             expireTime = request.params[6].get_int64();
         }
     }
@@ -3858,8 +3873,8 @@ UniValue purgesnapshot(const JSONRPCRequest& request)
 
     std::string token_name = request.params[0].get_str();
     int block_height = 0;
-    if (request.params.size() > 1) {
-        block_height = request.params[2].get_int();
+    if (request.params.size() > 1 && !request.params[1].isNull()) {
+        block_height = request.params[1].get_int();
     }
 
     if (!pTokenSnapshotDb)
@@ -3906,9 +3921,9 @@ static const CRPCCommand commands[] =
 
 #ifdef ENABLE_WALLET
     { "restricted tokens",   "transferqualifier",          &transferqualifier,          {"qualifier_name", "qty", "to_address", "change_address", "message", "token_message", "expire_time"}},
-    { "restricted tokens",   "issuerestrictedtoken",       &issuerestrictedtoken,       {"token_name","qty","verifier","to_address","change_address","units","reissuable","has_ipfs","ipfs_hash"} },
+    { "restricted tokens",   "issuerestrictedtoken",       &issuerestrictedtoken,       {"token_name","qty","verifier","to_address","change_address","units","reissuable","has_ipfs","ipfs_hash","message"} },
     { "restricted tokens",   "issuequalifiertoken",        &issuequalifiertoken,        {"token_name","qty","to_address","change_address","has_ipfs","ipfs_hash"} },
-    { "restricted tokens",   "reissuerestrictedtoken",     &reissuerestrictedtoken,     {"token_name", "qty", "change_verifier", "new_verifier", "to_address", "change_address", "new_units", "reissuable", "new_ipfs"}},
+    { "restricted tokens",   "reissuerestrictedtoken",     &reissuerestrictedtoken,     {"token_name", "qty", "to_address", "change_verifier", "new_verifier", "change_address", "new_units", "reissuable", "new_ipfs", "message"}},
     { "restricted tokens",   "addtagtoaddress",            &addtagtoaddress,            {"tag_name", "to_address", "change_address", "token_data"}},
     { "restricted tokens",   "removetagfromaddress",       &removetagfromaddress,       {"tag_name", "to_address", "change_address", "token_data"}},
     { "restricted tokens",   "freezeaddress",              &freezeaddress,              {"token_name", "address", "change_address", "token_data"}},
