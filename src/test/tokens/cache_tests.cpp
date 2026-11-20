@@ -19,7 +19,7 @@ BOOST_AUTO_TEST_CASE(cache_test)
     int counter = 0;
     while(cache.Size() != NUM_OF_TOKENS1)
     {
-        CNewToken token(std::string(tokenName + std::to_string(counter)), CAmount(1), 0, 0, 1, "43f81c6f2c0593bde5a85e09ae662816eca80797");
+        CNewToken token(std::string(tokenName + std::to_string(counter)), CAmount(1), 0, 0, 1, "43f81c6f2c0593bde5a85e09ae662816eca80797", 0, "", 0);
 
         cache.Put(token.strName, token);
         counter++;
@@ -27,7 +27,7 @@ BOOST_AUTO_TEST_CASE(cache_test)
 
     BOOST_CHECK_MESSAGE(cache.Exists("TEST0"), "Didn't have TEST0");
 
-    CNewToken token("THISWILLOVERWRITE", CAmount(1), 0, 0, 1, "43f81c6f2c0593bde5a85e09ae662816eca80797");
+    CNewToken token("THISWILLOVERWRITE", CAmount(1), 0, 0, 1, "43f81c6f2c0593bde5a85e09ae662816eca80797", 0, "", 0);
 
     cache.Put(token.strName, token);
 

@@ -26,10 +26,25 @@ import subprocess
 from test_framework.test_framework import PaladeumTestFramework
 from test_framework.util import assert_equal, assert_greater_than, assert_greater_than_or_equal, assert_raises, assert_raises_rpc_error, assert_is_hex_string, assert_is_hash_string
 
+# A block every minute from the time of the regtest genesis block, as in the cached chain
+GENESIS_TIME = 1524179366
+
+
 class BlockchainTest(PaladeumTestFramework):
     def set_test_params(self):
         self.num_nodes = 1
-        self.extra_args = [['-stopatheight=207', '-prune=1']]
+        # -txindex is on by default and does not go with -prune, and a chain with a
+        # transaction index does not start without it: the test builds its own chain
+        self.setup_clean_chain = True
+        self.extra_args = [['-stopatheight=207', '-prune=1', '-txindex=0']]
+
+    def setup_network(self):
+        self.setup_nodes()
+        node = self.nodes[0]
+        for i in range(200):
+            node.setmocktime(GENESIS_TIME + 60 * (i + 1))
+            node.generate(1)
+        node.setmocktime(0)
 
     def run_test(self):
         self._test_getblockchaininfo()
@@ -51,7 +66,6 @@ class BlockchainTest(PaladeumTestFramework):
             'chain',
             'chainwork',
             'difficulty',
-            'difficulty_algorithm',
             'headers',
             'mediantime',
             'pruned',
@@ -75,12 +89,12 @@ class BlockchainTest(PaladeumTestFramework):
         assert res['pruned']
         assert not res['automatic_pruning']
 
-        self.restart_node(0, ['-stopatheight=207'])
+        self.restart_node(0, ['-stopatheight=207', '-txindex=0'])
         res = self.nodes[0].getblockchaininfo()
         # should have exact keys
         assert_equal(sorted(res.keys()), keys)
 
-        self.restart_node(0, ['-stopatheight=207', '-prune=550'])
+        self.restart_node(0, ['-stopatheight=207', '-prune=550', '-txindex=0'])
         res = self.nodes[0].getblockchaininfo()
         # result should have these additional pruning keys if prune=550
         assert_equal(sorted(res.keys()), sorted(['pruneheight', 'automatic_pruning', 'prune_target_size'] + keys))
@@ -126,7 +140,8 @@ class BlockchainTest(PaladeumTestFramework):
         node = self.nodes[0]
         res = node.gettxoutsetinfo()
 
-        assert_equal(res['total_amount'], Decimal('872500.00000000'))
+        # block 1 pays 1,000,000,000 PLB, blocks 2 to 200 10 PLB each
+        assert_equal(res['total_amount'], Decimal('1000001990.00000000'))
         assert_equal(res['transactions'], 200)
         assert_equal(res['height'], 200)
         assert_equal(res['txouts'], 200)

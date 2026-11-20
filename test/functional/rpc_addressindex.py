@@ -9,9 +9,13 @@
 import binascii
 import time
 from test_framework.test_framework import PaladeumTestFramework
-from test_framework.util import connect_nodes_bi, assert_equal
+from test_framework.util import connect_nodes_bi, assert_equal, assert_raises_rpc_error, bytes_to_hex_str, hex_str_to_bytes
 from test_framework.script import CScript, OP_HASH160, OP_EQUAL, OP_DUP, OP_EQUALVERIFY, OP_CHECKSIG
-from test_framework.mininode import CTransaction, CTxIn, CTxOut, COutPoint
+from test_framework.mininode import COIN, CTransaction, CTxIn, CTxOut, COutPoint
+
+# Regtest addresses (version 83; pay-to-script-hash addresses have version 196 as on Bitcoin's testnet)
+ADDRESS_P2PKH = "aXgu3VNoUbCGdowBoKubLUAaydzCWLzDLV"  # hash160 53c0307d6851aa0ce7825ba883c6bd9ad242b486
+ADDRESS_P2SH = "2N2JD6wb56AfK4tfmM6PwdVmoYk2dCKf4Br"
 
 class AddressIndexTest(PaladeumTestFramework):
 
@@ -47,39 +51,39 @@ class AddressIndexTest(PaladeumTestFramework):
         assert_equal(self.nodes[2].getbalance(), 0)
 
         # Check that balances are correct
-        balance0 = self.nodes[1].getaddressbalance("2N2JD6wb56AfK4tfmM6PwdVmoYk2dCKf4Br")
+        balance0 = self.nodes[1].getaddressbalance(ADDRESS_P2SH)
         assert_equal(balance0["balance"], 0)
 
         # Check p2pkh and p2sh address indexes
         self.log.info("Testing p2pkh and p2sh address index...")
 
-        tx_id0 = self.nodes[0].sendtoaddress("mo9ncXisMeAoXwqcV5EWuyncbmCcQN4rVs", 10)
+        tx_id0 = self.nodes[0].sendtoaddress(ADDRESS_P2PKH, 10)
         self.nodes[0].generate(1)
 
-        tx_idb0 = self.nodes[0].sendtoaddress("2N2JD6wb56AfK4tfmM6PwdVmoYk2dCKf4Br", 10)
+        tx_idb0 = self.nodes[0].sendtoaddress(ADDRESS_P2SH, 10)
         self.nodes[0].generate(1)
 
-        tx_id1 = self.nodes[0].sendtoaddress("mo9ncXisMeAoXwqcV5EWuyncbmCcQN4rVs", 15)
+        tx_id1 = self.nodes[0].sendtoaddress(ADDRESS_P2PKH, 15)
         self.nodes[0].generate(1)
 
-        tx_idb1 = self.nodes[0].sendtoaddress("2N2JD6wb56AfK4tfmM6PwdVmoYk2dCKf4Br", 15)
+        tx_idb1 = self.nodes[0].sendtoaddress(ADDRESS_P2SH, 15)
         self.nodes[0].generate(1)
 
-        tx_id2 = self.nodes[0].sendtoaddress("mo9ncXisMeAoXwqcV5EWuyncbmCcQN4rVs", 20)
+        tx_id2 = self.nodes[0].sendtoaddress(ADDRESS_P2PKH, 20)
         self.nodes[0].generate(1)
 
-        tx_idb2 = self.nodes[0].sendtoaddress("2N2JD6wb56AfK4tfmM6PwdVmoYk2dCKf4Br", 20)
+        tx_idb2 = self.nodes[0].sendtoaddress(ADDRESS_P2SH, 20)
         self.nodes[0].generate(1)
 
         self.sync_all()
 
-        txids = self.nodes[1].getaddresstxids("mo9ncXisMeAoXwqcV5EWuyncbmCcQN4rVs")
+        txids = self.nodes[1].getaddresstxids(ADDRESS_P2PKH)
         assert_equal(len(txids), 3)
         assert_equal(txids[0], tx_id0)
         assert_equal(txids[1], tx_id1)
         assert_equal(txids[2], tx_id2)
 
-        tx_idsb = self.nodes[1].getaddresstxids("2N2JD6wb56AfK4tfmM6PwdVmoYk2dCKf4Br")
+        tx_idsb = self.nodes[1].getaddresstxids(ADDRESS_P2SH)
         assert_equal(len(tx_idsb), 3)
         assert_equal(tx_idsb[0], tx_idb0)
         assert_equal(tx_idsb[1], tx_idb1)
@@ -88,7 +92,7 @@ class AddressIndexTest(PaladeumTestFramework):
         # Check that limiting by height works
         self.log.info("Testing querying txids by range of block heights..")
         height_txids = self.nodes[1].getaddresstxids({
-            "addresses": ["2N2JD6wb56AfK4tfmM6PwdVmoYk2dCKf4Br"],
+            "addresses": [ADDRESS_P2SH],
             "start": 105,
             "end": 110
         })
@@ -97,7 +101,7 @@ class AddressIndexTest(PaladeumTestFramework):
         assert_equal(height_txids[1], tx_idb1)
 
         # Check that multiple addresses works
-        multi_tx_ids = self.nodes[1].getaddresstxids({"addresses": ["2N2JD6wb56AfK4tfmM6PwdVmoYk2dCKf4Br", "mo9ncXisMeAoXwqcV5EWuyncbmCcQN4rVs"]})
+        multi_tx_ids = self.nodes[1].getaddresstxids({"addresses": [ADDRESS_P2SH, ADDRESS_P2PKH]})
         assert_equal(len(multi_tx_ids), 6)
         assert_equal(multi_tx_ids[0], tx_id0)
         assert_equal(multi_tx_ids[1], tx_idb0)
@@ -107,7 +111,7 @@ class AddressIndexTest(PaladeumTestFramework):
         assert_equal(multi_tx_ids[5], tx_idb2)
 
         # Check that balances are correct
-        balance0 = self.nodes[1].getaddressbalance("2N2JD6wb56AfK4tfmM6PwdVmoYk2dCKf4Br")
+        balance0 = self.nodes[1].getaddressbalance(ADDRESS_P2SH)
         assert_equal(balance0["balance"], 45 * 100000000)
 
         # Check that outputs with the same address will only return one txid
@@ -126,24 +130,26 @@ class AddressIndexTest(PaladeumTestFramework):
         self.nodes[0].generate(1)
         self.sync_all()
 
-        tx_ids_many = self.nodes[1].getaddresstxids("2N2JD6wb56AfK4tfmM6PwdVmoYk2dCKf4Br")
+        tx_ids_many = self.nodes[1].getaddresstxids(ADDRESS_P2SH)
         assert_equal(len(tx_ids_many), 4)
         assert_equal(tx_ids_many[3], sent_txid)
 
         # Check that balances are correct
         self.log.info("Testing balances...")
-        balance0 = self.nodes[1].getaddressbalance("2N2JD6wb56AfK4tfmM6PwdVmoYk2dCKf4Br")
+        balance0 = self.nodes[1].getaddressbalance(ADDRESS_P2SH)
         assert_equal(balance0["balance"], 45 * 100000000 + 21)
 
         # Check that balances are correct after spending
         self.log.info("Testing balances after spending...")
         privkey2 = "cSdkPxkAjA4HDr5VHgsebAPDEh9Gyub4HK8UJr2DFGGqKKy4K5sG"
-        address2 = "mgY65WSfEmsyYaYPQaXhmXMeBhwp4EcsQW"
+        address2 = "aR5CWU6bMiuSeSdxiqCnC1jcZajQB7ycLY"
         address_hash2 = bytes([11,47,10,12,49,191,224,64,107,12,204,19,129,253,190,49,25,70,218,220])
         script_pub_key2 = CScript([OP_DUP, OP_HASH160, address_hash2, OP_EQUALVERIFY, OP_CHECKSIG])
         self.nodes[0].importprivkey(privkey2)
 
-        unspent = self.nodes[0].listunspent()
+        # (an output that is large enough for the two payments below: the first one that
+        # the wallet lists may be a small rest of an earlier payment)
+        unspent = sorted(self.nodes[0].listunspent(), key=lambda output: output["amount"], reverse=True)
         tx = CTransaction()
         tx.vin = [CTxIn(COutPoint(int(unspent[0]["txid"], 16), unspent[0]["vout"]))]
         amount = int(unspent[0]["amount"] * 100000000 - 230000)
@@ -158,7 +164,8 @@ class AddressIndexTest(PaladeumTestFramework):
         tx = CTransaction()
         tx.vin = [CTxIn(COutPoint(int(spending_txid, 16), 0))]
         send_amount = 1 * 100000000 + 12840
-        change_amount = amount - send_amount - 230000
+        # (the minimum relay fee is 0.01 PLB per kB)
+        change_amount = amount - send_amount - 300000
         tx.vout = [CTxOut(change_amount, script_pub_key2), CTxOut(send_amount, script_pub_key)]
         tx.rehash()
 
@@ -229,7 +236,7 @@ class AddressIndexTest(PaladeumTestFramework):
         self.log.info("Testing mempool indexing...")
 
         priv_key3 = "cVfUn53hAbRrDEuMexyfgDpZPhF7KqXpS8UZevsyTDaugB7HZ3CD"
-        address3 = "mw4ynwhS7MmrQ27hr82kgqu7zryNDK26JB"
+        address3 = "afc6DuMNEJoKVtDHANhq7LH6NjkxJgLJdX"
         address_hash3 = bytes([170,152,114,181,187,205,181,17,216,158,14,17,170,39,218,115,253,44,63,80])
         script_pub_key3 = CScript([OP_DUP, OP_HASH160, address_hash3, OP_EQUALVERIFY, OP_CHECKSIG])
         #address4 = "2N8oFVB2vThAKury4vnLquW2zVjsYjjAkYQ"
@@ -247,7 +254,7 @@ class AddressIndexTest(PaladeumTestFramework):
 
         tx2 = CTransaction()
         tx2.vin = [CTxIn(COutPoint(int(unspent[1]["txid"], 16), unspent[1]["vout"]))]
-        amount = int(unspent[1]["amount"] * 100000000 - 300000)
+        amount = int(unspent[1]["amount"] * 100000000 - 400000)
         tx2.vout = [
             CTxOut(int(amount / 4), script_pub_key3),
             CTxOut(int(amount / 4), script_pub_key3),
@@ -279,7 +286,7 @@ class AddressIndexTest(PaladeumTestFramework):
             CTxIn(COutPoint(int(mem_txid2, 16), 0)),
             CTxIn(COutPoint(int(mem_txid2, 16), 1))
         ]
-        tx.vout = [CTxOut(int(amount / 2 - 340000), script_pub_key2)]
+        tx.vout = [CTxOut(int(amount / 2 - 500000), script_pub_key2)]
         tx.rehash()
         self.nodes[2].importprivkey(priv_key3)
         signed_tx3 = self.nodes[2].signrawtransaction(binascii.hexlify(tx.serialize()).decode("utf-8"))
@@ -295,7 +302,7 @@ class AddressIndexTest(PaladeumTestFramework):
 
         # sending and receiving to the same address
         privkey1 = "cQY2s58LhzUCmEXN8jtAp1Etnijx78YRZ466w4ikX1V4UpTpbsf8"
-        address1 = "myAUWSHnwsQrhuMWv4Br6QsCnpB41vFwHn"
+        address1 = "ahhawPwj4pSKomT6EJrvWuFBAgxe2uM4qx"
         address1hash = bytes([193,146,191,247,81,175,142,254,193,81,53,212,43,254,237,249,26,111,62,52])
         address1script = CScript([OP_DUP, OP_HASH160, address1hash, OP_EQUALVERIFY, OP_CHECKSIG])
 
@@ -310,6 +317,7 @@ class AddressIndexTest(PaladeumTestFramework):
         tx.vin = [
             CTxIn(COutPoint(int(utxos[0]["txid"], 16), utxos[0]["outputIndex"]))
         ]
+        # the minimum relay fee of Paladeum is 0.01 PLB per kB
         amount = int(utxos[0]["satoshis"] - 200000)
         tx.vout = [CTxOut(amount, address1script)]
         tx.rehash()
@@ -342,7 +350,138 @@ class AddressIndexTest(PaladeumTestFramework):
         assert_equal(utxos_with_info["height"], 267)
         assert_equal(utxos_with_info["hash"], expected_tip_block_hash)
 
-        self.log.info("All Tests Passed")
+        # One address as a plain string gives what the object form gives
+        print("Testing an address as a string...")
+        assert_equal(self.nodes[1].getaddressutxos(address2), self.nodes[1].getaddressutxos({"addresses": [address2]}))
+        assert_equal(self.nodes[1].getaddressbalance(address2), self.nodes[1].getaddressbalance({"addresses": [address2]}))
+        assert_equal(self.nodes[1].getaddresstxids(address2), self.nodes[1].getaddresstxids({"addresses": [address2]}))
+        # an address given twice counts once
+        assert_equal(self.nodes[1].getaddressbalance({"addresses": [address2, address2]}), self.nodes[1].getaddressbalance(address2))
+        # a height range for the transaction ids
+        all_txids = self.nodes[1].getaddresstxids({"addresses": [address2]})
+        some_txids = self.nodes[1].getaddresstxids({"addresses": [address2], "start": 1, "end": 200})
+        assert(0 < len(some_txids) <= len(all_txids))
+        assert(set(some_txids) <= set(all_txids))
+        assert_raises_rpc_error(-5, "Invalid address", self.nodes[1].getaddressbalance, {"addresses": ["not an address"]})
+        assert_raises_rpc_error(-8, "addresses", self.nodes[1].getaddressbalance, {})
+
+        # Pages of unspent outputs
+        print("Testing pages of unspent outputs...")
+        page_address = self.nodes[0].getnewaddress()
+        for i in range(7):
+            self.nodes[0].sendtoaddress(page_address, 1 + i)
+        self.nodes[0].generate(1)
+        self.sync_all()
+        everything = self.nodes[1].getaddressutxos({"addresses": [page_address]})
+        assert_equal(len(everything), 7)
+        collected = []
+        after = None
+        pages = 0
+        while True:
+            query = {"addresses": [page_address], "limit": 3}
+            if after is not None:
+                query["after"] = after
+            page = self.nodes[1].getaddressutxos(query)
+            assert(len(page["utxos"]) <= 3)
+            collected += page["utxos"]
+            pages += 1
+            after = page["next"]
+            if after is None:
+                break
+        assert_equal(pages, 3)
+        assert_equal(collected, everything)
+        # "txid:index" of an output that is still unspent continues after it as well
+        second = self.nodes[1].getaddressutxos({"addresses": [page_address], "limit": 2,
+                                                "after": "%s:%d" % (everything[0]["txid"], everything[0]["outputIndex"])})
+        assert_equal(second["utxos"], everything[1:3])
+        # the "next" form (height:txid:index) places the page by its order, whether or not that output is still unspent
+        cursor = "%d:%s:%d" % (everything[2]["height"], everything[2]["txid"], everything[2]["outputIndex"])
+        rest = self.nodes[1].getaddressutxos({"addresses": [page_address], "after": cursor, "limit": 100})
+        assert_equal(rest["utxos"], everything[3:])
+        assert_equal(rest["next"], None)
+        assert_raises_rpc_error(-8, "limit", self.nodes[1].getaddressutxos, {"addresses": [page_address], "limit": 0})
+        assert_raises_rpc_error(-8, "after", self.nodes[1].getaddressutxos, {"addresses": [page_address], "after": "nonsense"})
+
+        # A pay-to-pubkey output (every stake pays to one) spent in a block that is disconnected again
+        print("Testing pay-to-pubkey outputs and disconnected blocks...")
+        pk_address = self.nodes[0].getnewaddress()
+        pubkey = self.nodes[0].validateaddress(pk_address)["pubkey"]
+        p2pk = CTransaction()
+        p2pk.vout = [CTxOut(int(5 * COIN), CScript([hex_str_to_bytes(pubkey), OP_CHECKSIG]))]
+        funded = self.nodes[0].fundrawtransaction(bytes_to_hex_str(p2pk.serialize()))["hex"]
+        p2pk_txid = self.nodes[0].sendrawtransaction(self.nodes[0].signrawtransaction(funded)["hex"], True)
+        self.nodes[0].generate(1)
+        self.sync_all()
+        p2pk_vout = [o["n"] for o in self.nodes[1].getrawtransaction(p2pk_txid, 1)["vout"] if o["scriptPubKey"]["type"] == "pubkey"][0]
+
+        def has_p2pk_output():
+            return any(u["txid"] == p2pk_txid and u["outputIndex"] == p2pk_vout
+                       for u in self.nodes[1].getaddressutxos({"addresses": [pk_address]}))
+
+        assert(has_p2pk_output())
+        balance_unspent = self.nodes[1].getaddressbalance(pk_address)
+        spend = self.nodes[0].createrawtransaction([{"txid": p2pk_txid, "vout": p2pk_vout}], {self.nodes[0].getnewaddress(): 4.99})
+        self.nodes[0].sendrawtransaction(self.nodes[0].signrawtransaction(spend)["hex"], True)
+        spend_block = self.nodes[0].generate(1)[0]
+        self.sync_all()
+        assert(not has_p2pk_output())
+        balance_spent = self.nodes[1].getaddressbalance(pk_address)
+        assert(balance_spent["balance"] < balance_unspent["balance"])
+        # the block that spent it goes away: the output is unspent again, in the address index as well
+        self.nodes[1].invalidateblock(spend_block)
+        assert(has_p2pk_output())
+        assert_equal(self.nodes[1].getaddressbalance(pk_address), balance_unspent)
+        # and back
+        self.nodes[1].reconsiderblock(spend_block)
+        self.sync_all()
+        assert(not has_p2pk_output())
+        assert_equal(self.nodes[1].getaddressbalance(pk_address), balance_spent)
+
+        # Tokens in the address index: an issued and a reissued token, and the owner token,
+        # are not time locked. Each time a transfer with a lock time is in the same block:
+        # nothing of it may show at the other token outputs.
+        print("Testing tokens in the address index...")
+        wallet, index = self.nodes[0], self.nodes[1]
+
+        def token_balances(address):
+            return {entry["tokenName"]: entry for entry in index.getaddressbalance({"addresses": [address]}, True)}
+
+        wallet.issue("LOCKSOURCE", 100, wallet.getnewaddress())
+        wallet.generate(1)
+        self.sync_all()
+        locked_until = index.getblockcount() + 1000
+        locked_at = wallet.getnewaddress()
+        holder = wallet.getnewaddress()
+        wallet.transfer("LOCKSOURCE", 10, locked_at, locked_until)
+        wallet.issue("INDEXTEST", 1000, holder)
+        wallet.generate(1)
+        self.sync_all()
+        assert_equal(token_balances(locked_at)["LOCKSOURCE"]["locked"], 10 * COIN)
+        assert_equal(token_balances(locked_at)["LOCKSOURCE"]["balance"], 0)
+        issued = token_balances(holder)
+        assert_equal(issued["INDEXTEST"]["balance"], 1000 * COIN)
+        assert_equal(issued["INDEXTEST"]["locked"], 0)
+        assert_equal(issued["INDEXTEST!"]["balance"], 1 * COIN)
+        assert_equal(issued["INDEXTEST!"]["locked"], 0)
+
+        reissued_to = wallet.getnewaddress()
+        wallet.transfer("LOCKSOURCE", 10, wallet.getnewaddress(), locked_until)
+        wallet.reissue("INDEXTEST", 500, reissued_to)
+        wallet.generate(1)
+        self.sync_all()
+        reissued = token_balances(reissued_to)
+        assert_equal(reissued["INDEXTEST"]["balance"], 500 * COIN)
+        assert_equal(reissued["INDEXTEST"]["locked"], 0)
+        owner_at = [address for address in index.listaddressesbytoken("INDEXTEST!")][0]
+        assert_equal(token_balances(owner_at)["INDEXTEST!"]["locked"], 0)
+
+        # mediantime of a block is the median time past, as getblockchaininfo has it for the tip
+        print("Testing mediantime...")
+        tip = self.nodes[1].getbestblockhash()
+        assert_equal(self.nodes[1].getblock(tip)["mediantime"], self.nodes[1].getblockchaininfo()["mediantime"])
+        assert_equal(self.nodes[1].getblockheader(tip)["mediantime"], self.nodes[1].getblockchaininfo()["mediantime"])
+
+        print("Passed\n")
 
 
 if __name__ == '__main__':

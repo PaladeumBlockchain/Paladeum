@@ -41,7 +41,7 @@ static const CRPCConvertParam vRPCConvertParams[] =
     { "issuequalifiertoken", 4, "has_ipfs" },
     { "reissuerestrictedtoken", 1, "qty" },
     { "reissuerestrictedtoken", 3, "change_verifier" },
-    { "reissuerestrictedtoken", 6, "new_unit" },
+    { "reissuerestrictedtoken", 6, "new_units" },
     { "reissuerestrictedtoken", 7, "reissuable" },
     { "issueunique", 1, "token_tags"},
     { "issueunique", 2, "ipfs_hashes"},
@@ -59,7 +59,7 @@ static const CRPCConvertParam vRPCConvertParams[] =
     { "transferqualifier", 6, "expire_time"},
     { "reissue", 1, "qty"},
     { "reissue", 4, "reissuable"},
-    { "reissue", 5, "new_unit"},
+    { "reissue", 5, "new_units"},
     { "listmytokens", 1, "verbose" },
     { "listmytokens", 2, "count" },
     { "listmytokens", 3, "start"},
@@ -71,6 +71,7 @@ static const CRPCConvertParam vRPCConvertParams[] =
     { "listtokens", 2, "count" },
     { "listtokens", 3, "start" },
     { "setmocktime", 0, "timestamp" },
+    { "repaircoins", 0, "checkonly" },
     { "generate", 0, "nblocks" },
     { "generate", 1, "maxtries" },
     { "setgenerate", 0, "generate" },
@@ -82,10 +83,11 @@ static const CRPCConvertParam vRPCConvertParams[] =
     { "sendtoaddress", 1, "amount" },
     { "sendtoaddress", 2, "timelock" },
     { "sendtoaddress", 6, "subtractfeefromamount" },
-    { "sendtoaddress", 7 , "conf_target" },
+    { "sendtoaddress", 7, "replaceable" },
+    { "sendtoaddress", 8, "conf_target" },
     { "sendfromaddress", 2, "amount" },
     { "sendfromaddress", 3, "timelock" },
-    { "sendfromaddress", 5, "subtractfeefromamount" },
+    { "sendfromaddress", 6, "subtractfeefromamount" },
     { "sendfromaddress", 7 , "conf_target" },
     { "settxfee", 0, "amount" },
     { "getreceivedbyaddress", 1, "minconf" },
@@ -98,7 +100,6 @@ static const CRPCConvertParam vRPCConvertParams[] =
     { "listreceivedbyaccount", 2, "include_watchonly" },
     { "getbalance", 1, "minconf" },
     { "getbalance", 2, "include_watchonly" },
-    { "GetIndexHash", 0, "height" },
     { "waitforblockheight", 0, "height" },
     { "waitforblockheight", 1, "timeout" },
     { "waitforblock", 1, "timeout" },
@@ -111,9 +112,13 @@ static const CRPCConvertParam vRPCConvertParams[] =
     { "listtransactions", 1, "count" },
     { "listtransactions", 2, "skip" },
     { "listtransactions", 3, "include_watchonly" },
+    { "listtransactions", 4, "include_offline_staking" },
     { "listaccounts", 0, "minconf" },
     { "listaccounts", 1, "include_watchonly" },
     { "walletpassphrase", 1, "timeout" },
+    { "walletpassphrase", 2, "stakingonly" },
+    { "importmnemonic", 3, "rescan" },
+    { "importmnemonic", 4, "validate" },
     { "getblocktemplate", 0, "template_request" },
     { "listsinceblock", 1, "target_confirmations" },
     { "listsinceblock", 2, "include_watchonly" },
@@ -121,7 +126,13 @@ static const CRPCConvertParam vRPCConvertParams[] =
     { "sendmany", 1, "amounts" },
     { "sendmany", 3, "minconf" },
     { "sendmany", 5, "subtractfeefrom" },
-    { "sendmany", 6 , "conf_target" },
+    { "sendmany", 6, "replaceable" },
+    { "sendmany", 7, "conf_target" },
+    { "purgeorphanstakes", 0, "minage" },
+    { "mnemonictokeys", 2, "count" },
+    { "mnemonictokeys", 4, "start" },
+    { "mnemonictokeys", 5, "validate" },
+    { "mnemonicfindaddress", 3, "validate" },
     { "addmultisigaddress", 0, "nrequired" },
     { "addmultisigaddress", 1, "keys" },
     { "createmultisig", 0, "nrequired" },
@@ -152,6 +163,13 @@ static const CRPCConvertParam vRPCConvertParams[] =
     { "sendrawtransaction", 1, "allowhighfees" },
     { "testmempoolaccept", 0, "rawtxs" },
     { "testmempoolaccept", 1, "allowhighfees" },
+    { "scantxoutset", 1, "scanobjects" },
+    { "getblockstats", 0, "hash_or_height" },
+    { "getblockstats", 1, "stats" },
+    { "getnodeaddresses", 0, "count" },
+    { "signrawtransactionwithkey", 1, "privkeys" },
+    { "signrawtransactionwithkey", 2, "prevtxs" },
+    { "signrawtransactionwithwallet", 1, "prevtxs" },
     { "combinerawtransaction", 0, "txs" },
     { "fundrawtransaction", 1, "options" },
     { "gettxout", 1, "n" },
@@ -181,7 +199,10 @@ static const CRPCConvertParam vRPCConvertParams[] =
     { "setnetworkactive", 0, "state" },
     { "getmempoolancestors", 1, "verbose" },
     { "getmempooldescendants", 1, "verbose" },
-    { "GetIndexHashes", 0 , "high"},
+    { "getblockhashes", 0, "high"},
+    { "getblockhashes", 1, "low"},
+    { "getblockhashes", 2, "options" },
+    { "GetIndexHashes", 0, "high"},
     { "GetIndexHashes", 1, "low"},
     { "GetIndexHashes", 2, "options" },
     { "getspentinfo", 0, "txid_index"},
@@ -205,10 +226,10 @@ static const CRPCConvertParam vRPCConvertParams[] =
     { "echojson", 9, "arg9" },
     { "rescanblockchain", 0, "start_height"},
     { "rescanblockchain", 1, "stop_height"},
-    { "listaddressesbytoken", 1, "totalonly"},
+    { "listaddressesbytoken", 1, "onlytotal"},
     { "listaddressesbytoken", 2, "count"},
     { "listaddressesbytoken", 3, "start"},
-    { "listtokenbalancesbyaddress", 1, "totalonly"},
+    { "listtokenbalancesbyaddress", 1, "onlytotal"},
     { "listtokenbalancesbyaddress", 2, "count"},
     { "listtokenbalancesbyaddress", 3, "start"},
     { "sendmessage", 2, "expire_time"},
@@ -219,6 +240,7 @@ static const CRPCConvertParam vRPCConvertParams[] =
     { "distributereward", 1, "snapshot_height"},
     { "distributereward", 3, "gross_distribution_amount"},
     { "getdistributestatus", 1, "snapshot_height"},
+    { "getdistributestatus", 1, "block_height"},
     { "getdistributestatus", 3, "gross_distribution_amount"},
     { "getsnapshot", 1, "block_height"},
     { "purgesnapshot", 1, "block_height"},
@@ -269,6 +291,30 @@ UniValue ParseNonRFCJSONValue(const std::string& strVal)
     return jVal[0];
 }
 
+/**
+ * Arguments that are JSON when they look like a JSON object or array, and a plain string
+ * otherwise: the address index calls take one address, or {"addresses": [...], ...}.
+ */
+static const CRPCConvertParam vRPCConvertIfJson[] =
+{
+    { "getaddressbalance", 0, "address" },
+    { "getaddressdeltas", 0, "address" },
+    { "getaddressmempool", 0, "address" },
+    { "getaddresstxids", 0, "address" },
+    { "getaddressutxos", 0, "address" },
+};
+
+static bool convertIfJson(const std::string& method, int idx, const std::string& name, const std::string& value)
+{
+    for (const CRPCConvertParam& param : vRPCConvertIfJson) {
+        if (param.methodName == method && ((idx >= 0 && param.paramIdx == idx) || (idx < 0 && param.paramName == name))) {
+            const size_t first = value.find_first_not_of(" \t\r\n");
+            return first != std::string::npos && (value[first] == '{' || value[first] == '[');
+        }
+    }
+    return false;
+}
+
 UniValue RPCConvertValues(const std::string &strMethod, const std::vector<std::string> &strParams)
 {
     UniValue params(UniValue::VARR);
@@ -276,7 +322,7 @@ UniValue RPCConvertValues(const std::string &strMethod, const std::vector<std::s
     for (unsigned int idx = 0; idx < strParams.size(); idx++) {
         const std::string& strVal = strParams[idx];
 
-        if (!rpcCvtTable.convert(strMethod, idx)) {
+        if (!rpcCvtTable.convert(strMethod, idx) && !convertIfJson(strMethod, idx, std::string(), strVal)) {
             // insert string value directly
             params.push_back(strVal);
         } else {
@@ -301,7 +347,7 @@ UniValue RPCConvertNamedValues(const std::string &strMethod, const std::vector<s
         std::string name = s.substr(0, pos);
         std::string value = s.substr(pos+1);
 
-        if (!rpcCvtTable.convert(strMethod, name)) {
+        if (!rpcCvtTable.convert(strMethod, name) && !convertIfJson(strMethod, -1, name, value)) {
             // insert string value directly
             params.pushKV(name, value);
         } else {

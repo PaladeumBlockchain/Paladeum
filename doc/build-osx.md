@@ -46,7 +46,7 @@ from the root of the repository.
 
 1. Clone the Paladeum Core source code:
     ```shell
-    git clone https://github.com/PaladeumProject/Paladeum
+    git clone https://github.com/PaladeumBlockchain/Paladeum
     cd Paladeum
     ```
 

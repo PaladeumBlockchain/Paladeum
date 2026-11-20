@@ -1,13 +1,14 @@
 Format: http://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
 Upstream-Name: Paladeum
-Source: https://github.com/PaladeumProject/Paladeum
+Upstream-Contact: https://github.com/PaladeumBlockchain/Paladeum/issues
+Source: https://github.com/PaladeumBlockchain/Paladeum
 
 Files: *
 Copyright: 2009-2017, Bitcoin Core Developers
            2017-2020, Paladeum Core Developers
 License: Expat
-Comment: The Bitcoin Core Developers encompasses the current developers listed on bitcoin.org,
-         as well as the numerous contributors to the project.
+Comment: The Paladeum Core Developers encompasses the developers of Paladeum Core, of Raven Core
+         and of Bitcoin Core, as well as the numerous contributors to these projects.
 
 Files: debian/*
 Copyright: 2010-2011, Jonas Smedegaard <dr@jones.dk>

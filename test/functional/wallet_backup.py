@@ -10,9 +10,9 @@ Test the wallet backup features.
 Test case is:
 4 nodes. 1 2 and 3 send transactions between each other,
 fourth node is a miner.
-1 2 3 each mine a block to start, then
-Miner creates 100 blocks so 1 2 3 each have 50 mature
-coins to spend.
+1 mines a block to start (block 1 pays 1,000,000,000 PLB), 2 and 3
+mine 5 blocks each (10 PLB a block), then the miner creates 10
+blocks (the coinbase maturity) so 1 2 3 have mature coins to spend.
 Then 5 iterations of 1/2/3 sending coins amongst
 themselves to get transactions in the wallets,
 and the miner mining one block.
@@ -20,11 +20,11 @@ and the miner mining one block.
 Wallets are backed up using dumpwallet/backupwallet.
 Then 5 more iterations of transactions and mining a block.
 
-Miner then generates 101 more blocks, so any
+Miner then generates 11 more blocks, so any
 transaction fees paid mature.
 
 Sanity check:
-  Sum(1,2,3,4 balances) == 114*50
+  Sum(1,2,3,4 balances) == the rewards of the mature blocks
 
 1/2/3 are shutdown, and their wallets erased.
 Then restore using wallet.dat backup. And
@@ -37,7 +37,10 @@ and confirm again balances are correct.
 from random import randint
 import shutil
 from test_framework.test_framework import PaladeumTestFramework
-from test_framework.util import connect_nodes, Decimal, sync_mempools, sync_blocks, os, assert_equal
+from test_framework.util import connect_nodes, Decimal, sync_mempools, sync_blocks, os, assert_equal, wallet_file
+
+# A coinbase output can be spent once it has COINBASE_MATURITY + 1 confirmations
+COINBASE_MATURITY = 10
 
 class WalletBackupTest(PaladeumTestFramework):
     def set_test_params(self):
@@ -93,24 +96,28 @@ class WalletBackupTest(PaladeumTestFramework):
         self.stop_node(2)
 
     def erase_three(self):
-        os.remove(self.options.tmpdir + "/node0/regtest/wallet.dat")
-        os.remove(self.options.tmpdir + "/node1/regtest/wallet.dat")
-        os.remove(self.options.tmpdir + "/node2/regtest/wallet.dat")
+        for wallet in self.wallet_files:
+            os.remove(wallet)
 
     def run_test(self):
+        # the database files of the wallets of 1/2/3 (the default wallet is the directory
+        # regtest/wallet.dat with the file wallet.dat in it)
+        self.wallet_files = [wallet_file(self.nodes[i].datadir) for i in range(3)]
+
         self.log.info("Generating initial blockchain")
         self.nodes[0].generate(1)
         sync_blocks(self.nodes)
-        self.nodes[1].generate(1)
+        # (10 PLB a block: 5 blocks each, enough for the 10 rounds of sends below)
+        self.nodes[1].generate(5)
         sync_blocks(self.nodes)
-        self.nodes[2].generate(1)
+        self.nodes[2].generate(5)
         sync_blocks(self.nodes)
-        self.nodes[3].generate(100)
+        self.nodes[3].generate(COINBASE_MATURITY)
         sync_blocks(self.nodes)
 
-        assert_equal(self.nodes[0].getbalance(), 5000)
-        assert_equal(self.nodes[1].getbalance(), 5000)
-        assert_equal(self.nodes[2].getbalance(), 5000)
+        assert_equal(self.nodes[0].getbalance(), 1000000000)
+        assert_equal(self.nodes[1].getbalance(), 50)
+        assert_equal(self.nodes[2].getbalance(), 50)
         assert_equal(self.nodes[3].getbalance(), 0)
 
         self.log.info("Creating transactions")
@@ -131,8 +138,8 @@ class WalletBackupTest(PaladeumTestFramework):
         for _ in range(5):
             self.do_one_round()
 
-        # Generate 101 more blocks, so any fees paid mature
-        self.nodes[3].generate(101)
+        # Generate 11 more blocks, so any fees paid mature
+        self.nodes[3].generate(COINBASE_MATURITY + 1)
         self.sync_all()
 
         balance0 = self.nodes[0].getbalance()
@@ -141,9 +148,12 @@ class WalletBackupTest(PaladeumTestFramework):
         balance3 = self.nodes[3].getbalance()
         total = balance0 + balance1 + balance2 + balance3
 
-        # At this point, there are 214 blocks (103 for setup, then 10 rounds, then 101.)
-        # 114 are mature, so the sum of all wallets should be 114 * 50 = 5700.
-        assert_equal(total, 570000)
+        # At this point, there are 42 blocks (21 for setup, then 10 rounds, then 11).
+        # 32 are mature, so the sum of all wallets is the 1,000,000,000 of block 1
+        # and 10 for each of the other 31.
+        height = self.nodes[3].getblockcount()
+        assert_equal(height, 42)
+        assert_equal(total, 1000000000 + 10 * (height - COINBASE_MATURITY - 1))
 
         ##
         # Test restoring spender wallets from backups
@@ -157,9 +167,9 @@ class WalletBackupTest(PaladeumTestFramework):
         shutil.rmtree(self.options.tmpdir + "/node2/regtest/chainstate")
 
         # Restore wallets from backup
-        shutil.copyfile(tmpdir + "/node0/wallet.bak", tmpdir + "/node0/regtest/wallet.dat")
-        shutil.copyfile(tmpdir + "/node1/wallet.bak", tmpdir + "/node1/regtest/wallet.dat")
-        shutil.copyfile(tmpdir + "/node2/wallet.bak", tmpdir + "/node2/regtest/wallet.dat")
+        shutil.copyfile(tmpdir + "/node0/wallet.bak", self.wallet_files[0])
+        shutil.copyfile(tmpdir + "/node1/wallet.bak", self.wallet_files[1])
+        shutil.copyfile(tmpdir + "/node2/wallet.bak", self.wallet_files[2])
 
         self.log.info("Re-starting nodes")
         self.start_three()

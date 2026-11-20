@@ -7,7 +7,14 @@
 #define PLB_QT_MODALOVERLAY_H
 
 #include <QDateTime>
+#include <QPointer>
+#include <QPropertyAnimation>
 #include <QWidget>
+
+QT_BEGIN_NAMESPACE
+class QLabel;
+class QPushButton;
+QT_END_NAMESPACE
 
 //! The required delta of headers to the estimated number of available headers until we show the IBD progress
 static constexpr int HEADER_HEIGHT_DELTA_SYNC = 24;
@@ -25,6 +32,12 @@ public:
     explicit ModalOverlay(QWidget *parent);
     ~ModalOverlay();
 
+Q_SIGNALS:
+    /** The user gives the block bootstrap up */
+    void bootstrapSkipRequested();
+    /** The user wants to import block archives from a folder */
+    void bootstrapFolderRequested();
+
 public Q_SLOTS:
     void tipUpdate(int count, const QDateTime& blockDate, double nVerificationProgress);
     void setKnownBestHeight(int count, const QDateTime& blockDate);
@@ -33,6 +46,8 @@ public Q_SLOTS:
     // will show or hide the modal layer
     void showHide(bool hide = false, bool userRequested = false);
     void closeClicked();
+    /** Show what the block bootstrap is doing; hidden when there is none */
+    void setBootstrapState(bool active, const QString& status, const QString& detail);
     bool isLayerVisible() const { return layerIsVisible; }
 
 protected:
@@ -41,10 +56,16 @@ protected:
 
 private:
     Ui::ModalOverlay *ui;
+    QWidget *bootstrapBox;
+    QLabel *bootstrapStatus;
+    QLabel *bootstrapDetail;
+    QPushButton *bootstrapSkip;
     int bestHeaderHeight; //best known height (based on the headers)
     QDateTime bestHeaderDate;
     QVector<QPair<qint64, double> > blockProcessTime;
     bool layerIsVisible;
+    /** The slide that runs, if one does */
+    QPointer<QPropertyAnimation> animation;
     bool userClosed;
 };
 

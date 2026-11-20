@@ -61,10 +61,11 @@ class TxIndexTest(PaladeumTestFramework):
         self.nodes[0].generate(1)
         self.sync_all()
 
-        # Check verbose raw transaction results
+        # Check verbose raw transaction results (of the coinbase that was spent: block 1
+        # pays 1,000,000,000 PLB, every other block 10 PLB)
         verbose = self.nodes[3].getrawtransaction(unspent[0]["txid"], 1)
-        assert_equal(verbose["vout"][0]["valueSat"], 500000000000)
-        assert_equal(verbose["vout"][0]["value"], 5000)
+        assert_equal(verbose["vout"][unspent[0]["vout"]]["valueSat"], int(unspent[0]["amount"] * 100000000))
+        assert_equal(verbose["vout"][unspent[0]["vout"]]["value"], unspent[0]["amount"])
 
         self.log.info("All Tests Passed")
 

@@ -36,7 +36,7 @@ sudo make install
 # Build Paladeum
 ```
 cd ~/build/
-git clone https://github.com/PaladeumProject/Paladeum
+git clone https://github.com/PaladeumBlockchain/Paladeum
 cd Paladeum/
 ./autogen.sh
 ./configure --disable-tests --with-gui=no CPPFLAGS="-I/usr/local/BerkeleyDB.4.8/include -O2" LDFLAGS="-L/usr/local/BerkeleyDB.4.8/lib"

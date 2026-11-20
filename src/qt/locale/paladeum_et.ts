@@ -1765,7 +1765,7 @@
     </message>
     <message>
         <source>Bind to given address and always listen on it. Use [host]:port notation for IPv6</source>
-        <translation>Määratud aadressiga sidumine ning sellelt kuulamine. IPv6 jaoks kasuta vormingut [host]:port</translation>
+        <translation>Määratud aadressiga sidumine ning sellelt kuulamine. IPv6 puhul kasuta vormingut [host]:port</translation>
     </message>
     <message>
         <source>Execute command when a wallet transaction changes (%s in cmd is replaced by TxID)</source>

@@ -3,6 +3,7 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
+#include "random.h"
 #include "rpc/server.h"
 
 #include "chainparams.h"
@@ -114,7 +115,7 @@ UniValue getpeerinfo(const JSONRPCRequest& request)
             "    \"minping\": n,              (numeric) minimum observed ping time (if any at all)\n"
             "    \"pingwait\": n,             (numeric) ping wait (if non-zero)\n"
             "    \"version\": v,              (numeric) The peer version, such as 7001\n"
-            "    \"subver\": \"/Satoshi:0.8.5/\",  (string) The string version\n"
+            "    \"subver\": \"/Paladeum:2.0.0/\",  (string) The string version\n"
             "    \"inbound\": true|false,     (boolean) Inbound (true) or Outbound (false)\n"
             "    \"addnode\": true|false,     (boolean) Whether connection was due to addnode/-connect or if it was an automatic/inbound connection\n"
             "    \"startingheight\": n,       (numeric) The starting height (block) of the peer\n"
@@ -231,8 +232,8 @@ UniValue addnode(const JSONRPCRequest& request)
             "1. \"node\"     (string, required) The node (see getpeerinfo for nodes)\n"
             "2. \"command\"  (string, required) 'add' to add a node to the list, 'remove' to remove a node from the list, 'onetry' to try a connection to the node once\n"
             "\nExamples:\n"
-            + HelpExampleCli("addnode", "\"192.168.0.6:8767\" \"onetry\"")
-            + HelpExampleRpc("addnode", "\"192.168.0.6:8767\", \"onetry\"")
+            + HelpExampleCli("addnode", "\"192.168.0.6:7576\" \"onetry\"")
+            + HelpExampleRpc("addnode", "\"192.168.0.6:7576\", \"onetry\"")
         );
 
     if(!g_connman)
@@ -273,9 +274,9 @@ UniValue disconnectnode(const JSONRPCRequest& request)
             "1. \"address\"     (string, optional) The IP address/port of the node\n"
             "2. \"nodeid\"      (number, optional) The node ID (see getpeerinfo for node IDs)\n"
             "\nExamples:\n"
-            + HelpExampleCli("disconnectnode", "\"192.168.0.6:8767\"")
+            + HelpExampleCli("disconnectnode", "\"192.168.0.6:7576\"")
             + HelpExampleCli("disconnectnode", "\"\" 1")
-            + HelpExampleRpc("disconnectnode", "\"192.168.0.6:8767\"")
+            + HelpExampleRpc("disconnectnode", "\"192.168.0.6:7576\"")
             + HelpExampleRpc("disconnectnode", "\"\", 1")
         );
 
@@ -320,7 +321,7 @@ UniValue getaddednodeinfo(const JSONRPCRequest& request)
             "    \"connected\" : true|false,          (boolean) If connected\n"
             "    \"addresses\" : [                    (list of objects) Only when connected = true\n"
             "       {\n"
-            "         \"address\" : \"192.168.0.201:8767\",  (string) The paladeum server IP and port we're connected to\n"
+            "         \"address\" : \"192.168.0.201:7576\",  (string) The paladeum server IP and port we're connected to\n"
             "         \"connected\" : \"outbound\"           (string) connection, inbound or outbound\n"
             "       }\n"
             "     ]\n"
@@ -446,7 +447,7 @@ UniValue getnetworkinfo(const JSONRPCRequest& request)
             "\nResult:\n"
             "{\n"
             "  \"version\": xxxxx,                      (numeric) the server version\n"
-            "  \"subversion\": \"/Satoshi:x.x.x/\",     (string) the server subversion string\n"
+            "  \"subversion\": \"/Paladeum:x.x.x/\",     (string) the server subversion string\n"
             "  \"protocolversion\": xxxxx,              (numeric) the protocol version\n"
             "  \"localservices\": \"xxxxxxxxxxxxxxxx\", (string) the services we offer to the network\n"
             "  \"localrelay\": true|false,              (bool) true if transaction relay is requested from peers\n"
@@ -648,12 +649,63 @@ UniValue setnetworkactive(const JSONRPCRequest& request)
     return g_connman->GetNetworkActive();
 }
 
+UniValue getnodeaddresses(const JSONRPCRequest& request)
+{
+    if (request.fHelp || request.params.size() > 1)
+        throw std::runtime_error(
+            "getnodeaddresses ( count )\n"
+            "\nReturns known addresses of nodes, which can be used to find new nodes in the network.\n"
+            "\nArguments:\n"
+            "1. count    (numeric, optional, default=1) How many addresses to return, at most 2500; 0 returns all that are known\n"
+            "\nResult:\n"
+            "[\n"
+            "  {\n"
+            "    \"time\": ttt,          (numeric) Timestamp in seconds since the epoch when the node was last seen\n"
+            "    \"services\": n,        (numeric) The services offered\n"
+            "    \"address\": \"host\",    (string) The address of the node\n"
+            "    \"port\": n             (numeric) The port of the node\n"
+            "  }, ...\n"
+            "]\n"
+            "\nExamples:\n"
+            + HelpExampleCli("getnodeaddresses", "8")
+            + HelpExampleRpc("getnodeaddresses", "8")
+        );
+    if (!g_connman)
+        throw JSONRPCError(RPC_CLIENT_P2P_DISABLED, "Error: Peer-to-peer functionality missing or disabled");
+
+    int count = 1;
+    if (!request.params[0].isNull()) {
+        count = request.params[0].get_int();
+        if (count < 0 || count > 2500)
+            throw JSONRPCError(RPC_INVALID_PARAMETER, "Address count out of range");
+    }
+    // (a random selection, as the answer to a getaddr message is)
+    std::vector<CAddress> addresses = g_connman->GetAddresses();
+    FastRandomContext random;
+    for (size_t n = addresses.size(); n > 1; n--)
+        std::swap(addresses[n - 1], addresses[random.randrange(n)]);
+    if (count > 0 && addresses.size() > (size_t)count)
+        addresses.resize(count);
+
+    UniValue result(UniValue::VARR);
+    for (const CAddress& address : addresses) {
+        UniValue entry(UniValue::VOBJ);
+        entry.pushKV("time", (int64_t)address.nTime);
+        entry.pushKV("services", (uint64_t)address.nServices);
+        entry.pushKV("address", address.ToStringIP());
+        entry.pushKV("port", (int)address.GetPort());
+        result.push_back(entry);
+    }
+    return result;
+}
+
 static const CRPCCommand commands[] =
 { //  category              name                      actor (function)         argNames
   //  --------------------- ------------------------  -----------------------  ----------
     { "network",            "getconnectioncount",     &getconnectioncount,     {} },
     { "network",            "ping",                   &ping,                   {} },
     { "network",            "getpeerinfo",            &getpeerinfo,            {} },
+    { "network",            "getnodeaddresses",       &getnodeaddresses,       {"count"} },
     { "network",            "addnode",                &addnode,                {"node","command"} },
     { "network",            "disconnectnode",         &disconnectnode,         {"address", "nodeid"} },
     { "network",            "getaddednodeinfo",       &getaddednodeinfo,       {"node"} },

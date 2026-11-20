@@ -10,7 +10,6 @@
 #include <QPixmap>
 #include <QString>
 
-extern bool darkModeEnabled;
 
 /* Coin network-specific GUI style information */
 class PlatformStyle

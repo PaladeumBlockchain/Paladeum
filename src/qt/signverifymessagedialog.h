@@ -15,6 +15,10 @@ namespace Ui {
     class SignVerifyMessageDialog;
 }
 
+QT_BEGIN_NAMESPACE
+class QLabel;
+QT_END_NAMESPACE
+
 class SignVerifyMessageDialog : public QDialog
 {
     Q_OBJECT
@@ -29,6 +33,11 @@ public:
 
     void showTab_SM(bool fShow);
     void showTab_VM(bool fShow);
+    /** Show the forms inside a page of the main window; the tabs are chosen from outside */
+    void embedAsPage();
+
+public Q_SLOTS:
+    void done(int retval) override;
 
 protected:
     bool eventFilter(QObject *object, QEvent *event);
@@ -37,6 +46,10 @@ private:
     Ui::SignVerifyMessageDialog *ui;
     WalletModel *model;
     const PlatformStyle *platformStyle;
+    bool embedded;
+    /** The result of signing or verifying: fine (green) or not (red) */
+    void showStatus(QLabel *label, bool fine, const QString &text);
+    void clearStatus(QLabel *label);
 
 private Q_SLOTS:
     /* sign message */

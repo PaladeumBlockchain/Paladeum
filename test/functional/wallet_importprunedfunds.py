@@ -3,9 +3,7 @@
 # Copyright (c) 2017-2020 The Paladeum developers
 # Distributed under the MIT software license, see the accompanying
 # file COPYING or http://www.opensource.org/licenses/mit-license.php.
-
-"""Test the importprunedfunds and removeprunedfunds RPCs."""
-
+"""Test the importprunedfunds and removeprunedfunds RPCs, and removeaddress for an address of importaddress."""
 from test_framework.test_framework import PaladeumTestFramework
 from test_framework.util import assert_equal, assert_raises_rpc_error, Decimal
 
@@ -113,6 +111,12 @@ class ImportPrunedFundsTest(PaladeumTestFramework):
         self.nodes[1].removeprunedfunds(txn_id3)
         balance3 = self.nodes[1].getbalance("*", 0, True)
         assert_equal(balance3, Decimal('0.0'))
+
+        self.log.info("removeaddress stops watching the address that importaddress added")
+        assert self.nodes[1].help("removeaddress").startswith('removeaddress "address"\n')
+        self.nodes[1].removeaddress(address2)
+        assert_equal(self.nodes[1].validateaddress(address2)['iswatchonly'], False)
+        assert_raises_rpc_error(-5, "Invalid Paladeum address or script", self.nodes[1].removeaddress, "notanaddress")
 
 if __name__ == '__main__':
     ImportPrunedFundsTest().main()

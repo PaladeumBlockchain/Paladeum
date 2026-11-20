@@ -9,7 +9,7 @@
 import shutil
 import os
 from test_framework.test_framework import PaladeumTestFramework
-from test_framework.util import assert_equal, connect_nodes_bi
+from test_framework.util import assert_equal, connect_nodes_bi, wallet_file
 
 class WalletHDTest(PaladeumTestFramework):
     def set_test_params(self):
@@ -19,6 +19,8 @@ class WalletHDTest(PaladeumTestFramework):
 
     def run_test (self):
         tmpdir = self.options.tmpdir
+        # the database file of the wallet of node1
+        node1_wallet = wallet_file(self.nodes[1].datadir)
 
         # Make sure can't switch off usehd after wallet creation
         self.stop_node(1)
@@ -73,7 +75,7 @@ class WalletHDTest(PaladeumTestFramework):
         # otherwise node1 would auto-recover all funds in flag the keypool keys as used
         shutil.rmtree(os.path.join(tmpdir, "node1/regtest/blocks"))
         shutil.rmtree(os.path.join(tmpdir, "node1/regtest/chainstate"))
-        shutil.copyfile(os.path.join(tmpdir, "hd.bak"), os.path.join(tmpdir, "node1/regtest/wallet.dat"))
+        shutil.copyfile(os.path.join(tmpdir, "hd.bak"), node1_wallet)
         self.start_node(1)
 
         # Assert that derivation is deterministic
@@ -96,7 +98,7 @@ class WalletHDTest(PaladeumTestFramework):
         self.stop_node(1)
         shutil.rmtree(os.path.join(tmpdir, "node1/regtest/blocks"))
         shutil.rmtree(os.path.join(tmpdir, "node1/regtest/chainstate"))
-        shutil.copyfile(os.path.join(tmpdir, "hd.bak"), os.path.join(tmpdir, "node1/regtest/wallet.dat"))
+        shutil.copyfile(os.path.join(tmpdir, "hd.bak"), node1_wallet)
         self.start_node(1, extra_args=self.extra_args[1])
         connect_nodes_bi(self.nodes, 0, 1)
         self.sync_all()

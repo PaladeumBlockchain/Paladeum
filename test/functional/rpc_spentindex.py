@@ -46,11 +46,13 @@ class SpentIndexTest(PaladeumTestFramework):
         # Check that
         self.log.info("Testing spent index...")
 
-        fee_satoshis = 192000
+        # (the minimum relay fee is 0.01 PLB per kB)
+        fee_satoshis = 1000000
         privkey = "cSdkPxkAjA4HDr5VHgsebAPDEh9Gyub4HK8UJr2DFGGqKKy4K5sG"
-        #address = "mgY65WSfEmsyYaYPQaXhmXMeBhwp4EcsQW"
         address_hash = bytes([11,47,10,12,49,191,224,64,107,12,204,19,129,253,190,49,25,70,218,220])
         script_pub_key = CScript([OP_DUP, OP_HASH160, address_hash, OP_EQUALVERIFY, OP_CHECKSIG])
+        # the address of the key on regtest
+        address = self.nodes[0].decodescript(binascii.hexlify(script_pub_key).decode("utf-8"))["addresses"][0]
         unspent = self.nodes[0].listunspent()
         tx = CTransaction()
         amount = int(unspent[0]["amount"] * 100000000 - fee_satoshis)
@@ -85,8 +87,7 @@ class SpentIndexTest(PaladeumTestFramework):
         assert_equal(tx_verbose2["vin"][0]["valueSat"], amount + fee_satoshis)
 
         # Check that verbose raw transaction includes address values and input values
-        #privkey2 = "cSdkPxkAjA4HDr5VHgsebAPDEh9Gyub4HK8UJr2DFGGqKKy4K5sG"
-        address2 = "mgY65WSfEmsyYaYPQaXhmXMeBhwp4EcsQW"
+        address2 = address
         address_hash2 = bytes([11, 47, 10, 12, 49, 191, 224, 64, 107, 12, 204, 19, 129, 253, 190, 49, 25, 70, 218, 220])
         script_pub_key2 = CScript([OP_DUP, OP_HASH160, address_hash2, OP_EQUALVERIFY, OP_CHECKSIG])
         tx2 = CTransaction()
@@ -126,12 +127,12 @@ class SpentIndexTest(PaladeumTestFramework):
         assert_equal(block["deltas"][1]["index"], 1)
         assert_equal(block["deltas"][1]["txid"], txid2)
         assert_equal(block["deltas"][1]["inputs"][0]["index"], 0)
-        assert_equal(block["deltas"][1]["inputs"][0]["address"], "mgY65WSfEmsyYaYPQaXhmXMeBhwp4EcsQW")
+        assert_equal(block["deltas"][1]["inputs"][0]["address"], address2)
         assert_equal(block["deltas"][1]["inputs"][0]["satoshis"], (amount + fee_satoshis) * -1)
         assert_equal(block["deltas"][1]["inputs"][0]["prevtxid"], txid)
         assert_equal(block["deltas"][1]["inputs"][0]["prevout"], 0)
         assert_equal(block["deltas"][1]["outputs"][0]["index"], 0)
-        assert_equal(block["deltas"][1]["outputs"][0]["address"], "mgY65WSfEmsyYaYPQaXhmXMeBhwp4EcsQW")
+        assert_equal(block["deltas"][1]["outputs"][0]["address"], address2)
         assert_equal(block["deltas"][1]["outputs"][0]["satoshis"], amount)
 
         self.log.info("All Tests Passed")

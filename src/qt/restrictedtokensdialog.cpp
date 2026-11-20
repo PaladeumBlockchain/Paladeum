@@ -131,10 +131,16 @@ RestrictedTokensDialog::~RestrictedTokensDialog()
 void RestrictedTokensDialog::setupStyling(const PlatformStyle *platformStyle)
 {
     /** Update the restrictedtokens frame */
-    ui->frameTokenBalance->setStyleSheet(QString(".QFrame {background-color: %1; padding-top: 10px; padding-right: 5px; border: none;}").arg(platformStyle->WidgetBackGroundColor().name()));
-    ui->frameAddressList->setStyleSheet(QString(".QFrame {background-color: %1; padding-top: 10px; padding-right: 5px; border: none;}").arg(platformStyle->WidgetBackGroundColor().name()));
+    // a card (cut corners, painted): what is on it is on a panel
+    ui->frameTokenBalance->setProperty("role", "card");
+    ui->frameTokenBalance->setStyleSheet("QFrame#frameTokenBalance { background: transparent; padding-top: 10px; padding-right: 5px; border: none; }");
+    // a card (cut corners, painted): what is on it is on a panel
+    ui->frameAddressList->setProperty("role", "card");
+    ui->frameAddressList->setStyleSheet("QFrame#frameAddressList { background: transparent; padding-top: 10px; padding-right: 5px; border: none; }");
 
-    ui->tabFrame->setStyleSheet(QString(".QFrame {background-color: %1; padding-top: 10px; padding-right: 5px; border: none;}").arg(platformStyle->WidgetBackGroundColor().name()));
+    // a card (cut corners, painted): what is on it is on a panel
+    ui->tabFrame->setProperty("role", "card");
+    ui->tabFrame->setStyleSheet("QFrame#tabFrame { background: transparent; padding-top: 10px; padding-right: 5px; border: none; }");
 
     /** Create the shadow effects on the frames */
     ui->frameTokenBalance->setGraphicsEffect(GUIUtil::getShadowEffect());
@@ -294,7 +300,7 @@ void RestrictedTokensDialog::freezeAddressClicked()
     if(nRequiredFee > 0)
     {
         // append fee string if a fee is required
-        questionString.append("<hr /><span style='color:#aa0000;'>");
+        questionString.append(QString("<hr /><span style='color:%1;'>").arg(GUIUtil::theme().error.name()));
         questionString.append(PaladeumUnits::formatHtmlWithUnit(model->getOptionsModel()->getDisplayUnit(), nRequiredFee));
         questionString.append("</span> ");
         questionString.append(tr("added as transaction fee"));
@@ -416,7 +422,7 @@ void RestrictedTokensDialog::assignQualifierClicked()
     if(nRequiredFee > 0)
     {
         // append fee string if a fee is required
-        questionString.append("<hr /><span style='color:#aa0000;'>");
+        questionString.append(QString("<hr /><span style='color:%1;'>").arg(GUIUtil::theme().error.name()));
         questionString.append(PaladeumUnits::formatHtmlWithUnit(model->getOptionsModel()->getDisplayUnit(), nRequiredFee));
         questionString.append("</span> ");
         questionString.append(tr("added as transaction fee"));

@@ -6,15 +6,18 @@ After=network.target
 User=paladeum
 Group=paladeum
 
+# A staking node needs its wallet. For a node without one (an explorer, an API server),
+# add -disablewallet below or disablewallet=1 to paladeum.conf.
 Type=forking
 PIDFile=/var/lib/paladeumd/paladeumd.pid
 ExecStart=/usr/bin/paladeumd -daemon -pid=/var/lib/paladeumd/paladeumd.pid \
--conf=/etc/paladeum/paladeum.conf -datadir=/var/lib/paladeumd -disablewallet
+-conf=/etc/paladeum/paladeum.conf -datadir=/var/lib/paladeumd
 
 Restart=always
 PrivateTmp=true
-TimeoutStopSec=60s
-TimeoutStartSec=2s
+# A node with a large wallet or a large chain state needs time to stop and start
+TimeoutStopSec=600s
+TimeoutStartSec=120s
 StartLimitInterval=120s
 StartLimitBurst=5
 

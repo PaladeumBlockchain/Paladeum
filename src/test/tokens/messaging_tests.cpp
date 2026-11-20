@@ -20,33 +20,33 @@ BOOST_FIXTURE_TEST_SUITE(messaging_tests, BasicTestingSetup)
     {
         std::string error = "";
 
-        CTokenTransfer transfer1("TOKEN", 1 * COIN, DecodeTokenData("QmRAQB6YaCyidP37UdDnjFY5vQuiBrcqdyoW1CuDgwxkD4"));
+        CTokenTransfer transfer1("TOKEN", 1 * COIN, 0, DecodeTokenData("QmRAQB6YaCyidP37UdDnjFY5vQuiBrcqdyoW1CuDgwxkD4"));
         BOOST_CHECK_MESSAGE(transfer1.IsValid(error), "Transfer Valid Test 1 - failed -" + error);
 
         // TODO Once Messages are active
-//        CTokenTransfer transfer2("TOKEN", 1 * COIN, "000000000000499bf4ebbe61541b02e4692b33defc7109d8f12d2825d4d2dfa0");
+//        CTokenTransfer transfer2("TOKEN", 1 * COIN, 0, "000000000000499bf4ebbe61541b02e4692b33defc7109d8f12d2825d4d2dfa0");
 //        BOOST_CHECK_MESSAGE(transfer2.IsValid(error), "Transfer Valid Test 2 - failed -" + error);
 
         // Token transfer is Zero failure
-        CTokenTransfer transfer3("TOKEN", 0);
+        CTokenTransfer transfer3("TOKEN", 0, 0);
         BOOST_CHECK_MESSAGE(!transfer3.IsValid(error), "Transfer Valid Test 3 did not fail");
 
         // empty message with an expiration date failure
         std::string message = "";
         int64_t date = 15555555;
-        CTokenTransfer transfer4("TOKEN", 1 * COIN, message, date);
+        CTokenTransfer transfer4("TOKEN", 1 * COIN, 0, message, date);
         transfer4.nExpireTime = date;
         BOOST_CHECK_MESSAGE(!transfer4.IsValid(error), "Transfer Valid Test 4 did not fail");
 
         // negative expiration date failure
         int64_t date2 = -1;
-        CTokenTransfer transfer5("TOKEN", 1 * COIN, message, date2);
+        CTokenTransfer transfer5("TOKEN", 1 * COIN, 0, message, date2);
         transfer5.nExpireTime = date2;
         BOOST_CHECK_MESSAGE(!transfer5.IsValid(error), "Transfer Valid Test 5 did not fail");
 
         // TODO Once Messages are active
         // contains an l which isn't base 58
-//        CTokenTransfer transfer6("TOKEN", 1 * COIN, "l00000000000499bf4ebbe61541b02e4692b33defc7109d8f12d2825d4d2dfa0");
+//        CTokenTransfer transfer6("TOKEN", 1 * COIN, 0, "l00000000000499bf4ebbe61541b02e4692b33defc7109d8f12d2825d4d2dfa0");
 //        BOOST_CHECK_MESSAGE(!transfer6.IsValid(error), "Transfer Valid Test 6 did not fail");
 
 

@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Set DISTNAME, BRANCH and MAKEOPTS to the desired settings
-DISTNAME=paladeum-2.0.3
+DISTNAME=paladeum-2.0.0
 MAKEOPTS="-j4"
 BRANCH=master
 clear
@@ -29,7 +29,7 @@ cd ~/
 # Removes any existing builds and starts clean WARNING
 rm -rf ~/paladeumcoin ~/sign ~/release
 
-git clone https://github.com/paladeumproject/paladeumcoin
+git clone https://github.com/PaladeumBlockchain/Paladeum paladeumcoin
 cd ~/paladeumcoin
 git checkout $BRANCH
 

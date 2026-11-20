@@ -17,6 +17,7 @@
 #include <QVariant>
 
 class PlatformStyle;
+class SendCoinsRecipient;
 class WalletModel;
 
 namespace Ui {
@@ -24,7 +25,9 @@ namespace Ui {
 }
 
 QT_BEGIN_NAMESPACE
+class QLabel;
 class QModelIndex;
+class QPushButton;
 QT_END_NAMESPACE
 
 /** Dialog for requesting payment of paladeums */
@@ -34,7 +37,7 @@ class ReceiveCoinsDialog : public QDialog
 
 public:
     enum ColumnWidths {
-        DATE_COLUMN_WIDTH = 130,
+        DATE_COLUMN_WIDTH = 170,
         LABEL_COLUMN_WIDTH = 120,
         AMOUNT_MINIMUM_COLUMN_WIDTH = 180,
         MINIMUM_COLUMN_WIDTH = 130
@@ -62,6 +65,17 @@ private:
     QMenu *contextMenu;
     const PlatformStyle *platformStyle;
 
+    // the request that is shown on the page with its QR code
+    QLabel *qrImage;
+    QLabel *qrAddress;
+    QLabel *qrDetails;
+    QLabel *qrPlaceholder;
+    QPushButton *copyQrButton;
+    QPushButton *copyAddressButton;
+    QString shownAddress;
+    void buildLayout();
+    void showRequest(const SendCoinsRecipient &info);
+
     QModelIndex selectedRow();
     void copyColumnToClipboard(int column);
     virtual void resizeEvent(QResizeEvent *event);
@@ -78,6 +92,8 @@ private Q_SLOTS:
     void copyLabel();
     void copyMessage();
     void copyAmount();
+    void copyQrImage();
+    void copyShownAddress();
 };
 
 #endif // PLB_QT_RECEIVECOINSDIALOG_H

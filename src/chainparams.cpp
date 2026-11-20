@@ -86,6 +86,21 @@ void CChainParams::UpdateVersionBitsParameters(Consensus::DeploymentPos d, int64
     consensus.vDeployments[d].nTimeout = nTimeout;
 }
 
+void CChainParams::UpdateLastPOWBlock(int nHeight)
+{
+    consensus.nLastPOWBlock = nHeight;
+}
+
+void CChainParams::UpdateFutureDriftHeight(int nHeight)
+{
+    consensus.nFutureDriftHeight = nHeight;
+}
+
+void CChainParams::UpdateMasterAddress(const std::string& address)
+{
+    strMasterAddress = address;
+}
+
 void CChainParams::TurnOffSegwit() {
 	consensus.nSegwitEnabled = false;
 }
@@ -111,11 +126,11 @@ bool CChainParams::BIP34() {
 }
 
 bool CChainParams::BIP65() {
-	return consensus.nBIP34Enabled;
+	return consensus.nBIP65Enabled;
 }
 
 bool CChainParams::BIP66() {
-	return consensus.nBIP34Enabled;
+	return consensus.nBIP66Enabled;
 }
 
 bool CChainParams::CSVEnabled() const{
@@ -158,10 +173,10 @@ public:
         consensus.vDeployments[Consensus::DEPLOYMENT_TESTDUMMY].nOverrideMinerConfirmationWindow = 2016;
 
         // The best chain should have at least this much work
-        consensus.nMinimumChainWork = uint256S("0x");
+        consensus.nMinimumChainWork = uint256S("0x000000000000000000000000000000000000000000000036afb9f21e9ba56ec8"); // block 716000
 
         // By default assume that the signatures in ancestors of this block are valid.
-        consensus.defaultAssumeValid = uint256S("0x10390eb26c0a67a9f3ba797ded61077651385523f031c69166c6ebb48c1e0deb"); // Block 1186833
+        consensus.defaultAssumeValid = uint256S("0xcefe3b72cf4f3e2e77159fa34f7935b8988274dff9c7e52a9b9f7bc6204e2bf8"); // block 716000
 
         // Proof-of-Stake
         consensus.nLastPOWBlock = 150;
@@ -172,6 +187,12 @@ public:
 
         // Fork to enable offline staking and remove the block limiter
         consensus.offlineStakingFork = std::numeric_limits<int>::max();
+
+        // Soft forks that are not scheduled (INT_MAX): the time of a proof-of-stake block in
+        // multiples of nStakeTimestampMask + 1, and a smaller allowance for times in the future.
+        consensus.nStakeTimestampMaskHeight = std::numeric_limits<int>::max();
+        consensus.nFutureDriftHeight = std::numeric_limits<int>::max();
+        consensus.nFutureDriftSeconds = 60;
 
         /**
          * The message start string is designed to be unlikely to occur in normal data.
@@ -209,17 +230,43 @@ public:
         fMineBlocksOnDemand = false;
         fMiningRequiresPeers = true;
 
+        // Blocks of the chain that was validated in full (-assumevalid=0) with this program and gave
+        // the same set of unspent outputs as Paladeum 0.1.7 (height 716790,
+        // hash_serialized_2 df5bfe07a46bb9c828b040263e645db09dd27947a76a97633f6e764fe09588be).
         checkpointData = (CCheckpointData) {
             {
-                
+                {     150, uint256S("0xf49e0798b0d129f51cbec02424957a518875c189b866eaa39bcf9e83e4095399")},
+                {   50000, uint256S("0x6f3531bd67cb04f24d995573f138f798d38372e677bfc46de8860922dd9959f3")},
+                {  100000, uint256S("0x0b6847b24f4b294221ff9554323fc5e050877c8b79377996bf2070a7413b30c2")},
+                {  200000, uint256S("0xb4c7ec7708f84e396b0779ede0d3f7f348ead0bfe4c3aa5719b9cc1e9e9cfc8e")},
+                {  300000, uint256S("0x6531290a7a682fe448ab76b7a498bcfcfcbe66f055f62f1167730958ea4f54a5")},
+                {  400000, uint256S("0xe906870e27485092857b2dc58e70b3e9c502b53bbdc4f3982f7ed59032e5a3c1")},
+                {  500000, uint256S("0x42aba1b794f86a2beddd29377a3fdcc8f31b188fe9ec3d3cb85e2a69d88ab080")},
+                {  600000, uint256S("0x3ca83cc31723846f0408d216f8adc63729fb344078cb52b6cb28cf4e6a258844")},
+                {  700000, uint256S("0x2c5c64ef1cdd402b5b4ecd9efc8c0460521d8bb4a58746257da0e5a759b9b398")},
             }
         };
 
+        // getchaintxstats 4096 at block 716000
         chainTxData = ChainTxData{
-            0,
-            0,
-            0
+            1794204176, // time of block 716000
+            1478617,    // transactions up to it
+            0.0026      // transactions per second in the 4096 blocks before it
         };
+
+        // The chain state snapshot that this program accepts (see snapshot.h): the state after
+        // block 715,913, the last block of the published block archives. The values are the
+        // output of getstatehashes of a node that validated every block of the archives
+        // (contrib/paladeum/make_snapshot.py prints them).
+        snapshot.height = 715913;
+        snapshot.block = uint256S("f990001f1fe2ef8aa403dec0d54568bf0f5b128512cf367b939f5bf1c593bd19");
+        snapshot.utxo = uint256S("901c6ff11f6330db39c8c40ea940de887ac1936ce65ae715bb7b6d84d389c4ca");
+        snapshot.tokens = uint256S("46c5c567049b12e5f69cedf8970da5e1d75a0ad343498c24e814005eb7205923");
+        snapshot.governance = uint256S("656a8ff77c016efbc548a9f10a9f499481fdd5e8553ee547aca1994c9cfd6823");
+        snapshot.index = uint256S("26edfe068e6ac1acfcab0d86962d7ad0116871808778699ed56ac05604292fd8");
+        snapshot.archive = "81cdcb9b4c1d0c112a127551b39e1447c22e89c60feb203197b402c74c880fe7";
+        snapshot.archiveSize = 190321191;
+        snapshot.blocksSize = 200114642;
 
         /** PLB Start **/
         // Fee Amounts
@@ -292,6 +339,12 @@ public:
         consensus.nStakeTimestampMask = 0xf; // 15
 
         consensus.nGovernanceFixHeight = 1;
+
+        // Soft forks that are not scheduled (INT_MAX): the time of a proof-of-stake block in
+        // multiples of nStakeTimestampMask + 1, and a smaller allowance for times in the future.
+        consensus.nStakeTimestampMaskHeight = std::numeric_limits<int>::max();
+        consensus.nFutureDriftHeight = std::numeric_limits<int>::max();
+        consensus.nFutureDriftSeconds = 60;
 
         // Fork to enable offline staking and remove the block limiter
         consensus.offlineStakingFork = 10;
@@ -412,6 +465,9 @@ public:
         consensus.nLastPOWBlock = std::numeric_limits<int>::max();
         consensus.nTxMessages = 10;
         consensus.nStakeTimestampMask = 0xf; // 15
+        consensus.nStakeTimestampMaskHeight = 0;
+        consensus.nFutureDriftHeight = std::numeric_limits<int>::max(); // (-futuredriftheight)
+        consensus.nFutureDriftSeconds = 60;
 
         consensus.nGovernanceFixHeight = 1;
 
@@ -474,8 +530,11 @@ public:
         nIssueRestrictedTokenFeeAmount = 10 * COIN;
         nAddNullQualifierTagFeeAmount = 0.01 * COIN;
 
-        // Global fee address
-        strTokenFeeAddress = "mmbbmGLSeCpR9VhGp2JMXVkf7xkbjtcEET";
+        // Global fee address: a regtest address (version 83) that nobody has a key for, the
+        // hash160 is RIPEMD160(SHA256("Paladeum regtest token fees")). The address before
+        // (mmbbmG...) had Bitcoin's testnet version (111), so the fee output of a token could
+        // never match it and no token could be issued on regtest.
+        strTokenFeeAddress = "aWcYoTSeLQsdEaWmijA12pUYae5D2jSd93";
         strMasterAddress = "";
 
         nMaxReorganizationDepth = 500;
@@ -520,6 +579,31 @@ void SelectParams(const std::string& network, bool fForceBlockNetwork)
 void UpdateVersionBitsParameters(Consensus::DeploymentPos d, int64_t nStartTime, int64_t nTimeout)
 {
     globalChainParams->UpdateVersionBitsParameters(d, nStartTime, nTimeout);
+}
+
+void UpdateLastPOWBlock(int nHeight)
+{
+    globalChainParams->UpdateLastPOWBlock(nHeight);
+}
+
+void UpdateFutureDriftHeight(int nHeight)
+{
+    globalChainParams->UpdateFutureDriftHeight(nHeight);
+}
+
+void UpdateMasterAddress(const std::string& address)
+{
+    globalChainParams->UpdateMasterAddress(address);
+}
+
+void UpdateSnapshotParams(const CChainParams::SnapshotParams& params)
+{
+    globalChainParams->SetSnapshot(params);
+}
+
+void UpdateOldPeerCutoffHeight(int nHeight)
+{
+    globalChainParams->SetOldPeerCutoffHeight(nHeight);
 }
 
 void TurnOffSegwit(){

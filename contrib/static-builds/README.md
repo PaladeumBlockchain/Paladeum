@@ -16,7 +16,7 @@ From an Ubuntu 18 bionic server(required)
 ```
 cd ~/
 sudo apt install git p7zip-full sleuthkit
-git clone https://github.com/paladeumproject/paladeumcoin
+git clone https://github.com/PaladeumBlockchain/Paladeum paladeumcoin
 mkdir ~/dmg && cd ~/dmg
 ```
 Register for a developer account with Apple, then download the Xcode 7.3.1 dmg from:   https://developer.apple.com/devcenter/download.action?path=/Developer_Tools/Xcode_7.3.1/Xcode_7.3.1.dmg  
@@ -70,7 +70,7 @@ This process requires core to have a pvk file (kept secret)and a cert in PEM for
 
 ```
 cd ~/
-DISTNAME=paladeum-2.0.1
+DISTNAME=paladeum-2.0.0
 sudo apt install build-essential libtool autotools-dev automake pkg-config bsdmainutils libcurl4-openssl-dev curl libssl-dev autoconf
 wget https://bitcoincore.org/cfields/osslsigncode-Backports-to-1.7.1.patch
 wget http://downloads.sourceforge.net/project/osslsigncode/osslsigncode/osslsigncode-1.7.1.tar.gz
@@ -105,7 +105,7 @@ This process requires core to have a pvk file (kept secret)and a cert in PEM for
 
 ```
 cd ~/
-DISTNAME=paladeum-2.0.1
+DISTNAME=paladeum-2.0.0
 sudo apt install build-essential libtool autotools-dev automake pkg-config bsdmainutils libcurl4-openssl-dev curl libssl-dev autoconf
 wget https://bitcoincore.org/cfields/osslsigncode-Backports-to-1.7.1.patch
 wget http://downloads.sourceforge.net/project/osslsigncode/osslsigncode/osslsigncode-1.7.1.tar.gz
@@ -138,7 +138,7 @@ Transfer paladeum-*-win*-setup.exe back to the Ubuntu18 build machine to the fol
 From a Apple MacOS device: open terminal
 
 ```
-DISTNAME=paladeum-2.0.1
+DISTNAME=paladeum-2.0.0
 xcode-select --install
 cd ~/desktop
 mkdir OSX
@@ -160,7 +160,7 @@ Copy signature-osx.tar.gz back to the ubuntu 18 build machine
 
 From the ubuntu 18 bionic server(required) build machine
 ```
-DISTNAME=paladeum-2.0.1
+DISTNAME=paladeum-2.0.0
 cd ~/sign
 mkdir OSX/
 cp $DISTNAME-osx-unsigned.tar.gz OSX
@@ -184,7 +184,7 @@ Checksum all the binaries
 
 From the ubuntu 18 bionic server(required) build machine
 ```
-DISTNAME=paladeum-2.0.1
+DISTNAME=paladeum-2.0.0
 ```
 Transfer your *-secret-gpg.key and *-ownertrust-gpg.txt to ~/  
 Import your PGP keys

@@ -7,6 +7,8 @@ src/paladeum
 src/paladeumd
 src/paladeum-cli
 src/paladeum-tx
+src/paladeum-wallet
+src/paladeum-wallet.exe
 src/test/test_paladeum
 src/test/test_paladeum_fuzzy
 src/test/test_paladeum_hash

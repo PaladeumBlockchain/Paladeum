@@ -90,6 +90,10 @@ void UnregisterValidationInterface(CValidationInterface* pwalletIn) {
     g_signals.m_internals->NewTokenMessage.disconnect(boost::bind(&CValidationInterface::NewTokenMessage, pwalletIn, _1));
 }
 
+void CallFunctionInValidationInterfaceQueue(std::function<void ()> func) {
+    g_signals.m_internals->m_schedulerClient.AddToProcessQueue(std::move(func));
+}
+
 void UnregisterAllValidationInterfaces() {
     if (!g_signals.m_internals) {
         return;

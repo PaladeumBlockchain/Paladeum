@@ -66,22 +66,29 @@ EXTENDED_SCRIPTS = [
     'feature_fee_estimation.py',
     # vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv Tests less than 5m vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
     'feature_dbcrash.py',
+    # needs PLBD_PREVIOUS, the paladeumd of 0.1.7 (skipped without it)
+    'feature_compat_017.py',
 ]
 
 BASE_SCRIPTS= [
     # Scripts that are run by the build process.
     # Longest test should go first, to favor running tests in parallel
     # vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv Tests less than 2m vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
+    'rpc_mnemonic.py',
+    'wallet_importmnemonic.py',
+    'rpc_tokens_concurrent.py',
     'wallet_backup.py',
     'wallet_hd.py',
     'p2p_timeouts.py',
     'mining_getblocktemplate_longpoll.py',
     'feature_maxuploadtarget.py',
+    'feature_tokens_undo.py',
     # vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv Tests less than 45s vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
+    'feature_rewards.py',
+    'feature_snapshot.py',
     'rpc_fundrawtransaction.py',
     'wallet_create_tx.py',
     # vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv Tests less than 30s vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
-    'feature_rewards.py',
     'wallet_basic.py',
     'mempool_limit.py',
     'feature_tokens.py',
@@ -94,8 +101,8 @@ BASE_SCRIPTS= [
     'wallet_bip44.py',
     'mining_prioritisetransaction.py',
     'feature_maxreorgdepth.py 4 --height=60 --tip_age=0 --should_reorg=0',      # Don't Reorg
-    'feature_maxreorgdepth.py 3 --height=60 --tip_age=0 --should_reorg=1',      # Reorg (low peer count)
-    'feature_maxreorgdepth.py 4 --height=60 --tip_age=43400 --should_reorg=1',  # Reorg (not caught up)
+    'feature_maxreorgdepth.py 3 --height=60 --tip_age=0 --should_reorg=0',      # Don't Reorg (also with few peers)
+    'feature_maxreorgdepth.py 4 --height=60 --tip_age=43400 --should_reorg=0',  # Don't Reorg (also with an old tip)
     'feature_maxreorgdepth.py 4 --height=59 --tip_age=0 --should_reorg=1',      # Reorg (<60)
     # vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv Tests less than 15s vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
     'rpc_rawtransaction.py',
@@ -133,6 +140,28 @@ BASE_SCRIPTS= [
     'rpc_setban.py',
     'wallet_listsinceblock.py',
     'wallet_zapwallettxes.py',
+    'wallet_spent_cache.py',
+    'feature_staking.py',
+    'feature_stake_cointime.py',
+    'wallet_unload.py',
+    'rpc_upstream.py',
+    'tool_wallet.py',
+    'feature_stake_combine.py',
+    'feature_offline_staking.py',
+    'feature_future_drift.py',
+    'p2p_orphan_processing.py',
+    'feature_tokens_basic.py',
+    'wallet_send_arguments.py',
+    'interface_cli_rpcwait.py',
+    'wallet_removeaddress.py',
+    'feature_governance.py',
+    'feature_governance_mempool.py',
+    'wallet_staking_unlock.py',
+    'feature_staking_multiwallet.py',
+    'feature_stake_variants.py',
+    'wallet_multisig_flow.py',
+    'feature_bootstrap.py',
+    'p2p_old_peer_cutoff.py',
     'wallet_multiwallet.py',
     'interface_zmq.py',
     'rpc_invalidateblock.py',
@@ -168,6 +197,9 @@ BASE_SCRIPTS= [
     'mempool_spend_coinbase.py',
     'feature_bip68_sequence.py',
     'p2p_mempool.py',
+    'feature_block_script_checks.py',
+    'feature_reindex_tokens.py',
+    'feature_governance_forged.py',
     'rpc_named_arguments.py',
     'rpc_uptime.py',
     'rpc_tokentransfer.py',

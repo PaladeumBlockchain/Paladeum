@@ -9,23 +9,28 @@
 
 #include "paladeumgui.h"
 
-#include "chainparams.h"
-#include "clientmodel.h"
-#include "fs.h"
-#include "guiconstants.h"
-#include "guiutil.h"
-#include "intro.h"
-#include "net.h"
-#include "networkstyle.h"
-#include "optionsmodel.h"
-#include "platformstyle.h"
-#include "splashscreen.h"
-#include "utilitydialog.h"
-#include "winshutdownmonitor.h"
+#include "bootstrap.h"
+#include "bootstrapfetch.h"
+
+#include <chainparams.h>
+#include <clientmodel.h>
+#include <fs.h>
+#include <guiconstants.h>
+#include <guiutil.h>
+#include <intro.h>
+#include <net.h>
+#include <networkstyle.h>
+#include <optionsmodel.h>
+#include <platformstyle.h>
+#include <splashscreen.h>
+#include <utilitydialog.h>
+#include <winshutdownmonitor.h>
 
 #ifdef ENABLE_WALLET
-#include "paymentserver.h"
-#include "walletmodel.h"
+#include <askpassphrasedialog.h>
+#include <paymentserver.h>
+#include <walletcontroller.h>
+#include <walletmodel.h>
 #endif
 
 #include "init.h"
@@ -42,9 +47,9 @@
 #include <stdint.h>
 
 #include <boost/thread.hpp>
-#include "darkstyle.h"
 
 #include <QApplication>
+#include <QProcess>
 #include <QDebug>
 #include <QLibraryInfo>
 #include <QLocale>
@@ -72,8 +77,15 @@ Q_IMPORT_PLUGIN(AccessibleFactory)
 #endif
 #if defined(QT_QPA_PLATFORM_XCB)
 Q_IMPORT_PLUGIN(QXcbIntegrationPlugin);
+#if defined(QT_XCB_INPUT_CONTEXTS)
+Q_IMPORT_PLUGIN(QIbusPlatformInputContextPlugin);
+Q_IMPORT_PLUGIN(QComposePlatformInputContextPlugin);
+#endif
 #elif defined(QT_QPA_PLATFORM_WINDOWS)
 Q_IMPORT_PLUGIN(QWindowsIntegrationPlugin);
+#if defined(QT_WINDOWS_VISTA_STYLE)
+Q_IMPORT_PLUGIN(QWindowsVistaStylePlugin);
+#endif
 #elif defined(QT_QPA_PLATFORM_COCOA)
 Q_IMPORT_PLUGIN(QCocoaIntegrationPlugin);
 Q_IMPORT_PLUGIN(QMacStylePlugin);
@@ -263,7 +275,9 @@ private:
     QTimer *pollShutdownTimer;
 #ifdef ENABLE_WALLET
     PaymentServer* paymentServer;
+    /** The first wallet (the first start asks for its passphrase); the controller owns the models */
     WalletModel *walletModel;
+    WalletController *walletController;
 #endif
     int returnValue;
     const PlatformStyle *platformStyle;
@@ -374,6 +388,7 @@ PaladeumApplication::PaladeumApplication(int &argc, char **argv):
 #ifdef ENABLE_WALLET
     paymentServer(0),
     walletModel(0),
+    walletController(0),
 #endif
     returnValue(0)
 {
@@ -427,8 +442,9 @@ void PaladeumApplication::createOptionsModel(bool resetSettings)
 void PaladeumApplication::createWindow(const NetworkStyle *networkStyle)
 {
     window = new PaladeumGUI(platformStyle, networkStyle, 0);
-    window->setMinimumSize(200,200);
-    window->setBaseSize(640,640);
+    // The smallest window in which every page is laid out without cutting anything off; the
+    // window opens larger (see PaladeumGUI) and remembers the size it had.
+    window->setMinimumSize(int(PaladeumGUI::MINIMUM_WIDTH), int(PaladeumGUI::MINIMUM_HEIGHT));
 
     pollShutdownTimer = new QTimer(window);
     connect(pollShutdownTimer, SIGNAL(timeout()), window, SLOT(detectShutdown()));
@@ -495,7 +511,11 @@ void PaladeumApplication::requestShutdown()
 
 #ifdef ENABLE_WALLET
     window->removeAllWallets();
-    delete walletModel;
+    // (an operation of the controller that still runs, such as the rescan of a wallet that is being
+    // opened, stops at the shutdown request and is waited for)
+    StartShutdown();
+    delete walletController;
+    walletController = 0;
     walletModel = 0;
 #endif
     delete clientModel;
@@ -525,16 +545,33 @@ void PaladeumApplication::initializeResult(bool success)
         window->setClientModel(clientModel);
 
 #ifdef ENABLE_WALLET
-        // TODO: Expose secondary wallets
-        if (!vpwallets.empty())
-        {
-            walletModel = new WalletModel(platformStyle, vpwallets[0], optionsModel);
+        // every wallet of the node gets a view; the controller opens, creates and closes more
+        if (WalletModel::isWalletEnabled()) {
+            walletController = new WalletController(platformStyle, optionsModel, this);
+            connect(walletController, &WalletController::walletAdded, this, [this](WalletModel *model) {
+                connect(model, SIGNAL(coinsSent(CWallet*,SendCoinsRecipient,QByteArray)),
+                        paymentServer, SLOT(fetchPaymentACK(CWallet*,const SendCoinsRecipient&,QByteArray)));
+            });
+            window->setWalletController(walletController);
+            walletController->addStartupWallets();
+            walletModel = walletController->models().value(0);
+        }
+#endif
 
-            window->addWallet(PaladeumGUI::DEFAULT_WALLET, walletModel);
-            window->setCurrentWallet(PaladeumGUI::DEFAULT_WALLET);
-
-            connect(walletModel, SIGNAL(coinsSent(CWallet*,SendCoinsRecipient,QByteArray)),
-                             paymentServer, SLOT(fetchPaymentACK(CWallet*,const SendCoinsRecipient&,QByteArray)));
+#ifdef ENABLE_WALLET
+        // A new wallet gets a passphrase before anything else: the window stays away until then.
+        // (-skipencryptprompt is for tests and scripts that drive the window.)
+        if (walletModel && walletModel->isFreshUnencrypted() && !gArgs.GetBoolArg("-skipencryptprompt", false)) {
+            Q_EMIT splashFinished(window);
+            AskPassphraseDialog dialog(AskPassphraseDialog::Encrypt, nullptr);
+            dialog.setWindowIcon(window->windowIcon());
+            dialog.setModel(walletModel);
+            dialog.setOnboarding();
+            dialog.exec();
+            // encrypted: the dialog asked for the restart. Otherwise the user chose to leave.
+            if (!GUIUtil::restartRequested())
+                quit();
+            return;
         }
 #endif
 
@@ -559,6 +596,18 @@ void PaladeumApplication::initializeResult(bool success)
         connect(paymentServer, SIGNAL(message(QString,QString,unsigned int)),
                          window, SLOT(message(QString,QString,unsigned int)));
         QTimer::singleShot(100, paymentServer, SLOT(uiReady()));
+        // the wallets that were open when the program ended last (unless -wallet says which)
+        if (walletController)
+            QTimer::singleShot(200, walletController, [this] { walletController->openRememberedWallets(); });
+        // the start after the wallet was encrypted: the last step is the backup
+        if (walletModel && gArgs.GetBoolArg("-backupprompt", false) && walletModel->getEncryptionStatus() != WalletModel::Unencrypted) {
+            QTimer::singleShot(300, window, [this] {
+                BackupPromptDialog *dialog = new BackupPromptDialog(walletModel, window);
+                dialog->setAttribute(Qt::WA_DeleteOnClose);
+                dialog->setWindowModality(Qt::ApplicationModal);
+                dialog->show();
+            });
+        }
 #endif
     } else {
         quit(); // Exit main loop
@@ -589,6 +638,12 @@ WId PaladeumApplication::getMainWinId() const
 #ifndef PLB_QT_TEST
 int main(int argc, char *argv[])
 {
+    if (qEnvironmentVariableIsSet("PLB_RESTART_DELAY")) {
+        // started by "Restart now": let the previous process end first
+        qunsetenv("PLB_RESTART_DELAY");
+        QThread::msleep(3000);
+    }
+
     SetupEnvironment();
 
     /// 1. Parse command-line options. These take precedence over anything else.
@@ -659,8 +714,14 @@ int main(int argc, char *argv[])
         return EXIT_SUCCESS;
     }
 
+    // Fonts, palette and style sheet of the theme: the first-run screens use them as well
+    GUIUtil::loadAppFonts();
+    GUIUtil::applyTheme(app);
+
     /// 5. Now that settings and translations are available, ask user for data directory
     // User language is set up: pick a data directory
+    // (the dialog can change the language: the translations are then loaded again)
+    Intro::setLanguageChanged([&] { initTranslations(qtTranslatorBase, qtTranslator, translatorBase, translator); });
     if (!Intro::pickDataDirectory())
         return EXIT_SUCCESS;
 
@@ -698,10 +759,24 @@ int main(int argc, char *argv[])
     PaymentServer::ipcParseCommandLine(argc, argv);
 #endif
 
+#ifdef ENABLE_WALLET
+    // -wallet in the configuration or on the command line: exactly those wallets, nothing remembered
+    // (later the node sets -wallet itself, to wallet.dat, when none is given)
+    WalletController::setExplicitWallets(gArgs.IsArgSet("-wallet"));
+#endif
+
     QScopedPointer<const NetworkStyle> networkStyle(NetworkStyle::instantiate(QString::fromStdString(GetParams().NetworkIDString())));
     assert(!networkStyle.isNull());
     // Allow for separate UI settings for testnets
+    const QString mainLanguage = QSettings().value("language", "").toString();
     QApplication::setApplicationName(networkStyle->getAppName());
+    {
+        // a test network that was never started takes the language of the main settings,
+        // which is where the first-run screen stores the choice
+        QSettings networkSettings;
+        if (!networkSettings.contains("language") && !mainLanguage.isEmpty())
+            networkSettings.setValue("language", mainLanguage);
+    }
     // Re-initialize translations after changing application name (language in network-specific settings can be different)
     initTranslations(qtTranslatorBase, qtTranslator, translatorBase, translator);
 
@@ -739,12 +814,8 @@ int main(int argc, char *argv[])
     // Load GUI settings from QSettings
     app.createOptionsModel(gArgs.IsArgSet("-resetguisettings"));
 
-    if (app.getOptionsModel()->getDarkModeEnabled()) {
-        app.setStyle(new DarkStyle);
-        darkModeEnabled = true;
-    } else {
-        app.setStyle("");
-    }
+    // the block bootstrap of the GUI fetches with the network stack of Qt: https and redirects
+    SetBootstrapFetcher(QtBootstrapFetch, true);
 
     // Subscribe to global signals from core
     uiInterface.InitMessage.connect(InitMessage);
@@ -778,6 +849,20 @@ int main(int argc, char *argv[])
     } catch (...) {
         PrintExceptionContinue(nullptr, "Runaway exception");
         app.handleRunawayException(QString::fromStdString(GetWarnings("gui")));
+    }
+    // "Restart now" of the settings page: the node has shut down, start the program again
+    if (GUIUtil::restartRequested()) {
+        QStringList arguments = QCoreApplication::arguments();
+        const QString program = QCoreApplication::applicationFilePath();
+        if (!arguments.isEmpty())
+            arguments.removeFirst();
+        // one-time arguments of this start do not carry over; those asked for with the restart do
+        arguments.removeAll("-backupprompt");
+        arguments += GUIUtil::restartArguments();
+        // the new process waits a moment: on Windows the lock of the data directory is only
+        // released when this process has ended
+        qputenv("PLB_RESTART_DELAY", "1");
+        QProcess::startDetached(program, arguments);
     }
     return rv;
 }

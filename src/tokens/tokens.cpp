@@ -358,7 +358,7 @@ bool IsTypeCheckNameValid(const KnownTokenType type, const std::string& name, st
         boost::split(parts, name, boost::is_any_of(MSG_CHANNEL_TAG_DELIMITER));
         bool valid = IsNameValidBeforeTag(parts.front()) && IsMsgChannelTagValid(parts.back());
         if (parts.back().size() > MAX_CHANNEL_NAME_LENGTH) { error = "Channel name is greater than max length of " + std::to_string(MAX_CHANNEL_NAME_LENGTH); return false; }
-        if (!valid) { error = "Message Channel name contains invalid characters (Valid characters are: A-Z 0-9 _ .) (special characters can't be the first or last characters)";  return false; }
+        if (!valid) { error = "Message channel name contains invalid characters (the token part takes A-Z 0-9 _ ., the channel after ~ takes A-Z a-z 0-9 _; special characters can't be the first or last characters)";  return false; }
         return true;
     } else if (type == KnownTokenType::OWNER) {
         if (name.size() > MAX_NAME_LENGTH) { error = "Name is greater than max length of " + std::to_string(MAX_NAME_LENGTH); return false; }
@@ -390,17 +390,38 @@ bool IsTypeCheckNameValid(const KnownTokenType type, const std::string& name, st
 
         bool valid = IsUsernameValid(name);
         if (!valid) {
-            error = "Username contains invalid characters (Valid characters are: A-Z 0-9 _ .) (special characters can't be the first or last characters)";
+            // what USERNAME_CHARACTERS takes: '.' and '_' anywhere after the '@', also side by side
+            error = "A username is @ followed by at least 4 characters (valid characters are: A-Z 0-9 _ .)";
             return false;
         }
 
         return true;
     } else {
-        if (name.size() > MAX_NAME_LENGTH - 1) { error = "Name is greater than max length of " + std::to_string(MAX_NAME_LENGTH - 1); return false; }  //Tokens and sub-tokens need to leave one extra char for OWNER indicator
-        if (!IsTokenNameASubtoken(name) && name.size() < MIN_TOKEN_LENGTH) { error = "Name must be contain " + std::to_string(MIN_TOKEN_LENGTH) + " characters"; return false; }
+        if (name.size() > MAX_NAME_LENGTH - 1) {
+            error = "Name is greater than max length of " + std::to_string(MAX_NAME_LENGTH - 1);
+            return false;
+        }  //Tokens and sub-tokens need to leave one extra char for OWNER indicator
+
+        if (!IsTokenNameASubtoken(name) && name.size() < MIN_TOKEN_LENGTH) {
+            error = "Name must have at least " + std::to_string(MIN_TOKEN_LENGTH) + " characters";
+            return false;
+        }
+
         bool valid = IsNameValidBeforeTag(name);
-        if (!valid && IsTokenNameASubtoken(name) && name.size() < 3) { error = "Name must have at least 3 characters (Valid characters are: A-Z 0-9 _ .)";  return false; }
-        if (!valid) { error = "Name contains invalid characters (Valid characters are: A-Z 0-9 _ .) (special characters can't be the first or last characters)";  return false; }
+        if (!valid && IsTokenNameASubtoken(name) && name.size() < 3) {
+            error = "Name must have at least 3 characters (Valid characters are: A-Z 0-9 _ .)";
+            return false;
+        }
+
+        if (!valid) {
+            // (a name that is kept for the coin itself is refused by the same check)
+            if (std::regex_match(name.substr(0, name.find('/')), PLB_NAMES))
+                error = "Name is reserved: PLB and PLBCOIN cannot be token names";
+            else
+                error = "Name contains invalid characters (Valid characters are: A-Z 0-9 _ .) (special characters can't be the first or last characters)";
+            return false;
+        }
+
         return true;
     }
 }
@@ -448,6 +469,13 @@ std::string GetParentName(const std::string& name)
     }
 
     return name;
+}
+
+bool CanHoldTokens(const std::string& address)
+{
+    // CScript::IsTokenScript() finds token data behind a P2PKH or a P2SH script only
+    const CTxDestination dest = DecodeDestination(address);
+    return boost::get<std::pair<CKeyID, CKeyID>>(&dest) == nullptr;
 }
 
 std::string GetUniqueTokenName(const std::string& parent, const std::string& tag)
@@ -509,10 +537,11 @@ std::string CNewToken::ToString()
     ss << "units : " << std::to_string(units) << "\n";
     ss << "reissuable : " << std::to_string(nReissuable) << "\n";
 
-    ss << "has_royalties : " << nHasRoyalties;
+    // nHasRoyalties is a byte: print it as a number, each field on its line
+    ss << "has_royalties : " << std::to_string(nHasRoyalties) << "\n";
     if (nHasRoyalties) {
-        ss << "royalties_address : " << nRoyaltiesAddress;
-        ss << "royalties_amount : " << nRoyaltiesAmount;
+        ss << "royalties_address : " << nRoyaltiesAddress << "\n";
+        ss << "royalties_amount : " << nRoyaltiesAmount << "\n";
     }
 
     ss << "has_ipfs : " << std::to_string(nHasIPFS) << "\n";
@@ -2631,6 +2660,22 @@ bool CTokensCache::DumpCacheToDatabase()
             CNewToken token(undoReissue.reissue.strName, 0);
             CTokenCacheNewToken testNewTokenCache(token, "", 0 , uint256());
             if (setNewTokensToRemove.count(testNewTokenCache)) {
+                // The amount that the reissue put on its address goes with the token
+                if (fTokenIndex) {
+                    if (!ptokensdb->EraseTokenAddressQuantity(undoReissue.reissue.strName, undoReissue.address)) {
+                        dirty = true;
+                        message = "_Failed Erasing Address Balance from database";
+                    }
+
+                    if (!ptokensdb->EraseAddressTokenQuantity(undoReissue.address, undoReissue.reissue.strName)) {
+                        dirty = true;
+                        message = "_Failed Erasing UndoReissue Balance from AddressToken database";
+                    }
+
+                    if (dirty) {
+                        return error("%s : %s", __func__, message);
+                    }
+                }
                 continue;
             }
 
@@ -2882,16 +2927,30 @@ bool CTokensCache::DumpCacheToDatabase()
             for (auto undoSpend : vUndoTokenAmount) {
                 auto pair = std::make_pair(undoSpend.tokenName, undoSpend.address);
                 if (mapTokensAddressAmount.count(pair)) {
-                    if (!ptokensdb->WriteTokenAddressQuantity(undoSpend.tokenName, undoSpend.address,
-                                                              mapTokensAddressAmount.at(pair))) {
-                        dirty = true;
-                        message = "_Failed Writing updated Address Quantity to database when undoing spends";
-                    }
+                    if (mapTokensAddressAmount.at(pair) == 0) {
+                        // The amount that came back was taken away again by another undo of the
+                        // same flush: no amount is left, and none is stored
+                        if (!ptokensdb->EraseTokenAddressQuantity(undoSpend.tokenName, undoSpend.address)) {
+                            dirty = true;
+                            message = "_Failed Erasing Address Quantity from database when undoing spends";
+                        }
 
-                    if (!ptokensdb->WriteAddressTokenQuantity(undoSpend.address, undoSpend.tokenName,
-                                                              mapTokensAddressAmount.at(pair))) {
-                        dirty = true;
-                        message = "_Failed Writing Address Balance to database";
+                        if (!ptokensdb->EraseAddressTokenQuantity(undoSpend.address, undoSpend.tokenName)) {
+                            dirty = true;
+                            message = "_Failed Erasing Address Balance from AddressToken database when undoing spends";
+                        }
+                    } else {
+                        if (!ptokensdb->WriteTokenAddressQuantity(undoSpend.tokenName, undoSpend.address,
+                                                                  mapTokensAddressAmount.at(pair))) {
+                            dirty = true;
+                            message = "_Failed Writing updated Address Quantity to database when undoing spends";
+                        }
+
+                        if (!ptokensdb->WriteAddressTokenQuantity(undoSpend.address, undoSpend.tokenName,
+                                                                  mapTokensAddressAmount.at(pair))) {
+                            dirty = true;
+                            message = "_Failed Writing Address Balance to database";
+                        }
                     }
 
                     if (dirty) {
@@ -3583,78 +3642,93 @@ bool CTokensCache::GetTokenMetaDataIfExists(const std::string &name, CNewToken &
 
 bool CTokensCache::GetTokenMetaDataIfExists(const std::string &name, CNewToken &token, int& nHeight, uint256& blockHash)
 {
-    // Check the map that contains the reissued token data. If it is in this map, it hasn't been saved to disk yet
-    if (mapReissuedTokenData.count(name)) {
-        token = mapReissuedTokenData.at(name);
-        return true;
-    }
+    // A reissue that is not written to disk yet is in mapReissuedTokenData, of this cache or of
+    // the cache it was made from: it has the data of the token as reissued. The height and the
+    // block are those of the issue, from the record of the issue. (They were left as the caller
+    // had them, uninitialized, and a second reissue wrote them to the token database: the block
+    // height of a reissued token then differed from node to node, with a block hash of zero.)
+    const CNewToken* reissued = nullptr;
+    if (mapReissuedTokenData.count(name))
+        reissued = &mapReissuedTokenData.at(name);
+    else if (ptokens && ptokens->mapReissuedTokenData.count(name))
+        reissued = &ptokens->mapReissuedTokenData.at(name);
 
-    // Check the map that contains the reissued token data. If it is in this map, it hasn't been saved to disk yet
-    if (ptokens->mapReissuedTokenData.count(name)) {
-        token = ptokens->mapReissuedTokenData.at(name);
-        return true;
-    }
+    auto issueRecord = [this, &name](CNewToken& token, int& nHeight, uint256& blockHash) -> bool {
+        // Create objects that will be used to check the dirty cache
+        CNewToken tempToken;
+        tempToken.strName = name;
+        CTokenCacheNewToken cachedToken(tempToken, "", 0, uint256());
 
-    // Create objects that will be used to check the dirty cache
-    CNewToken tempToken;
-    tempToken.strName = name;
-    CTokenCacheNewToken cachedToken(tempToken, "", 0, uint256());
+        // Check the dirty caches first and see if it was recently added or removed
+        if (setNewTokensToRemove.count(cachedToken)) {
+            LogPrintf("GetTokenMetaDataIfExists : Found in new tokens to Remove - Returning False\n");
+            return false;
+        }
 
-    // Check the dirty caches first and see if it was recently added or removed
-    if (setNewTokensToRemove.count(cachedToken)) {
-        LogPrintf("%s : Found in new tokens to Remove - Returning False\n", __func__);
-        return false;
-    }
+        // Check the dirty caches first and see if it was recently added or removed
+        if (ptokens->setNewTokensToRemove.count(cachedToken)) {
+            LogPrintf("GetTokenMetaDataIfExists : Found in new tokens to Remove - Returning False\n");
+            return false;
+        }
 
-    // Check the dirty caches first and see if it was recently added or removed
-    if (ptokens->setNewTokensToRemove.count(cachedToken)) {
-        LogPrintf("%s : Found in new tokens to Remove - Returning False\n", __func__);
-        return false;
-    }
+        auto setIterator = setNewTokensToAdd.find(cachedToken);
+        if (setIterator != setNewTokensToAdd.end()) {
+            token = setIterator->token;
+            nHeight = setIterator->blockHeight;
+            blockHash = setIterator->blockHash;
+            return true;
+        }
 
-    auto setIterator = setNewTokensToAdd.find(cachedToken);
-    if (setIterator != setNewTokensToAdd.end()) {
-        token = setIterator->token;
-        nHeight = setIterator->blockHeight;
-        blockHash = setIterator->blockHash;
-        return true;
-    }
+        setIterator = ptokens->setNewTokensToAdd.find(cachedToken);
+        if (setIterator != ptokens->setNewTokensToAdd.end()) {
+            token = setIterator->token;
+            nHeight = setIterator->blockHeight;
+            blockHash = setIterator->blockHash;
+            return true;
+        }
 
-    setIterator = ptokens->setNewTokensToAdd.find(cachedToken);
-    if (setIterator != ptokens->setNewTokensToAdd.end()) {
-        token = setIterator->token;
-        nHeight = setIterator->blockHeight;
-        blockHash = setIterator->blockHash;
-        return true;
-    }
-
-    // Check the cache, if it doesn't exist in the cache. Try and read it from database
-    if (ptokensCache) {
-        if (ptokensCache->Exists(name)) {
+        // Check the cache, if it doesn't exist in the cache. Try and read it from database
+        if (ptokensCache) {
             CDatabasedTokenData data;
-            data = ptokensCache->Get(name);
-            token = data.token;
-            nHeight = data.nHeight;
-            blockHash = data.blockHash;
-            return true;
+            if (ptokensCache->GetIfExists(name, data)) {
+                token = data.token;
+                nHeight = data.nHeight;
+                blockHash = data.blockHash;
+                return true;
+            }
         }
-    }
 
-    if (ptokensdb && ptokensCache) {
-        CNewToken readToken;
-        int height;
+        if (ptokensdb && ptokensCache) {
+            CNewToken readToken;
+            int height;
+            uint256 hash;
+            if (ptokensdb->ReadTokenData(name, readToken, height, hash)) {
+                token = readToken;
+                nHeight = height;
+                blockHash = hash;
+                ptokensCache->Put(readToken.strName, CDatabasedTokenData(readToken, height, hash));
+                return true;
+            }
+        }
+
+        LogPrintf("GetTokenMetaDataIfExists : Didn't find token meta data anywhere. Returning False\n");
+        return false;
+    };
+
+    if (reissued) {
+        CNewToken issued;
+        int height = 0;
         uint256 hash;
-        if (ptokensdb->ReadTokenData(name, readToken, height, hash)) {
-            token = readToken;
-            nHeight = height;
-            blockHash = hash;
-            ptokensCache->Put(readToken.strName, CDatabasedTokenData(readToken, height, hash));
-            return true;
+        if (!issueRecord(issued, height, hash)) {
+            height = 0;
+            hash.SetNull();
         }
+        token = *reissued;
+        nHeight = height;
+        blockHash = hash;
+        return true;
     }
-
-    LogPrintf("%s : Didn't find token meta data anywhere. Returning False\n", __func__);
-    return false;
+    return issueRecord(token, nHeight, blockHash);
 }
 
 bool GetTokenInfoFromScript(const CScript& scriptPubKey, std::string& strName, CAmount& nAmount, uint32_t& nTimeLock)
@@ -3774,7 +3848,7 @@ void GetAllMyTokens(CWallet* pwallet, std::vector<std::string>& names, int nMinC
         return;
 
     std::map<std::string, std::vector<COutput> > mapTokens;
-    pwallet->AvailableTokens(mapTokens, true, nullptr, 1, MAX_MONEY, MAX_MONEY, 0, nMinConf); // Set the mincof, set the rest to the defaults
+    pwallet->AvailableTokens(mapTokens, true, nullptr, 1, MAX_MONEY_TOKENS, MAX_MONEY_TOKENS, 0, nMinConf); // Set the mincof, set the rest to the defaults
 
     for (auto item : mapTokens) {
         bool isOwner = IsTokenNameAnOwner(item.first);
@@ -3944,21 +4018,13 @@ bool GetBestTokenAddressAmount(CTokensCache& cache, const std::string& tokenName
 }
 
 #ifdef ENABLE_WALLET
-//! sets _balances_ with the total quantity of each owned token
-bool GetAllMyTokenBalances(std::map<std::string, std::vector<COutput> >& outputs, std::map<std::string, CAmount>& amounts, const int confirmations, const std::string& prefix) {
-
-    // Return false if no wallet was found to compute token balances
-    if (!vpwallets.size())
-        return false;
-
-    // Get the map of tokennames to outputs
-    vpwallets[0]->AvailableTokens(outputs, true, nullptr, 1, MAX_MONEY, MAX_MONEY, 0, confirmations);
-
-    // Loop through all pairs of Token Name -> vector<COutput>
+//! Sums the token amounts of the given outputs by token name (names that start with prefix).
+static void SumTokenOutputs(const std::map<std::string, std::vector<COutput> >& outputs, std::map<std::string, CAmount>& amounts, const std::string& prefix)
+{
     for (const auto& pair : outputs) {
         if (prefix.empty() || pair.first.find(prefix) == 0) { // Check for prefix
             CAmount balance = 0;
-            for (auto txout : pair.second) { // Compute balance of token by summing all Available Outputs
+            for (const auto& txout : pair.second) { // Compute balance of token by summing all Available Outputs
                 CTokenOutputEntry data;
                 if (GetTokenData(txout.tx->tx->vout[txout.i].scriptPubKey, data))
                     balance += data.nAmount;
@@ -3966,19 +4032,51 @@ bool GetAllMyTokenBalances(std::map<std::string, std::vector<COutput> >& outputs
             amounts.insert(std::make_pair(pair.first, balance));
         }
     }
+}
 
+//! sets _balances_ with the total quantity of each token that the wallet owns
+bool GetAllMyTokenBalancesWallet(CWallet* pwallet, std::map<std::string, std::vector<COutput> >& outputs, std::map<std::string, CAmount>& amounts, const std::string& prefix, const int confirmations) {
+    if (!pwallet)
+        return false;
+
+    // Get the map of tokennames to outputs
+    pwallet->AvailableTokens(outputs, true, nullptr, 1, MAX_MONEY_TOKENS, MAX_MONEY_TOKENS, 0, confirmations);
+    SumTokenOutputs(outputs, amounts, prefix);
     return true;
+}
+
+//! sets _balances_ with the total quantity of each locked token that the wallet owns
+bool GetAllMyLockedTokenBalancesWallet(CWallet* pwallet, std::map<std::string, std::vector<COutput> >& outputs, std::map<std::string, CAmount>& amounts, const std::string& prefix) {
+    if (!pwallet)
+        return false;
+
+    // Get the map of tokennames to outputs
+    pwallet->LockedTokens(outputs, true, nullptr, 1, MAX_MONEY_TOKENS, MAX_MONEY_TOKENS);
+    SumTokenOutputs(outputs, amounts, prefix);
+    return true;
+}
+
+//! sets _balances_ with the total quantity of each owned token (the default wallet)
+bool GetAllMyTokenBalances(std::map<std::string, std::vector<COutput> >& outputs, std::map<std::string, CAmount>& amounts, const int confirmations, const std::string& prefix) {
+    // Return false if no wallet was found to compute token balances
+    return GetAllMyTokenBalancesWallet(GetDefaultWallet(), outputs, amounts, prefix, confirmations);
+}
+
+//! sets _balances_ with the total quantity of each owned locked token (the default wallet)
+bool GetAllMyLockedTokenBalances(std::map<std::string, std::vector<COutput> >& outputs, std::map<std::string, CAmount>& amounts, const std::string& prefix) {
+    return GetAllMyLockedTokenBalancesWallet(GetDefaultWallet(), outputs, amounts, prefix);
 }
 
 bool GetMyTokenBalance(const std::string& name, CAmount& balance, const int& confirmations) {
 
-    // Return false if no wallet was found to compute token balances
-    if (!vpwallets.size())
+    // The default wallet. Return false if no wallet was found to compute token balances
+    CWallet* const pwallet = GetDefaultWallet();
+    if (!pwallet)
         return false;
 
     // Get the map of tokennames to outputs
     std::map<std::string, std::vector<COutput> > outputs;
-    vpwallets[0]->AvailableTokens(outputs, true, nullptr, 1, MAX_MONEY, MAX_MONEY, 0, confirmations);
+    pwallet->AvailableTokens(outputs, true, nullptr, 1, MAX_MONEY_TOKENS, MAX_MONEY_TOKENS, 0, confirmations);
 
     // Loop through all pairs of Token Name -> vector<COutput>
     if (outputs.count(name)) {
@@ -4025,32 +4123,6 @@ std::string EncodeTokenData(std::string decoded)
     return "";
 }
 
-//! sets _balances_ with the total quantity of each owned locked token
-bool GetAllMyLockedTokenBalances(std::map<std::string, std::vector<COutput> >& outputs, std::map<std::string, CAmount>& amounts, const std::string& prefix) {
-
-    // Return false if no wallet was found to compute asset balances
-    if (!vpwallets.size())
-        return false;
-
-    // Get the map of assetnames to outputs
-    vpwallets[0]->LockedTokens(outputs, true, nullptr, 1, MAX_MONEY, MAX_MONEY);
-
-    // Loop through all pairs of Token Name -> vector<COutput>
-    for (const auto& pair : outputs) {
-        if (prefix.empty() || pair.first.find(prefix) == 0) { // Check for prefix
-            CAmount balance = 0;
-            for (auto txout : pair.second) { // Compute balance of asset by summing all Available Outputs
-                CTokenOutputEntry data;
-                if (GetTokenData(txout.tx->tx->vout[txout.i].scriptPubKey, data))
-                    balance += data.nAmount;
-            }
-            amounts.insert(std::make_pair(pair.first, balance));
-        }
-    }
-
-    return true;
-}
-
 // 46 char base58 --> 34 char KAW compatible
 std::string DecodeIPFS(std::string encoded)
 {
@@ -4090,6 +4162,11 @@ bool CreateTokenTransaction(CWallet* pwallet, CCoinControl& coinControl, const s
         }
     }
 
+    if (!CanHoldTokens(address)) {
+        error = std::make_pair(RPC_INVALID_ADDRESS_OR_KEY, std::string("Tokens cannot be sent to an offline staking address: ") + address);
+        return false;
+    }
+
     if (!change_address.empty()) {
         CTxDestination destination = DecodeDestination(change_address);
         if (!IsValidDestination(destination)) {
@@ -4114,6 +4191,11 @@ bool CreateTokenTransaction(CWallet* pwallet, CCoinControl& coinControl, const s
     for (auto token : tokens) {
         if (!IsTokenNameValid(token.strName, tokenType)) {
             error = std::make_pair(RPC_INVALID_PARAMETER, "Token name not valid");
+            return false;
+        }
+        // the owner token of the parent of a sub token or a unique token comes back to the change address
+        if ((tokenType == KnownTokenType::SUB || tokenType == KnownTokenType::UNIQUE) && !CanHoldTokens(change_address)) {
+            error = std::make_pair(RPC_INVALID_ADDRESS_OR_KEY, std::string("Tokens cannot be sent to an offline staking address: ") + change_address + " (the change address, which receives the owner token)");
             return false;
         }
         if (tokens.size() > 1 && tokenType != KnownTokenType::UNIQUE) {
@@ -4262,12 +4344,21 @@ bool CreateReissueTokenTransaction(CWallet* pwallet, CCoinControl& coinControl, 
         error = std::make_pair(RPC_INVALID_ADDRESS_OR_KEY, std::string("Invalid Paladeum address: ") + address);
         return false;
     }
+    if (!CanHoldTokens(address)) {
+        error = std::make_pair(RPC_INVALID_ADDRESS_OR_KEY, std::string("Tokens cannot be sent to an offline staking address: ") + address);
+        return false;
+    }
 
     // Build the change address
     if (!change_address.empty()) {
         CTxDestination destination = DecodeDestination(change_address);
         if (!IsValidDestination(destination)) {
             error = std::make_pair(RPC_INVALID_ADDRESS_OR_KEY, std::string("Invalid Paladeum address: ") + change_address);
+            return false;
+        }
+        // the owner token comes back to the change address
+        if (!CanHoldTokens(change_address)) {
+            error = std::make_pair(RPC_INVALID_ADDRESS_OR_KEY, std::string("Tokens cannot be sent to an offline staking address: ") + change_address + " (the change address, which receives the owner token)");
             return false;
         }
     } else {
@@ -4461,6 +4552,11 @@ bool CreateTransferTokenTransaction(CWallet* pwallet, const CCoinControl& coinCo
             error = std::make_pair(RPC_INVALID_ADDRESS_OR_KEY, std::string("Invalid Paladeum address: ") + address);
             return false;
         }
+        // (the wallet would otherwise find the output without tokens "too small")
+        if (!CanHoldTokens(address)) {
+            error = std::make_pair(RPC_INVALID_ADDRESS_OR_KEY, std::string("Tokens cannot be sent to an offline staking address: ") + address);
+            return false;
+        }
         auto currentActiveTokenCache = GetCurrentTokenCache();
         if (!currentActiveTokenCache) {
             error = std::make_pair(RPC_DATABASE_ERROR, std::string("ptokens isn't initialized"));
@@ -4623,7 +4719,14 @@ bool VerifyWalletHasToken(const std::string& token_name, std::pair<int, std::str
 // Return true if the amount is valid with the units passed in
 bool CheckAmountWithUnits(const CAmount& nAmount, const int8_t nUnits)
 {
-    return nAmount % int64_t(pow(10, (MAX_UNIT - nUnits))) == 0;
+    // Integer version of nAmount % 10^(MAX_UNIT - nUnits) == 0. For the valid
+    // range 0..MAX_UNIT the result is identical to the former pow() based
+    // code; out-of-range units (which would have divided by zero) fail.
+    static const int64_t POW10[] = {1, 10, 100, 1000, 10000, 100000, 1000000, 10000000, 100000000};
+    static_assert(MAX_UNIT == 8, "POW10 table assumes MAX_UNIT == 8");
+    if (nUnits < 0 || nUnits > MAX_UNIT)
+        return false;
+    return nAmount % POW10[MAX_UNIT - nUnits] == 0;
 }
 
 bool CheckEncoded(const std::string& hash, std::string& strError) {
@@ -4662,6 +4765,11 @@ void GetTxOutKnownTokenTypes(const std::vector<CTxOut>& vout, int& issues, int& 
 }
 
 bool ParseTokenScript(CScript scriptPubKey, uint160 &hashBytes, int& nScriptType, std::string &tokenName, CAmount &tokenAmount, uint32_t &nTimeLock) {
+    // Only a transfer can have a lock time. The callers store this value in the address index
+    // for every kind of token output, so it is set for every kind (it was left uninitialized,
+    // and issued, reissued and owner tokens could show as locked).
+    nTimeLock = 0;
+
     int nType;
     bool fIsOwner;
     int _nStartingPoint;
@@ -5546,7 +5654,7 @@ bool CheckNewToken(const CNewToken& token, std::string& strError)
             return false;
         }
         if (token.nAmount < QUALIFIER_TOKEN_MIN_AMOUNT || token.nAmount > QUALIFIER_TOKEN_MAX_AMOUNT) {
-            strError = _("Invalid parameter: amount must be between ") + std::to_string(QUALIFIER_TOKEN_MIN_AMOUNT) + " - " + std::to_string(QUALIFIER_TOKEN_MAX_AMOUNT);
+            strError = _("Invalid parameter: amount must be between ") + std::to_string(QUALIFIER_TOKEN_MIN_AMOUNT / COIN) + " and " + std::to_string(QUALIFIER_TOKEN_MAX_AMOUNT / COIN);
             return false;
         }
         if (token.nReissuable != 0) {
@@ -5578,8 +5686,8 @@ bool CheckNewToken(const CNewToken& token, std::string& strError)
         return false;
     }
 
-    if (token.nAmount > MAX_MONEY) {
-        strError = _("Invalid parameter: token amount greater than max money: ") + std::to_string(MAX_MONEY / COIN);
+    if (token.nAmount > MAX_MONEY_TOKENS) {
+        strError = _("Invalid parameter: token amount greater than max money: ") + std::to_string(MAX_MONEY_TOKENS / COIN);
         return false;
     }
 
@@ -5630,8 +5738,8 @@ bool CheckNewToken(const CNewToken& token, std::string& strError)
         strError = _("Invalid parameter: token royalties can't be less than zero.");
         return false;
     }
-    if (token.nRoyaltiesAmount > MAX_MONEY) {
-        strError = _("Invalid parameter: token royalties greater than max money: ") + std::to_string(MAX_MONEY / COIN);
+    if (token.nRoyaltiesAmount > MAX_MONEY_TOKENS) {
+        strError = _("Invalid parameter: token royalties greater than max money: ") + std::to_string(MAX_MONEY_TOKENS / COIN);
         return false;
     }
     if (!CheckAmountWithUnits(token.nRoyaltiesAmount, token.units)) {
@@ -5695,7 +5803,7 @@ bool CheckReissueToken(const CReissueToken& token, std::string& strError)
 {
     strError = "";
 
-    if (token.nAmount < 0 || token.nAmount >= MAX_MONEY) {
+    if (token.nAmount < 0 || token.nAmount >= MAX_MONEY_TOKENS) {
         strError = _("Unable to reissue token: amount must be 0 or larger");
         return false;
     }
@@ -5759,7 +5867,8 @@ bool ContextualCheckReissueToken(CTokensCache* tokenCache, const CReissueToken& 
         return false;
     }
 
-    if (prev_token.nAmount + reissue_token.nAmount > MAX_MONEY) {
+    // (written so that it cannot overflow: the sum of the two could wrap around and pass)
+    if (reissue_token.nAmount > 0 && prev_token.nAmount > MAX_MONEY_TOKENS - reissue_token.nAmount) {
         strError = _("Unable to reissue token: token_name '") + reissue_token.strName +
                    _("' the amount trying to reissue is to large");
         return false;
@@ -5813,8 +5922,8 @@ bool ContextualCheckReissueToken(CTokensCache* tokenCache, const CReissueToken& 
         strError = _("Invalid parameter: token royalties can't be less than zero.");
         return false;
     }
-    if (reissue_token.nRoyaltiesAmount > MAX_MONEY) {
-        strError = _("Invalid parameter: token royalties greater than max money: ") + std::to_string(MAX_MONEY / COIN);
+    if (reissue_token.nRoyaltiesAmount > MAX_MONEY_TOKENS) {
+        strError = _("Invalid parameter: token royalties greater than max money: ") + std::to_string(MAX_MONEY_TOKENS / COIN);
         return false;
     }
     if (!CheckAmountWithUnits(reissue_token.nRoyaltiesAmount, prev_token.units)) {
@@ -5884,7 +5993,8 @@ bool ContextualCheckReissueToken(CTokensCache* tokenCache, const CReissueToken& 
             return false;
         }
 
-        if (prev_token.nAmount + reissue_token.nAmount > MAX_MONEY) {
+        // (written so that it cannot overflow: the sum of the two could wrap around and pass)
+        if (reissue_token.nAmount > 0 && prev_token.nAmount > MAX_MONEY_TOKENS - reissue_token.nAmount) {
             strError = _("Unable to reissue token: token_name '") + reissue_token.strName +
                        _("' the amount trying to reissue is to large");
             return false;

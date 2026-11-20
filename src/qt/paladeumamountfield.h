@@ -46,6 +46,9 @@ public:
     /** Change unit used to display amount. */
     void setDisplayUnit(int unit);
 
+    /** Large borderless appearance for the amount box of the send page. */
+    void setHeroStyle();
+
     /** Make field empty and ready for new input. */
     void clear();
 
@@ -112,6 +115,9 @@ public:
 
     void setUnit(int unit);
     void setMaxAmount(CAmount& max);
+
+    /** Large borderless appearance for the amount box of the send page. */
+    void setHeroStyle();
 
 Q_SIGNALS:
     void valueChanged();

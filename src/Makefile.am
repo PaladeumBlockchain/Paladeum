@@ -69,6 +69,12 @@ if BUILD_PLBD
   bin_PROGRAMS += paladeumd
 endif
 
+if BUILD_PLBD
+if ENABLE_WALLET
+  bin_PROGRAMS += paladeum-wallet
+endif
+endif
+
 if BUILD_PLB_CLI
   bin_PROGRAMS += paladeum-cli
 endif
@@ -95,6 +101,8 @@ PLB_CORE_H = \
   tokens/tokensnapshotdb.h \
   tokens/rewards.h \
   base58.h \
+  bip39.h \
+  bip39_wordlists.h \
   bloom.h \
   blockencodings.h \
   chain.h \
@@ -175,17 +183,22 @@ PLB_CORE_H = \
   utilmoneystr.h \
   utiltime.h \
   validation.h \
+  bootstrap.h \
+  snapshot.h \
+  gunzip.h \
   validationinterface.h \
   versionbits.h \
   wallet/coincontrol.h \
   wallet/crypter.h \
   wallet/db.h \
   wallet/feebumper.h \
+  wallet/mnemonicrestore.h \
   wallet/fees.h \
   wallet/init.h \
   wallet/rpcwallet.h \
   wallet/wallet.h \
   wallet/walletdb.h \
+  wallet/walletutil.h \
   wallet/bip39.h \
   wallet/bip39_english.h \
   warnings.h \
@@ -256,6 +269,9 @@ libpaladeum_server_a_SOURCES = \
   txmempool.cpp \
   ui_interface.cpp \
   validation.cpp \
+  bootstrap.cpp \
+  snapshot.cpp \
+  gunzip.cpp \
   validationinterface.cpp \
   versionbits.cpp \
   $(PLB_CORE_H)
@@ -278,12 +294,14 @@ libpaladeum_wallet_a_SOURCES = \
   wallet/crypter.cpp \
   wallet/db.cpp \
   wallet/feebumper.cpp \
+  wallet/mnemonicrestore.cpp \
   wallet/fees.cpp \
   wallet/init.cpp \
   wallet/rpcdump.cpp \
   wallet/rpcwallet.cpp \
   wallet/wallet.cpp \
   wallet/walletdb.cpp \
+  wallet/walletutil.cpp \
   wallet/bip39.cpp \
   $(PLB_CORE_H)
 
@@ -360,6 +378,7 @@ libpaladeum_common_a_CPPFLAGS = $(AM_CPPFLAGS) $(PLB_INCLUDES)
 libpaladeum_common_a_CXXFLAGS = $(AM_CXXFLAGS) $(PIE_FLAGS)
 libpaladeum_common_a_SOURCES = \
   base58.cpp \
+  bip39.cpp \
   chainparams.cpp \
   coins.cpp \
   compressor.cpp \
@@ -470,16 +489,40 @@ if TARGET_WINDOWS
 paladeum_tx_SOURCES += paladeum-tx-res.rc
 endif
 
-paladeum_tx_LDADD = \
-  $(LIBUNIVALUE) \
+# Token support lives in libpaladeum_server but is referenced from objects in
+# libpaladeum_common/libpaladeum_consensus (coins.cpp, core_write.cpp,
+# primitives/transaction.cpp), so paladeum-tx needs the same libraries as
+# paladeumd and the static archives must be scanned twice to resolve the
+# circular references. libtool drops duplicate archive names (and moves
+# -Wl,--start-group to the front), so the second pass uses ./-prefixed paths.
+PLB_TX_LIBS = \
+  $(LIBPLB_SERVER) \
   $(LIBPLB_COMMON) \
   $(LIBPLB_UTIL) \
+  $(LIBPLB_WALLET) \
+  $(LIBPLB_ZMQ) \
   $(LIBPLB_CONSENSUS) \
-  $(LIBPLB_CRYPTO) \
+  $(LIBPLB_CRYPTO)
+
+paladeum_tx_LDADD = \
+  $(PLB_TX_LIBS) \
+  $(addprefix ./,$(PLB_TX_LIBS)) \
+  $(LIBUNIVALUE) \
+  $(LIBLEVELDB) \
+  $(LIBLEVELDB_SSE42) \
+  $(LIBMEMENV) \
   $(LIBSECP256K1)
 
-paladeum_tx_LDADD += $(BOOST_LIBS) $(CRYPTO_LIBS)
+paladeum_tx_LDADD += $(BOOST_LIBS) $(BDB_LIBS) $(SSL_LIBS) $(CRYPTO_LIBS) $(MINIUPNPC_LIBS) $(EVENT_PTHREADS_LIBS) $(EVENT_LIBS) $(ZMQ_LIBS)
 #
+
+# paladeum-wallet binary #
+paladeum_wallet_SOURCES = paladeum-wallet.cpp
+paladeum_wallet_CPPFLAGS = $(AM_CPPFLAGS) $(PLB_INCLUDES)
+paladeum_wallet_CXXFLAGS = $(AM_CXXFLAGS) $(PIE_FLAGS)
+paladeum_wallet_LDFLAGS = $(RELDFLAGS) $(AM_LDFLAGS) $(LIBTOOL_APP_LDFLAGS)
+# (the archives are scanned twice, see paladeum-tx below)
+paladeum_wallet_LDADD = $(paladeum_tx_LDADD)
 
 # paladeumconsensus library #
 if BUILD_PLB_LIBS

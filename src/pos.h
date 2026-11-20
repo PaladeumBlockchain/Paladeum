@@ -2,8 +2,8 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef AOKCHAIN_POS_H
-#define AOKCHAIN_POS_H
+#ifndef PLB_POS_H
+#define PLB_POS_H
 
 #include <chain.h>
 #include <primitives/transaction.h>
@@ -32,8 +32,8 @@ struct CStakeCache{
 uint256 ComputeStakeModifier(const CBlockIndex* pindexPrev, const uint256& kernel);
 bool CheckStakeKernelHash(const CBlockIndex* pindexPrev, unsigned int nBits, CAmount nValueIn, const COutPoint& prevout, unsigned int nTimeTx, unsigned int nTimeTxPoS);
 bool CheckCoinStakeTimestamp(int64_t nTimeBlock, int64_t nTimeTx);
-bool CheckStakeBlockTimestamp(int64_t nTimeBlock);
+bool CheckStakeBlockTimestamp(int64_t nTimeBlock, int nHeight, const Consensus::Params& params);
 bool CheckKernel(CBlockIndex* pindexPrev, unsigned int nBits, uint32_t nTimeBlock, const COutPoint& prevout, CCoinsViewCache& view);
 bool CheckKernel(CBlockIndex* pindexPrev, unsigned int nBits, uint32_t nTimeBlock, const COutPoint& prevout, CCoinsViewCache& view, const std::map<COutPoint, CStakeCache>& cache);
 bool CheckProofOfStake(CBlockIndex* pindexPrev, CValidationState& state, const CTransaction& tx, unsigned int nBits, uint32_t nTimeBlock, uint256& hashProofOfStake, uint256& targetProofOfStake, CCoinsViewCache& view);
-#endif // AOKCHAIN_POS_H
+#endif // PLB_POS_H

@@ -20,22 +20,22 @@ Summary:	Peer to Peer Cryptographic Currency
 
 Group:		Applications/System
 License:	MIT
-URL:		https://paladeum.org/
-Source0:	https://paladeum.org/bin/paladeum-core-%{version}/paladeum-%{version}.tar.gz
+URL:		https://paladeum.io/
+Source0:	https://github.com/PaladeumBlockchain/Paladeum/archive/v%{version}.tar.gz
 Source1:	http://download.oracle.com/berkeley-db/db-%{bdbv}.NC.tar.gz
 
-Source10:	https://raw.githubusercontent.com/paladeum/paladeum/v%{version}/contrib/debian/examples/paladeum.conf
+Source10:	https://raw.githubusercontent.com/PaladeumBlockchain/Paladeum/v%{version}/contrib/debian/examples/paladeum.conf
 
 #man pages
-Source20:	https://raw.githubusercontent.com/paladeum/paladeum/v%{version}/doc/man/paladeumd.1
-Source21:	https://raw.githubusercontent.com/paladeum/paladeum/v%{version}/doc/man/paladeum-cli.1
-Source22:	https://raw.githubusercontent.com/paladeum/paladeum/v%{version}/doc/man/paladeum-qt.1
+Source20:	https://raw.githubusercontent.com/PaladeumBlockchain/Paladeum/v%{version}/doc/man/paladeumd.1
+Source21:	https://raw.githubusercontent.com/PaladeumBlockchain/Paladeum/v%{version}/doc/man/paladeum-cli.1
+Source22:	https://raw.githubusercontent.com/PaladeumBlockchain/Paladeum/v%{version}/doc/man/paladeum-qt.1
 
 #selinux
-Source30:	https://raw.githubusercontent.com/paladeum/paladeum/v%{version}/contrib/rpm/paladeum.te
+Source30:	https://raw.githubusercontent.com/PaladeumBlockchain/Paladeum/v%{version}/contrib/rpm/paladeum.te
 # Source31 - what about paladeum-tx and bench_paladeum ???
-Source31:	https://raw.githubusercontent.com/paladeum/paladeum/v%{version}/contrib/rpm/paladeum.fc
-Source32:	https://raw.githubusercontent.com/paladeum/paladeum/v%{version}/contrib/rpm/paladeum.if
+Source31:	https://raw.githubusercontent.com/PaladeumBlockchain/Paladeum/v%{version}/contrib/rpm/paladeum.fc
+Source32:	https://raw.githubusercontent.com/PaladeumBlockchain/Paladeum/v%{version}/contrib/rpm/paladeum.if
 
 Source100:	https://upload.wikimedia.org/wikipedia/commons/4/46/Paladeum.svg
 
@@ -332,11 +332,10 @@ if [ `%{_sbindir}/sestatus |grep -c "disabled"` -eq 0 ]; then
 for selinuxvariant in %{selinux_variants}; do
 	%{_sbindir}/semodule -s ${selinuxvariant} -i %{_datadir}/selinux/${selinuxvariant}/paladeum.pp &> /dev/null || :
 done
-%{_sbindir}/semanage port -a -t paladeum_port_t -p tcp 8766
-%{_sbindir}/semanage port -a -t paladeum_port_t -p tcp 8767
-%{_sbindir}/semanage port -a -t paladeum_port_t -p tcp 18766
-%{_sbindir}/semanage port -a -t paladeum_port_t -p tcp 18767
-%{_sbindir}/semanage port -a -t paladeum_port_t -p tcp 18443
+%{_sbindir}/semanage port -a -t paladeum_port_t -p tcp 7575
+%{_sbindir}/semanage port -a -t paladeum_port_t -p tcp 7576
+%{_sbindir}/semanage port -a -t paladeum_port_t -p tcp 16464
+%{_sbindir}/semanage port -a -t paladeum_port_t -p tcp 16465
 %{_sbindir}/semanage port -a -t paladeum_port_t -p tcp 18444
 %{_sbindir}/fixfiles -R paladeum-server restore &> /dev/null || :
 %{_sbindir}/restorecon -R %{_localstatedir}/lib/paladeum || :
@@ -353,11 +352,10 @@ fi
 # SELinux
 if [ $1 -eq 0 ]; then
 	if [ `%{_sbindir}/sestatus |grep -c "disabled"` -eq 0 ]; then
-	%{_sbindir}/semanage port -d -p tcp 8766
-	%{_sbindir}/semanage port -d -p tcp 8767
-	%{_sbindir}/semanage port -d -p tcp 18766
-	%{_sbindir}/semanage port -d -p tcp 18767
-	%{_sbindir}/semanage port -d -p tcp 18443
+	%{_sbindir}/semanage port -d -p tcp 7575
+	%{_sbindir}/semanage port -d -p tcp 7576
+	%{_sbindir}/semanage port -d -p tcp 16464
+	%{_sbindir}/semanage port -d -p tcp 16465
 	%{_sbindir}/semanage port -d -p tcp 18444
 	for selinuxvariant in %{selinux_variants}; do
 		%{_sbindir}/semodule -s ${selinuxvariant} -r paladeum &> /dev/null || :

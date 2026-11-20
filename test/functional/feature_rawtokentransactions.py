@@ -9,10 +9,78 @@ Test the rawtransaction RPCs for token transactions.
 """
 
 import math
+import struct
 from io import BytesIO
 from test_framework.test_framework import PaladeumTestFramework
 from test_framework.util import assert_equal, assert_raises_rpc_error, assert_is_hash_string, assert_does_not_contain_key, assert_contains_key, assert_contains_pair
-from test_framework.mininode import CTransaction, hex_str_to_bytes, bytes_to_hex_str, CScriptReissue, CScriptOwner, CScriptTransfer, CTxOut, CScriptIssue
+from test_framework.mininode import CTransaction, hex_str_to_bytes, bytes_to_hex_str, CTxOut, deser_string, ser_string
+
+# Paladeum pays every token fee to one address, the token fee address of the regtest network
+# (strTokenFeeAddress of CRegTestParams), with the amounts of CRegTestParams. The cost of a sub
+# token starts at the cost of a unique token in the governance database (CGovernance::Init).
+FEE_ADDRESS = "aWcYoTSeLQsdEaWmijA12pUYae5D2jSd93"
+ISSUE_FEE = 10
+REISSUE_FEE = 2
+SUB_FEE = 0.2
+UNIQUE_FEE = 0.2
+# A regtest address that nobody has the key of: RIPEMD160(SHA256("Paladeum regtest burn"))
+BURN_ADDRESS = "aizAEMY2MQr6aQYwzw4t3qB7vZq2HuWNeV"
+
+# The data of a token script follows "yna" and the type: q issue, t transfer, r reissue, o owner
+YNAQ = '796e6171'  # ynaq
+YNAT = '796e6174'  # ynat
+YNAR = '796e6172'  # ynar
+YNAO = '796e616f'  # ynao
+
+
+class TokenTransferData:
+    """The data of a transfer script (CTokenTransfer): the name, the amount, and then the time
+    lock and the message, which are kept as they are."""
+    def __init__(self):
+        self.name = b""
+        self.amount = 0
+        self.rest = b""
+
+    def deserialize(self, f):
+        self.name = deser_string(f)
+        self.amount = struct.unpack("<q", f.read(8))[0]
+        self.rest = f.read()
+
+    def serialize(self):
+        return ser_string(self.name) + struct.pack("<q", self.amount) + self.rest
+
+
+class TokenReissueData(TokenTransferData):
+    """The data of a reissue script (CReissueToken): the name, the amount, and then the units,
+    reissuable, the royalties and the IPFS hash, which are kept as they are."""
+
+
+class TokenOwnerData:
+    """The data of an owner script: the name (and nothing else, kept as it is)."""
+    def __init__(self):
+        self.name = b""
+        self.rest = b""
+
+    def deserialize(self, f):
+        self.name = deser_string(f)
+        self.rest = f.read()
+
+    def serialize(self):
+        return ser_string(self.name) + self.rest
+
+
+class TokenIssueData:
+    """The data of an issue script (CNewToken) without royalties and without an IPFS hash."""
+    def __init__(self):
+        self.name = b""
+        self.amount = 0
+        self.units = 0
+        self.reissuable = 1
+
+    def serialize(self):
+        # name, amount, units, reissuable, has royalties (0), has ipfs (0)
+        return ser_string(self.name) + struct.pack("<q", self.amount) + struct.pack("<bbbb", self.units, self.reissuable, 0, 0)
+
 
 def truncate(number, digits=8):
     stepper = pow(10.0, digits)
@@ -20,10 +88,9 @@ def truncate(number, digits=8):
 
 
 # noinspection PyTypeChecker,PyUnboundLocalVariable,PyUnresolvedReferences
-def get_first_unspent(self: object, node: object, needed: float = 500.1) -> object:
+def get_first_unspent(self: object, node: object, needed: float = ISSUE_FEE + 1) -> object:
     # Find the first unspent with enough required for transaction
-    for n in range(0, len(node.listunspent())):
-        unspent = node.listunspent()[n]
+    for n, unspent in enumerate(node.listunspent()):
         if float(unspent['amount']) > needed:
             self.log.info("Found unspent index %d with more than %s available.", n, needed)
             return unspent
@@ -36,8 +103,8 @@ def get_tx_issue_hex(self, node, token_name, token_quantity, token_units=0):
     unspent = get_first_unspent(self, node)
     inputs = [{k: unspent[k] for k in ['txid', 'vout']}]
     outputs = {
-        'n1issueTokenXXXXXXXXXXXXXXXXWdnemQ': 500,
-        change_address: truncate(float(unspent['amount']) - 500.1),
+        FEE_ADDRESS: ISSUE_FEE,
+        change_address: truncate(float(unspent['amount']) - ISSUE_FEE - 0.1),
         to_address: {
             'issue': {
                 'token_name':       token_name,
@@ -61,15 +128,24 @@ class RawTokenTransactionsTest(PaladeumTestFramework):
         self.setup_clean_chain = True
         self.num_nodes = 3
 
-    def activate_tokens(self):
-        self.log.info("Generating PLB for node[0] and activating tokens...")
+    def generate_coins(self):
+        # Tokens are always active in Paladeum: there is no deployment to wait for.
+        self.log.info("Generating PLB for node[0]...")
         n0 = self.nodes[0]
 
         n0.generate(1)
         self.sync_all()
         n0.generate(431)
         self.sync_all()
-        assert_equal("active", n0.getblockchaininfo()['bip9_softforks']['tokens']['status'])
+        info = n0.issuanceinfo()
+        assert_equal(info["address"], FEE_ADDRESS)
+        for kind, cost in (("root", ISSUE_FEE), ("reissue", REISSUE_FEE), ("sub", SUB_FEE), ("unique", UNIQUE_FEE)):
+            assert_equal(float(info["cost"][kind]), cost)
+        # Block 1 pays 1,000,000,000 PLB and every other block 10 PLB: make large coins for the raw
+        # transactions of the test, several of which wait in the mempool at the same time
+        n0.sendmany("", {n0.getnewaddress(): 10000 for _ in range(50)})
+        n0.generate(1)
+        self.sync_all()
 
     def reissue_tampering_test(self):
         self.log.info("Tampering with raw reissues...")
@@ -94,8 +170,8 @@ class RawTokenTransactionsTest(PaladeumTestFramework):
             {k: unspent[k] for k in ['txid', 'vout']},
         ]
         outputs = {
-            'n1ReissueTokenXXXXXXXXXXXXXXWG9NLd': 100,
-            n0.getnewaddress(): truncate(float(unspent['amount']) - 100.1),
+            FEE_ADDRESS: REISSUE_FEE,
+            n0.getnewaddress(): truncate(float(unspent['amount']) - REISSUE_FEE - 0.1),
             to_address: {
                 'reissue': {
                     'token_name':       token_name,
@@ -136,7 +212,7 @@ class RawTokenTransactionsTest(PaladeumTestFramework):
         tx = CTransaction()
         f = BytesIO(hex_str_to_bytes(tx_hex))
         tx.deserialize(f)
-        paladeumr = '72766e72'  # paladeumr
+        paladeumr = YNAR
         op_drop = '75'
         for n in range(0, len(tx.vout)):
             out = tx.vout[n]
@@ -144,7 +220,7 @@ class RawTokenTransactionsTest(PaladeumTestFramework):
                 script_hex = bytes_to_hex_str(out.scriptPubKey)
                 reissue_script_hex = script_hex[script_hex.index(paladeumr) + len(paladeumr):-len(op_drop)]
                 f = BytesIO(hex_str_to_bytes(reissue_script_hex))
-                reissue = CScriptReissue()
+                reissue = TokenReissueData()
                 reissue.deserialize(f)
                 reissue.name = alternate_token_name.encode()
                 tampered_reissue = bytes_to_hex_str(reissue.serialize())
@@ -159,7 +235,7 @@ class RawTokenTransactionsTest(PaladeumTestFramework):
         tx = CTransaction()
         f = BytesIO(hex_str_to_bytes(tx_hex))
         tx.deserialize(f)
-        paladeumt = '72766e74'  # paladeumt
+        paladeumt = YNAT
         # remove the owner output from vout
         bad_vout = list(filter(lambda out_script: paladeumt not in bytes_to_hex_str(out_script.scriptPubKey), tx.vout))
         tx.vout = bad_vout
@@ -195,7 +271,7 @@ class RawTokenTransactionsTest(PaladeumTestFramework):
         tx = CTransaction()
         f = BytesIO(hex_str_to_bytes(tx_issue_hex))
         tx.deserialize(f)
-        paladeumo = '72766e6f'  # paladeumo
+        paladeumo = YNAO
         # remove the owner output from vout
         bad_vout = list(filter(lambda out_script: paladeumo not in bytes_to_hex_str(out_script.scriptPubKey), tx.vout))
         tx.vout = bad_vout
@@ -209,7 +285,7 @@ class RawTokenTransactionsTest(PaladeumTestFramework):
         tx = CTransaction()
         f = BytesIO(hex_str_to_bytes(tx_issue_hex))
         tx.deserialize(f)
-        paladeumo = '72766e6f'  # paladeumo
+        paladeumo = YNAO
         # find the owner output from vout and insert a duplicate back in
         owner_vout = list(filter(lambda out_script: paladeumo in bytes_to_hex_str(out_script.scriptPubKey), tx.vout))[0]
         tx.vout.insert(-1, owner_vout)
@@ -223,7 +299,7 @@ class RawTokenTransactionsTest(PaladeumTestFramework):
         tx = CTransaction()
         f = BytesIO(hex_str_to_bytes(tx_issue_hex))
         tx.deserialize(f)
-        paladeumq = '72766e71'  # paladeumq
+        paladeumq = YNAQ
         # remove the owner output from vout
         bad_vout = list(filter(lambda out_script: paladeumq not in bytes_to_hex_str(out_script.scriptPubKey), tx.vout))
         tx.vout = bad_vout
@@ -237,7 +313,7 @@ class RawTokenTransactionsTest(PaladeumTestFramework):
         tx = CTransaction()
         f = BytesIO(hex_str_to_bytes(tx_issue_hex))
         tx.deserialize(f)
-        paladeumo = '72766e6f'  # paladeumo
+        paladeumo = YNAO
         op_drop = '75'
         # change the owner name
         for n in range(0, len(tx.vout)):
@@ -247,7 +323,7 @@ class RawTokenTransactionsTest(PaladeumTestFramework):
                 owner_script_hex = bytes_to_hex_str(owner_out.scriptPubKey)
                 token_script_hex = owner_script_hex[owner_script_hex.index(paladeumo) + len(paladeumo):-len(op_drop)]
                 f = BytesIO(hex_str_to_bytes(token_script_hex))
-                owner = CScriptOwner()
+                owner = TokenOwnerData()
                 owner.deserialize(f)
                 owner.name = b"NOT_MY_TOKEN!"
                 tampered_owner = bytes_to_hex_str(owner.serialize())
@@ -263,14 +339,14 @@ class RawTokenTransactionsTest(PaladeumTestFramework):
         tx = CTransaction()
         f = BytesIO(hex_str_to_bytes(tx_issue_hex))
         tx.deserialize(f)
-        paladeumo = '72766e6f'  # paladeumo
-        PLBO = '52564e4f'  # PLBO
+        paladeumo = YNAO
+        YNAO_UPPER = '594e414f'  # YNAO (the marker in upper case is no marker)
         # change the owner output script type to be invalid
         for n in range(0, len(tx.vout)):
             out = tx.vout[n]
             if paladeumo in bytes_to_hex_str(out.scriptPubKey):
                 owner_script_hex = bytes_to_hex_str(out.scriptPubKey)
-                tampered_script = owner_script_hex.replace(paladeumo, PLBO)
+                tampered_script = owner_script_hex.replace(paladeumo, YNAO_UPPER)
                 tx.vout[n].scriptPubKey = hex_str_to_bytes(tampered_script)
         tx_bad_issue = bytes_to_hex_str(tx.serialize())
         tx_bad_issue_signed = n0.signrawtransaction(tx_bad_issue)['hex']
@@ -296,8 +372,8 @@ class RawTokenTransactionsTest(PaladeumTestFramework):
         unspent = get_first_unspent(self, n0)
         inputs = [{k: unspent[k] for k in ['txid', 'vout']}]
         outputs = {
-            'n1issueTokenXXXXXXXXXXXXXXXXWdnemQ': 500,
-            change_address: truncate(float(unspent['amount']) - 500.1),
+            FEE_ADDRESS: ISSUE_FEE,
+            change_address: truncate(float(unspent['amount']) - ISSUE_FEE - 0.1),
             to_address: {
                 'issue': {
                     'token_name':       'TEST_TOKEN',
@@ -330,8 +406,8 @@ class RawTokenTransactionsTest(PaladeumTestFramework):
         ]
 
         outputs = {
-            'n1ReissueTokenXXXXXXXXXXXXXXWG9NLd': 100,
-            change_address: truncate(float(unspent['amount']) - 100.1),
+            FEE_ADDRESS: REISSUE_FEE,
+            change_address: truncate(float(unspent['amount']) - REISSUE_FEE - 0.1),
             to_address: {
                 'reissue': {
                     'token_name':       'TEST_TOKEN',
@@ -396,13 +472,13 @@ class RawTokenTransactionsTest(PaladeumTestFramework):
         tx = CTransaction()
         f = BytesIO(hex_str_to_bytes(tx_hex))
         tx.deserialize(f)
-        paladeumt = '72766e74'  # paladeumt
+        paladeumt = YNAT
         op_drop = '75'
         # change token outputs from 400,600 to 500,500
         for i in range(1, 3):
             script_hex = bytes_to_hex_str(tx.vout[i].scriptPubKey)
             f = BytesIO(hex_str_to_bytes(script_hex[script_hex.index(paladeumt) + len(paladeumt):-len(op_drop)]))
-            transfer = CScriptTransfer()
+            transfer = TokenTransferData()
             transfer.deserialize(f)
             transfer.amount = 50000000000
             tampered_transfer = bytes_to_hex_str(transfer.serialize())
@@ -459,7 +535,7 @@ class RawTokenTransactionsTest(PaladeumTestFramework):
         tx = CTransaction()
         f = BytesIO(hex_str_to_bytes(tx_hex))
         tx.deserialize(f)
-        paladeumt = '72766e74'  # paladeumt
+        paladeumt = YNAT
         op_drop = '75'
         # change token name
         for n in range(0, len(tx.vout)):
@@ -467,7 +543,7 @@ class RawTokenTransactionsTest(PaladeumTestFramework):
             if paladeumt in bytes_to_hex_str(out.scriptPubKey):
                 script_hex = bytes_to_hex_str(out.scriptPubKey)
                 f = BytesIO(hex_str_to_bytes(script_hex[script_hex.index(paladeumt) + len(paladeumt):-len(op_drop)]))
-                transfer = CScriptTransfer()
+                transfer = TokenTransferData()
                 transfer.deserialize(f)
                 transfer.name = b"TOKEN_DOES_NOT_EXIST"
                 tampered_transfer = bytes_to_hex_str(transfer.serialize())
@@ -485,7 +561,7 @@ class RawTokenTransactionsTest(PaladeumTestFramework):
         tx = CTransaction()
         f = BytesIO(hex_str_to_bytes(tx_hex))
         tx.deserialize(f)
-        paladeumt = '72766e74'  # paladeumt
+        paladeumt = YNAT
         op_drop = '75'
         # change token name
         for n in range(0, len(tx.vout)):
@@ -493,7 +569,7 @@ class RawTokenTransactionsTest(PaladeumTestFramework):
             if paladeumt in bytes_to_hex_str(out.scriptPubKey):
                 script_hex = bytes_to_hex_str(out.scriptPubKey)
                 f = BytesIO(hex_str_to_bytes(script_hex[script_hex.index(paladeumt) + len(paladeumt):-len(op_drop)]))
-                transfer = CScriptTransfer()
+                transfer = TokenTransferData()
                 transfer.deserialize(f)
                 transfer.name = alternate_token_name.encode()
                 tampered_transfer = bytes_to_hex_str(transfer.serialize())
@@ -509,7 +585,7 @@ class RawTokenTransactionsTest(PaladeumTestFramework):
         tx = CTransaction()
         f = BytesIO(hex_str_to_bytes(tx_hex))
         tx.deserialize(f)
-        paladeumt = '72766e74'  # paladeumt
+        paladeumt = YNAT
         # remove the transfer output from vout
         bad_vout = list(filter(lambda out_script: paladeumt not in bytes_to_hex_str(out_script.scriptPubKey), tx.vout))
         tx.vout = bad_vout
@@ -533,8 +609,8 @@ class RawTokenTransactionsTest(PaladeumTestFramework):
         self.log.info("Testing unique tokens...")
         n0 = self.nodes[0]
 
-        bad_burn = "n1BurnXXXXXXXXXXXXXXXXXXXXXXU1qejP"
-        unique_burn = "n1issueUniqueTokenXXXXXXXXXXS4695i"
+        bad_burn = BURN_ADDRESS
+        unique_burn = FEE_ADDRESS
 
         root = "RINGU"
         owner = f"{root}!"
@@ -554,7 +630,7 @@ class RawTokenTransactionsTest(PaladeumTestFramework):
             {k: unspent_token_owner[k] for k in ['txid', 'vout']},
         ]
 
-        burn = 5 * len(token_tags)
+        burn = UNIQUE_FEE * len(token_tags)
 
         ############################################
         # try first with bad burn address
@@ -620,9 +696,9 @@ class RawTokenTransactionsTest(PaladeumTestFramework):
             {k: unspent_token_owner[k] for k in ['txid', 'vout']},
         ]
 
-        burn = 5
+        burn = UNIQUE_FEE
         outputs = {
-            'n1issueUniqueTokenXXXXXXXXXXS4695i': burn,
+            FEE_ADDRESS: burn,
             change_address: truncate(float(unspent['amount']) - (burn + 0.01)),
             owner_change_address: {
                 'transfer': {
@@ -684,8 +760,8 @@ class RawTokenTransactionsTest(PaladeumTestFramework):
         # issue
         inputs = [{k: unspent[k] for k in ['txid', 'vout']}]
         outputs = {
-            'n1issueTokenXXXXXXXXXXXXXXXXWdnemQ': 500,
-            change_address: truncate(float(unspent['amount']) - 500.0001),
+            FEE_ADDRESS: ISSUE_FEE,
+            change_address: truncate(float(unspent['amount']) - ISSUE_FEE - 0.0001),
             to_address: {
                 'issue': {
                     'token_name':       token_name,
@@ -709,8 +785,8 @@ class RawTokenTransactionsTest(PaladeumTestFramework):
             {k: unspent_token_owner[k] for k in ['txid', 'vout']},
         ]
         outputs = {
-            'n1ReissueTokenXXXXXXXXXXXXXXWG9NLd': 100,
-            change_address: truncate(float(unspent['amount']) - 100.0001),
+            FEE_ADDRESS: REISSUE_FEE,
+            change_address: truncate(float(unspent['amount']) - REISSUE_FEE - 0.0001),
             to_address: {
                 'reissue': {
                     'token_name':       token_name,
@@ -725,9 +801,9 @@ class RawTokenTransactionsTest(PaladeumTestFramework):
         self.log.info("Testing issue with invalid burn and address...")
         n0 = self.nodes[0]
 
-        unique_burn = "n1issueUniqueTokenXXXXXXXXXXS4695i"
-        issue_burn = "n1issueTokenXXXXXXXXXXXXXXXXWdnemQ"
-        sub_burn = "n1issueSubTokenXXXXXXXXXXXXXbNiH6v"
+        # Paladeum has one fee address for all types of token: what is refused is another address,
+        # or the amount of another type of token
+        issue_burn = FEE_ADDRESS
 
         token_name = "BURN_TEST"
 
@@ -741,7 +817,7 @@ class RawTokenTransactionsTest(PaladeumTestFramework):
 
         ############################################
         # start with invalid burn amount and valid address
-        burn = 499
+        burn = ISSUE_FEE - 1
         outputs = {
             issue_burn: burn,
             change_address: truncate(float(unspent['amount']) - (burn + 0.01)),
@@ -762,7 +838,7 @@ class RawTokenTransactionsTest(PaladeumTestFramework):
 
         ############################################
         # switch to invalid burn amount again
-        burn = 501
+        burn = ISSUE_FEE + 1
         outputs = {
             issue_burn: burn,
             change_address: truncate(float(unspent['amount']) - (burn + 0.0001)),
@@ -782,10 +858,10 @@ class RawTokenTransactionsTest(PaladeumTestFramework):
         assert_raises_rpc_error(-26, "bad-txns-issue-burn-not-found", n0.sendrawtransaction, signed_hex)
 
         ############################################
-        # switch to valid burn amount, but sending it to the sub token burn address
-        burn = 500
+        # switch to valid burn amount, but sending it to an address that is not the fee address
+        burn = ISSUE_FEE
         outputs = {
-            sub_burn: burn,
+            BURN_ADDRESS: burn,
             change_address: truncate(float(unspent['amount']) - (burn + 0.0001)),
             to_address: {
                 'issue': {
@@ -803,10 +879,10 @@ class RawTokenTransactionsTest(PaladeumTestFramework):
         assert_raises_rpc_error(-26, "bad-txns-issue-burn-not-found", n0.sendrawtransaction, signed_hex)
 
         ############################################
-        # switch burn address to unique address
+        # the cost of a sub token is not the cost of a root token
         outputs = {
-            unique_burn: burn,
-            change_address: truncate(float(unspent['amount']) - (burn + 0.0001)),
+            issue_burn: SUB_FEE,
+            change_address: truncate(float(unspent['amount']) - (SUB_FEE + 0.0001)),
             to_address: {
                 'issue': {
                     'token_name':       token_name,
@@ -848,10 +924,9 @@ class RawTokenTransactionsTest(PaladeumTestFramework):
         self.log.info("Testing issue sub invalid amount and address...")
         n0 = self.nodes[0]
 
-        unique_burn = "n1issueUniqueTokenXXXXXXXXXXS4695i"
-        issue_burn = "n1issueTokenXXXXXXXXXXXXXXXXWdnemQ"
-        reissue_burn = "n1ReissueTokenXXXXXXXXXXXXXXWG9NLd"
-        sub_burn = "n1issueSubTokenXXXXXXXXXXXXXbNiH6v"
+        # Paladeum has one fee address for all types of token: what is refused is another address,
+        # or the amount of another type of token
+        sub_burn = FEE_ADDRESS
 
         token_name = "ISSUE_SUB_INVALID"
         owner = f"{token_name}!"
@@ -870,7 +945,7 @@ class RawTokenTransactionsTest(PaladeumTestFramework):
             {k: unspent_token_owner[k] for k in ['txid', 'vout']},
         ]
 
-        burn = 99
+        burn = round(SUB_FEE - 0.1, 8)
         token_name_sub = token_name + '/SUB1'
 
         ############################################
@@ -900,7 +975,7 @@ class RawTokenTransactionsTest(PaladeumTestFramework):
 
         ############################################
         # switch to invalid burn amount again
-        burn = 101
+        burn = round(SUB_FEE + 0.1, 8)
         outputs = {
             sub_burn: burn,
             change_address: truncate(float(unspent['amount']) - (burn + 0.0001)),
@@ -925,10 +1000,10 @@ class RawTokenTransactionsTest(PaladeumTestFramework):
         assert_raises_rpc_error(-26, "bad-txns-issue-burn-not-found", n0.sendrawtransaction, signed_hex)
 
         ############################################
-        # switch to valid burn amount, but sending it to the issue token burn address
-        burn = 100
+        # switch to valid burn amount, but sending it to an address that is not the fee address
+        burn = SUB_FEE
         outputs = {
-            issue_burn: burn,
+            BURN_ADDRESS: burn,
             change_address: truncate(float(unspent['amount']) - (burn + 0.0001)),
             owner_change_address: {
                 'transfer': {
@@ -951,10 +1026,10 @@ class RawTokenTransactionsTest(PaladeumTestFramework):
         assert_raises_rpc_error(-26, "bad-txns-issue-burn-not-found", n0.sendrawtransaction, signed_hex)
 
         ############################################
-        # switch burn address to reissue address, should be invalid because it needs to be sub token burn address
+        # the cost of a reissue is not the cost of a sub token
         outputs = {
-            reissue_burn: burn,
-            change_address: truncate(float(unspent['amount']) - (burn + 0.0001)),
+            sub_burn: REISSUE_FEE,
+            change_address: truncate(float(unspent['amount']) - (REISSUE_FEE + 0.0001)),
             owner_change_address: {
                 'transfer': {
                     owner: 1,
@@ -976,10 +1051,10 @@ class RawTokenTransactionsTest(PaladeumTestFramework):
         assert_raises_rpc_error(-26, "bad-txns-issue-burn-not-found", n0.sendrawtransaction, signed_hex)
 
         ############################################
-        # switch burn address to unique address, should be invalid because it needs to be sub token burn address
+        # the cost of a root token is not the cost of a sub token
         outputs = {
-            unique_burn: burn,
-            change_address: truncate(float(unspent['amount']) - (burn + 0.0001)),
+            sub_burn: ISSUE_FEE,
+            change_address: truncate(float(unspent['amount']) - (ISSUE_FEE + 0.0001)),
             owner_change_address: {
                 'transfer': {
                     owner: 1,
@@ -1031,7 +1106,7 @@ class RawTokenTransactionsTest(PaladeumTestFramework):
         self.log.info("Testing issue with extra issues in the tx...")
         n0 = self.nodes[0]
 
-        issue_burn = "n1issueTokenXXXXXXXXXXXXXXXXWdnemQ"
+        issue_burn = FEE_ADDRESS
 
         token_name = "ISSUE_MULTIPLE_TEST"
         token_name_multiple = "ISSUE_MULTIPLE_TEST_2"
@@ -1048,7 +1123,7 @@ class RawTokenTransactionsTest(PaladeumTestFramework):
 
         ############################################
         # Try tampering with an token by adding another issue
-        burn = 500
+        burn = ISSUE_FEE
         outputs = {
             issue_burn: burn,
             change_address: truncate(float(unspent['amount']) - (burn + 0.001)),
@@ -1081,8 +1156,8 @@ class RawTokenTransactionsTest(PaladeumTestFramework):
         self.log.info("Testing issue with an extra sub token issue in the tx...")
         n0 = self.nodes[0]
 
-        issue_burn = "n1issueTokenXXXXXXXXXXXXXXXXWdnemQ"
-        sub_burn =   "n1issueSubTokenXXXXXXXXXXXXXbNiH6v"
+        issue_burn = FEE_ADDRESS
+        sub_burn = FEE_ADDRESS
 
         # create the root token that the sub token will try to be created from
         root = "ISSUE_SUB_MULTIPLE_TEST"
@@ -1108,7 +1183,7 @@ class RawTokenTransactionsTest(PaladeumTestFramework):
 
         ############################################
         # Try tampering with an token transaction by having a sub token issue hidden in the transaction
-        burn = 500
+        burn = ISSUE_FEE
         outputs = {
             issue_burn: burn,
             change_address: truncate(float(unspent['amount']) - (burn + 0.0001)),
@@ -1144,7 +1219,7 @@ class RawTokenTransactionsTest(PaladeumTestFramework):
 
         ############################################
         # Try tampering with an issue sub token transaction by having another owner token transfer
-        burn = 100
+        burn = SUB_FEE
         second_owner_change_address = n0.getnewaddress()
         outputs = {
             sub_burn: burn,
@@ -1292,7 +1367,7 @@ class RawTokenTransactionsTest(PaladeumTestFramework):
         tx = CTransaction()
         f = BytesIO(hex_str_to_bytes(tx_issue_sub_hex))
         tx.deserialize(f)
-        paladeumt = '72766e74'  # paladeumt
+        paladeumt = YNAT
         op_drop = '75'
         # change the transfer amount
         for n in range(0, len(tx.vout)):
@@ -1302,7 +1377,7 @@ class RawTokenTransactionsTest(PaladeumTestFramework):
                 transfer_script_hex = bytes_to_hex_str(transfer_out.scriptPubKey)
                 token_script_hex = transfer_script_hex[transfer_script_hex.index(paladeumt) + len(paladeumt):-len(op_drop)]
                 f = BytesIO(hex_str_to_bytes(token_script_hex))
-                transfer = CScriptTransfer()
+                transfer = TokenTransferData()
                 transfer.deserialize(f)
                 transfer.amount = 0
                 tampered_transfer = bytes_to_hex_str(transfer.serialize())
@@ -1368,7 +1443,7 @@ class RawTokenTransactionsTest(PaladeumTestFramework):
         tx = CTransaction()
         f = BytesIO(hex_str_to_bytes(tx_transfer_hex))
         tx.deserialize(f)
-        paladeumt = '72766e74'  # paladeumt
+        paladeumt = YNAT
         op_drop = '75'
         # change the transfer amounts = 0
         for n in range(0, len(tx.vout)):
@@ -1378,7 +1453,7 @@ class RawTokenTransactionsTest(PaladeumTestFramework):
                 transfer_script_hex = bytes_to_hex_str(transfer_out.scriptPubKey)
                 token_script_hex = transfer_script_hex[transfer_script_hex.index(paladeumt) + len(paladeumt):-len(op_drop)]
                 f = BytesIO(hex_str_to_bytes(token_script_hex))
-                transfer = CScriptTransfer()
+                transfer = TokenTransferData()
                 transfer.deserialize(f)
                 transfer.amount = 0
                 tampered_transfer = bytes_to_hex_str(transfer.serialize())
@@ -1434,7 +1509,7 @@ class RawTokenTransactionsTest(PaladeumTestFramework):
         tx = CTransaction()
         f = BytesIO(hex_str_to_bytes(tx_transfer_hex))
         tx.deserialize(f)
-        paladeumt = '72766e74'  # paladeumt
+        paladeumt = YNAT
         op_drop = '75'
 
         # create a new issue CTxOut
@@ -1442,11 +1517,11 @@ class RawTokenTransactionsTest(PaladeumTestFramework):
         issue_out.nValue = 0
 
         # create a new issue script
-        issue_script = CScriptIssue()
+        issue_script = TokenIssueData()
         issue_script.name = b'BYTE_ISSUE'
         issue_script.amount = 1
         issue_serialized = bytes_to_hex_str(issue_script.serialize())
-        paladeumq = '72766e71'  # paladeumq
+        paladeumq = YNAQ
 
         for n in range(0, len(tx.vout)):
             out = tx.vout[n]
@@ -1483,6 +1558,9 @@ class RawTokenTransactionsTest(PaladeumTestFramework):
         n1.issue(jaina, starting_amount)
         n1.generate(1)
         self.sync_all()
+        # the coinbase of that block matures after 10 more blocks: before the balance is taken
+        n0.generate(10)
+        self.sync_all()
         balance1 = float(n1.getwalletinfo()['balance'])
 
         receive2 = n2.getnewaddress()
@@ -1492,6 +1570,8 @@ class RawTokenTransactionsTest(PaladeumTestFramework):
         self.sync_all()
         n2.issue(anduin, starting_amount)
         n2.generate(1)
+        self.sync_all()
+        n0.generate(10)
         self.sync_all()
         balance2 = float(n2.getwalletinfo()['balance'])
 
@@ -1539,7 +1619,7 @@ class RawTokenTransactionsTest(PaladeumTestFramework):
         newbalance1 = float(n1.getwalletinfo()['balance'])
         newbalance2 = float(n2.getwalletinfo()['balance'])
         assert_equal(truncate(balance1 - price - fee), newbalance1)
-        assert_equal(balance2 + price, newbalance2)
+        assert_equal(round(balance2 + price, 8), newbalance2)
 
         assert_equal(amount, int(n1.listmytokens()[anduin]))
         assert_equal(starting_amount - amount, int(n2.listmytokens()[anduin]))
@@ -1583,7 +1663,7 @@ class RawTokenTransactionsTest(PaladeumTestFramework):
 
         newbalance1 = float(n1.getwalletinfo()['balance'])
         newbalance2 = float(n2.getwalletinfo()['balance'])
-        assert_equal(balance1 + price, newbalance1)
+        assert_equal(round(balance1 + price, 8), newbalance1)
         assert_equal(truncate(balance2 - price - fee), newbalance2)
 
         assert_does_not_contain_key(jaina_owner, n1.listmytokens())
@@ -1822,7 +1902,7 @@ class RawTokenTransactionsTest(PaladeumTestFramework):
         assert_contains_pair(token_name, token_amount, n1.listmytokens())
 
     def run_test(self):
-        self.activate_tokens()
+        self.generate_coins()
         self.issue_reissue_transfer_test()
         self.unique_tokens_test()
         self.issue_tampering_test()

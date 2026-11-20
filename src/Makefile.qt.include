@@ -105,7 +105,6 @@ QT_FORMS_UI = \
   qt/forms/modaloverlay.ui \
   qt/forms/openuridialog.ui \
   qt/forms/optionsdialog.ui \
-  qt/forms/overviewpage.ui \
   qt/forms/receivecoinsdialog.ui \
   qt/forms/receiverequestdialog.ui \
   qt/forms/debugwindow.ui \
@@ -120,15 +119,16 @@ QT_FORMS_UI = \
   qt/forms/restrictedtokensdialog.ui \
   qt/forms/restrictedassignqualifier.ui \
   qt/forms/restrictedfreezeaddress.ui \
-  qt/forms/sendtokensentry.ui \
-  qt/forms/mnemonicdialog1.ui \
-  qt/forms/mnemonicdialog2.ui \
-  qt/forms/mnemonicdialog3.ui
+  qt/forms/sendtokensentry.ui
 
 QT_MOC_CPP = \
   qt/moc_addressbookpage.cpp \
   qt/moc_addresstablemodel.cpp \
   qt/moc_askpassphrasedialog.cpp \
+  qt/moc_firstrun.cpp \
+  qt/moc_mnemonicdialog.cpp \
+  qt/moc_mnemonicrestoredialog.cpp \
+  qt/moc_sendconfirmdialog.cpp \
   qt/moc_tokencontroldialog.cpp \
   qt/moc_tokencontroltreewidget.cpp \
   qt/moc_tokenfilterproxy.cpp \
@@ -142,7 +142,6 @@ QT_MOC_CPP = \
   qt/moc_coincontroldialog.cpp \
   qt/moc_coincontroltreewidget.cpp \
   qt/moc_csvmodelwriter.cpp \
-  qt/moc_darkstyle.cpp \
   qt/moc_editaddressdialog.cpp \
   qt/moc_guiutil.cpp \
   qt/moc_intro.cpp \
@@ -176,17 +175,26 @@ QT_MOC_CPP = \
   qt/moc_transactiontablemodel.cpp \
   qt/moc_transactionview.cpp \
   qt/moc_utilitydialog.cpp \
+  qt/moc_walletcontroller.cpp \
+  qt/moc_walletdialogs.cpp \
   qt/moc_walletframe.cpp \
   qt/moc_walletmodel.cpp \
   qt/moc_walletview.cpp \
+  qt/moc_sidebar.cpp \
+  qt/moc_pagewidgets.cpp \
+  qt/moc_pagenav.cpp \
+  qt/moc_tokenspage.cpp \
+  qt/moc_tokenlists.cpp \
+  qt/moc_explorerpage.cpp \
+  qt/moc_multisigmodel.cpp \
+  qt/moc_signhubpage.cpp \
   qt/moc_tokensdialog.cpp \
   qt/moc_createtokendialog.cpp \
   qt/moc_reissuetokendialog.cpp \
   qt/moc_restrictedtokensdialog.cpp \
   qt/moc_restrictedassignqualifier.cpp \
   qt/moc_restrictedfreezeaddress.cpp \
-  qt/moc_sendtokensentry.cpp \
-  qt/moc_mnemonicdialog.cpp
+  qt/moc_sendtokensentry.cpp
 
 PLB_MM = \
   qt/macdockiconhandler.mm \
@@ -213,6 +221,10 @@ PLB_QT_H = \
   qt/addressbookpage.h \
   qt/addresstablemodel.h \
   qt/askpassphrasedialog.h \
+  qt/firstrun.h \
+  qt/mnemonicdialog.h \
+  qt/mnemonicrestoredialog.h \
+  qt/sendconfirmdialog.h \
   qt/tokencontroldialog.h \
   qt/tokencontroltreewidget.h \
   qt/tokenfilterproxy.h \
@@ -225,11 +237,11 @@ PLB_QT_H = \
   qt/paladeumgui.h \
   qt/paladeumunits.h \
   qt/callback.h \
+  qt/cellstyle.h \
   qt/clientmodel.h \
   qt/coincontroldialog.h \
   qt/coincontroltreewidget.h \
   qt/csvmodelwriter.h \
-  qt/darkstyle.h \
   qt/editaddressdialog.h \
   qt/guiconstants.h \
   qt/guiutil.h \
@@ -274,14 +286,29 @@ PLB_QT_H = \
   qt/transactiontablemodel.h \
   qt/transactionview.h \
   qt/utilitydialog.h \
+  qt/walletcontroller.h \
+  qt/walletdialogs.h \
   qt/walletframe.h \
   qt/walletmodel.h \
   qt/walletmodeltransaction.h \
   qt/walletview.h \
-  qt/winshutdownmonitor.h \
-  qt/mnemonicdialog.h
+  qt/sidebar.h \
+  qt/pagewidgets.h \
+  qt/pagenav.h \
+  qt/tokenspage.h \
+  qt/tokenlists.h \
+  qt/explorerpage.h \
+  qt/bootstrapfetch.h \
+  qt/pastblocks.h \
+  qt/multisigmodel.h \
+  qt/signhubpage.h \
+  qt/winshutdownmonitor.h
 
 RES_ICONS = \
+  qt/res/icons/check_white.png \
+  qt/res/icons/plb_logo.png \
+  qt/res/icons/chevron_down.png \
+  qt/res/icons/radio_white.png \
   qt/res/icons/add.png \
   qt/res/icons/address-book.png \
   qt/res/icons/about.png \
@@ -351,50 +378,28 @@ RES_ICONS = \
   qt/res/icons/tx_token_output.png \
   qt/res/icons/warning.png \
   qt/res/icons/verify.png \
-  qt/res/darkstyle/icon_close.png \
-  qt/res/darkstyle/icon_restore.png \
-  qt/res/darkstyle/icon_undock.png \
-  qt/res/darkstyle/icon_branch_closed.png \
-  qt/res/darkstyle/icon_branch_end.png \
-  qt/res/darkstyle/icon_branch_more.png \
-  qt/res/darkstyle/icon_branch_open.png \
-  qt/res/darkstyle/icon_vline.png \
-  qt/res/darkstyle/icon_checkbox_checked.png \
-  qt/res/darkstyle/icon_checkbox_indeterminate.png \
-  qt/res/darkstyle/icon_checkbox_unchecked.png \
-  qt/res/darkstyle/icon_checkbox_checked_pressed.png \
-  qt/res/darkstyle/icon_checkbox_indeterminate_pressed.png \
-  qt/res/darkstyle/icon_checkbox_unchecked_pressed.png \
-  qt/res/darkstyle/icon_checkbox_checked_disabled.png \
-  qt/res/darkstyle/icon_checkbox_indeterminate_disabled.png \
-  qt/res/darkstyle/icon_checkbox_unchecked_disabled.png \
-  qt/res/darkstyle/icon_radiobutton_checked.png \
-  qt/res/darkstyle/icon_radiobutton_unchecked.png \
-  qt/res/darkstyle/icon_radiobutton_checked_pressed.png \
-  qt/res/darkstyle/icon_radiobutton_unchecked_pressed.png \
-  qt/res/darkstyle/icon_radiobutton_checked_disabled.png \
-  qt/res/darkstyle/icon_radiobutton_unchecked_disabled.png \
-  qt/res/fonts/OpenSans-Bold.ttf \
-  qt/res/fonts/OpenSans-BoldItalic.ttf \
-  qt/res/fonts/OpenSans-ExtraBold.ttf \
-  qt/res/fonts/OpenSans-ExtraBoldItalic.ttf \
-  qt/res/fonts/OpenSans-Italic.ttf \
-  qt/res/fonts/OpenSans-Light.ttf \
-  qt/res/fonts/OpenSans-LightItalic.ttf \
-  qt/res/fonts/OpenSans-Regular.ttf \
-  qt/res/fonts/OpenSans-SemiBold.ttf \
-  qt/res/fonts/OpenSans-SemiBoldItalic.ttf
+  qt/res/fonts/Inter-Regular.ttf \
+  qt/res/fonts/Inter-Medium.ttf \
+  qt/res/fonts/Inter-SemiBold.ttf \
+  qt/res/fonts/SpaceGrotesk-Regular.ttf \
+  qt/res/fonts/SpaceGrotesk-Medium.ttf \
+  qt/res/fonts/JetBrainsMono-Regular.ttf \
+  qt/res/fonts/JetBrainsMono-Medium.ttf \
+  qt/res/fonts/OFL-Inter.txt \
+  qt/res/fonts/OFL-SpaceGrotesk.txt \
+  qt/res/fonts/OFL-JetBrainsMono.txt \
+  qt/res/css/theme.qss
 
 
 PLB_QT_BASE_CPP = \
   qt/bantablemodel.cpp \
+  qt/cellstyle.cpp \
   qt/paladeumaddressvalidator.cpp \
   qt/paladeumamountfield.cpp \
   qt/paladeumgui.cpp \
   qt/paladeumunits.cpp \
   qt/clientmodel.cpp \
   qt/csvmodelwriter.cpp \
-  qt/darkstyle.cpp \
   qt/guiutil.cpp \
   qt/intro.cpp \
   qt/modaloverlay.cpp \
@@ -408,10 +413,12 @@ PLB_QT_BASE_CPP = \
   qt/qvalidatedlineedit.cpp \
   qt/qvaluecombobox.cpp \
   qt/rpcconsole.cpp \
+  qt/firstrun.cpp \
   qt/splashscreen.cpp \
   qt/offlinepage.cpp \
   qt/trafficgraphwidget.cpp \
-  qt/utilitydialog.cpp
+  qt/utilitydialog.cpp \
+  qt/sidebar.cpp
 
 PLB_QT_WINDOWS_CPP = qt/winshutdownmonitor.cpp
 
@@ -419,6 +426,9 @@ PLB_QT_WALLET_CPP = \
   qt/addressbookpage.cpp \
   qt/addresstablemodel.cpp \
   qt/askpassphrasedialog.cpp \
+  qt/mnemonicdialog.cpp \
+  qt/mnemonicrestoredialog.cpp \
+  qt/sendconfirmdialog.cpp \
   qt/tokencontroldialog.cpp \
   qt/tokencontroltreewidget.cpp \
   qt/tokenfilterproxy.cpp \
@@ -450,11 +460,21 @@ PLB_QT_WALLET_CPP = \
   qt/transactionrecord.cpp \
   qt/transactiontablemodel.cpp \
   qt/transactionview.cpp \
+  qt/walletcontroller.cpp \
+  qt/walletdialogs.cpp \
   qt/walletframe.cpp \
   qt/walletmodel.cpp \
   qt/walletmodeltransaction.cpp \
   qt/walletview.cpp \
-  qt/mnemonicdialog.cpp
+  qt/explorerpage.cpp \
+  qt/bootstrapfetch.cpp \
+  qt/pastblocks.cpp \
+  qt/multisigmodel.cpp \
+  qt/signhubpage.cpp \
+  qt/tokenspage.cpp \
+  qt/tokenlists.cpp \
+  qt/pagewidgets.cpp \
+  qt/pagenav.cpp
 
 PLB_QT_CPP = $(PLB_QT_BASE_CPP)
 if TARGET_WINDOWS

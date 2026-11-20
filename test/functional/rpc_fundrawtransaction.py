@@ -50,13 +50,15 @@ class RawTransactionsTest(PaladeumTestFramework):
         self.sync_all()
 
         # ensure that setting changePosition in fundraw with an exact match is handled properly
-        raw_match = self.nodes[2].createrawtransaction([], {self.nodes[2].getnewaddress():5000})
+        # (the only coin of node 2 is the coinbase of block 1: 1,000,000,000 PLB)
+        raw_match = self.nodes[2].createrawtransaction([], {self.nodes[2].getnewaddress():1000000000})
         raw_match = self.nodes[2].fundrawtransaction(raw_match, {"changePosition":1, "subtractFeeFromOutputs":[0]})
         assert_equal(raw_match["changepos"], -1)
 
         watchonly_address = self.nodes[0].getnewaddress()
         watchonly_pubkey = self.nodes[0].validateaddress(watchonly_address)["pubkey"]
-        watchonly_amount = Decimal(20000)
+        # (node 0 has 1110 PLB: blocks 2 to 112, 10 PLB each)
+        watchonly_amount = Decimal(200)
         self.nodes[3].importpubkey(watchonly_pubkey, "", True)
         watchonly_txid = self.nodes[0].sendtoaddress(watchonly_address, watchonly_amount)
         self.nodes[0].sendtoaddress(self.nodes[3].getnewaddress(), watchonly_amount / 10)
@@ -228,8 +230,8 @@ class RawTransactionsTest(PaladeumTestFramework):
         outputs = { self.nodes[0].getnewaddress() : 1.0 }
         rawtx   = self.nodes[2].createrawtransaction(inputs, outputs)
 
-        # 4-byte version + 1-byte vin count + 36-byte prevout then script_len
-        rawtx = rawtx[:82] + "0100" + rawtx[84:]
+        # 4-byte version + 4-byte time + 1-byte vin count + 36-byte prevout then script_len
+        rawtx = rawtx[:90] + "0100" + rawtx[92:]
 
         dec_tx  = self.nodes[2].decoderawtransaction(rawtx)
         assert_equal(utx['txid'], dec_tx['vin'][0]['txid'])
@@ -444,6 +446,9 @@ class RawTransactionsTest(PaladeumTestFramework):
         ############################################################
         # locked wallet test
         self.stop_node(0)
+        # A BIP44 wallet (the default) keeps its keypool when it is encrypted, it does not get a
+        # new one: fill it first (one key and one change key, -keypool=1), the test drains it below
+        self.nodes[1].keypoolrefill(1)
         self.nodes[1].node_encrypt_wallet("test")
         self.stop_node(2)
         self.stop_node(3)
@@ -488,8 +493,8 @@ class RawTransactionsTest(PaladeumTestFramework):
         self.nodes[1].generate(1)
         self.sync_all()
 
-        # make sure funds are received at node1
-        assert_equal(oldBalance+Decimal('5001.10000000'), self.nodes[0].getbalance())
+        # make sure funds are received at node1 (and the coinbase of node 0 that the block makes mature)
+        assert_equal(oldBalance+Decimal('11.10000000'), self.nodes[0].getbalance())
 
 
         ###############################################
@@ -497,7 +502,7 @@ class RawTransactionsTest(PaladeumTestFramework):
         ###############################################
 
         #empty node1, send some small coins from node0 to node1
-        self.nodes[1].sendtoaddress(self.nodes[0].getnewaddress(), self.nodes[1].getbalance(), "", "", True)
+        self.nodes[1].sendtoaddress(address=self.nodes[0].getnewaddress(), amount=self.nodes[1].getbalance(), subtractfeefromamount=True)
         self.sync_all()
         self.nodes[0].generate(1)
         self.sync_all()
@@ -527,7 +532,7 @@ class RawTransactionsTest(PaladeumTestFramework):
         #############################################
 
         #again, empty node1, send some small coins from node0 to node1
-        self.nodes[1].sendtoaddress(self.nodes[0].getnewaddress(), self.nodes[1].getbalance(), "", "", True)
+        self.nodes[1].sendtoaddress(address=self.nodes[0].getnewaddress(), amount=self.nodes[1].getbalance(), subtractfeefromamount=True)
         self.sync_all()
         self.nodes[0].generate(1)
         self.sync_all()
@@ -549,13 +554,13 @@ class RawTransactionsTest(PaladeumTestFramework):
         self.sync_all()
         self.nodes[0].generate(1)
         self.sync_all()
-        assert_equal(oldBalance+Decimal('5000.19000000'), self.nodes[0].getbalance()) #0.19+block reward
+        assert_equal(oldBalance+Decimal('10.19000000'), self.nodes[0].getbalance()) #0.19+block reward (of the block that matures)
 
         #####################################################
         # test fundrawtransaction with OP_RETURN and no vin #
         #####################################################
 
-        rawtx   = "0100000000010000000000000000066a047465737400000000"
+        rawtx   = self.nodes[2].createrawtransaction([], {"data": "74657374"})
         dec_tx  = self.nodes[2].decoderawtransaction(rawtx)
 
         assert_equal(len(dec_tx['vin']), 0)

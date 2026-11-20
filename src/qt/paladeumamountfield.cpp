@@ -6,6 +6,7 @@
 #include "paladeumamountfield.h"
 
 #include "paladeumunits.h"
+#include "guiutil.h"
 #include "guiconstants.h"
 #include "qvaluecombobox.h"
 #include "platformstyle.h"
@@ -64,6 +65,14 @@ public:
     CAmount value(bool *valid_out=0) const
     {
         return parse(text(), valid_out);
+    }
+
+    /** Font and alignment of the text that is being edited */
+    void setEditStyle(const QFont& font, Qt::Alignment alignment)
+    {
+        setFont(font);
+        lineEdit()->setFont(font);
+        setAlignment(alignment);
     }
 
     void setValue(const CAmount& value)
@@ -235,6 +244,7 @@ PaladeumAmountField::PaladeumAmountField(QWidget *parent) :
     amount->setLocale(QLocale::c());
     amount->installEventFilter(this);
     amount->setMaximumWidth(170);
+    amount->setFont(GUIUtil::monoFont(13));
 
     QHBoxLayout *layout = new QHBoxLayout(this);
     layout->addWidget(amount);
@@ -256,6 +266,24 @@ PaladeumAmountField::PaladeumAmountField(QWidget *parent) :
     // Set default based on configuration
     unitChanged(unit->currentIndex());
 
+}
+
+void PaladeumAmountField::setHeroStyle()
+{
+    amount->setMaximumWidth(QWIDGETSIZE_MAX);
+    amount->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
+    amount->setProperty("look", "bare");
+    amount->setEditStyle(GUIUtil::monoFont(24, QFont::DemiBold), Qt::AlignLeft);
+    amount->setButtonSymbols(QAbstractSpinBox::NoButtons);
+    amount->setMinimumHeight(44);
+    // the trailing stretch would keep the amount narrow
+    QLayout *l = layout();
+    if (l->count() > 0 && l->itemAt(l->count() - 1)->spacerItem())
+        delete l->takeAt(l->count() - 1);
+    for (QLabel *label : findChildren<QLabel*>()) {
+        label->setFont(GUIUtil::appFont(14, QFont::DemiBold));
+        label->setProperty("role", "secondary");
+    }
 }
 
 void PaladeumAmountField::clear()
@@ -364,6 +392,19 @@ TokenAmountField::TokenAmountField(QWidget *parent) :
 
     // Set default based on configuration
     setUnit(MAX_TOKEN_UNITS);
+}
+
+void TokenAmountField::setHeroStyle()
+{
+    amount->setMaximumWidth(QWIDGETSIZE_MAX);
+    amount->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
+    amount->setProperty("look", "bare");
+    amount->setEditStyle(GUIUtil::monoFont(24, QFont::DemiBold), Qt::AlignLeft);
+    amount->setButtonSymbols(QAbstractSpinBox::NoButtons);
+    amount->setMinimumHeight(44);
+    QLayout *l = layout();
+    if (l->count() > 0 && l->itemAt(l->count() - 1)->spacerItem())
+        delete l->takeAt(l->count() - 1);
 }
 
 void TokenAmountField::clear()

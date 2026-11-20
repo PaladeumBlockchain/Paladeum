@@ -42,6 +42,14 @@
 #if QT_VERSION < QT_VERSION_CHECK(5, 11, 0)
 #define QTversionPreFiveEleven
 #endif
+#include <cmath>
+
+/** The quantity of the spin box in the amount unit. The spin box has no decimals; a double times
+ *  COIN would lose the last digits of the quantities near the maximum (above 2^53). */
+static CAmount QuantityFromSpinBox(const QDoubleSpinBox *box)
+{
+    return static_cast<CAmount>(std::llround(box->value())) * COIN;
+}
 
 CreateTokenDialog::CreateTokenDialog(const PlatformStyle *_platformStyle, QWidget *parent) :
         QDialog(parent, Qt::WindowTitleHint | Qt::CustomizeWindowHint | Qt::WindowCloseButtonHint | Qt::WindowMaximizeButtonHint),
@@ -49,7 +57,10 @@ CreateTokenDialog::CreateTokenDialog(const PlatformStyle *_platformStyle, QWidge
         platformStyle(_platformStyle)
 {
     ui->setupUi(this);
+    ui->createTokenButton->setProperty("primary", true);
     setWindowTitle("Create Tokens");
+    // the largest quantity of a token that consensus accepts
+    ui->quantitySpinBox->setMaximum(static_cast<double>(MAX_MONEY_TOKENS / COIN));
     connect(ui->ipfsBox, SIGNAL(clicked()), this, SLOT(ipfsStateChanged()));
     connect(ui->availabilityButton, SIGNAL(clicked()), this, SLOT(checkAvailabilityClicked()));
     connect(ui->nameText, SIGNAL(textChanged(QString)), this, SLOT(onNameChanged(QString)));
@@ -128,7 +139,7 @@ CreateTokenDialog::CreateTokenDialog(const PlatformStyle *_platformStyle, QWidge
 
     ui->tokenList->setModel(proxy);
     ui->tokenList->setEditable(true);
-    ui->tokenList->lineEdit()->setPlaceholderText("Select an token");
+    ui->tokenList->lineEdit()->setPlaceholderText("Select a token");
 
     completer = new QCompleter(proxy,this);
     completer->setCompletionMode(QCompleter::PopupCompletion);
@@ -269,7 +280,7 @@ void CreateTokenDialog::setUpValues()
     CheckFormState();
     ui->availabilityButton->setDisabled(true);
 
-    ui->unitExampleLabel->setStyleSheet("font-weight: bold");
+    ui->unitExampleLabel->setStyleSheet("font-weight: 600");
 
     // Setup the token types
     QStringList list;
@@ -291,15 +302,15 @@ void CreateTokenDialog::setUpValues()
     updateTokenList();
 
     ui->tokenFullName->setTextFormat(Qt::RichText);
-    ui->tokenFullName->setStyleSheet("font-weight: bold");
+    ui->tokenFullName->setStyleSheet("font-weight: 600");
 
-    ui->tokenType->setStyleSheet("font-weight: bold");
+    ui->tokenType->setStyleSheet("font-weight: 600");
 }
 
 void CreateTokenDialog::setupCoinControlFrame(const PlatformStyle *platformStyle)
 {
     /** Update the tokencontrol frame */
-    ui->frameCoinControl->setStyleSheet(QString(".QFrame {background-color: %1; padding-top: 10px; padding-right: 5px; border: none;}").arg(platformStyle->WidgetBackGroundColor().name()));
+    GUIUtil::makeCard(ui->frameCoinControl);
     ui->widgetCoinControl->setStyleSheet(".QWidget {background-color: transparent;}");
     /** Create the shadow effects on the frames */
 
@@ -341,8 +352,7 @@ void CreateTokenDialog::setupTokenDataView(const PlatformStyle *platformStyle)
 {
     /** Update the scrollview*/
 
-    ui->frameTokenData->setStyleSheet(QString(".QFrame {background-color: %1; padding-top: 10px; padding-right: 5px; border: none;}").arg(platformStyle->WidgetBackGroundColor().name()));
-    ui->frameTokenData->setGraphicsEffect(GUIUtil::getShadowEffect());
+    GUIUtil::makeCard(ui->frameTokenData);
 
     ui->tokenTypeLabel->setStyleSheet(STRING_LABEL_COLOR);
     ui->tokenTypeLabel->setFont(GUIUtil::getSubLabelFont());
@@ -370,7 +380,7 @@ void CreateTokenDialog::setupTokenDataView(const PlatformStyle *platformStyle)
 void CreateTokenDialog::setupFeeControl(const PlatformStyle *platformStyle)
 {
     /** Update the coincontrol frame */
-    ui->frameFee->setStyleSheet(QString(".QFrame {background-color: %1; padding-top: 10px; padding-right: 5px; border: none;}").arg(platformStyle->WidgetBackGroundColor().name()));
+    GUIUtil::makeCard(ui->frameFee);
     /** Create the shadow effects on the frames */
 
     ui->frameFee->setGraphicsEffect(GUIUtil::getShadowEffect());
@@ -445,14 +455,14 @@ void CreateTokenDialog::toggleIPFSText()
 
 void CreateTokenDialog::showMessage(QString string)
 {
-    ui->messageLabel->setStyleSheet("color: red; font-size: 15pt;font-weight: bold;");
+    ui->messageLabel->setStyleSheet(GUIUtil::warningLabelColorStyle() + "; font-size: 15pt; font-weight: 500;");
     ui->messageLabel->setText(string);
     ui->messageLabel->show();
 }
 
 void CreateTokenDialog::showValidMessage(QString string)
 {
-    ui->messageLabel->setStyleSheet("color: green; font-size: 15pt;font-weight: bold;");
+    ui->messageLabel->setStyleSheet(QString("color: %1; font-size: 15pt; font-weight: 500;").arg(GUIUtil::theme().ok.name()));
     ui->messageLabel->setText(string);
     ui->messageLabel->show();
 }
@@ -470,7 +480,7 @@ void CreateTokenDialog::hideMessage()
 void CreateTokenDialog::showInvalidVerifierStringMessage(QString string)
 {
     ui->lineEditVerifierString->setStyleSheet(STYLE_INVALID);
-    ui->labelVerifierStringErrorMessage->setStyleSheet("color: red; font-size: 15pt;font-weight: bold;");
+    ui->labelVerifierStringErrorMessage->setStyleSheet(GUIUtil::warningLabelColorStyle() + "; font-size: 15pt; font-weight: 500;");
     ui->labelVerifierStringErrorMessage->setText(string);
     ui->labelVerifierStringErrorMessage->show();
 }
@@ -757,7 +767,7 @@ void CreateTokenDialog::onCreateTokenClicked()
     }
 
     QString name = GetTokenName();
-    CAmount quantity = ui->quantitySpinBox->value() * COIN;
+    CAmount quantity = QuantityFromSpinBox(ui->quantitySpinBox);
     int units = ui->unitBox->value();
     bool reissuable = ui->reissuableBox->isChecked();
     bool hasIPFS = ui->ipfsBox->isChecked() && !ui->ipfsText->text().isEmpty();
@@ -851,7 +861,7 @@ void CreateTokenDialog::onCreateTokenClicked()
     if(nFeeRequired > 0)
     {
         // append fee string if a fee is required
-        questionString.append("<hr /><span style='color:#aa0000;'>");
+        questionString.append(QString("<hr /><span style='color:%1;'>").arg(GUIUtil::theme().error.name()));
         questionString.append(PaladeumUnits::formatHtmlWithUnit(model->getOptionsModel()->getDisplayUnit(), nFeeRequired));
         questionString.append("</span> ");
         questionString.append(tr("added as transaction fee"));
@@ -1225,7 +1235,7 @@ void CreateTokenDialog::coinControlChangeEdited(const QString& text)
     {
         // Default to no change address until verified
         CoinControlDialog::coinControl->destChange = CNoDestination();
-        ui->labelCoinControlChangeLabel->setStyleSheet("QLabel{color:red;}");
+        ui->labelCoinControlChangeLabel->setStyleSheet(QString("QLabel { %1; }").arg(GUIUtil::warningLabelColorStyle()));
 
         const CTxDestination dest = DecodeDestination(text.toStdString());
 
@@ -1251,13 +1261,13 @@ void CreateTokenDialog::coinControlChangeEdited(const QString& text)
                 else
                 {
                     ui->lineEditCoinControlChange->setText("");
-                    ui->labelCoinControlChangeLabel->setStyleSheet("QLabel{color:black;}");
+                    ui->labelCoinControlChangeLabel->setStyleSheet(QString("QLabel { %1; }").arg(GUIUtil::labelColorStyle()));
                     ui->labelCoinControlChangeLabel->setText("");
                 }
             }
             else // Known change address
             {
-                ui->labelCoinControlChangeLabel->setStyleSheet("QLabel{color:black;}");
+                ui->labelCoinControlChangeLabel->setStyleSheet(QString("QLabel { %1; }").arg(GUIUtil::labelColorStyle()));
 
                 // Query label
                 QString associatedLabel = model->getAddressTableModel()->labelForAddress(text);
@@ -1402,6 +1412,7 @@ void CreateTokenDialog::clearSelected()
 
 void CreateTokenDialog::updateTokenList()
 {
+    GUIUtil::LogTimer timer("create token dialog list");
     QStringList list;
     list << "";
 

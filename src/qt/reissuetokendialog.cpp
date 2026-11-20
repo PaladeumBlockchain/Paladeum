@@ -45,6 +45,14 @@
 #define QTversionPreFiveEleven
 #endif
 
+#include <cmath>
+
+/** The quantity of the spin box in the amount unit. The spin box has no decimals; a double times
+ *  COIN would lose the last digits of the quantities near the maximum (above 2^53). */
+static CAmount QuantityFromSpinBox(const QDoubleSpinBox *box)
+{
+    return static_cast<CAmount>(std::llround(box->value())) * COIN;
+}
 
 ReissueTokenDialog::ReissueTokenDialog(const PlatformStyle *_platformStyle, QWidget *parent) :
         QDialog(parent),
@@ -52,6 +60,7 @@ ReissueTokenDialog::ReissueTokenDialog(const PlatformStyle *_platformStyle, QWid
         platformStyle(_platformStyle)
 {
     ui->setupUi(this);
+    ui->reissueTokenButton->setProperty("primary", true);
     setWindowTitle("Reissue Tokens");
     connect(ui->comboBox, SIGNAL(activated(int)), this, SLOT(onTokenSelected(int)));
     connect(ui->quantitySpinBox, SIGNAL(valueChanged(double)), this, SLOT(onQuantityChanged(double)));
@@ -119,8 +128,6 @@ ReissueTokenDialog::ReissueTokenDialog(const PlatformStyle *_platformStyle, QWid
 
     formatGreen = "%1%2 <font color=green><b>%3</b></font>";
     formatBlack = "%1%2 <font color=black><b>%3</b></font>";
-    if (darkModeEnabled)
-        formatBlack = "%1%2 <font color=white><b>%3</b></font>";
 
     setupCoinControlFrame(platformStyle);
     setupTokenDataView(platformStyle);
@@ -135,7 +142,7 @@ ReissueTokenDialog::ReissueTokenDialog(const PlatformStyle *_platformStyle, QWid
 
     ui->comboBox->setModel(proxy);
     ui->comboBox->setEditable(true);
-    ui->comboBox->lineEdit()->setPlaceholderText(tr("Select an token to reissue.."));
+    ui->comboBox->lineEdit()->setPlaceholderText(tr("Select a token to reissue..."));
     ui->comboBox->lineEdit()->setToolTip(tr("Select the token you want to reissue."));
 
     completer = new QCompleter(proxy,this);
@@ -272,7 +279,7 @@ void ReissueTokenDialog::setUpValues()
     ui->ipfsText->setDisabled(true);
     hideMessage();
 
-    ui->unitExampleLabel->setStyleSheet("font-weight: bold");
+    ui->unitExampleLabel->setStyleSheet("font-weight: 600");
 
     updateTokensList();
 
@@ -295,7 +302,7 @@ void ReissueTokenDialog::setUpValues()
 void ReissueTokenDialog::setupCoinControlFrame(const PlatformStyle *platformStyle)
 {
     /** Update the tokencontrol frame */
-    ui->frameCoinControl->setStyleSheet(QString(".QFrame {background-color: %1; padding-top: 10px; padding-right: 5px; border: none;}").arg(platformStyle->WidgetBackGroundColor().name()));
+    GUIUtil::makeCard(ui->frameCoinControl);
     ui->widgetCoinControl->setStyleSheet(".QWidget {background-color: transparent;}");
     /** Create the shadow effects on the frames */
 
@@ -341,6 +348,7 @@ void ReissueTokenDialog::setupCoinControlFrame(const PlatformStyle *platformStyl
     ui->checkBoxCoinControlChange->setFont(GUIUtil::getSubLabelFont());
     ui->lineEditCoinControlChange->setFont(GUIUtil::getSubLabelFont());
     ui->labelCoinControlInsuffFunds->setFont(GUIUtil::getSubLabelFont());
+    ui->labelCoinControlInsuffFunds->setStyleSheet(STRING_LABEL_COLOR_WARNING);
     ui->labelCoinControlAutomaticallySelected->setFont(GUIUtil::getSubLabelFont());
 
 }
@@ -348,8 +356,7 @@ void ReissueTokenDialog::setupCoinControlFrame(const PlatformStyle *platformStyl
 void ReissueTokenDialog::setupTokenDataView(const PlatformStyle *platformStyle)
 {
     /** Update the scrollview*/
-    ui->frame->setStyleSheet(QString(".QFrame {background-color: %1; padding-top: 10px; padding-right: 5px; border: none;}").arg(platformStyle->WidgetBackGroundColor().name()));
-    ui->frame->setGraphicsEffect(GUIUtil::getShadowEffect());
+    GUIUtil::makeCard(ui->frame);
 
     ui->tokenNameLabel->setStyleSheet(STRING_LABEL_COLOR);
     ui->tokenNameLabel->setFont(GUIUtil::getSubLabelFont());
@@ -367,11 +374,9 @@ void ReissueTokenDialog::setupTokenDataView(const PlatformStyle *platformStyle)
 
     ui->ipfsBox->setStyleSheet(QString(".QCheckBox{ %1; }").arg(STRING_LABEL_COLOR));
 
-    ui->frame_3->setStyleSheet(QString(".QFrame {background-color: %1; padding-top: 10px; padding-right: 5px; border: none;}").arg(platformStyle->WidgetBackGroundColor().name()));
-    ui->frame_3->setGraphicsEffect(GUIUtil::getShadowEffect());
+    GUIUtil::makeCard(ui->frame_3);
 
-    ui->frame_2->setStyleSheet(QString(".QFrame {background-color: %1; padding-top: 10px; padding-right: 5px; border: none;}").arg(platformStyle->WidgetBackGroundColor().name()));
-    ui->frame_2->setGraphicsEffect(GUIUtil::getShadowEffect());
+    GUIUtil::makeCard(ui->frame_2);
 
     ui->currentDataLabel->setStyleSheet(STRING_LABEL_COLOR);
     ui->currentDataLabel->setFont(GUIUtil::getTopLabelFont());
@@ -390,7 +395,7 @@ void ReissueTokenDialog::setupTokenDataView(const PlatformStyle *platformStyle)
 void ReissueTokenDialog::setupFeeControl(const PlatformStyle *platformStyle)
 {
     /** Update the coincontrol frame */
-    ui->frameFee->setStyleSheet(QString(".QFrame {background-color: %1; padding-top: 10px; padding-right: 5px; border: none;}").arg(platformStyle->WidgetBackGroundColor().name()));
+    GUIUtil::makeCard(ui->frameFee);
     /** Create the shadow effects on the frames */
 
     ui->frameFee->setGraphicsEffect(GUIUtil::getShadowEffect());
@@ -465,14 +470,14 @@ void ReissueTokenDialog::toggleIPFSText()
 
 void ReissueTokenDialog::showMessage(QString string)
 {
-    ui->messageLabel->setStyleSheet("color: red");
+    ui->messageLabel->setStyleSheet(GUIUtil::warningLabelColorStyle());
     ui->messageLabel->setText(string);
     ui->messageLabel->show();
 }
 
 void ReissueTokenDialog::showValidMessage(QString string)
 {
-    ui->messageLabel->setStyleSheet("color: green");
+    ui->messageLabel->setStyleSheet(QString("color: %1").arg(GUIUtil::theme().ok.name()));
     ui->messageLabel->setText(string);
     ui->messageLabel->show();
 }
@@ -505,9 +510,10 @@ void ReissueTokenDialog::CheckFormState()
         return;
     }
 
-    // If the quantity is to large
-    if (token->nAmount + ui->quantitySpinBox->value() * COIN > MAX_MONEY) {
-        showMessage(tr("Quantity is to large. Max is 21,000,000,000"));
+    // If the quantity is too large: the total of a token is limited by consensus
+    if (QuantityFromSpinBox(ui->quantitySpinBox) > MAX_MONEY_TOKENS - token->nAmount) {
+        showMessage(tr("Quantity is too large. Max is %1").arg(
+            PaladeumUnits::format(PaladeumUnits::PLB, MAX_MONEY_TOKENS / COIN, false, PaladeumUnits::separatorAlways, 0)));
         return;
     }
 
@@ -604,23 +610,17 @@ void ReissueTokenDialog::enableDataEntry()
 
 void ReissueTokenDialog::buildUpdatedData()
 {
-    // Get the display value for the token quantity
-    auto value = ValueFromAmount(token->nAmount, token->units);
-
-    double newValue = value.get_real() + ui->quantitySpinBox->value();
-
-    std::stringstream ss;
-    ss.precision(token->units);
-    ss << std::fixed << newValue;
+    // The total after the reissue, in the units of the token (exactly: a double has too few digits)
+    const std::string newValue = ValueFromAmountString(token->nAmount + QuantityFromSpinBox(ui->quantitySpinBox), token->units);
 
     QString reissuable = ui->reissuableBox->isChecked() ? tr("Yes") : tr("No");
     QString name = formatBlack.arg(tr("Name"), ":", QString::fromStdString(token->strName)) + "\n";
 
     QString quantity;
     if (ui->quantitySpinBox->value() > 0)
-        quantity = formatGreen.arg(tr("Total Quantity"), ":", QString::fromStdString(ss.str())) + "\n";
+        quantity = formatGreen.arg(tr("Total Quantity"), ":", QString::fromStdString(newValue)) + "\n";
     else
-        quantity = formatBlack.arg(tr("Total Quantity"), ":", QString::fromStdString(ss.str())) + "\n";
+        quantity = formatBlack.arg(tr("Total Quantity"), ":", QString::fromStdString(newValue)) + "\n";
 
     QString units;
     if (ui->unitSpinBox->value() != token->units)
@@ -630,9 +630,9 @@ void ReissueTokenDialog::buildUpdatedData()
 
     QString reissue;
     if (ui->reissuableBox->isChecked())
-        reissue = formatBlack.arg(tr("Can Reisssue"), ":", reissuable) + "\n";
+        reissue = formatBlack.arg(tr("Can Reissue"), ":", reissuable) + "\n";
     else
-        reissue = formatGreen.arg(tr("Can Reisssue"), ":", reissuable) + "\n";
+        reissue = formatGreen.arg(tr("Can Reissue"), ":", reissuable) + "\n";
 
     QString ipfs;
 
@@ -685,8 +685,8 @@ void ReissueTokenDialog::setDisplayedDataToNone()
 {
     ui->currentTokenData->clear();
     ui->updatedTokenData->clear();
-    ui->currentTokenData->setText(tr("Please select a token from the menu to display the tokens current settings"));
-    ui->updatedTokenData->setText(tr("Please select a token from the menu to display the tokens updated settings"));
+    ui->currentTokenData->setText(tr("Please select a token from the menu to display the token's current settings"));
+    ui->updatedTokenData->setText(tr("Please select a token from the menu to display the token's updated settings"));
 }
 
 /** SLOTS */
@@ -719,20 +719,18 @@ void ReissueTokenDialog::onTokenSelected(int index)
         }
 
         // Get the display value for the token quantity
-        auto value = ValueFromAmount(token->nAmount, token->units);
-        std::stringstream ss;
-        ss.precision(token->units);
-        ss << std::fixed << value.get_real();
+        const std::string value = ValueFromAmountString(token->nAmount, token->units);
 
         ui->unitSpinBox->setValue(token->units);
         ui->unitSpinBox->setMinimum(token->units);
 
-        ui->quantitySpinBox->setMaximum(21000000000 - value.get_real());
+        // Consensus limits the total of a token: the whole quantity that can still be added
+        ui->quantitySpinBox->setMaximum(static_cast<double>((MAX_MONEY_TOKENS - token->nAmount) / COIN));
 
         ui->currentTokenData->clear();
         // Create the QString to display to the user
         QString name = formatBlack.arg(tr("Name"), ":", QString::fromStdString(token->strName)) + "\n";
-        QString quantity = formatBlack.arg(tr("Current Quantity"), ":", QString::fromStdString(ss.str())) + "\n";
+        QString quantity = formatBlack.arg(tr("Current Quantity"), ":", QString::fromStdString(value)) + "\n";
         QString units = formatBlack.arg(tr("Current Units"), ":", QString::number(ui->unitSpinBox->value()));
         QString reissue = formatBlack.arg(tr("Can Reissue"), ":", tr("Yes")) + "\n";
         QString tokendatahash = "";
@@ -886,7 +884,7 @@ void ReissueTokenDialog::onReissueTokenClicked()
     }
 
     QString name = ui->comboBox->currentText();
-    CAmount quantity = ui->quantitySpinBox->value() * COIN;
+    CAmount quantity = QuantityFromSpinBox(ui->quantitySpinBox);
     bool reissuable = ui->reissuableBox->isChecked();
     bool hasIPFS = ui->ipfsBox->isChecked() && !ui->ipfsText->text().isEmpty();
 
@@ -981,7 +979,7 @@ void ReissueTokenDialog::onReissueTokenClicked()
     if(nFeeRequired > 0)
     {
         // append fee string if a fee is required
-        questionString.append("<hr /><span style='color:#aa0000;'>");
+        questionString.append(QString("<hr /><span style='color:%1;'>").arg(GUIUtil::theme().error.name()));
         questionString.append(PaladeumUnits::formatHtmlWithUnit(model->getOptionsModel()->getDisplayUnit(), nFeeRequired));
         questionString.append("</span> ");
         questionString.append(tr("added as transaction fee"));
@@ -1048,8 +1046,8 @@ void ReissueTokenDialog::onReissueTokenClicked()
 void ReissueTokenDialog::onReissueBoxChanged()
 {
     if (!ui->reissuableBox->isChecked()) {
-        ui->reissueWarningLabel->setText("Warning: Once this token is reissued with the reissuable flag set to false. It won't be able to be reissued in the future");
-        ui->reissueWarningLabel->setStyleSheet("color: red");
+        ui->reissueWarningLabel->setText("Warning: Once this token is reissued with the reissuable flag set to false, it won't be able to be reissued in the future");
+        ui->reissueWarningLabel->setStyleSheet(GUIUtil::warningLabelColorStyle());
         ui->reissueWarningLabel->show();
     } else {
         ui->reissueWarningLabel->hide();
@@ -1201,7 +1199,7 @@ void ReissueTokenDialog::coinControlChangeEdited(const QString& text)
     {
         // Default to no change address until verified
         CoinControlDialog::coinControl->destChange = CNoDestination();
-        ui->labelCoinControlChangeLabel->setStyleSheet("QLabel{color:red;}");
+        ui->labelCoinControlChangeLabel->setStyleSheet(QString("QLabel { %1; }").arg(GUIUtil::warningLabelColorStyle()));
 
         const CTxDestination dest = DecodeDestination(text.toStdString());
 
@@ -1227,13 +1225,13 @@ void ReissueTokenDialog::coinControlChangeEdited(const QString& text)
                 else
                 {
                     ui->lineEditCoinControlChange->setText("");
-                    ui->labelCoinControlChangeLabel->setStyleSheet("QLabel{color:black;}");
+                    ui->labelCoinControlChangeLabel->setStyleSheet(QString("QLabel { %1; }").arg(GUIUtil::labelColorStyle()));
                     ui->labelCoinControlChangeLabel->setText("");
                 }
             }
             else // Known change address
             {
-                ui->labelCoinControlChangeLabel->setStyleSheet("QLabel{color:black;}");
+                ui->labelCoinControlChangeLabel->setStyleSheet(QString("QLabel { %1; }").arg(GUIUtil::labelColorStyle()));
 
                 // Query label
                 QString associatedLabel = model->getAddressTableModel()->labelForAddress(text);
@@ -1361,6 +1359,7 @@ void ReissueTokenDialog::onUnitChanged(int value)
 
 void ReissueTokenDialog::updateTokensList()
 {
+    GUIUtil::LogTimer timer("manage token dialog list");
     LOCK(cs_main);
     std::vector<std::string> tokens;
     GetAllAdministrativeTokens(model->getWallet(), tokens, 0);
@@ -1449,7 +1448,7 @@ void ReissueTokenDialog::restrictedTokenUnselected()
 void ReissueTokenDialog::showInvalidVerifierStringMessage(QString string)
 {
     ui->lineEditVerifierString->setStyleSheet(STYLE_INVALID);
-    ui->labelReissueVerifierStringErrorMessage->setStyleSheet("color: red; font-size: 15pt;font-weight: bold;");
+    ui->labelReissueVerifierStringErrorMessage->setStyleSheet(GUIUtil::warningLabelColorStyle() + "; font-size: 15pt; font-weight: 500;");
     ui->labelReissueVerifierStringErrorMessage->setText(string);
     ui->labelReissueVerifierStringErrorMessage->show();
 }

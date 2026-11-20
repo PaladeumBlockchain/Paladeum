@@ -19,7 +19,9 @@ from test_framework.blocktools import create_block, create_coinbase
 
 VB_PERIOD = 144 # versionbits period length for regtest
 VB_THRESHOLD = 108 # versionbits activation threshold for regtest
-VB_TOP_BITS = 0x20000000
+# The version of a block: at least VERSIONBITS_TOP_BITS_TOKENS (0x30000000), and on regtest
+# the offline staking bit (0x2000) from the start (src/versionbits.h, ContextualCheckBlockHeader)
+VB_TOP_BITS = 0x30000000 | 0x2000
 VB_UNKNOWN_BIT = 27 # Choose a bit unassigned to any deployment
 
 WARN_UNKNOWN_RULES_MINED = "Unknown block versions being mined! It's possible unknown rules are in effect"
@@ -101,10 +103,9 @@ class VersionBitsWarningTest(PaladeumTestFramework):
         # have gotten a different alert due to more than 51/100 blocks
         # being of unexpected version.
         # Check that get*info() shows some kind of error.
-        self.log.info(self.nodes[0].getinfo()["errors"])
-        #assert(WARN_UNKNOWN_RULES_MINED in self.nodes[0].getinfo()["errors"])
-        #assert(WARN_UNKNOWN_RULES_MINED in self.nodes[0].getmininginfo()["warnings"])
-        #assert(WARN_UNKNOWN_RULES_MINED in self.nodes[0].getnetworkinfo()["warnings"])
+        assert(WARN_UNKNOWN_RULES_MINED in self.nodes[0].getinfo()["errors"])
+        assert(WARN_UNKNOWN_RULES_MINED in self.nodes[0].getmininginfo()["warnings"])
+        assert(WARN_UNKNOWN_RULES_MINED in self.nodes[0].getnetworkinfo()["warnings"])
 
         # Mine a period worth of expected blocks so the generic block-version warning
         # is cleared, and restart the node. This should move the versionbit state

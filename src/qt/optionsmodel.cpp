@@ -91,10 +91,6 @@ void OptionsModel::Init(bool resetSettings)
         settings.setValue("fCustomFeeFeatures", false);
     fCustomFeeFeatures = settings.value("fCustomFeeFeatures", false).toBool();
 
-    if (!settings.contains("fDarkModeEnabled"))
-        settings.setValue("fDarkModeEnabled", false);
-    fDarkModeEnabled = settings.value("fDarkModeEnabled", false).toBool();
-
     // These are shared with the core or have a command-line parameter
     // and we want command-line parameters to overwrite the GUI settings.
     //
@@ -105,7 +101,7 @@ void OptionsModel::Init(bool resetSettings)
 
     // Main
     if (!settings.contains("nDatabaseCache"))
-        settings.setValue("nDatabaseCache", (qint64)nDefaultDbCache);
+        settings.setValue("nDatabaseCache", (qint64)GetDefaultDbCache());
     if (!gArgs.SoftSetArg("-dbcache", settings.value("nDatabaseCache").toString().toStdString()))
         addOverriddenOption("-dbcache");
 
@@ -135,6 +131,21 @@ void OptionsModel::Init(bool resetSettings)
         settings.setValue("fListen", DEFAULT_LISTEN);
     if (!gArgs.SoftSetBoolArg("-listen", settings.value("fListen").toBool()))
         addOverriddenOption("-listen");
+
+    // Block bootstrap
+    if (!settings.contains("fUseBootstrap"))
+        settings.setValue("fUseBootstrap", true);
+    if (!settings.contains("strBootstrapUrls"))
+        settings.setValue("strBootstrapUrls", "");
+    {
+        const QString urls = settings.value("strBootstrapUrls").toString().simplified();
+        if (!gArgs.GetArgs("-bootstrapurl").empty() || gArgs.IsArgSet("-bootstrapdir"))
+            addOverriddenOption("-bootstrapurl");
+        else if (!settings.value("fUseBootstrap").toBool())
+            gArgs.SoftSetBoolArg("-bootstrap", false);
+        else if (!urls.isEmpty())
+            gArgs.SoftSetArg("-bootstrapurl", urls.toStdString()); // none: the built-in address of the network, if it has one
+    }
 
     if (!settings.contains("fUseProxy"))
         settings.setValue("fUseProxy", false);
@@ -285,10 +296,15 @@ QVariant OptionsModel::data(const QModelIndex & index, int role) const
             return settings.value("nThreadsScriptVerif");
         case Listen:
             return settings.value("fListen");
+        case DarkTheme:
+            // kept in the settings of the main network, which are read before the network is known
+            return QSettings(QAPP_ORG_NAME, QAPP_APP_NAME_DEFAULT).value(GUIUtil::DARK_THEME_SETTING, false);
+        case BootstrapUse:
+            return settings.value("fUseBootstrap");
+        case BootstrapUrls:
+            return settings.value("strBootstrapUrls");
         case CustomFeeFeatures:
             return fCustomFeeFeatures;
-        case DarkModeEnabled:
-            return fDarkModeEnabled;
         default:
             return QVariant();
         }
@@ -422,6 +438,14 @@ bool OptionsModel::setData(const QModelIndex & index, const QVariant & value, in
                 setRestartRequired(true);
             }
             break;
+        case DarkTheme: {
+            QSettings mainSettings(QAPP_ORG_NAME, QAPP_APP_NAME_DEFAULT);
+            if (mainSettings.value(GUIUtil::DARK_THEME_SETTING, false).toBool() != value.toBool()) {
+                mainSettings.setValue(GUIUtil::DARK_THEME_SETTING, value.toBool());
+                setRestartRequired(true);
+            }
+            break;
+        }
         case CoinControlFeatures:
             fCoinControlFeatures = value.toBool();
             settings.setValue("fCoinControlFeatures", fCoinControlFeatures);
@@ -445,15 +469,23 @@ bool OptionsModel::setData(const QModelIndex & index, const QVariant & value, in
                 setRestartRequired(true);
             }
             break;
+        case BootstrapUse:
+            if (settings.value("fUseBootstrap") != value) {
+                settings.setValue("fUseBootstrap", value);
+                setRestartRequired(true);
+            }
+            break;
+        case BootstrapUrls:
+            if (settings.value("strBootstrapUrls").toString() != value.toString()) {
+                settings.setValue("strBootstrapUrls", value.toString());
+                setRestartRequired(true);
+            }
+            break;
         case CustomFeeFeatures:
                 fCustomFeeFeatures = value.toBool();
                 settings.setValue("fCustomFeeFeatures", fCustomFeeFeatures);
                 Q_EMIT customFeeFeaturesChanged(fCustomFeeFeatures);
                 break;
-        case DarkModeEnabled:
-            fDarkModeEnabled = value.toBool();
-            settings.setValue("fDarkModeEnabled", fDarkModeEnabled);
-            break;
         default:
             break;
         }
@@ -519,7 +551,7 @@ void OptionsModel::checkAndMigrate()
         // see https://github.com/bitcoin/bitcoin/pull/8273
         // force people to upgrade to the new value if they are using 100MB
         if (settingsVersion < 130000 && settings.contains("nDatabaseCache") && settings.value("nDatabaseCache").toLongLong() == 100)
-            settings.setValue("nDatabaseCache", (qint64)nDefaultDbCache);
+            settings.setValue("nDatabaseCache", (qint64)GetDefaultDbCache());
 
         settings.setValue(strSettingsVersionKey, CLIENT_VERSION);
     }

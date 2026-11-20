@@ -115,7 +115,9 @@ class TokenTransferTest(PaladeumTestFramework):
         # Add the address the only contain 150 TRANSFER_TEST tokens
         n0_from_addresses = [n0_token_change]
 
-        assert_raises_rpc_error(-25, "Insufficient token funds", n0.transferfromaddresses, "TRANSFER_TEST", n0_from_addresses, 450, n1_address, '', 0, n0_paladeum_change, n0_token_change)
+        # (token_name, from_addresses, qty, to_address, timelock, message, token_message, expire_time,
+        #  paladeum_change_address, token_change_address)
+        assert_raises_rpc_error(-25, "Insufficient token funds", n0.transferfromaddresses, "TRANSFER_TEST", n0_from_addresses, 450, n1_address, 0, '', '', 0, n0_paladeum_change, n0_token_change)
 
         # Verify that the failed transaction doesn't change the already mined address values on the wallet
         assert_equal(n0.listtokenbalancesbyaddress(n1_already_received_address)["TRANSFER_TEST"], 200)

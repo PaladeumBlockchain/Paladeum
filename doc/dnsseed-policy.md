@@ -51,4 +51,4 @@ situations but should be discussed in public in advance.
 
 See also
 ----------
-- [paladeumcoin-seeder](https://github.com/PaladeumProject/paladeumcoin-seeder) is a reference implementation of a DNS seed.
+- [bitcoin-seeder](https://github.com/sipa/bitcoin-seeder) is a reference implementation of a DNS seed.

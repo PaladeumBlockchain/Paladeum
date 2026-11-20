@@ -5,6 +5,8 @@
 
 #include "platformstyle.h"
 
+#include "guiutil.h"
+
 #include "guiconstants.h"
 
 #include <QApplication>
@@ -13,8 +15,6 @@
 #include <QImage>
 #include <QPalette>
 #include <QPixmap>
-
-bool darkModeEnabled = false;
 
 static const struct {
     const char *platformId;
@@ -163,111 +163,72 @@ QIcon PlatformStyle::TextColorIcon(const QIcon& icon) const
 
 QColor PlatformStyle::TextColor() const
 {
-    // if (darkModeEnabled)
-    //     return COLOR_TOOLBAR_SELECTED_TEXT_DARK_MODE;
-
-    // return textColor;
-    return COLOR_BLACK;
+    return GUIUtil::theme().text;
 }
 
 QColor PlatformStyle::ToolBarSelectedTextColor() const
 {
-    if (darkModeEnabled)
-        return COLOR_TOOLBAR_SELECTED_TEXT_DARK_MODE;
-
-    return COLOR_TOOLBAR_SELECTED_TEXT;
+    return GUIUtil::theme().accent;
 }
 
 QColor PlatformStyle::ToolBarNotSelectedTextColor() const
 {
-    if (darkModeEnabled)
-        return COLOR_TOOLBAR_NOT_SELECTED_TEXT_DARK_MODE;
-
-    return COLOR_TOOLBAR_NOT_SELECTED_TEXT;
+    return GUIUtil::theme().textSecondary;
 }
 
 QColor PlatformStyle::MainBackGroundColor() const
 {
-    if (darkModeEnabled)
-        return COLOR_BLACK;
-
-    return COLOR_BACKGROUND_LIGHT;
+    return GUIUtil::theme().bg;
 }
 
 QColor PlatformStyle::TopWidgetBackGroundColor() const
 {
-    if (darkModeEnabled)
-        return COLOR_PRICING_WIDGET;
-
-    return COLOR_BACKGROUND_LIGHT;
+    return GUIUtil::theme().surface;
 }
 
 QColor PlatformStyle::WidgetBackGroundColor() const
 {
-    if (darkModeEnabled)
-        return COLOR_WIDGET_BACKGROUND_DARK;
-
-    return COLOR_WHITE;
+    return GUIUtil::theme().surface;
 }
 
 QColor PlatformStyle::SendEntriesBackGroundColor() const
 {
-    if (darkModeEnabled)
-     // return QColor(21,20,17);
-        return COLOR_SENDENTRIES_BACKGROUND_DARK;
-
-//  return QColor("#faf9f6");
-    return COLOR_SENDENTRIES_BACKGROUND;
+    return GUIUtil::theme().surface;
 }
 
 QColor PlatformStyle::ShadowColor() const
 {
-    if (darkModeEnabled)
-        return COLOR_SHADOW_DARK;
-
-    return COLOR_SHADOW_LIGHT;
+    return GUIUtil::theme().border;
 }
 
 QColor PlatformStyle::LightBlueColor() const
 {
-    if (darkModeEnabled)
-        return COLOR_LIGHT_BLUE_DARK;
-
-    return COLOR_LIGHT_BLUE;
+    return GUIUtil::theme().accentHover;
 }
 
 QColor PlatformStyle::DarkBlueColor() const
 {
-    if (darkModeEnabled)
-        return COLOR_DARK_BLUE_DARK;
-
-    return COLOR_DARK_BLUE;
+    return GUIUtil::theme().accent;
 }
 
 QColor PlatformStyle::LightOrangeColor() const
 {
-        return COLOR_LIGHT_ORANGE;
+    return GUIUtil::theme().accentHover;
 }
 
 QColor PlatformStyle::DarkOrangeColor() const
 {
-    return COLOR_DARK_ORANGE;
+    return GUIUtil::theme().accent;
 }
 
 QColor PlatformStyle::SingleColor() const
 {
-    if (darkModeEnabled)
-        return COLOR_TOKEN_TEXT; // WHITE (black -> white)
-
-    return singleColor;
+    return GUIUtil::theme().textSecondary;
 }
 
 QColor PlatformStyle::TokenTxColor() const
 {
-    if (darkModeEnabled)
-        return COLOR_LIGHT_BLUE;
-
-    return COLOR_DARK_BLUE;
+    return GUIUtil::theme().accent;
 }
 
 

@@ -203,9 +203,10 @@ public:
 
     enum EncryptionStatus
     {
-        Unencrypted,  // !wallet->IsCrypted()
-        Locked,       // wallet->IsCrypted() && wallet->IsLocked()
-        Unlocked      // wallet->IsCrypted() && !wallet->IsLocked()
+        Unencrypted,       // !wallet->IsCrypted()
+        Locked,            // wallet->IsCrypted() && wallet->IsLocked()
+        Unlocked,          // wallet->IsCrypted() && !wallet->IsLocked()
+        UnlockedForStaking // unlocked, but only the staking thread may use the keys
     };
 
     OptionsModel *getOptionsModel();
@@ -230,6 +231,8 @@ public:
 
     // Check address for validity
     bool validateAddress(const QString &address);
+    /** In the address book, or an address of this wallet: something was sent there or it is ours */
+    bool isKnownAddress(const QString &address) const;
 
     // Return status record for SendCoins, contains error id + information
     struct SendCoinsReturn
@@ -254,7 +257,19 @@ public:
     // Wallet encryption
     bool setWalletEncrypted(bool encrypted, const SecureString &passphrase);
     // Passphrase only needed when unlocking
-    bool setWalletLocked(bool locked, const SecureString &passPhrase=SecureString());
+    // (stakingOnly: the keys are available to the staking thread only; sending asks for the passphrase again)
+    bool setWalletLocked(bool locked, const SecureString &passPhrase=SecureString(), bool stakingOnly=false);
+    void setUnlockStakingOnly(bool stakingOnly);
+    /** Whether a new, never used wallet without encryption is loaded: the first start asks for a passphrase */
+    bool isFreshUnencrypted() const;
+    /**
+     * A rescan reads the blocks of the past. Returns false, with the reason, if this node does
+     * not have them (pruned). A node that starts from a snapshot will answer here as well.
+     */
+    bool ensurePastBlocksAvailable(QString *reason = nullptr) const;
+    /** No progress window of the wallet for a while: the caller shows the progress itself */
+    void setProgressQuiet(bool quiet);
+    bool progressQuiet() const;
     bool changePassphrase(const SecureString &oldPass, const SecureString &newPass);
     // Wallet backup
     bool backupWallet(const QString &filename);
@@ -263,7 +278,7 @@ public:
     class UnlockContext
     {
     public:
-        UnlockContext(WalletModel *wallet, bool valid, bool relock);
+        UnlockContext(WalletModel *wallet, bool valid, bool relock, bool stakingOnly = false);
         ~UnlockContext();
 
         bool isValid() const { return valid; }
@@ -275,6 +290,7 @@ public:
         WalletModel *wallet;
         bool valid;
         mutable bool relock; // mutable, as it can be set to false by copying
+        bool stakingOnly;    // go back to "unlocked for staking only" instead of locking
 
         void CopyFrom(const UnlockContext& rhs);
     };
@@ -300,6 +316,12 @@ public:
     bool saveReceiveRequest(const std::string &sAddress, const int64_t nId, const std::string &sRequest);
 
     unsigned long long updateWeight();
+    /**
+     * The addresses of this wallet that may stake. On Paladeum only scripts that governance
+     * authorized can stake (proof-of-stake authorization, CGovernance::CanStake), and the staking
+     * of the wallet uses only their coins. Returns false when the chain is busy and nothing was read.
+     */
+    bool stakingAddresses(QStringList& addresses) const;
 
     bool transactionCanBeAbandoned(uint256 hash) const;
     bool abandonTransaction(uint256 hash) const;
@@ -311,7 +333,12 @@ public:
 
     bool hdEnabled() const;
     bool hd44Enabled() const;
-    QString getMyWords() const;
+    /**
+     * The recovery words of the wallet and their passphrase. Only from a wallet that is not
+     * encrypted or fully unlocked: keys unlocked for staking only do not give them. The lock
+     * state is not changed (see requestUnlock() for a full unlock that is undone afterwards).
+     */
+    bool getRecoveryWords(SecureString& words, SecureString& passphrase) const;
 
     int getDefaultConfirmTarget() const;
 
@@ -346,6 +373,8 @@ private:
     CAmount cachedLockedBalance;
     CAmount cachedOfflineBalance;
     EncryptionStatus cachedEncryptionStatus;
+    /** The state of the lock at the last poll (see pollBalanceChanged) */
+    EncryptionStatus polledEncryptionStatus;
     int cachedNumBlocks;
 
     QTimer *pollTimer;
