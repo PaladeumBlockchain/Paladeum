@@ -52,3 +52,36 @@ Read only.
 ```
 contrib/paladeum/history_scan.py --datadir ~/.paladeum --out scan.json
 ```
+
+## build-release.sh — release archives for Linux, Windows and macOS
+
+```bash
+contrib/paladeum/build-release.sh --macos-sdk ~/MacOSX14.4.sdk.tar.gz           # the commit that is checked out
+contrib/paladeum/build-release.sh --ref 2.0.0 --macos-sdk ~/MacOSX14.4.sdk.tar.gz
+```
+
+Builds the programs (with the GUI) with `depends/` on one Linux machine and writes, into
+`~/paladeum-release/<version>/`, `paladeum-<version>-<platform>.zip` for `linux-x86_64`,
+`windows-x86_64`, `macos-x86_64` and `macos-arm64`, `paladeum-<version>-linux-x86_64.tar.gz`
+and `SHA256SUMS`, ready to attach to a GitHub release. Platforms can be named on the command
+line; `linux-aarch64` is one more.
+
+- An archive holds the folder `paladeum-<version>-<platform>` with the programs (`paladeumd`,
+  `paladeum-cli`, `paladeum-tx`, `paladeum-wallet`, `paladeum-qt`) and `COPYING`; for macOS
+  `Paladeum-Qt.app` instead of `paladeum-qt`.
+- Everything is built in Docker containers, from two images the script makes the first time:
+  Ubuntu 22.04 for Linux (the programs run on glibc 2.35 or newer: Ubuntu 22.04, Debian 12 and
+  later) and Ubuntu 24.04 with MinGW-w64, clang 18 and lld for Windows and macOS. The machine needs
+  docker, git and about 30 GB of disk. `DOCKER="sudo docker"` when the user is not in the docker
+  group; `DOCKER=podman` works too.
+- The depends cache stays in `~/paladeum-release/cache/`: the next release only builds the packages
+  whose recipes changed. Each platform's log is in `~/paladeum-release/logs/`.
+- The macOS SDK is not in the tree, because Apple's license does not allow passing it around. Copy it
+  from a Mac (the command is in `--help`) or extract it from Xcode (`contrib/macdeploy/README.md`).
+- The macOS programs have no Developer ID signature and are not notarized: macOS asks before it opens
+  them the first time (right click > Open). The arm64 programs carry an ad hoc signature, without which
+  Apple silicon starts no program.
+- Without `--ref` it builds the commit that is checked out; uncommitted changes are left out unless
+  `--worktree` is given (a test build before a commit).
+- The same tree gives the same archives: every file is stamped with the time of the commit and the
+  entries are sorted.

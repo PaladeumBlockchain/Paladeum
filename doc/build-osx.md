@@ -129,7 +129,9 @@ Uncheck everything except Qt Creator during the installation process.
 Notes
 -----
 
-* Tested on OS X 10.8 through 10.15 on 64-bit Intel processors only.
+* The release binaries target macOS 11 or newer (`OSX_MIN_VERSION` in `depends/hosts/darwin.mk`),
+  on both 64-bit Intel and Apple silicon. A native build on a Mac follows the compiler of Xcode and
+  may well run on older systems, but that is not what releases are built with.
 
 * Building with downloaded Qt binaries is not officially supported. 
 

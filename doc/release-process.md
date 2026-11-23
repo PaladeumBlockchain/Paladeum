@@ -47,7 +47,22 @@ Tag version (or release candidate) in git
 
 ### Build binaries. 
 
-TODO: describe process.
+`contrib/paladeum/build-release.sh` builds the release programs for Linux, Windows and macOS in
+Docker containers on one Linux machine, and writes the archives and `SHA256SUMS` into
+`~/paladeum-release/<version>/`, ready to attach to a GitHub release:
+
+```bash
+contrib/paladeum/build-release.sh --ref 2.0.0 --macos-sdk ~/MacOSX14.4.sdk.tar.gz
+```
+
+Platforms are `linux-x86_64`, `linux-aarch64`, `windows-x86_64`, `macos-x86_64` and `macos-arm64`
+(the default leaves out `linux-aarch64`). `contrib/paladeum/README.md` says what the machine needs,
+and `--help` covers the options, including how to obtain the macOS SDK — it is not in the tree
+because Apple's license does not allow passing it around.
+
+The macOS programs are signed with neither a Developer ID nor notarized, so macOS asks before it
+opens one the first time (right click > Open). The arm64 programs carry an ad hoc signature from
+lld, without which Apple silicon starts no program at all.
 
 
 Codesigner only: Create Windows/OS X detached signatures:
