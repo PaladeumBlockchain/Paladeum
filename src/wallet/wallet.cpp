@@ -3926,7 +3926,7 @@ bool CWallet::SelectCoinsMinConf(const CAmount& nTargetValue, const int nConfMin
     std::vector<CInputCoin> vValue;
     CAmount nTotalLower = 0;
 
-    random_shuffle(vCoins.begin(), vCoins.end(), GetRandInt);
+    for (size_t i = vCoins.size(); i > 1; --i) std::swap(vCoins[i - 1], vCoins[GetRandInt(static_cast<int>(i))]);
 
     for (const COutput &output : vCoins)
     {
@@ -4129,7 +4129,7 @@ bool CWallet::SelectTokensMinConf(const CAmount& nTargetValue, const int nConfMi
     std::map<COutPoint, CAmount> mapValueAmount;
     CAmount nTotalLower = 0;
 
-    random_shuffle(vCoins.begin(), vCoins.end(), GetRandInt);
+    for (size_t i = vCoins.size(); i > 1; --i) std::swap(vCoins[i - 1], vCoins[GetRandInt(static_cast<int>(i))]);
     #pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
     for (const COutput &output : vCoins)
     {
