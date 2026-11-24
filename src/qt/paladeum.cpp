@@ -88,7 +88,9 @@ Q_IMPORT_PLUGIN(QWindowsVistaStylePlugin);
 #endif
 #elif defined(QT_QPA_PLATFORM_COCOA)
 Q_IMPORT_PLUGIN(QCocoaIntegrationPlugin);
+#if defined(QT_MAC_STYLE)
 Q_IMPORT_PLUGIN(QMacStylePlugin);
+#endif
 #endif
 #endif
 #endif

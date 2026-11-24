@@ -177,6 +177,12 @@ AC_DEFUN([PLB_QT_CONFIGURE],[
         AX_CHECK_LINK_FLAG([[-framework QuartzCore]],[QT_LIBS="$QT_LIBS -framework QuartzCore"],[AC_MSG_ERROR(could not link against QuartzCore framework)])
         _PLB_QT_CHECK_STATIC_PLUGINS([Q_IMPORT_PLUGIN(QCocoaIntegrationPlugin)],[-lqcocoa])
         AC_DEFINE(QT_QPA_PLATFORM_COCOA, 1, [Define this symbol if the qt platform is cocoa])
+        dnl The native macOS style is a separate static plugin, as the Windows one is.
+        if test -f "$qt_plugin_path/styles/libqmacstyle.a"; then
+          QT_LIBS="-L$qt_plugin_path/styles $QT_LIBS"
+          _PLB_QT_CHECK_STATIC_PLUGINS([Q_IMPORT_PLUGIN(QMacStylePlugin)],[-lqmacstyle])
+          AC_DEFINE(QT_MAC_STYLE, 1, [Define this symbol if the qt mac style plugin exists])
+        fi
       fi
     fi
   else
