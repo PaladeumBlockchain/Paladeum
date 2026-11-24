@@ -8,7 +8,12 @@ $(package)_sha256_hash=b0c3a27056840fd0ec9328a5a9bac3dc5e0ec6d2e8733349cf577b0aa
 # 2.2.x fixes CVE-2024-52917 class issues (infinite loop on malformed replies).
 define $(package)_set_vars
 $(package)_build_opts=CC="$($(package)_cc)"
-$(package)_build_opts_darwin=OS=Darwin LIBTOOL="$($(package)_libtool)"
+# No OS=... here: the Makefile reads the OS from "$(CC) -dumpmachine" and matches a lowercase
+# "darwin" in it. Passing OS=Darwin (what the recipe of an older miniupnpc needed, when the
+# Makefile read "uname -s") matches neither of its tests, so it would add -D_XOPEN_SOURCE=600
+# and leave out -D_DARWIN_C_SOURCE. On macOS the first defines _POSIX_C_SOURCE, which without
+# the second hides struct ifreq, IFNAMSIZ and IP_MULTICAST_IF, and minissdpc.c does not build.
+$(package)_build_opts_darwin=LIBTOOL="$($(package)_libtool)"
 $(package)_build_opts_mingw32=-f Makefile.mingw
 # Makefile.mingw builds the static library in the top-level directory.
 $(package)_libfile=build/libminiupnpc.a
