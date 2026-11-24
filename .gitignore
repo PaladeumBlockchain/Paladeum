@@ -69,6 +69,8 @@ src/qt/test/moc*.cpp
 *.o
 *.o-*
 *.patch
+# the patches that depends applies to its packages are sources, not build output
+!depends/patches/**
 *.a
 *.pb.cc
 *.pb.h
